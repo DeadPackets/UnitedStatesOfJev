@@ -40,18 +40,21 @@ export default function Setup({ onStart, busy }: { onStart: (code: string) => vo
   return (
     <main className="setup">
       <div className="mast rise"><b>Congress of Jev</b><span>You are the President</span></div>
+      <section className="stage" aria-label="Senate preview">
       <div className="stagearea">
         <div className="bignum num rise" aria-label={`${s.seats} seats for your party, ${100 - s.seats} against`}><span className={`a ${s.seats >= 55 ? "red" : ""}`}>{s.seats}</span><span className="b">{100 - s.seats}</span></div>
         <SeatPreview parties={parties} party={s.party} ink={(s.pop + 1) / 2} />
         <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">Sworn in</div>
       </div>
       <Typeset text={headline} />
+      </section>
+      <aside className="rail" aria-label="Rules">
       <div className="track rise" style={{ animationDelay: "120ms" }}>
         <input type="range" min={40} max={60} value={slider} onChange={(e) => onSlide(Number(e.target.value))} aria-label="Drag left for Democrat, right for Republican; distance sets your party's seats" aria-valuetext={`${partyName}, ${s.seats} seats`} />
         <div className="ends"><span className={s.party === "D" ? "on" : ""}>Democrat</span><span className="mid">drag toward your party · distance is the margin</span><span className={s.party === "R" ? "on" : ""}>Republican</span></div>
       </div>
       <div className="chips rise" role="group" aria-label="President's popularity" style={{ animationDelay: "200ms" }}>{POPS.map(([p, name]) => <button key={p} className="opt" aria-pressed={s.pop === p} onClick={() => set({ pop: p })}>{name}</button>)}</div>
-      <div className="rise" style={{ display: "grid", justifyItems: "center", gap: 8, animationDelay: "280ms" }}>
+      <div className="rise" style={{ animationDelay: "280ms" }}>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || !!codeErr} onClick={start}>{busy ? "Seating the Senate" : "Take office"}</button>
       </div>
       <details className="more rise" style={{ animationDelay: "360ms" }}>
@@ -68,6 +71,7 @@ export default function Setup({ onStart, busy }: { onStart: (code: string) => vo
           {codeErr ? <span id="code-help" className="error">{codeErr}</span> : <span id="code-help" className="small muted">Same code, same Senate, same luck. <button className="link" onClick={() => onCode(dailyCode())}>Use today's daily chamber</button></span>}
         </div>
       </details>
+      </aside>
     </main>
   );
 }

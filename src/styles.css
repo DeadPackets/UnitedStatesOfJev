@@ -13,9 +13,15 @@
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; min-height: 100dvh; }
 /* halftone paper: one cheap repeating gradient, masked so it never sits behind text-heavy areas */
-body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.55;
+/* drifts one 7px period per loop, so the seam never shows; transform only, so it stays on the compositor */
+body::before { content: ""; position: fixed; inset: -7px; z-index: 0; pointer-events: none; opacity: 0.55; animation: drift 5s linear infinite;
   background-image: radial-gradient(var(--tone) 0.7px, transparent 0.9px); background-size: 7px 7px;
   mask-image: radial-gradient(60% 50% at 50% 30%, black, transparent 80%); }
+@keyframes drift { to { transform: translate(7px, 7px); } }
+/* press sheen: a paper-tone band sweeps the page like light on newsprint. Band period is 100vw, so a 100vw shift loops seamlessly */
+body::after { content: ""; position: fixed; top: 0; bottom: 0; left: -100vw; width: 400vw; z-index: 0; pointer-events: none; transform: skewX(-22deg);
+  background: linear-gradient(90deg, transparent 0 30%, var(--paper) 50%, transparent 70% 100%) 0 0 / 25% 100% repeat-x; animation: sheen 18s linear infinite; }
+@keyframes sheen { to { transform: skewX(-22deg) translateX(-25%); } }
 #root { position: relative; z-index: 1; }
 h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 0.95; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 p { text-wrap: pretty; max-width: 65ch; }
@@ -74,8 +80,10 @@ textarea, input, select { font: inherit; color: inherit; }
 .seatlabel rect { fill: var(--ink); } .seatlabel text { fill: var(--bg); font: 600 13px var(--sans); }
 
 /* setup */
-.setup { max-width: 960px; margin: 0 auto; padding: 20px 20px 80px; display: grid; gap: 18px; }
-.mast { display: flex; justify-content: space-between; align-items: baseline; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 0; }
+.setup { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 18px 32px; max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px; }
+.setup .rail .btn { width: 100%; }
+.setup .rail .more { width: 100%; }
+.mast { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 0; }
 .mast b { font: 800 22px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
 .mast span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .bignum { display: flex; justify-content: center; align-items: baseline; gap: 0.08em; font: 800 clamp(96px, 22vw, 200px)/0.85 var(--display); letter-spacing: -0.02em; }
@@ -84,7 +92,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .head { font: 800 clamp(28px, 5vw, 48px)/1 var(--display); text-transform: uppercase; letter-spacing: 0.01em; text-align: center; min-height: 1.1em; }
 .head .cursor { display: inline-block; width: 0.5ch; border-bottom: 4px solid var(--ink); animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
-.stagearea { position: relative; }
+.stagearea { position: relative; overflow: clip; }
 .stamp { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-7deg) scale(3); opacity: 0; font: 800 clamp(48px, 9vw, 84px)/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 22px; border: 6px solid var(--red); color: var(--red); pointer-events: none; mix-blend-mode: multiply; }
 .stamp.hit { animation: stamp 520ms var(--ease-expo) forwards; }
 @keyframes stamp { 60%, 100% { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg) scale(1); } }
@@ -95,9 +103,9 @@ textarea, input, select { font: inherit; color: inherit; }
 .track input[type="range"]::-webkit-slider-thumb { appearance: none; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); margin-top: -19px; box-shadow: 0 0 0 5px var(--bg), 0 0 0 7px var(--ink); transition: transform var(--t-fast); }
 .track input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.94); }
 .track input[type="range"]::-moz-range-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); border: 0; box-shadow: 0 0 0 5px var(--bg), 0 0 0 7px var(--ink); }
-.track .ends { display: flex; justify-content: space-between; align-items: center; font: 800 20px var(--display); letter-spacing: 0.04em; text-transform: uppercase; }
+.track .ends { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font: 800 20px var(--display); letter-spacing: 0.04em; text-transform: uppercase; }
 .track .ends .on { color: var(--red); }
-.track .ends .mid { font: 400 12px var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink-2); }
+.track .ends .mid { flex-basis: 100%; order: 1; text-align: center; font: 400 12px var(--sans); text-transform: none; letter-spacing: 0; color: var(--ink-2); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .opt { font: 600 14px var(--sans); min-height: 44px; padding: 0 16px; border: 1.5px solid var(--ink); background: var(--bg); transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .opt:hover, .opt[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
@@ -189,7 +197,7 @@ select.code { appearance: none; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 18px; font-size: 14px; font-weight: 500; z-index: var(--z-toast); animation: rise var(--t-state) var(--ease-out) both; }
 
 @media (max-width: 900px) {
-  .chamber { grid-template-columns: 1fr; padding: 8px 16px 96px; gap: 18px; }
+  .chamber, .setup { grid-template-columns: 1fr; padding: 8px 16px 96px; gap: 18px; }
   .topbar { flex-wrap: wrap; }
   .topbar h1 { font-size: 18px; }
   .topbar nav { font-size: 12px; }
