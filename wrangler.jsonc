@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "unitedstatesofjev",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "assets": { "directory": "./dist/client", "not_found_handling": "single-page-application" },
+  "routes": [{ "pattern": "unitedstatesofjev.deadpackets.pw", "custom_domain": true }],
+  "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameDO" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameDO"] }],
+  "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }]
+}
