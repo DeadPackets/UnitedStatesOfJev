@@ -4,9 +4,11 @@ Date: 2026-09-22. Status: awaiting review. Builds on `2026-09-21-congress-of-jev
 (v1, shipped) and `docs/fun.md` (research). Daily mode and leaderboards are deferred to a
 later spec; nothing here blocks them.
 
-The player is President for one term: 20 legislative weeks, a midterm that reshuffles the
-Senate at week 10, a 4-week campaign, and an election night. Every run starts from a seed
-and then goes its own way. Runs end in re-election, defeat, or impeachment, each with a
+The player is President. A term is 20 legislative weeks, a midterm that reshuffles the
+Senate at week 10, a 4-week campaign, and an election night. Re-election is the win. The
+player can stop there or keep going into a harder term, Balatro-style, until they lose.
+One run, one sitting, nothing carries over. Every run starts from a seed and then goes its
+own way. Runs end in defeat, impeachment, or the player choosing to stop, each with a
 story worth sharing.
 
 Governing constraint, unchanged: **code proposes options, Jev judges, Luna narrates.**
@@ -16,30 +18,30 @@ Luna never decides an outcome. Jev never counts. Code owns every number.
 
 | Decision | Choice | Why |
 |---|---|---|
-| Seed scope | Seeds fix the starting state only: Senate, modifiers, promises, citizen bloc weights, midterm class. Every draw after setup is true random | Input randomness reads as fair, output randomness reads as exciting, and Luna is non-deterministic anyway. `docs/fun.md` §1 |
+| Seed scope | Seeds fix the starting state only: Senate, promises, citizen bloc weights, midterm class. Every draw after setup is true random | Input randomness reads as fair, output randomness reads as exciting, and Luna is non-deterministic anyway. `docs/fun.md` §1 |
 | Length | 20 bill weeks + midterm + 4 campaign weeks + election night, about 35 minutes | Long enough for arcs and grudges, short enough to replay tonight |
-| Modes | Term (the game) and Sandbox (no clock, no election). Agenda mode stays in the engine, hidden, for the deferred daily | One product, not three |
-| Levers | Lobby and amend always on; toggles removed from setup | A roguelike needs its levers. Difficulty comes from modifiers instead |
+| Modes | One: the run. No sandbox, no agenda mode. `worker/agendas.json` stays on disk for the deferred daily | One product |
+| Levers | Lobby and amend always on; toggles removed from setup | A roguelike needs its levers. Difficulty comes from escalation instead |
 | Tension source | Five ledgers that pull apart: voters, Senate, base, donors, party | Sid Meier's interesting decision; Papers, Please's contradicting rewards |
 | Source of truth for public opinion | 250 Jev-judged citizens replace the hand-coded approval delta | The world pushes back on its own. Same roster powers the Feed, midterm, campaign and election |
 | Drama | A code-only Director draws from a weighted storylet deck | Authored beats, never the same order, no model call to decide pacing |
 | Failure | Impeachment (capital 0 and party mood under 20), midterm wipeout, election loss. Each has its own ending | Losing must be a story |
-| Progression | Horizontal: modifiers unlock after a win and multiply score | Hades Heat, not Rogue Legacy stat grind |
+| Progression | None across runs. Within a run, each extra term stacks two escalations and multiplies score | One and done, like Balatro: win at term 1, keep going for the high score |
 
 ## 1. Data model
 
 Additions to `Game` in `worker/engine.ts`. v1 fields stay.
 
 ```ts
-interface Settings { v: 2; party: Party; seats: number; pop: -1 | 0 | 1; mode: "term" | "sandbox" | "agenda";
-  promises: [Tag, Tag, Tag]; modifiers: Modifier[]; agenda: number; seed: number }
+interface Settings { v: 2; party: Party; seats: number; pop: -1 | 0 | 1; promises: [Tag, Tag, Tag]; seed: number }
 
 interface Game {
   // v1
   id; code; settings; turn; capital; approval; seated; bills; phase; result;
   // v2
-  week: number;                       // 1..24, turn stays the bill index
-  stage: "session" | "midterm" | "campaign" | "election" | "over";
+  term: number;                       // 1.., escalations stack per term (§10)
+  week: number;                       // 1..24 within the term, turn stays the bill index
+  stage: "session" | "midterm" | "campaign" | "election" | "won" | "over";   // "won": re-elected, choose to stop or continue
   ledgers: { party: number; chest: number };            // party mood 0..100, war chest in $M
   donors: Record<Donor, number>;                        // mood -2..2 per donor group
   promises: Record<Tag, { passed: number; state: "pending" | "kept" | "broken" }>;
@@ -71,9 +73,8 @@ interface CampaignWeek { message: string; states: string[]; spend: number; inten
 ## 2. Seed and share code
 
 ```
-J2-D55P-4H9-00-K7Q2XA
- │  │││ │   │  └ seed, 30 bits, Crockford base32
- │  │││ │   └ modifiers, 10-bit mask, 2 chars
+J2-D55P-4H9-K7Q2XA
+ │  │││ │   └ seed, 30 bits, Crockford base32
  │  │││ └ three promise tags, one base32 char each (index into TAGS, 20 entries)
  │  ││└ popularity U E P
  │  │└ your party's seats 40..60
@@ -84,7 +85,7 @@ J2-D55P-4H9-00-K7Q2XA
 The seed drives, and only drives: seat parties and jitter, senator situations, starting
 approval, citizen names and bloc weights, the midterm class (which 33 seats are up), and
 the storylet deck's shuffle order. `drawVotes`, midterm draws, election draws, and Director
-rolls use `crypto.getRandomValues`. Sandbox has no code; it is Term with the clock off.
+rolls use `crypto.getRandomValues`.
 
 ## 3. One week
 
@@ -195,7 +196,7 @@ authored.
 citizens)`, sign flipped for the opposition's seats. Draws are true random. A lost seat
 swaps in the roster's other-party persona for that seat, with empty memory. The chamber
 animates the swaps one by one, east to west, with the whip bar recomputing live; a
-wipeout (8+ lost) ends the run as a lame duck unless the player is in Sandbox. The
+wipeout (8+ lost) ends the run as a lame duck. The
 midterm sets a hard checkpoint for the story: Luna writes a half-term headline from the
 ledgers.
 
@@ -219,30 +220,33 @@ numeral; the map fills in ink; a flipped state (against forecast) prints red for
 beat. 270 wins. Sound: a low tick per state, a chord per 50 EV, gavel or thud at the end.
 The whole reveal is 40 seconds and cannot be skipped the first time in a run.
 
-## 10. Endings, score, unlocks
+## 10. Winning, keeping going, endings, score
+
+Re-election (EV ≥ 270) is the win. The Over screen for a win offers two buttons: "Stop
+here" ends the run with the score; "Another term" starts term + 1 with the same Senate as
+elected, ledgers carried over, and two more escalations stacked. The 22nd Amendment is
+waved off by a Luna headline on term 3. There is no cap; the run ends when the player
+loses or stops.
+
+| Term | Escalations added |
+|---|---|
+| 2 | Hostile press: headlines harsher, approve deltas −1 in every state. Filibuster era: 60 needed on every bill |
+| 3 | Recession: economy line "recession" all term; business and labor donors start at −1. Scandal season: four senators under investigation |
+| 4 | Short fuse: Director thresholds 20 and 60 instead of 30 and 70. Split ticket: the midterm flips 8 seats against the President before the draw |
+| 5+ | All six stay; each further term adds −2 to every state's starting approval |
 
 | Ending | Trigger | Luna writes |
 |---|---|---|
-| Re-elected | EV ≥ 270 | inaugural, 3 sentences |
+| Re-elected, stopped | EV ≥ 270, player stops | inaugural, 3 sentences, then the record |
 | Defeated | EV < 270 | concession, 3 sentences, names the state that decided it |
 | Lame duck | midterm wipeout or approval < 35 at week 18 | obituary of the presidency |
 | Impeached | capital 0 and party mood < 20 at any Verdict | the vote in the Senate, using the actual whip |
 
 Score = passed × 10 + kept promises × 25 − broken × 15 + EV ÷ 2 + capital ÷ 4 + best
-streak × 5, × Π modifier multipliers. The Over screen shows the breakdown line by line
-with rolling digits, the share card (seat grid of the term, one row per bill, filled and
-hollow squares, no spoilers), and the code.
-
-Modifiers, one unlock per win, each × 1.15 on score:
-
-| Modifier | Effect |
-|---|---|
-| Hostile press | headlines harsher; approve deltas −1 on every state |
-| Recession | economy line "recession" from week 1; business and labor start at −1 donor mood |
-| Filibuster era | 60 needed on every bill |
-| Split ticket | Senate is 45 for you regardless of slider; slider sets popularity only |
-| Scandal season | four senators under investigation instead of one |
-| Short fuse | Director intensity thresholds 20 and 60 instead of 30 and 70 |
+streak × 5, summed per term, each term's total × 1.5^(term − 1). A lost term still scores
+its passed bills and promises, so pushing on is never a pure gamble. The Over screen shows
+the breakdown line by line with rolling digits, the share card (seat grid of the run, one
+row per bill, filled and hollow squares, no spoilers), terms served, and the code.
 
 ## 11. Senators as characters
 
@@ -312,7 +316,7 @@ Existing endpoints keep their shapes. New, all under `/api/games/:id/`:
 
 | Screen | New or changed |
 |---|---|
-| Setup | promise picker: three chips from TAGS, headline updates ("Promises: healthcare, labor, housing"); modifier chips appear after the first win; toggles removed |
+| Setup | promise picker: three chips from TAGS, headline updates ("Promises: healthcare, labor, housing"); toggles and mode chips removed |
 | Week | chamber left, rail right as today. Rail gains a Feed strip (post box, reactions, replies), the ledger panel becomes five meters, promises as three stamps (pending, kept, broken) |
 | Crisis card | full-screen `<dialog>` in the poster style: title, body, three stance buttons, then bloc reactions as five small meters |
 | Verdict | roll call as today plus: last five votes slow to 400 ms each when the count is within 3 of the threshold; shake tiers 2px, 4px, 6px by margin; pitch climbs per yes; pull quotes slide in after the stamp |
@@ -320,7 +324,8 @@ Existing endpoints keep their shapes. New, all under `/api/games/:id/`:
 | Midterm night | chamber only, seats swap one by one, whip bar recomputes live, half-term headline |
 | Campaign | map left, rail right: message chips, state picker on the map, spend buttons, needle on top with the band |
 | Election night | map full width, numeral counts up, red on a flip, no skip on first view |
-| Over | ending text, score breakdown with rolling digits, share card, modifiers unlocked, "Run it back" with the same code and "New term" |
+| Won | inaugural text, the term's score, two buttons: "Stop here" and "Another term", with the next term's escalations named under the button |
+| Over | ending text, score breakdown per term with rolling digits, share card, "Run it back" with the same code and "New run" |
 
 All enters stay CSS keyframes; the roll call, midterm swaps and election reveal are
 rAF-clocked like v1's roll call. Reduced motion keeps every state and drops the clocks.
@@ -342,12 +347,14 @@ Run with `scripts/`, results into `docs/experiments.md`.
 ## 17. Out of scope
 
 Daily mode, leaderboards, multiplayer, voice, a House of Representatives, and any Luna
-call that decides a number. Agenda mode stays in code, unreachable from Setup.
+call that decides a number, and any state that outlives a run: no unlocks, no profiles, no history beyond the last code in localStorage.
 
 ## 18. Self-review
 
 Placeholders: none. Contradictions: the v1 spec's 40-bill term is replaced by 20 weeks;
-`BILLS_PER_TERM.term` becomes 20. Ambiguities resolved: Sandbox has no Director crises
-(quiet by design), no midterm, no campaign; the Feed and ledgers still run. Scope: one
+`BILLS_PER_TERM` becomes a constant 20 and `Mode` is deleted with its share-code letter.
+Ambiguities resolved: a continued term keeps senators' memory, grudges and debts, and the
+Director's `seen` list, so callbacks reach across terms; week numbers in §6 are within the
+term. Scope: one
 plan can carry this in five tasks: citizens and ledgers, Director and deck, Feed,
 midterm and campaign and election, front end and juice.
