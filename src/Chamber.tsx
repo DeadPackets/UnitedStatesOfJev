@@ -9,17 +9,17 @@ import Map from "./Map";
 import Tour, { TOUR_BILL, type TourStep } from "./Tour";
 import { sound } from "./sound";
 
-function Num({ value, decimals = 0, className }: { value: number; decimals?: number; className?: string }) {
+function Num({ value, decimals = 0, className, instant = false }: { value: number; decimals?: number; className?: string; instant?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const shown = useRef(value); // what is on screen, so a tick interrupted mid-flight resumes from there
   const reduced = useReducedMotion();
   useEffect(() => {
     const el = ref.current; if (!el) return;
     const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
-    if (reduced || Math.abs(shown.current - value) < 0.05) { write(value); return; }
+    if (reduced || instant || Math.abs(shown.current - value) < 0.05) { write(value); return; }
     const c = animate(shown.current, value, { duration: 0.6, ease: [0.22, 1, 0.36, 1], onUpdate: write, onComplete: () => write(value) });
     return () => c.stop();
-  }, [value, decimals, reduced]);
+  }, [value, decimals, reduced, instant]);
   return <span ref={ref} className={`num ${className ?? ""}`}>{value.toFixed(decimals)}</span>;
 }
 
@@ -109,7 +109,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{agenda ? "The Senate is seated. Send the next bill." : "The Senate is seated. Write a bill."}</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>
-              {voted ? <Num value={shownYes} className={`n ${!rolling && !bill.passed ? "fail" : ""}`} /> : whipped ? <Num value={exp} decimals={1} className="n" /> : <span className="n muted">—</span>}
+              {voted ? <Num value={shownYes} instant={rolling} className={`n ${!rolling && !bill.passed ? "fail" : ""}`} /> : whipped ? <Num value={exp} decimals={1} className="n" /> : <span className="n muted">—</span>}
               <span className="muted">{voted ? (rolling ? `roll call · ${need} needed` : bill.passed ? (bill.struck ? "passed, struck down by the Court" : "passed") : "failed") : whipped ? `expected yes · ${need} needed` : "run the whip count"}</span>
             </div>
             <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={voted ? shownYes : exp} aria-label="Yes votes">
