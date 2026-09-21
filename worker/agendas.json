@@ -1,0 +1,974 @@
+[
+ {
+  "theme": "First 100 Days",
+  "bills": [
+   {
+    "title": "Federal Records Access Act",
+    "summary": "This bill requires federal agencies to publish more public records online within 30 days. It also sets fees for late responses to valid records requests.",
+    "tags": [
+     "civil-rights",
+     "tech"
+    ],
+    "text": "Agencies must post public records online within 30 days unless a court approves a delay. People can get fee refunds when agencies miss the deadline."
+   },
+   {
+    "title": "Veterans Clinic Access Act",
+    "summary": "This bill adds evening and weekend hours at selected Veterans Affairs clinics. It funds 200 new medical staff positions in areas with long wait times.",
+    "tags": [
+     "veterans",
+     "healthcare"
+    ],
+    "text": "We will add evening and weekend hours at VA clinics with long waits. The bill pays for 200 new medical staff positions."
+   },
+   {
+    "title": "School Meal Debt Relief Act",
+    "summary": "This bill gives $500 million to schools to clear unpaid meal charges. Schools may not deny a meal or shame a student over family debt.",
+    "tags": [
+     "education"
+    ],
+    "text": "The federal government will give schools $500 million to clear meal debt. No child can lose a meal because a family owes money."
+   },
+   {
+    "title": "Bridge Repair Grant Act",
+    "summary": "This bill provides $8 billion in grants to repair bridges rated in poor condition. States must report project costs, deadlines, and safety results.",
+    "tags": [
+     "infrastructure",
+     "spending"
+    ],
+    "text": "We will spend $8 billion on repairs for bridges in poor condition. States must post costs and deadlines for each project."
+   },
+   {
+    "title": "Child Care Tax Credit Act",
+    "summary": "This bill raises the child care tax credit to $4,000 per child for families earning less than $150,000. The credit phases out above that income level.",
+    "tags": [
+     "taxes",
+     "labor"
+    ],
+    "text": "Families earning under $150,000 can claim up to $4,000 per child for child care. The credit gets smaller for families with higher incomes."
+   },
+   {
+    "title": "Clean Energy Permit Act",
+    "summary": "This bill gives federal energy projects a 12-month deadline for permit decisions. It directs agencies to review projects through one shared process.",
+    "tags": [
+     "energy",
+     "climate"
+    ],
+    "text": "Federal agencies must decide on energy project permits within 12 months. One shared review will replace separate agency delays."
+   },
+   {
+    "title": "Drug Price Negotiation Act",
+    "summary": "This bill allows Medicare to negotiate prices for 50 more prescription drugs each year. Drug makers that refuse negotiations face a tax on sales in the United States.",
+    "tags": [
+     "healthcare",
+     "taxes"
+    ],
+    "text": "Medicare can negotiate prices for 50 more drugs each year. Drug companies that refuse will pay a tax on US sales."
+   },
+   {
+    "title": "Border Court Capacity Act",
+    "summary": "This bill adds 100 immigration judges and funds 20 new courtrooms near major border crossings. It sets a two-year goal for deciding asylum cases.",
+    "tags": [
+     "immigration",
+     "courts"
+    ],
+    "text": "We will hire 100 immigration judges and open 20 courtrooms near major border crossings. Courts must aim to decide asylum cases within two years."
+   },
+   {
+    "title": "Voting Access Standards Act",
+    "summary": "This bill requires states to offer 15 days of early voting, automatic voter registration at motor vehicle offices, and free voter identification cards. States may use their own election systems.",
+    "tags": [
+     "elections",
+     "civil-rights"
+    ],
+    "text": "States must offer 15 days of early voting and automatic registration at motor vehicle offices. Every voter can get a free voter ID card."
+   },
+   {
+    "title": "Wealth Tax Enforcement Act",
+    "summary": "This bill creates a 2 percent annual tax on household wealth above $50 million. It adds audits for high-wealth taxpayers and funds new rules for valuing private assets.",
+    "tags": [
+     "taxes",
+     "spending"
+    ],
+    "text": "Households with more than $50 million in wealth will pay a 2 percent annual tax on the amount above that line. The IRS will audit more high-wealth taxpayers."
+   }
+  ]
+ },
+ {
+  "theme": "Green Century",
+  "bills": [
+   {
+    "title": "Clean Water Repair Act",
+    "summary": "Provides $8 billion over five years to repair aging water systems, replace lead pipes, and upgrade wastewater plants. States and cities must publish project costs and completion dates.",
+    "tags": [
+     "infrastructure",
+     "climate"
+    ],
+    "text": "Spend $8 billion over five years to replace lead pipes and repair failing water systems. States and cities must publish the cost and deadline for each project."
+   },
+   {
+    "title": "Public Building Solar Act",
+    "summary": "Creates grants for solar panels on schools, libraries, and other public buildings. Grants cover up to 40 percent of project costs, with priority for buildings in high-energy-cost areas.",
+    "tags": [
+     "energy",
+     "climate",
+     "education"
+    ],
+    "text": "Give public buildings grants that cover up to 40 percent of solar panel costs. Schools, libraries, and town halls can apply."
+   },
+   {
+    "title": "Home Energy Savings Act",
+    "summary": "Offers tax credits for insulation, heat pumps, efficient windows, and electric appliances. The largest credits go to low- and middle-income households.",
+    "tags": [
+     "energy",
+     "housing",
+     "climate"
+    ],
+    "text": "Give households tax credits for insulation, heat pumps, better windows, and electric appliances. Low- and middle-income families get the largest credits."
+   },
+   {
+    "title": "Clean Transit Grants Act",
+    "summary": "Provides $12 billion for electric buses, charging stations, and rail repairs. Transit agencies must keep service running during construction and report project results.",
+    "tags": [
+     "infrastructure",
+     "energy",
+     "climate"
+    ],
+    "text": "Spend $12 billion on electric buses, charging stations, and rail repairs. Transit agencies must report costs and keep routes open during the work."
+   },
+   {
+    "title": "Farm Soil Health Act",
+    "summary": "Pays farmers $35 per acre for cover crops, reduced tillage, and other soil practices. Payments last five years and require basic soil testing.",
+    "tags": [
+     "farming",
+     "climate"
+    ],
+    "text": "Pay farmers $35 per acre for cover crops and reduced tillage. Farmers must test soil before and after the five-year program."
+   },
+   {
+    "title": "Clean Power Standard Act",
+    "summary": "Requires electric utilities to get 80 percent of their power from zero-carbon sources by 2035. Utilities can use nuclear power and buy credits from other utilities.",
+    "tags": [
+     "energy",
+     "climate"
+    ],
+    "text": "Require utilities to get 80 percent of their power from zero-carbon sources by 2035. Nuclear power counts, and utilities can trade credits."
+   },
+   {
+    "title": "Carbon Fee Dividend Act",
+    "summary": "Places a fee on coal, oil, and gas based on their carbon emissions. The Treasury sends most of the money to households in equal quarterly payments.",
+    "tags": [
+     "taxes",
+     "energy",
+     "climate"
+    ],
+    "text": "Charge coal, oil, and gas companies $25 for each ton of carbon they release. Send most of the money to households in equal payments every three months."
+   },
+   {
+    "title": "Industrial Pollution Limits Act",
+    "summary": "Sets stricter limits for carbon, methane, and toxic air pollution from large industrial sites. The Environmental Protection Agency can impose fines of up to $50,000 per day.",
+    "tags": [
+     "energy",
+     "climate",
+     "labor"
+    ],
+    "text": "Set lower pollution limits for large factories, power plants, and oil sites. Fine companies up to $50,000 for each day they break the rules."
+   },
+   {
+    "title": "Climate Jobs Transition Act",
+    "summary": "Creates a $30 billion fund for clean energy manufacturing, worker training, and wage support in fossil fuel communities. Projects must meet wage and local hiring rules.",
+    "tags": [
+     "labor",
+     "energy",
+     "climate"
+    ],
+    "text": "Create a $30 billion fund for clean energy factories and worker training. Workers who lose fossil fuel jobs can receive wage support for two years."
+   },
+   {
+    "title": "Federal Carbon Budget Act",
+    "summary": "Sets a declining national limit on greenhouse gas emissions through 2050. Congress must approve a plan when emissions exceed the annual limit, with court review for missed targets.",
+    "tags": [
+     "climate",
+     "energy",
+     "courts"
+    ],
+    "text": "Set a falling national limit on greenhouse gas pollution through 2050. Congress must pass a repair plan when the country exceeds its yearly limit."
+   }
+  ]
+ },
+ {
+  "theme": "Law and Order",
+  "bills": [
+   {
+    "title": "Police Body Camera Act",
+    "summary": "This bill gives federal grants to local police departments for body cameras. Departments must publish rules for camera use and release footage after serious incidents, with limits for victims and witnesses.",
+    "tags": [
+     "crime",
+     "civil-rights"
+    ],
+    "text": "We will help police departments buy body cameras. Departments must set clear rules and release footage after serious incidents while protecting victims and witnesses."
+   },
+   {
+    "title": "Missing Persons Data Act",
+    "summary": "This bill creates a national database for missing person reports. Police must enter reports within 24 hours unless a case has a documented reason for delay.",
+    "tags": [
+     "crime",
+     "tech"
+    ],
+    "text": "We will create one national database for missing people. Police must enter a report within 24 hours unless they record why they cannot."
+   },
+   {
+    "title": "Court Date Notice Act",
+    "summary": "This bill funds text messages, calls, and letters that tell defendants about court dates. Courts must offer notices in common local languages and provide a way to update contact details.",
+    "tags": [
+     "courts",
+     "civil-rights"
+    ],
+    "text": "We will give courts money to send clear court date notices by text, phone, and mail. People can update their contact information and request notices in common local languages."
+   },
+   {
+    "title": "Public Defender Funding Act",
+    "summary": "This bill raises federal grants for public defender offices. Grants support attorneys, investigators, and case workers, with funding tied to local caseloads.",
+    "tags": [
+     "courts",
+     "civil-rights"
+    ],
+    "text": "We will send more federal money to public defender offices. The money can pay for lawyers, investigators, and case workers based on the number of cases."
+   },
+   {
+    "title": "Gun Storage Safety Act",
+    "summary": "This bill requires secure storage when a firearm owner lives with a person under 18 or a prohibited person. It provides a tax credit for approved safes and sets penalties for reckless storage.",
+    "tags": [
+     "guns",
+     "crime"
+    ],
+    "text": "We will require gun owners to lock firearms when children or prohibited people live in the home. Buyers can get a tax credit for approved safes."
+   },
+   {
+    "title": "Police Misconduct Database Act",
+    "summary": "This bill creates a federal database of officers fired or found responsible for serious misconduct. Police agencies must check the database before hiring an officer.",
+    "tags": [
+     "crime",
+     "civil-rights"
+    ],
+    "text": "We will create a national record of officers fired or found responsible for serious misconduct. Police agencies must check it before they hire an officer."
+   },
+   {
+    "title": "Sentencing Review Act",
+    "summary": "This bill lets people seek a court review of federal sentences after 15 years for certain nonviolent crimes. Judges may reduce a sentence after reviewing conduct, risk, and harm to victims.",
+    "tags": [
+     "courts",
+     "crime"
+    ],
+    "text": "People serving federal sentences for some nonviolent crimes can ask for review after 15 years. A judge can reduce the sentence after hearing from victims and checking the person’s record."
+   },
+   {
+    "title": "Border Crime Prosecution Act",
+    "summary": "This bill increases federal penalties for repeat illegal entry and smuggling that causes serious injury. It adds funding for federal prosecutors and immigration courts near the border.",
+    "tags": [
+     "immigration",
+     "crime",
+     "courts"
+    ],
+    "text": "We will raise penalties for repeat illegal entry and smuggling that causes serious injury. We will also fund more prosecutors and immigration judges near the border."
+   },
+   {
+    "title": "National Bail Standards Act",
+    "summary": "This bill sets federal rules for pretrial release in federal cases. Judges must consider public safety and flight risk, while people charged with low-level offenses may not face money bail alone.",
+    "tags": [
+     "courts",
+     "crime"
+    ],
+    "text": "We will set rules for bail in federal cases. Judges must consider safety and flight risk, and low-level charges cannot lead to money bail by itself."
+   },
+   {
+    "title": "Federal Crime Control Act",
+    "summary": "This bill expands federal criminal jurisdiction for violent offenses tied to interstate networks, creates mandatory minimum sentences for selected crimes, and increases funding for federal investigations. It also limits federal grants to agencies that meet reporting standards.",
+    "tags": [
+     "crime",
+     "courts",
+     "civil-rights"
+    ],
+    "text": "We will give federal investigators more power over violent crime networks that cross state lines. The bill adds mandatory sentences for selected crimes and ties some police grants to public reporting."
+   }
+  ]
+ },
+ {
+  "theme": "Small Government",
+  "bills": [
+   {
+    "title": "Federal Office Review Act",
+    "summary": "Requires each federal agency to list its programs, costs, staff levels, and legal duties every two years. Congress can use the reports when it considers agency budgets.",
+    "tags": [
+     "spending"
+    ],
+    "text": "Every federal agency must publish a two-year report on its programs, costs, staff, and legal duties. Congress must review the report before it approves the agency's next budget."
+   },
+   {
+    "title": "Paperwork Cutback Act",
+    "summary": "Cuts federal forms by 15 percent over four years. Agencies must remove duplicate forms and publish a list of forms they keep.",
+    "tags": [
+     "spending",
+     "labor"
+    ],
+    "text": "Federal agencies must cut the number of forms they require by 15 percent over four years. Each agency must publish the forms it keeps and the reason for each one."
+   },
+   {
+    "title": "Taxpayer Travel Limits Act",
+    "summary": "Sets new limits on federal travel, lodging, and conference costs. Agencies must post travel expenses online within 30 days.",
+    "tags": [
+     "spending"
+    ],
+    "text": "Federal workers may spend no more than $500 per night on lodging and $1,500 per trip on conference costs. Agencies must post travel bills online within 30 days."
+   },
+   {
+    "title": "Duplicate Program Elimination Act",
+    "summary": "Creates a public list of federal programs with overlapping duties. Congress must vote on whether to merge or end each listed program within two years.",
+    "tags": [
+     "spending"
+    ],
+    "text": "The government must list programs that do the same work. Congress must vote within two years to merge or end each program on the list."
+   },
+   {
+    "title": "Federal Hiring Freeze Act",
+    "summary": "Freezes federal civilian hiring for one year, with exceptions for public safety and national security. Agencies must cut two vacant positions before adding one new position.",
+    "tags": [
+     "spending",
+     "labor",
+     "defense"
+    ],
+    "text": "The government may not add new civilian workers for one year, except for public safety and national security jobs. After that year, each new position requires the removal of two vacant positions."
+   },
+   {
+    "title": "Regulation Sunset Act",
+    "summary": "Sets a five-year expiration date for most new federal regulations. Agencies must submit a cost and benefit report before a rule can continue.",
+    "tags": [
+     "spending",
+     "labor",
+     "tech"
+    ],
+    "text": "Most new federal rules expire after five years. An agency must publish the rule's costs and benefits before it can keep the rule in place."
+   },
+   {
+    "title": "Federal Asset Sale Act",
+    "summary": "Orders the sale of unused federal buildings, land, and vehicles. The law bars sales of military bases, national parks, and property needed for public safety.",
+    "tags": [
+     "spending",
+     "housing",
+     "infrastructure"
+    ],
+    "text": "The government must sell unused buildings, land, and vehicles. It may not sell military bases, national parks, or property needed for public safety."
+   },
+   {
+    "title": "Block Grant Control Act",
+    "summary": "Converts selected federal grants into block grants with fewer federal conditions. States must report how they use the money each year.",
+    "tags": [
+     "spending",
+     "education",
+     "healthcare"
+    ],
+    "text": "Selected federal grants will become block grants with fewer federal rules. States must report each year on how they spend the money."
+   },
+   {
+    "title": "Civil Service Accountability Act",
+    "summary": "Makes it easier to fire federal workers for repeated poor performance or misconduct. Workers retain notice and a right to appeal to an independent review board.",
+    "tags": [
+     "labor",
+     "spending"
+    ],
+    "text": "Agencies may fire federal workers for repeated poor performance or misconduct after written notice. Workers may appeal to an independent review board."
+   },
+   {
+    "title": "Balanced Budget Enforcement Act",
+    "summary": "Requires Congress to pass a balanced federal budget within five years. It sets automatic spending cuts if lawmakers miss the target, with limits on cuts to defense, veterans, and basic income programs.",
+    "tags": [
+     "spending",
+     "defense",
+     "veterans"
+    ],
+    "text": "Congress must pass a balanced federal budget within five years. If it misses the target, automatic spending cuts take effect, with limits on cuts to defense, veterans, and basic income programs."
+   }
+  ]
+ },
+ {
+  "theme": "Infrastructure Decade",
+  "bills": [
+   {
+    "title": "Bridge Inspection Act",
+    "summary": "The bill gives states grants for bridge inspections and repair plans. States must inspect older bridges every two years and publish the results.",
+    "tags": [
+     "infrastructure"
+    ],
+    "text": "We will give states money to inspect bridges and fix urgent damage. Older bridges must get an inspection every two years, with results posted online."
+   },
+   {
+    "title": "Safe School Routes Act",
+    "summary": "The bill funds sidewalks, crosswalks, and safer crossings near public schools. Local governments must submit plans before receiving grants.",
+    "tags": [
+     "infrastructure",
+     "education"
+    ],
+    "text": "We will pay for safer routes near public schools. Grants will cover sidewalks and marked crossings where children walk."
+   },
+   {
+    "title": "Rural Broadband Buildout Act",
+    "summary": "The bill provides grants for high-speed internet in areas with limited service. Projects must offer a minimum speed and meet a completion deadline.",
+    "tags": [
+     "infrastructure",
+     "tech"
+    ],
+    "text": "We will bring reliable internet to rural homes and small towns. Companies that take federal money must provide at least 100 megabits per second."
+   },
+   {
+    "title": "Clean Water Pipe Act",
+    "summary": "The bill creates a loan program to replace old water pipes and remove lead service lines. Cities must report project costs and test results.",
+    "tags": [
+     "infrastructure",
+     "healthcare"
+    ],
+    "text": "We will help cities replace old water pipes and lead lines. Every project must report its cost and water test results."
+   },
+   {
+    "title": "Port Repair Act",
+    "summary": "The bill funds repairs at public ports and upgrades to cargo equipment. Projects must meet labor, safety, and environmental standards.",
+    "tags": [
+     "infrastructure",
+     "trade",
+     "labor"
+    ],
+    "text": "We will repair public ports and replace worn cargo equipment. Federal funds will require safe work sites and clear wage rules."
+   },
+   {
+    "title": "Grid Reliability Act",
+    "summary": "The bill offers grants for power line repairs, local backup systems, and stronger grid controls. Power companies must meet reliability targets to receive funds.",
+    "tags": [
+     "infrastructure",
+     "energy"
+    ],
+    "text": "We will repair aging power lines and add local backup systems. Utilities must meet reliability targets before they receive federal grants."
+   },
+   {
+    "title": "Transit Repair Act",
+    "summary": "The bill directs federal money to repair buses, rail cars, stations, and tracks. Transit agencies must keep regular service during funded work when practical.",
+    "tags": [
+     "infrastructure"
+    ],
+    "text": "We will repair buses, rail cars, stations, and tracks before buying new systems. Transit agencies must keep service running during work when they can."
+   },
+   {
+    "title": "Climate Ready Roads Act",
+    "summary": "The bill funds road projects that address flooding, heat, wildfire, and coastal damage. States must map risks and set repair priorities.",
+    "tags": [
+     "infrastructure",
+     "climate"
+    ],
+    "text": "We will rebuild roads to handle floods, heat, fires, and rising water. States must map the risks before they spend federal money."
+   },
+   {
+    "title": "National Rail Freight Act",
+    "summary": "The bill funds freight rail upgrades, grade crossing improvements, and new rail capacity. Private rail companies must share costs and meet federal safety rules.",
+    "tags": [
+     "infrastructure",
+     "trade"
+    ],
+    "text": "We will expand freight rail and improve dangerous crossings. Rail companies must pay part of the cost and follow federal safety rules."
+   },
+   {
+    "title": "Infrastructure Bank Act",
+    "summary": "The bill creates a federal bank for large infrastructure loans and grants. Projects must show public benefits, repay loans when required, and pass labor and environmental reviews.",
+    "tags": [
+     "infrastructure",
+     "spending",
+     "energy"
+    ],
+    "text": "We will create a federal bank for large infrastructure projects. It can offer loans or grants, but each project must pass public, labor, and environmental reviews."
+   }
+  ]
+ },
+ {
+  "theme": "Healthcare for All",
+  "bills": [
+   {
+    "title": "Rural Clinic Support Act",
+    "summary": "Provides grants to rural clinics for basic equipment, extended hours, and primary care staff. Clinics must report patient visits and spending each year.",
+    "tags": [
+     "healthcare",
+     "spending"
+    ],
+    "text": "Give rural clinics grants for equipment and longer hours. Clinics must report how they spend the money."
+   },
+   {
+    "title": "Hospital Price Notice Act",
+    "summary": "Requires hospitals to post common service prices in plain language before scheduled care. Fines apply when hospitals hide or omit required prices.",
+    "tags": [
+     "healthcare"
+    ],
+    "text": "Make hospitals post prices for common services before planned care. Fine hospitals that hide or leave out the prices."
+   },
+   {
+    "title": "Generic Drug Access Act",
+    "summary": "Limits insurance delays for lower-cost generic drugs and caps patient costs for selected common medicines. Drug makers must report major price increases.",
+    "tags": [
+     "healthcare"
+    ],
+    "text": "Let patients get lower-cost generic drugs without long insurance delays. Cap out-of-pocket costs for a list of common medicines."
+   },
+   {
+    "title": "Mental Health Coverage Act",
+    "summary": "Requires private health plans and public plans to cover outpatient mental health visits under the same cost rules as primary care visits.",
+    "tags": [
+     "healthcare"
+    ],
+    "text": "Require health plans to cover mental health visits under the same cost rules as primary care. Set a minimum number of covered visits each year."
+   },
+   {
+    "title": "Children's Care Guarantee Act",
+    "summary": "Creates automatic enrollment in a public health plan for children in families below a set income level. Coverage includes checkups, vaccines, hospital care, and medicine.",
+    "tags": [
+     "healthcare",
+     "education"
+    ],
+    "text": "Put children from low-income families into a public health plan automatically. Cover checkups, vaccines, hospital care, and medicine."
+   },
+   {
+    "title": "Medicaid Work Rules Act",
+    "summary": "Allows states to require some Medicaid adults to report work, training, or community service hours. The law exempts people with disabilities, young children, and serious illness.",
+    "tags": [
+     "healthcare",
+     "labor"
+    ],
+    "text": "Let states ask some Medicaid adults to report work, training, or community service. Exempt people with disabilities, young children, and serious illness."
+   },
+   {
+    "title": "Public Health Plan Act",
+    "summary": "Creates a federal health plan that people and small businesses may buy through the insurance marketplace. The plan uses federal payments and sets limits on deductibles.",
+    "tags": [
+     "healthcare",
+     "spending"
+    ],
+    "text": "Create a federal health plan that people and small businesses can buy through the marketplace. Set a limit on deductibles and use federal money to lower premiums."
+   },
+   {
+    "title": "Medicare Drug Bargaining Act",
+    "summary": "Allows Medicare to negotiate prices for more prescription drugs and applies the savings to premiums and patient costs. Drug makers that refuse the terms face a federal sales tax.",
+    "tags": [
+     "healthcare",
+     "taxes"
+    ],
+    "text": "Let Medicare bargain over prices for more prescription drugs. Use the savings to lower premiums and patient costs, with a tax on drug makers that refuse."
+   },
+   {
+    "title": "Universal Care Payroll Act",
+    "summary": "Creates a national public health plan funded by payroll taxes and federal revenue. The plan covers primary care, hospital care, mental health care, prescription drugs, and long-term care.",
+    "tags": [
+     "healthcare",
+     "taxes",
+     "spending"
+    ],
+    "text": "Create one public health plan for every resident. Pay for it with payroll taxes and federal money, and cover doctors, hospitals, mental health care, drugs, and long-term care."
+   },
+   {
+    "title": "Single Payer Health Act",
+    "summary": "Replaces most private health insurance with a federal plan for residents. The plan covers medical care and drugs, while private insurers may sell supplemental coverage.",
+    "tags": [
+     "healthcare",
+     "taxes",
+     "spending"
+    ],
+    "text": "Replace most private health insurance with one federal plan for every resident. Cover medical care and drugs, while allowing private plans for extra services."
+   }
+  ]
+ },
+ {
+  "theme": "Secure Borders",
+  "bills": [
+   {
+    "title": "Border Screening and Staffing Act",
+    "summary": "Adds 1,500 customs officers at ports of entry and funds updated identity checks for travelers and cargo.",
+    "tags": [
+     "immigration",
+     "crime"
+    ],
+    "text": "Hire 1,500 more customs officers at ports of entry. Replace old identity check systems with faster systems that share data across agencies."
+   },
+   {
+    "title": "Port Security Grant Act",
+    "summary": "Provides $2 billion in grants for cameras, scanners, secure fencing, and emergency plans at ports of entry.",
+    "tags": [
+     "immigration",
+     "infrastructure"
+    ],
+    "text": "Give ports of entry $2 billion for cameras, cargo scanners, secure fencing, and emergency plans. Require yearly reports on how each port spends the money."
+   },
+   {
+    "title": "Border Technology Review Act",
+    "summary": "Sets standards for border cameras, drones, and data systems while requiring privacy reviews and public reports.",
+    "tags": [
+     "immigration",
+     "tech",
+     "civil-rights"
+    ],
+    "text": "Set clear rules for border cameras, drones, and data systems. Require privacy reviews before new tools are used and public reports each year."
+   },
+   {
+    "title": "Smuggler Prosecution Act",
+    "summary": "Raises federal penalties for human smuggling and creates a dedicated prosecution unit for major cases.",
+    "tags": [
+     "immigration",
+     "crime",
+     "courts"
+    ],
+    "text": "Raise penalties for people who smuggle migrants for profit. Create a federal unit to prosecute large smuggling networks."
+   },
+   {
+    "title": "Asylum Case Backlog Act",
+    "summary": "Adds immigration judges, legal staff, and courtrooms to reduce pending asylum cases and sets a 180-day target for decisions.",
+    "tags": [
+     "immigration",
+     "courts"
+    ],
+    "text": "Hire 150 immigration judges and more court staff. Set a 180-day target for most asylum decisions, with exceptions for complex cases."
+   },
+   {
+    "title": "Border Detention Standards Act",
+    "summary": "Sets federal standards for detention centers, requires medical care, and creates inspections with penalties for serious violations.",
+    "tags": [
+     "immigration",
+     "civil-rights"
+    ],
+    "text": "Set federal rules for food, medical care, safety, and family contact in immigration detention centers. Inspect each center twice a year and fine operators for serious violations."
+   },
+   {
+    "title": "E-Verify Expansion Act",
+    "summary": "Requires most employers to use a federal work authorization system within four years and provides grants for small businesses.",
+    "tags": [
+     "immigration",
+     "labor"
+    ],
+    "text": "Require most employers to check work authorization through E-Verify within four years. Give small businesses grants to cover setup costs and protect workers who report errors."
+   },
+   {
+    "title": "Border Wall Construction Act",
+    "summary": "Appropriates $25 billion for new barriers and repairs in areas chosen by the Department of Homeland Security.",
+    "tags": [
+     "immigration",
+     "spending"
+    ],
+    "text": "Spend $25 billion on new barriers and repairs along high-traffic parts of the border. The Department of Homeland Security must name each project and its cost before construction."
+   },
+   {
+    "title": "Mandatory Deportation Detention Act",
+    "summary": "Requires detention for certain people with final removal orders and limits release options, subject to court review.",
+    "tags": [
+     "immigration",
+     "courts"
+    ],
+    "text": "Require detention for people with final removal orders who have certain violent convictions or repeated failed departures. Allow judges to review detention after 90 days."
+   },
+   {
+    "title": "Border Emergency Authority Act",
+    "summary": "Allows the president to restrict some border crossings during a declared emergency, with time limits and congressional approval requirements.",
+    "tags": [
+     "immigration",
+     "civil-rights",
+     "elections"
+    ],
+    "text": "Let the president restrict some border crossings during a declared emergency. The order expires after 30 days unless Congress approves an extension, and courts may review it."
+   }
+  ]
+ },
+ {
+  "theme": "Education First",
+  "bills": [
+   {
+    "title": "School Meal Access Act",
+    "summary": "Provides federal funds so every public school can offer free breakfast and lunch to students from low-income households.",
+    "tags": [
+     "education",
+     "healthcare"
+    ],
+    "text": "Give every public school money to offer free breakfast and lunch to students from low-income households. Schools must use simple income rules for enrollment."
+   },
+   {
+    "title": "Teacher Pay Transparency Act",
+    "summary": "Requires public school districts to publish teacher salary schedules, average class size, and vacancy data each year.",
+    "tags": [
+     "education",
+     "labor"
+    ],
+    "text": "Require public school districts to post salary schedules, average class sizes, and open teaching jobs each year. Parents and teachers should see where staff shortages are worst."
+   },
+   {
+    "title": "School Repair Grant Act",
+    "summary": "Creates grants for public schools to repair unsafe roofs, heating systems, plumbing, and electrical work.",
+    "tags": [
+     "education",
+     "infrastructure"
+    ],
+    "text": "Spend $10 billion over five years on repairs at public schools. Districts must first fix unsafe roofs, heating systems, plumbing, and electrical work."
+   },
+   {
+    "title": "Reading Support Act",
+    "summary": "Funds reading tutors and evidence-based instruction for students in kindergarten through third grade who need extra help.",
+    "tags": [
+     "education"
+    ],
+    "text": "Give schools money for reading tutors in kindergarten through third grade. Use phonics, practice tests, and small groups for students who fall behind."
+   },
+   {
+    "title": "Community College Grant Act",
+    "summary": "Expands federal grants for low-income students at community colleges and covers the cost of required books and supplies.",
+    "tags": [
+     "education",
+     "labor"
+    ],
+    "text": "Raise the federal grant for low-income community college students by $1,500 a year. Use part of the money for required books and supplies."
+   },
+   {
+    "title": "Teacher Housing Credit Act",
+    "summary": "Offers tax credits to developers who build below-market rental homes for public school teachers near their schools.",
+    "tags": [
+     "education",
+     "housing",
+     "taxes"
+    ],
+    "text": "Give developers a tax credit for building below-market rental homes for public school teachers. At least 20 percent of the units must go to teachers."
+   },
+   {
+    "title": "Charter School Oversight Act",
+    "summary": "Applies federal financial and civil rights rules to charter schools and requires public reports on enrollment and discipline.",
+    "tags": [
+     "education",
+     "civil-rights"
+    ],
+    "text": "Make charter schools publish enrollment, discipline, spending, and graduation data. Apply the same federal civil rights rules to charter schools and district schools."
+   },
+   {
+    "title": "Student Debt Relief Act",
+    "summary": "Cancels up to $20,000 in federal student debt for borrowers with low incomes and caps payments for other borrowers.",
+    "tags": [
+     "education",
+     "taxes"
+    ],
+    "text": "Cancel up to $20,000 in federal student debt for borrowers with low incomes. Cap payments for other federal borrowers at 5 percent of income above basic living costs."
+   },
+   {
+    "title": "School Voucher Tax Act",
+    "summary": "Creates a federal tax credit for donations to scholarship groups that help families pay private school tuition.",
+    "tags": [
+     "education",
+     "taxes"
+    ],
+    "text": "Create a federal tax credit for donations to groups that pay private school tuition. States must accept students from low-income families before other applicants."
+   },
+   {
+    "title": "College Free Tuition Act",
+    "summary": "Covers tuition at public two-year and four-year colleges for students from households below a set income limit, with federal and state funding.",
+    "tags": [
+     "education",
+     "taxes"
+    ],
+    "text": "Pay tuition at public colleges for students from households earning less than $125,000 a year. The federal government and states must split the cost."
+   }
+  ]
+ },
+ {
+  "theme": "Innovation Nation",
+  "bills": [
+   {
+    "title": "Small Business Patent Act",
+    "summary": "Creates a low-cost patent review track for small firms. The Patent Office must issue a first review within 90 days.",
+    "tags": [
+     "tech",
+     "labor"
+    ],
+    "text": "I propose a low-cost patent track for small firms. The Patent Office must give each applicant a first review within 90 days."
+   },
+   {
+    "title": "Research Grant Speed Act",
+    "summary": "Sets a 120-day deadline for federal research grant decisions. Agencies must post review reasons and award data online.",
+    "tags": [
+     "tech",
+     "education"
+    ],
+    "text": "I propose a 120-day deadline for federal research grant decisions. Agencies must post their reasons and award data online."
+   },
+   {
+    "title": "Rural Broadband Build Act",
+    "summary": "Provides $20 billion for high-speed internet in areas without reliable service. Grants require open prices and service maps.",
+    "tags": [
+     "tech",
+     "infrastructure"
+    ],
+    "text": "I propose $20 billion for high-speed internet in areas without reliable service. Grants must include clear prices and public service maps."
+   },
+   {
+    "title": "Open Data Access Act",
+    "summary": "Requires federal agencies to publish nonprivate research data in free, machine-readable formats. Agencies may withhold data tied to privacy or national security.",
+    "tags": [
+     "tech",
+     "civil-rights"
+    ],
+    "text": "I propose free public access to federal research data in formats that computers can read. Agencies can withhold data tied to privacy or national security."
+   },
+   {
+    "title": "STEM Teacher Loan Act",
+    "summary": "Cancels up to $40,000 in federal student loans for teachers who teach science, technology, engineering, or math in low-income schools for four years.",
+    "tags": [
+     "education",
+     "labor"
+    ],
+    "text": "I propose up to $40,000 in loan cancellation for STEM teachers in low-income schools. Teachers must stay in those schools for four years."
+   },
+   {
+    "title": "Clean Energy Pilot Act",
+    "summary": "Creates a $15 billion grant program for new nuclear, battery, geothermal, and carbon capture projects. Projects must meet federal safety rules and report costs.",
+    "tags": [
+     "energy",
+     "climate",
+     "tech"
+    ],
+    "text": "I propose $15 billion for pilot projects in nuclear power, batteries, geothermal power, and carbon capture. Each project must follow safety rules and report its costs."
+   },
+   {
+    "title": "National AI Safety Act",
+    "summary": "Creates a federal office to test powerful artificial intelligence systems. Companies must report serious system failures and protect test data.",
+    "tags": [
+     "tech",
+     "civil-rights"
+    ],
+    "text": "I propose a federal office to test powerful AI systems. Companies must report serious failures and protect data used in those tests."
+   },
+   {
+    "title": "Semiconductor Supply Act",
+    "summary": "Provides $30 billion in loans and grants for chip plants, workforce training, and domestic equipment. Recipients face limits on new plants in China for 10 years.",
+    "tags": [
+     "tech",
+     "trade",
+     "defense"
+    ],
+    "text": "I propose $30 billion for chip plants, worker training, and chip equipment made in the United States. Recipients cannot build new advanced plants in China for 10 years."
+   },
+   {
+    "title": "Digital Privacy Rights Act",
+    "summary": "Gives people the right to see, correct, delete, and move personal data held by large firms. It limits targeted ads to children and allows state enforcement.",
+    "tags": [
+     "tech",
+     "civil-rights"
+    ],
+    "text": "I propose rights to see, correct, delete, and move personal data held by large firms. Ads aimed at children would face strict limits, and states could enforce the law."
+   },
+   {
+    "title": "Federal Tech Competition Act",
+    "summary": "Blocks large online firms from favoring their own products on platforms they control. It gives the Federal Trade Commission power to split firms after a court finding of repeated violations.",
+    "tags": [
+     "tech",
+     "courts",
+     "labor"
+    ],
+    "text": "I propose rules that stop large online firms from favoring their own products on platforms they control. Courts could order a firm split after repeated violations."
+   }
+  ]
+ },
+ {
+  "theme": "Veterans and Defense",
+  "bills": [
+   {
+    "title": "Veteran Health Records Act",
+    "summary": "This bill lets veterans move their medical records between VA hospitals and approved community clinics through one secure system.",
+    "tags": [
+     "veterans",
+     "healthcare",
+     "tech"
+    ],
+    "text": "The VA should create one secure health record system for veterans. Veterans should be able to share their records with approved clinics without repeated paperwork."
+   },
+   {
+    "title": "Military Spouse Work Act",
+    "summary": "This bill gives military spouses faster access to state work licenses when they move because of a service transfer.",
+    "tags": [
+     "veterans",
+     "labor"
+    ],
+    "text": "States should accept active licenses for military spouses who move under military orders. The federal government should pay for license fees up to $500."
+   },
+   {
+    "title": "Veteran Job Training Act",
+    "summary": "This bill gives veterans up to $5,000 for approved training in fields with open jobs, including health care and skilled trades.",
+    "tags": [
+     "veterans",
+     "labor",
+     "education"
+    ],
+    "text": "Veterans should get up to $5,000 for job training after leaving the military. The program should pay schools after the veteran enrolls."
+   },
+   {
+    "title": "Military Child Care Act",
+    "summary": "This bill adds child care rooms at bases with long waitlists and gives families a monthly payment while they wait for a slot.",
+    "tags": [
+     "defense",
+     "veterans",
+     "housing"
+    ],
+    "text": "The Defense Department should add child care rooms at bases with waitlists longer than 90 days. Families on those lists should get $500 a month until a slot opens."
+   },
+   {
+    "title": "Veteran Homelessness Reduction Act",
+    "summary": "This bill gives the VA more rental aid and funds local teams that help homeless veterans find housing and medical care.",
+    "tags": [
+     "veterans",
+     "housing",
+     "healthcare"
+    ],
+    "text": "The VA should give homeless veterans up to 12 months of rental aid. Local teams should help each veteran find a home and reach medical care."
+   },
+   {
+    "title": "Military Base Cleanup Act",
+    "summary": "This bill speeds cleanup of polluted military sites and sets deadlines for testing drinking water near bases.",
+    "tags": [
+     "defense",
+     "healthcare",
+     "climate"
+    ],
+    "text": "The Defense Department should test drinking water near every base within two years. It should publish the results and clean sites above federal limits."
+   },
+   {
+    "title": "Defense Contract Audit Act",
+    "summary": "This bill requires audits of the largest defense contractors and blocks new contracts for firms that hide major cost errors.",
+    "tags": [
+     "defense",
+     "spending"
+    ],
+    "text": "The Pentagon should audit every defense contract worth more than $100 million each year. Firms with repeated false cost reports should lose new contracts for five years."
+   },
+   {
+    "title": "Service Member Pay Act",
+    "summary": "This bill raises basic military pay by 5 percent and adds a housing payment for troops in high-cost areas.",
+    "tags": [
+     "defense",
+     "veterans",
+     "spending"
+    ],
+    "text": "Basic military pay should rise by 5 percent. Troops in counties with high rent should get a larger housing payment based on local costs."
+   },
+   {
+    "title": "Overseas Base Review Act",
+    "summary": "This bill requires Congress to approve long-term leases and major expansions at overseas bases after public cost and security reviews.",
+    "tags": [
+     "defense",
+     "spending"
+    ],
+    "text": "The Defense Department should submit a cost and security report before expanding an overseas base. Congress should approve any lease or expansion that lasts more than five years."
+   },
+   {
+    "title": "Defense Authorization Reform Act",
+    "summary": "This bill limits emergency defense transfers, requires public cost estimates, and gives Congress a vote before large weapons programs begin.",
+    "tags": [
+     "defense",
+     "spending",
+     "elections"
+    ],
+    "text": "The Pentagon should not move more than $1 billion between programs without a vote in Congress. Every new weapons program should have a public cost estimate before funding starts."
+   }
+  ]
+ }
+]

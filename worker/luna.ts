@@ -6,16 +6,23 @@ export const BillDraftSchema = z.object({ title: z.string(), summary: z.string()
 const AmendmentsSchema = z.object({ amendments: z.array(BillDraftSchema) });
 const HeadlineSchema = z.object({ title: z.string(), lede: z.string() });
 
+// Condensed from Wikipedia's "Signs of AI writing" so Luna's prose reads as written by a person.
+const STYLE = ` Writing rules, strict: plain words, short sentences, concrete nouns and numbers. Use is/are/has, not "serves as", "stands as", "represents", "boasts". No em dashes. No groups of three for effect. No "not just X, but Y". Never use: crucial, pivotal, key, vital, landscape, tapestry, testament, underscore, highlight, showcase, delve, foster, enhance, robust, vibrant, seamless, comprehensive, ensure, Additionally, Moreover. No -ing tails that add fake depth ("reflecting", "ensuring", "highlighting"). No hedging, no upbeat closers, no praise. Straight quotes only. Sound like a tired newsroom, not a press release.`;
+
 export async function luna<T>(env: Env, schema: z.ZodType<T>, name: string, system: string, user: string, maxTokens: number): Promise<T> {
   const body = {
     model: "openai/gpt-5.6-luna", max_tokens: maxTokens, reasoning: { effort: "low" },
-    messages: [{ role: "system", content: system }, { role: "user", content: user }],
+    messages: [{ role: "system", content: system + STYLE }, { role: "user", content: user }],
     response_format: { type: "json_schema", json_schema: { name, strict: true, schema: z.toJSONSchema(schema) } },
   };
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     const r = await post(env, "chat/completions", body);
-    const parsed = schema.safeParse(JSON.parse(r.choices[0].message.content));
-    if (parsed.success) return parsed.data;
+    const content = r.choices?.[0]?.message?.content;
+    if (!content) { console.warn("luna: no content", JSON.stringify(r).slice(0, 200)); await new Promise((res) => setTimeout(res, 500)); continue; }
+    try {
+      const parsed = schema.safeParse(JSON.parse(content));
+      if (parsed.success) return parsed.data;
+    } catch {}
   }
   throw new Error("Luna returned an invalid " + name);
 }

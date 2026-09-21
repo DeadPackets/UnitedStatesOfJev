@@ -6,11 +6,17 @@ export class UpstreamError extends Error { constructor(public status: number, me
 
 export async function post(env: Env, path: string, body: unknown): Promise<any> {
   for (let attempt = 0; ; attempt++) {
-    const r = await fetch(`https://openrouter.ai/api/v1/${path}`, {
+    let r: Response;
+    try {
+      r = await fetch(`https://openrouter.ai/api/v1/${path}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json", "HTTP-Referer": "https://unitedstatesofjev.deadpackets.pw", "X-Title": "United States of Jev" },
       body: JSON.stringify(body),
-    });
+      });
+    } catch (e) {
+      if (attempt < 2) { await new Promise((res) => setTimeout(res, 300)); continue; }
+      throw new UpstreamError(0, String(e));
+    }
     if (r.ok) return r.json();
     const text = await r.text();
     if (attempt === 0 && (r.status === 429 || r.status >= 500)) { await new Promise((res) => setTimeout(res, 300)); continue; }
