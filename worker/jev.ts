@@ -45,12 +45,18 @@ const persona = (s: Senator) => ({
   ...(s.situation ? { situation: s.situation } : {}), ...(s.memory.length ? { memory: s.memory } : {}),
 });
 
-export const senatorQuestion = (s: Senator): Noul => ({
+// Measured 2026-09-21 (scripts/calib.ts): naming party leadership and offers in the criteria lifts co-partisans
+// 6-10 points; an offer inside the question moves a senator ~22 points vs ~12 when it sits in the state.
+export const senatorQuestion = (s: Senator, offer?: string): Noul => ({
   type: "noul",
-  instructions: { senator: persona(s), question: "Would this senator vote yes on `bill` on the floor?" },
+  instructions: {
+    senator: persona(s),
+    ...(offer ? { offer_from_president: offer, question: "Given the President's offer, would this senator vote yes on `bill` on the floor?" }
+      : { question: "Would this senator vote yes on `bill` on the floor?" }),
+  },
   criteria: {
-    true: "The senator votes yes. The bill serves their core issues, donors, or state, or a favor is owed.",
-    false: "The senator votes no. The bill hurts their core issues, donors, or state, or their party opposes it and no favor is owed.",
+    true: "The senator votes yes. The bill serves their core issues, donors, or state, their party's leadership backs it, or the President has offered them something they want.",
+    false: "The senator votes no. The bill hurts their core issues, donors, or state, or their party's leadership opposes it and nothing has been offered to them.",
   },
 });
 
@@ -71,12 +77,11 @@ export function whipQuestions(seated: Senator[]): Record<string, Question> {
   return qs;
 }
 
-export function whipState(game: Game, bill: Bill, offer?: string) {
+export function whipState(game: Game, bill: Bill) {
   const majority = game.seated.filter((s) => s.party === "D").length > 50 ? "Democrat" : "Republican";
   return {
     bill: { title: bill.title, summary: bill.summary, tags: bill.tags },
     president: { party: game.settings.party === "D" ? "Democrat" : "Republican", popularity: popularity(game) },
     chamber: { majority, session: game.settings.mode === "term" && game.turn >= 30 ? "election year" : "regular session" },
-    ...(offer ? { offer } : {}),
   };
 }

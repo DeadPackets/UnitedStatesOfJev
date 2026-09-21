@@ -47,7 +47,7 @@ export async function amendBill(env: Env, bill: Bill, opponents: Senator[], loud
 export async function narrate(env: Env, bill: Bill, yes: number, threshold: number, defectors: Senator[], blocs: Record<string, number>): Promise<{ title: string; lede: string }> {
   const d = await luna(env, HeadlineSchema, "headline",
     "You are a wire-service political editor. Write one newspaper headline (at most 12 words, no clickbait) and a two-sentence lede about this Senate vote. Name at most two senators. Dry, factual, a little wry.",
-    JSON.stringify({ bill: bill.title, summary: bill.summary, yes, needed: threshold, passed: bill.passed, struck_down_by_court: bill.struck, notable_defectors: defectors.map((s) => `${s.name} (${s.party}-${s.state})`), bloc_opposition_0_to_2: blocs }),
+    JSON.stringify({ bill: bill.title, summary: bill.summary, yes, no: 100 - yes, needed: threshold, passed: bill.passed, struck_down_by_court: bill.struck, notable_defectors: defectors.map((s) => `${s.name} (${s.party}-${s.state})`), bloc_opposition_0_to_2: blocs }),
     160);
   return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
 }

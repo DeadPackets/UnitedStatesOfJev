@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import roster from "./roster.json";
 import agendas from "./agendas.json";
 import { applyVote, expectedYes, newGame, passThreshold, LOBBY, BILLS_PER_TERM, type Bill, type BillDraft, type Game, type LobbyAction, type RosterSenator } from "./engine";
-import { jev, whipQuestions, whipState, gateQuestion, UpstreamError, type Env } from "./jev";
+import { jev, whipQuestions, whipState, gateQuestion, senatorQuestion, UpstreamError, type Env } from "./jev";
 import { parseBill, amendBill, narrate } from "./luna";
 
 const MAX_TURNS = 200;
@@ -92,7 +92,7 @@ export class GameDO extends DurableObject<Env> {
     if (bill.offers[s.id]) throw new Reject(409, "Already lobbied this senator on this bill.");
     if (game.capital < act.cost) throw new Reject(402, "Not enough political capital.");
     const offer = act.text(s);
-    const r = await jev(this.env, whipState(game, bill, offer), { [s.id]: whipQuestions([s])[s.id] });
+    const r = await jev(this.env, whipState(game, bill), { [s.id]: senatorQuestion(s, offer) });
     bill.whip[s.id] = r.answers[s.id].noul ?? bill.whip[s.id];
     bill.offers[s.id] = offer;
     game.capital -= act.cost;
@@ -112,7 +112,7 @@ export class GameDO extends DurableObject<Env> {
   private adopt(bill: Bill, i: number) {
     const a = bill.amendments?.[i] as any;
     if (!a) throw new Reject(400, "No such amendment.");
-    Object.assign(bill, { title: a.title, summary: a.summary, tags: a.tags, ...a.whip, offers: {}, amendments: undefined });
+    Object.assign(bill, { title: a.title, summary: a.summary, tags: a.tags, ...a.whip, offers: {}, amendments: [] });
   }
 
   private async vote(game: Game, bill: Bill) {
