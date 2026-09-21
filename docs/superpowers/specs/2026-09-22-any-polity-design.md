@@ -31,8 +31,8 @@ fills a fixed schema.** The engine never sees a country name. Every number is co
 | Grounding | Generator plans lookups, Worker fetches Wikipedia extracts and Wikidata facts, generator writes with sources, a light review checks names and dates |
 | Matching | Workers AI embeddings into Vectorize find top 20, Jev picks with probabilities: ≥ 0.95 load, 0.85 to 0.95 offer, else build |
 | Archive | Public by default, prompt stored as description, no author |
-| Art | muse-image contact sheets, 16 faces per $0.01 call; one masthead; one crest per faction. Dithered, eye bar, all at build, cached in R2 |
-| Palette | Experiment decides between ink-only images with faction color and full color dither, and whether the generator picks page tones |
+| Art | muse-image contact sheets via `/api/v1/images`, 16 distinct faces per call at about $0.004; one masthead; one crest per faction. No eye bar. Faces: 16-color dither in a seat coin at seat and hover size, newsprint halftone plate in ink at drawer size. All at build, cached in R2 |
+| Palette | Faces are full-color dither, plates are ink. Generator picks page tones from the palette experiment's schema (contrast passed 3 of 3 at 13:1 or better) |
 | Layouts | Six presets: hemicycle, opposing benches, horseshoe, circle, classroom, court |
 | Build guards | One new build per IP per 10 minutes, a global daily cap, matching unlimited |
 | Language | One text box, any language. The pack records it. Luna writes in it. Persona fields stay English for Jev |
@@ -163,15 +163,29 @@ minutes; a Durable Object counts builds per UTC day against a cap set in `wrangl
 
 ## 5. Art pipeline
 
+Measured 2026-09-22 (`docs/experiments.md`): muse-image draws 16 distinct, aligned faces per
+4×4 sheet for $0.003 to $0.004 in 15 to 22 s, eye line within 4 px. Flux schnell, flux.2
+klein and krea repeat one face; qwen-image-3 matches muse on quality at 10× the price and
+4× the time and is the fallback when a sheet fails the alignment check.
+
 | Asset | Prompt shape | Post |
 |---|---|---|
-| Contact sheet | "4×4 grid of 16 different [era] [member noun], passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall, no text, no borders" | crop 4×4, resize 128, dither, bar from 36% to 46% height |
-| Masthead | "wide [era] engraving of [place landmark], no text" | resize 1600×400, dither |
-| Crest | "[faction] emblem, flat, centered, [ornament], no text" | resize 96, dither, faction color applied as the ink |
+| Contact sheet | "4×4 grid of 16 different [era] [member noun], passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall, no text, no borders" | crop 4×4, then two renders per member: `face`, 128 px, 16-color Floyd-Steinberg dither; `plate`, 256 px, grayscale, normalize, level 10% to 85%, ordered dither o8x8 at 3 levels, printed in the pack's ink on its paper |
+| Masthead | "wide [era] engraving of [place landmark], no text" | resize 1600×400, same plate treatment |
+| Crest | "[faction] emblem, flat, centered, [ornament], no text" | resize 96, plate treatment with the faction color as ink |
 
-Dither mode comes from the palette experiment (§10). Files go to R2 under
-`scenarios/<id>/{members/<memberId>,masthead,crests/<factionId>}.png`, served through the
-Worker with immutable cache headers.
+Presentation, all CSS, nothing baked into the image:
+
+| Size | Form |
+|---|---|
+| Seat and hover, 44 to 96 px | seat coin: the `face` in a round crop, a ring in the faction color, a 1 px ink rule outside it. Selected seat gets a thicker ring |
+| Drawer, 256 px | the `plate` on the pack's paper, ink rule top and bottom, faction color only in the name line |
+
+Alignment check per sheet: the crop's 16 cells are sampled at the expected eye row; if
+more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the build
+falls back to qwen-image-3. Files go to R2 under
+`scenarios/<id>/{members/<memberId>.png, members/<memberId>-plate.png, masthead.png,
+crests/<factionId>.png}`, served through the Worker with immutable cache headers.
 
 ## 6. Theme
 

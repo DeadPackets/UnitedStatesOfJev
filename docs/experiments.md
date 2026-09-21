@@ -38,3 +38,20 @@ Personas steer the answer: CA Democrat, tech donors 0.83; WV Republican, coal st
 ## Latency vs size
 
 10k tokens 523 ms, 20k 618 ms, 28k 768 ms, 32k 836 ms, 55k with 1,200 questions 2.5 s.
+
+
+## Portrait generation, 2026-09-22
+
+Same prompt to every model: 4×4 sheet of 16 different Roman senators, passport framing, eyes on one line. Cost from the response usage field.
+
+| Model | Per sheet | Seconds | Result |
+|---|---|---|---|
+| meta/muse-image (`/api/v1/images`) | $0.003 to $0.004 | 15 to 22 | 16 distinct faces, cells aligned, eye line within 4 px of 128 |
+| @cf/flux-1-schnell | neurons | 11 | drew 5×4 with borders, crops cut 3 of 6 faces |
+| black-forest-labs/flux.2-klein-4b | $0.014 | 4 | one man repeated, two faces per cell |
+| krea/krea-2-medium-turbo | $0.015 | 19 | aligned, one man repeated 16 times |
+| qwen/qwen-image-3 | $0.030 | 76 | 16 distinct faces, aligned, quality above muse |
+| sourceful/riverflow-v2.5-fast | $0.040 | 160 | distinct, picture frames in every cell |
+| bytedance-seed/seedream-5-0-lite | rejects 1K, needs 2K or 4K | | |
+
+Decision: muse default, qwen fallback. Dither at 48 px: 16-color Floyd-Steinberg keeps the face; 4-tone ordered ink dither loses the outline on 5 of 16 cells. Chosen treatment: color dither in a seat coin at seat size, ink halftone plate (o8x8, 3 levels) at drawer size, no eye bar. Luna page palettes for Rome, Mars and Egypt passed contrast at 13.1:1 to 14.6:1 without correction.
