@@ -282,12 +282,15 @@ One snapshot test pins one senator's question JSON. No UI unit tests; one full g
 the dev server before each deploy.
 
 Deploy: one Worker with static assets via the Cloudflare Vite plugin. `wrangler.jsonc`
-declares the DO binding and migration, rate-limit binding, assets. Key via
-`wrangler secret put`; `.dev.vars` locally; both gitignored. First target `workers.dev`.
+declares the DO binding and migration, rate-limit binding, assets, and the custom domain
+`unitedstatesofjev.deadpackets.pw` (zone `deadpackets.pw` is active in the account). Key
+via `wrangler secret put`; `.dev.vars` locally; both gitignored. Source lives at
+`github.com/DeadPackets/UnitedStatesOfJev`; deploys run from the local checkout with
+`wrangler deploy`.
 
 ## 10. Build order
 
-1. Scaffold, hello route, empty DO, deploy. Check: JSON from workers.dev; DO deploys. 1 h
+1. Scaffold, hello route, empty DO, deploy. Check: JSON from unitedstatesofjev.deadpackets.pw; DO deploys. 1 h
 2. `engine.ts` + tests. Check: Vitest green. 2 h
 3. `jev.ts`, `luna.ts`, smoke. Check: live whip count under 700 ms. 1 h
 4. Roster script, 200 senators. Check: Zod passes; whip count under 20k tokens. 2 h
@@ -299,5 +302,5 @@ declares the DO binding and migration, rate-limit binding, assets. Key via
 
 ## Not building now
 
-Senator regeneration per game, leaderboard, multiplayer or spectators, custom domain,
+Senator regeneration per game, leaderboard, multiplayer or spectators, CI deploys,
 onboarding beyond the three-step tour, Playwright tests.
