@@ -117,8 +117,9 @@ export function applyVote(game: Game, bill: Bill): void {
   for (const id of STATE_IDS) {
     const ps = game.seated.filter((s) => s.state === id).map((s) => bill.whip![s.id]);
     const mean = ps.reduce((a, b) => a + b, 0) / ps.length;
-    const delta = passed ? (struck ? 0 : (mean - 0.5) * 10) : -2;
-    game.approval[id] = clamp(Math.round((game.approval[id] + delta - outraged) * 10) / 10, 0, 100);
+    // Tuned on a scripted 10-bill agenda: the earlier (-2 fail, -1 per bloc) dropped approval 15 points in one term.
+    const delta = passed ? (struck ? 0 : (mean - 0.4) * 12) : -1.5;
+    game.approval[id] = clamp(Math.round((game.approval[id] + delta - outraged * 0.5) * 10) / 10, 0, 100);
   }
   game.capital = clamp(game.capital + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
   for (const s of game.seated) {

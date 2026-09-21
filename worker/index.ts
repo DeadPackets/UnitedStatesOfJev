@@ -6,6 +6,7 @@ export { GameDO } from "./game";
 const app = new Hono<{ Bindings: Env }>();
 
 app.use("/api/*", async (c, next) => {
+  // 40/min: a turn is 3-7 requests; a nonstop abuser costs about $2.40 an hour at this cap.
   const { success } = await c.env.RL.limit({ key: c.req.header("cf-connecting-ip") ?? "local" });
   if (!success) return c.json({ error: "Slow down." }, 429);
   await next();

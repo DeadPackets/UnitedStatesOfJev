@@ -10,5 +10,5 @@
   "routes": [{ "pattern": "unitedstatesofjev.deadpackets.pw", "custom_domain": true }],
   "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameDO" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameDO"] }],
-  "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }]
+  "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 40, "period": 60 } }]
 }
