@@ -9,14 +9,16 @@ export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
 
 export default function App() {
   const [game, setGame] = useState<GameView | null>(null);
+  const [booting, setBooting] = useState(() => !!localStorage.getItem("usoj:game"));
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const id = localStorage.getItem("usoj:game");
-    if (id) api.load(id).then(setGame).catch(() => localStorage.removeItem("usoj:game"));
+    if (!id) return;
+    api.load(id).then(setGame).catch(() => localStorage.removeItem("usoj:game")).finally(() => setBooting(false));
   }, []);
-  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3200); return () => clearTimeout(t); }, [toast]);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3600); return () => clearTimeout(t); }, [toast]);
 
   const act: Act = async (fn) => {
     setBusy(true);
@@ -28,10 +30,11 @@ export default function App() {
 
   return (
     <>
-      {!game ? <Setup onStart={(code) => act(() => api.create(code))} busy={busy} />
+      {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
+      {booting ? null : !game ? <Setup onStart={(code) => act(() => api.create(code))} busy={busy} />
         : game.phase === "over" ? <Over game={game} onNew={quit} />
         : <Chamber game={game} act={act} busy={busy} onQuit={quit} />}
-      {toast && <div className="toast" role="status">{toast}</div>}
+      <div role="status" aria-live="polite">{toast ? <div className="toast">{toast}</div> : null}</div>
     </>
   );
 }

@@ -67,17 +67,21 @@ export function hash(str: string): number {
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
 const leanToward = (state: string, party: Party) => STATES[state].lean * (party === "R" ? 1 : -1);
 
-export function seatChamber(roster: RosterSenator[], s: Settings): Senator[] {
+export const SEATS = STATE_IDS.flatMap((st) => [`${st}-1`, `${st}-2`]);
+
+// Which party holds each seat for a code, roster-free so the client can preview a chamber while the slider moves.
+export function seatParties(s: Settings): Record<string, Party> {
   const r = rng(s.seed);
-  const seats = [...new Set(roster.map((x) => x.seat))];
-  const score = new Map(seats.map((seat) => [seat, leanToward(seat.slice(0, 2), s.party) + (r() - 0.5) * 6]));
-  const ranked = [...seats].sort((a, b) => score.get(b)! - score.get(a)!);
+  const score = new Map(SEATS.map((seat) => [seat, leanToward(seat.slice(0, 2), s.party) + (r() - 0.5) * 6]));
+  const ranked = [...SEATS].sort((a, b) => score.get(b)! - score.get(a)!);
   const other: Party = s.party === "D" ? "R" : "D";
-  const seated = seats.map((seat) => {
-    const party = ranked.indexOf(seat) < s.seats ? s.party : other;
-    const base = roster.find((x) => x.seat === seat && x.party === party)!;
-    return { ...base, memory: [] as string[] } as Senator;
-  });
+  return Object.fromEntries(SEATS.map((seat) => [seat, ranked.indexOf(seat) < s.seats ? s.party : other]));
+}
+
+export function seatChamber(roster: RosterSenator[], s: Settings): Senator[] {
+  const parties = seatParties(s);
+  const r = rng(s.seed ^ 0x5bd1e995);
+  const seated = SEATS.map((seat) => ({ ...roster.find((x) => x.seat === seat && x.party === parties[seat])!, memory: [] as string[] }) as Senator);
   const shuffled = [...seated].sort(() => r() - 0.5);
   shuffled.slice(0, 15).forEach((sen, i) => { sen.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)] ?? SITUATIONS[i % SITUATIONS.length]; });
   return seated;

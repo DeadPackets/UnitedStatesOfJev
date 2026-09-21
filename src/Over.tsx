@@ -8,18 +8,18 @@ export default function Over({ game, onNew }: { game: GameView; onNew: () => voi
   const passed = game.bills.filter((b) => b.passed && !b.struck).length;
   const r = game.result!;
   return (
-    <main className="over">
-      <div className="eyebrow">Term over</div>
-      <h1>{r.reelected ? "Re-elected." : "Voted out."}</h1>
-      <div className="ledger" style={{ textAlign: "center" }}>
+    <main className="over stagger">
+      <div className="kicker" style={{ "--i": 0 } as any}>Term over</div>
+      <h1 className={r.reelected ? "win" : "lose"} style={{ "--i": 1 } as any}>{r.reelected ? "Re-elected." : "Voted out."}</h1>
+      <div className="ledger" style={{ "--i": 2 } as any}>
         <div><div className="k">Score</div><div className="v num">{r.score}</div></div>
         <div><div className="k">Bills passed</div><div className="v num">{passed} / {game.bills.length}</div></div>
         <div><div className="k">Approval</div><div className="v num">{Math.round(nationalApproval(game))}%</div></div>
       </div>
-      <Map approval={game.approval} />
-      <div className="card" style={{ display: "grid", gap: 8 }}><div className="eyebrow">Share this chamber</div><div className="code">{game.code}</div>
-        <button className="btn ghost" onClick={() => { navigator.clipboard.writeText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy code"}</button></div>
-      <div><button className="btn" onClick={onNew}>New term</button></div>
+      <div className="map" style={{ "--i": 3 } as any}><Map approval={game.approval} /></div>
+      <div className="card" style={{ "--i": 4, display: "grid", gap: 10, width: "100%", maxWidth: 520 } as any}><div className="kicker">Share this chamber</div><div className="code" aria-label="Share code">{game.code}</div>
+        <button className="btn ghost" onClick={() => { navigator.clipboard.writeText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy share code"}</button></div>
+      <div style={{ "--i": 5 } as any}><button className="btn hot" onClick={onNew}>Start a new term</button></div>
     </main>
   );
 }

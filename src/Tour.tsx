@@ -23,9 +23,9 @@ export default function Tour({ step, onSkip }: { step: TourStep | null; onSkip: 
   const top = below + 120 > window.innerHeight ? Math.max(12, box.top - 132) : below;
   return (
     <div key={step.id} className="coach rise" style={{ left, top, width: W }} role="dialog" aria-label={step.title}>
-      <div className="eyebrow">{step.title}</div>
+      <div className="kicker">{step.title}</div>
       <p style={{ margin: "6px 0 10px" }}>{step.text}</p>
-      <button className="small" style={{ textDecoration: "underline", color: "var(--paper-2)" }} onClick={onSkip}>Skip the tour</button>
+      <button className="link" onClick={onSkip}>Skip the tour</button>
     </div>
   );
 }
