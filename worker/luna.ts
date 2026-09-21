@@ -11,7 +11,8 @@ const STYLE = ` Writing rules, strict: plain words, short sentences, concrete no
 
 export async function luna<T>(env: Env, schema: z.ZodType<T>, name: string, system: string, user: string, maxTokens: number): Promise<T> {
   const body = {
-    model: "openai/gpt-5.6-luna", max_tokens: maxTokens, reasoning: { effort: "low" },
+    // Measured (scripts/luna-latency.ts): effort "none" ~1.4 s vs "low" ~3 s for a bill parse; latency-sorted routing shaves ~0.2 s.
+    model: "openai/gpt-5.6-luna", max_tokens: maxTokens, reasoning: { effort: "none" }, provider: { sort: "latency" },
     messages: [{ role: "system", content: system + STYLE }, { role: "user", content: user }],
     response_format: { type: "json_schema", json_schema: { name, strict: true, schema: z.toJSONSchema(schema) } },
   };

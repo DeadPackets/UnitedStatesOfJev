@@ -104,3 +104,18 @@ input[type="range"] { width: 100%; accent-color: var(--ink); }
   .bigcount .n { font-size: 48px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+
+/* task 7: beats, tour */
+.rise { animation: rise 0.35s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.stampin { animation: stampin 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes stampin { from { opacity: 0; transform: rotate(-8deg) scale(1.5); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
+.bounce { animation: bounce 0.4s var(--ease); }
+@keyframes bounce { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+.coach { position: fixed; z-index: 25; background: var(--ink); color: var(--paper); padding: 14px 16px; border-radius: 14px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.25); font-size: 14px; }
+.coach .eyebrow { color: var(--gold); }
+[data-tour-hot="true"] { box-shadow: 0 0 0 3px var(--gold); border-radius: 999px; animation: hot 1.4s ease-in-out infinite; }
+@keyframes hot { 0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 60%, transparent); } 50% { box-shadow: 0 0 0 8px color-mix(in oklab, var(--gold) 0%, transparent); } }
+@keyframes pulse { 0% { r: 9; } 40% { r: 14; } 100% { r: 9; } }
+.seat.pulse { animation: pulse 0.6s var(--ease); }
+.mute { font-size: 12px; color: var(--ink-3); }
