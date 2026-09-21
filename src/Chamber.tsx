@@ -11,13 +11,14 @@ import { sound } from "./sound";
 
 function Num({ value, decimals = 0, className }: { value: number; decimals?: number; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const prev = useRef(value);
+  const shown = useRef(value); // what is on screen, so a tick interrupted mid-flight resumes from there
   const reduced = useReducedMotion();
   useEffect(() => {
     const el = ref.current; if (!el) return;
-    if (reduced) { el.textContent = value.toFixed(decimals); prev.current = value; return; }
-    const c = animate(prev.current, value, { duration: 0.7, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => { el.textContent = v.toFixed(decimals); } });
-    prev.current = value; return () => c.stop();
+    const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
+    if (reduced || Math.abs(shown.current - value) < 0.05) { write(value); return; }
+    const c = animate(shown.current, value, { duration: 0.6, ease: [0.22, 1, 0.36, 1], onUpdate: write, onComplete: () => write(value) });
+    return () => c.stop();
   }, [value, decimals, reduced]);
   return <span ref={ref} className={`num ${className ?? ""}`}>{value.toFixed(decimals)}</span>;
 }
