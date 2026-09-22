@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num, national } from "./Ledger";
+import { Ornament } from "./theme";
 
 /** Clipboard API first; the textarea covers an insecure origin or a denied permission. */
 async function copyText(s: string) {
@@ -23,13 +24,13 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
   const lost = !!r && r.ending !== "reelected";
   return (
     <main className="over stagger press">
-      <div className="kicker" style={{ "--i": 0 } as any}>{pack.title}</div>
+      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.title}</b><Ornament kind={pack.theme.ornament} /></div>
       <h1 className={lost ? "lose" : ""} style={{ "--i": 1 } as any}>
         {r ? pack.endings[r.ending] : (game.ending?.title ?? pack.test.name)}
       </h1>
       {game.ending ? (
         <div style={{ "--i": 2 } as any}>
-          {r && game.ending.title.toLowerCase() !== pack.endings[r.ending].toLowerCase() ? <p className="lede" style={{ margin: "0 auto 10px" }}>{game.ending.title}</p> : null}
+          {r && game.ending.title.toLowerCase() !== pack.endings[r.ending].toLowerCase() ? <p className="lede" style={{ margin: "0 0 10px" }}>{game.ending.title}</p> : null}
           <p style={{ margin: 0 }}>{game.ending.body}</p>
         </div>
       ) : null}
@@ -75,7 +76,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
         <button className="btn ghost" onClick={() => { copyText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy the code"}</button>
       </div>
 
-      <div className="row" style={{ "--i": 6, justifyContent: "center" } as any}>
+      <div className="row" style={{ "--i": 6 } as any}>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Run it back</button>
         <button className="btn ghost" onClick={onNew}>New scenario</button>
       </div>
