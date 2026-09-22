@@ -21,32 +21,51 @@ type Prose = { id: string; name?: string; bio: string; core_issues: string[]; te
 
 const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
-// ---- names: one call, so uniqueness is a set check and not model memory ----
+// ---- names: one call for members, citizens in parallel chunks of 80; no call sees another's picks, so
+// uniqueness (within and across the two lists) stays a code-side set check, plus one sequential top-up ----
 
 const NAMES_SYSTEM = `${HISTORIAN}
 You invent names for people of one period and place. Every name is plausible for that period, place and language, written the way the period writes names. No name of a real person, living or dead. No repeats, and no two names that differ only in the given name.
 ${CONTENT_RULE}`;
 
+const NAMES_CHUNK = 80;
+
 export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   const needM = ctx.members.length, needC = ctx.citizens.length;
   const seen = new Set<string>();
-  const pool: string[] = [];
-  const add = (list: string[]) => { for (const raw of list) { const n = raw.trim(); const k = n.toLowerCase(); if (n && !seen.has(k)) { seen.add(k); pool.push(n); } } };
-  const ask = (m: number, c: number, avoid: string[]) => luna(env, NamesSchema, "names", NAMES_SYSTEM,
-    JSON.stringify({ ...frameBrief(ctx), lang: ctx.lang, need: { members: m, citizens: c },
+  const memberPool: string[] = [];
+  const citizenPool: string[] = [];
+  const addTo = (pool: string[], list: string[]) => {
+    for (const raw of list) { const n = raw.trim(); const k = n.toLowerCase(); if (n && !seen.has(k)) { seen.add(k); pool.push(n); } }
+  };
+  const brief = frameBrief(ctx);
+  const ask = (m: number, c: number, extra: Record<string, unknown>, avoid: string[]) => luna(env, NamesSchema, "names", NAMES_SYSTEM,
+    JSON.stringify({ ...brief, lang: ctx.lang, need: { members: m, citizens: c },
       members_are: "members of the chamber, the notable names of the period's politics",
       citizens_are: "ordinary people of the place",
-      ...(avoid.length ? { already_used: avoid } : {}) }),
+      gender_mix: "a roughly even split of men and women",
+      ...extra, ...(avoid.length ? { already_used: avoid } : {}) }),
     Math.min(16000, 1200 + (m + c) * 12));
 
-  add(await ask(needM, needC, []).then((r) => [...r.members, ...r.citizens]));
-  if (pool.length < needM + needC) {
-    const short = needM + needC - pool.length;
-    add(await ask(Math.min(short, needM), Math.max(0, short - needM), pool).then((r) => [...r.members, ...r.citizens]));
+  const citizenChunks = chunk(ctx.citizens, NAMES_CHUNK);
+  const ageRange = (rows: Citizen[]): [number, number] => [Math.min(...rows.map((r) => r.age)), Math.max(...rows.map((r) => r.age))];
+
+  const [memberRes, ...citizenRes] = await Promise.all([
+    ask(needM, 0, {}, []),
+    ...citizenChunks.map((rows) => ask(0, rows.length, { citizen_age_range: ageRange(rows) }, [])),
+  ]);
+  addTo(memberPool, memberRes.members);
+  for (const r of citizenRes) addTo(citizenPool, r.citizens);
+
+  const shortM = needM - memberPool.length, shortC = needC - citizenPool.length;
+  if (shortM > 0 || shortC > 0) {
+    const r = await ask(Math.max(shortM, 0), Math.max(shortC, 0), {}, [...memberPool, ...citizenPool]);
+    addTo(memberPool, r.members);
+    addTo(citizenPool, r.citizens);
   }
   return {
-    members: ctx.members.map((m, i) => ({ ...m, name: pool[i] ?? m.id })),
-    citizens: ctx.citizens.map((c, i) => ({ ...c, name: pool[needM + i] ?? c.id })),
+    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] ?? m.id })),
+    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] ?? c.id })),
   };
 }
 

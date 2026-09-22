@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
-import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS } from "../pack";
+import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS, scaleSeats } from "../pack";
 import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./prompts";
 import { NeedsRepair, frame as check } from "./validate";
 
@@ -54,6 +54,32 @@ export type Frame = z.infer<typeof FrameSchema>;
 
 const SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
 
+// Same formula as the prompt's chamber-size rule, enforced in code: the facts sheet's largest body (the chamber
+// itself, not a sub-committee) beats Luna's guess when both are known.
+export function clampChamberSize(realSize: number): number {
+  return Math.min(100, Math.max(24, Math.round(realSize / 8)));
+}
+
+function realChamberSize(facts: GenCtx["facts"]): number | null {
+  const sizes = facts.bodies.map((b) => b.size).filter((n): n is number => n != null && n > 0);
+  return sizes.length ? Math.max(...sizes) : null;
+}
+
+// Rescale factions (largest remainder, same as the prompt asks Luna for), threshold and supermajority to the
+// clamped size so the pack stays internally consistent after the override.
+function clampChamber(f: Frame, size: number): Frame {
+  if (size === f.chamber.size) return f;
+  const ratio = size / f.chamber.size;
+  const seats = scaleSeats(Object.fromEntries(f.factions.map((x) => [x.id, x.seats])), size);
+  const threshold = Math.min(size, Math.max(1, Math.round(f.chamber.threshold * ratio)));
+  const supermajority = Math.min(size, Math.max(threshold + 1, Math.round(f.chamber.supermajority * ratio)));
+  return {
+    ...f,
+    chamber: { ...f.chamber, size, threshold, supermajority },
+    factions: f.factions.map((x) => ({ ...x, seats: seats[x.id] })),
+  };
+}
+
 export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   // The calendar step has already fixed the term from the sheet's anchor, so the model is told the start date
   // rather than asked for one. Only a scenario with no dated anchor leaves the choice to the model.
@@ -69,5 +95,7 @@ export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
     violations = check(f, ctx.facts, cal?.start_date);
     if (violations.length) throw new NeedsRepair(violations, JSON.stringify(f));
   }
+  const real = realChamberSize(ctx.facts);
+  if (real != null) f = clampChamber(f, clampChamberSize(real));
   return { frame: f, calendar: cal ?? { start_date: f.start_date, unit: "week" } };
 }
