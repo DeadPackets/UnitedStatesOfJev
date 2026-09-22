@@ -287,6 +287,12 @@ test("an early test brings its caller in and renormalises the weights", () => {
   expect(total).toBeCloseTo(1, 5);
   expect(r.holders.find((h) => h.id === "guard")!.weight).toBeCloseTo(EARLY_WEIGHT / (1 + EARLY_WEIGHT), 5);
   expect(r.mandate).toBeCloseTo(1 / (1 + EARLY_WEIGHT), 5);
+
+  Object.assign(g, { stage: "test", phase: "over", earlyTest: "guard", turn: 11 });
+  endTerm(pack, g, r);                                   // won: the term goes on, into the half-term it cut off
+  expect([g.stage, g.earlyTest, g.result, g.terms.length]).toEqual(["midterm", undefined, undefined, 0]);
+  endTerm(pack, g, earlyTest(pack, g, "guard", { council: 0, street: 0, guard: 0 }));
+  expect(g.stage).toBe("over");                          // lost: the term ends
 });
 
 test("a term ends with a score, and another term stacks two escalations", () => {
@@ -318,11 +324,16 @@ test("another term carries the laws and the resistance, and reseeds the half-ter
   g.holders.council.resistance = 40;
   g.holders.street.resistance = 80;
   advanceWarnings(pack, g);
+  authorPromise(g, "new-quay", "A new quay", 30);
+  authorPromise(g, "old-quay", "An old quay", 6);
+  g.promises["old-quay"].state = "broken";
   const first = [...g.marks.midterm];
   endTerm(pack, g, runTest(pack, g, { council: 1, street: 1 }));
   continueTerm(pack, g);
   expect(g.term).toBe(2);
   expect(g.inForce.length).toBe(1);
+  expect(g.promises["new-quay"]).toMatchObject({ state: "pending", window: 10, authored: true });   // 10 turns left carry over
+  expect(g.promises["old-quay"]).toBeUndefined();
   expect(g.holders.council.resistance).toBe(20);
   expect(g.warnings).toEqual([]);
   expect(g.holders.street.warnedAt).toBeNull();
@@ -695,6 +706,9 @@ test("each ledger has a failure line, the pack may rename it and the engine read
   expect(belowLine(pack, g)).toEqual(["treasury", "chest", "loyalty"]);   // LEDGERS_V4 order, no sort
   g.ledgers.treasury = 5; g.ledgers.chest = 5; g.ledgers.loyalty = 55;
   expect(belowLine(pack, g)).toEqual([]);
+  g.ledgers.loyalty = 20;
+  for (const r of REGIONS) g.ledgers.popularity[r] = 30;
+  expect(belowLine(pack, g)).toEqual([]);   // §4 is strict: < 20 and < 30, so at the line is not under it
 });
 
 test("an act is paid from three ledgers and refused when one is short", () => {
@@ -835,6 +849,9 @@ test("loyalty under its line is a revolt for one turn, and the class doubles onc
   const g = game();
   const cls = Math.round(pack.chamber.size / 3);       // 24 / 3 = 8
   expect(g.marks.midterm.length).toBe(cls);
+  g.ledgers.loyalty = 20;
+  endTurn(pack, g);
+  expect(g.revolt).toBeNull();                         // at the line is not under it
   g.ledgers.loyalty = 10;
   endTurn(pack, g);
   expect(g.revolt).toBe(g.turn);                       // the turn about to be played, not the one just ended

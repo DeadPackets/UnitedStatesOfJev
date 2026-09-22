@@ -483,6 +483,8 @@ test("End turn moves the clock, draws the card and prints the wire", async () =>
   expect((await post("turn/end", { turn: 1 })).status).toBe(409);   // the stale-turn guard
   game.stage = "test";
   expect((await post("turn/end", { turn: 2 })).status).toBe(409);
+  game.stage = "midterm";
+  expect((await post("turn/end", { turn: 2 })).body.error).toBe("Not now.");   // the half-term draw cannot be skipped
 });
 
 test("a card on the desk holds the boundary", async () => {
@@ -510,8 +512,8 @@ test("the test reads each holder in its own Jev call, and an early test names it
     const r = await post("test", {});
     expect(r.status).toBe(200);
     expect(sizes.sort((a, b) => a - b)).toEqual([1, 1, pack.chamber.size, 50]);   // guard, league, council, street sample
-    expect(r.body.test.holders.length).toBe(4);
-    expect(r.body.test.early).toBe(early);
+    if (early) expect([r.body.stage, r.body.test, r.body.result]).toEqual(["session", undefined, undefined]);   // survived: the term goes on
+    else expect(r.body.test.holders.length).toBe(4);
   }
 });
 

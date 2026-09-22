@@ -94,7 +94,10 @@ export function ledgerValue(pack: Pack, game: Game, l: LedgerV4): number {
 
 export function belowLine(pack: Pack, game: Game): LedgerV4[] {
   // LEDGER_LINES keeps LEDGERS_V4's order; a value import of ./pack here cycles through TEMPERAMENTS.
-  return (Object.keys(LEDGER_LINES) as LedgerV4[]).filter((l) => ledgerValue(pack, game, l) <= ledgerLine(pack, l));
+  return (Object.keys(LEDGER_LINES) as LedgerV4[]).filter((l) => {
+    const v = ledgerValue(pack, game, l), line = ledgerLine(pack, l);
+    return line > 0 ? v < line : v <= 0;   // §4: a raised line fails under it, a 0 line fails at 0
+  });
 }
 
 export const canAfford = (_pack: Pack, game: Game, price: Price): boolean =>
@@ -556,7 +559,7 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
 
   for (const h of Object.values(game.holders)) h.resistance = clamp(round1(h.resistance - RESIST_DECAY), 0, 100);
   // After the decay, so the pushed holder is still at its line when the warnings read it.
-  if (ledgerValue(pack, game, "popularity") <= ledgerLine(pack, "popularity")) {
+  if (belowLine(pack, game).includes("popularity")) {
     const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
     if (caller) caller.resistance = Math.max(caller.resistance, caller.line);
   }
@@ -566,7 +569,7 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
 
   // §4: under its line the faction votes as opposition for the turn about to be played, and the class doubles.
   // The revolt renews every turn loyalty stays under; the class doubles once a term, not once a turn.
-  if (ledgerValue(pack, game, "loyalty") <= ledgerLine(pack, "loyalty")) {
+  if (belowLine(pack, game).includes("loyalty")) {
     game.revolt = game.turn + 1;
     if (!game.marks.doubled) {
       const cls = new Set(game.marks.midterm ?? []);
@@ -1135,6 +1138,13 @@ export function termPoints(game: Game, mandate: number): TermRecord {
 export const score = (game: Game) => Math.round(game.terms.reduce((a, t) => a + t.points * 1.5 ** (t.term - 1), 0));
 
 export function endTerm(pack: Pack, game: Game, test: TestResult): void {
+  // §6: only a lost early test ends the term; a won one resumes it where the fired warning stopped the turn.
+  if (test.early && test.won) {
+    game.earlyTest = undefined;
+    if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; startCampaign(pack, game); }
+    else { game.stage = game.turn === 11 ? "midterm" : "session"; game.phase = "draft"; }   // 11: turn 10's half-term was skipped
+    return;
+  }
   game.test = test;
   game.terms.push(termPoints(game, test.mandate));
   game.stage = test.won ? "won" : "over";
@@ -1155,8 +1165,9 @@ export function continueTerm(pack: Pack, game: Game): void {
   game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
   for (const h of Object.values(game.holders)) { h.resistance = round1(h.resistance * RESIST_CARRY); h.warnedAt = null; }
   for (const [tag, p] of Object.entries(game.promises)) {
-    if (p.authored) { delete game.promises[tag]; continue; }
-    p.passed = 0; p.state = "pending";
+    if (!p.authored) { p.passed = 0; p.state = "pending"; }
+    else if (p.state === "pending") p.window -= TURNS_PER_TERM;   // an open window carries its turns left
+    else delete game.promises[tag];
   }
   const r = rng(game.seed ^ (game.term * 0x9e37));
   game.marks.midterm = [...game.members].sort(() => r() - 0.5).slice(0, Math.round(pack.chamber.size / 3)).map((m) => m.seat);

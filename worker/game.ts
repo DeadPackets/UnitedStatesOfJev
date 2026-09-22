@@ -371,7 +371,7 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async end(game: Game, pack: Pack) {
-    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    if (game.stage !== "session") throw new Reject(409, "Not now.");
     if (game.events.some((e) => e.stance === undefined)) throw new Reject(409, "Answer the card on the desk first.");
     const out = endTurn(pack, game);
     if (out.event) {
