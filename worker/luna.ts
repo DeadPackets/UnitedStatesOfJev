@@ -10,7 +10,7 @@ const QuotesSchema = z.object({ quotes: z.array(z.object({ name: z.string(), tex
 const OutcomeSchema = z.object({ line: z.string() });
 
 // Condensed from Wikipedia's "Signs of AI writing" so Luna's prose reads as written by a person.
-const STYLE = ` Writing rules, strict: plain words, short sentences, concrete nouns and numbers. Use is/are/has, not "serves as", "stands as", "represents", "boasts". No em dashes. No groups of three for effect. No "not just X, but Y". Never use: crucial, pivotal, key, vital, landscape, tapestry, testament, underscore, highlight, showcase, delve, foster, enhance, robust, vibrant, seamless, comprehensive, ensure, Additionally, Moreover. No -ing tails that add fake depth ("reflecting", "ensuring", "highlighting"). No hedging, no upbeat closers, no praise. Straight quotes only. Sound like a tired newsroom, not a press release.`;
+const STYLE = ` Writing rules, strict: plain words, short sentences, concrete nouns and numbers. Use is/are/has, not "serves as", "stands as", "represents", "boasts". Never three items in a list, in a sentence or in a label: one or two. A title, a headline and a card title are capitalised like a sentence; only names keep their capitals. No em dashes, no double hyphens, straight quotes only. No "not just X, but Y". Never use: crucial, pivotal, key, vital, landscape, tapestry, testament, underscore, highlight, showcase, delve, foster, enhance, robust, vibrant, seamless, comprehensive, ensure, Additionally, Moreover. No -ing tails that add fake depth ("reflecting", "ensuring", "highlighting"). Attribute a claim to a person with a name, never to "observers", "critics", "sources". No hedging, no upbeat closers, no praise. Sound like a tired newsroom, not a press release.`;
 
 export const LUNA = "openai/gpt-5.6-luna";
 
@@ -96,14 +96,14 @@ export async function outcome(env: Env, pack: Pack, event: Event, stance: string
 
 export async function cardText(env: Env, pack: Pack, storylet: Storylet, state: unknown): Promise<{ title: string; body: string; stances: string[] }> {
   const d = await luna(env, CardSchema, "card",
-    `You write the crisis cards for ${pack.title}. From title_hint and stances, write the card: title (at most 8 words), body (at most 60 words, what happened and why it lands now), and one label per stance given, each at most 6 words.${world(pack)}`,
+    `You write the crisis cards for ${pack.title}. From title_hint and stances, write the card: title (at most 8 words), body (at most 60 words, what happened and why it is on the desk this ${pack.vocabulary.turn}), and one label per stance given, each at most 6 words.${world(pack)}`,
     JSON.stringify({ title_hint: storylet.title_hint, stances: storylet.stances, state }), 220);
   return { title: clip(d.title, 80), body: clip(d.body, 500), stances: d.stances.slice(0, storylet.stances.length).map((s) => clip(s, 40)) };
 }
 
 export async function ending(env: Env, pack: Pack, kind: keyof Pack["endings"], state: unknown): Promise<{ title: string; body: string }> {
   const d = await luna(env, EndingSchema, "ending",
-    `You write the last page of a term in ${pack.title}. The ending is "${pack.endings[kind]}". Write a title (at most 8 words) and a body of 3 sentences from the record given.${world(pack)}`,
+    `You write the last page of a term in ${pack.title}. The ending is "${pack.endings[kind]}". Write a title (at most 8 words) and a body of 3 sentences from the record given. Say what happened, never what it meant for history.${world(pack)}`,
     JSON.stringify(state), 200);
   return { title: clip(d.title, 90), body: clip(d.body, 600) };
 }
@@ -134,7 +134,7 @@ export async function messages(env: Env, pack: Pack, state: unknown): Promise<st
 
 export async function halfTerm(env: Env, pack: Pack, state: unknown) {
   const d = await luna(env, HeadlineSchema, "halfterm",
-    `You write for ${pack.vocabulary.feed} the morning after the seats changed hands. The government lost seats_lost of the seats_changed seats that changed hands. One headline, at most 12 words, and a two-sentence lede on where the government stands at the half of its term.${world(pack)}`,
+    `You write for ${pack.vocabulary.feed} the morning after the seats changed hands. The government lost seats_lost of the seats_changed seats that changed hands. One headline, at most 12 words, and a two-sentence lede on what the government has left at the half of its term.${world(pack)}`,
     JSON.stringify(state), 220);
   return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
 }

@@ -71,7 +71,7 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
 
 const MEMBER_SYSTEM = `${HISTORIAN}
 You write the people of the chamber. Each row already has its name, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell and patrons.
-- bio: at most 40 words. What they did before the seat, where they are from, what they want. Concrete work and places of the period.
+- bio: at most 40 words. Where they are from, what they did before the seat, and the one thing they want. Concrete work and places of the period.
 - core_issues: 1 to 3 ids from the tags list.
 - tell: one visible habit a whip would read, at most 18 words.
 - patrons: 0 to 2 ids from the patrons list.
@@ -82,7 +82,7 @@ const CITIZEN_SYSTEM = `${HISTORIAN}
 You write ordinary people of the place. Each row already has its name, region, bloc and age: never change them. Write only job, town, worldview and issues.
 - job: the work of the period, two or three words.
 - town: a place inside that region.
-- worldview: one sentence, at most 25 words, in their own terms, what they want from the government.
+- worldview: one sentence, at most 25 words, in their own terms, the one thing they want from the government.
 - issues: exactly 2 ids from the tags list.
 Every row is a different person.
 ${CONTENT_RULE}`;
