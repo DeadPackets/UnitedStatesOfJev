@@ -55,15 +55,20 @@ app.post("/api/games", async (c) => {
 });
 // 6 base36 characters: 2.2 billion ids, short enough to read out.
 const scenarioId = () => [...crypto.getRandomValues(new Uint8Array(6))].map((b) => (b % 36).toString(36)).join("");
+const badJson = { error: "bad json" };
 
 app.post("/api/scenarios/match", async (c) => {
-  const { prompt } = await c.req.json<{ prompt?: string }>();
+  const body = await c.req.json<{ prompt?: string }>().catch(() => null);
+  if (body === null) return c.json(badJson, 400);
+  const { prompt } = body;
   if (typeof prompt !== "string" || prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
   return c.json(await match(c.env, prompt.trim()));
 });
 
 app.post("/api/scenarios", async (c) => {
-  const { prompt } = await c.req.json<{ prompt?: string }>();
+  const body = await c.req.json<{ prompt?: string }>().catch(() => null);
+  if (body === null) return c.json(badJson, 400);
+  const { prompt } = body;
   if (typeof prompt !== "string" || prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
   const builds = c.env.BUILDS.get(c.env.BUILDS.idFromName("builds"));
   if (!(await builds.spaced(c.req.header("cf-connecting-ip") ?? "local"))) {
@@ -94,7 +99,6 @@ app.get("/api/scenarios/:id", async (c) => {
 });
 
 app.get("/api/games/:id", (c) => forward(c, c.req.param("id"), "state"));
-const badJson = { error: "bad json" };
 app.post("/api/games/:id/bills", async (c) => {
   const body = await c.req.json().catch(() => null);
   if (body === null) return c.json(badJson, 400);
