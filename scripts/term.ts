@@ -48,7 +48,7 @@ while (g.stage === "session" || g.stage === "midterm") {
   // Amend when the count is short, and take the amendment with the highest expected yes.
   if (short()) {
     g = await api(`/games/${g.id}/bills/${turn}/amend`, { turn });
-    const as = (g.bills.at(-1)!.amendments ?? []) as { title: string; expected: number }[];
+    const as = g.bills.at(-1)!.amendments ?? [];
     const best = as.reduce((a, b, i) => (b.expected > as[a].expected ? i : a), 0);
     if (as.length) {
       g = await api(`/games/${g.id}/bills/${turn}/amend/${best}`, { turn });

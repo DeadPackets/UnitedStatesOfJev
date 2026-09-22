@@ -1,9 +1,13 @@
-import type { Bill, Event, Game, LobbyAction, Member } from "../worker/engine";
+import type { Bill, BillDraft, Event, Game, LobbyAction, Member } from "../worker/engine";
 import type { Citizen, Pack, PackView } from "../worker/pack";
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
 export type { PackView };
-export type ViewBill = Bill & { expected?: number; needed?: number };
+type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
+export type ViewBill = Omit<Bill, "amendments"> & {
+  expected?: number; needed?: number;
+  amendments?: (BillDraft & { expected: number; count: WhipCount })[];
+};
 export type ViewMember = Omit<Member, "bio" | "tell">;
 export type ViewEvent = Event;
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
