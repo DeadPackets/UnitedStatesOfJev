@@ -141,6 +141,9 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
   // the callbacks change every render; the clock must not restart with them
   const cb = useRef({ onProgress, onDone });
   cb.current = { onProgress, onDone };
+  // Two upsets in a row share one timer, so the second flash was cut to the 20 ms the first had left.
+  const flashing = useRef(0);
+  useEffect(() => () => clearTimeout(flashing.current), []);
 
   useEffect(() => {
     const share = (k: number) => order.slice(0, k).reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
@@ -157,7 +160,11 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
       i += 1;
       setShown(i);
       cb.current.onProgress(i, share(i));
-      if (r && r.yes !== (r.p >= 0.5)) { setFlash(r.id); setTimeout(() => setFlash(undefined), 420); }
+      if (r && r.yes !== (r.p >= 0.5)) {
+        setFlash(r.id);
+        clearTimeout(flashing.current);
+        flashing.current = setTimeout(() => setFlash(undefined), 420) as unknown as number;
+      }
       if (i >= order.length) { clearInterval(t); cb.current.onDone(); }
     }, step);
     return () => clearInterval(t);

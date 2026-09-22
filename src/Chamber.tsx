@@ -100,11 +100,15 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
 
   const draft = async () => { if (await act(() => api.draft(game, text))) { setText(""); setDismissed(-1); } };
   // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
+  const pulsing = useRef(0);
+  useEffect(() => () => clearTimeout(pulsing.current), []);
   const lobby = async (k: LobbyKind) => {
     if (!sel || !bill?.whip) return;
     const was = bill.whip[sel.id];
     if (await act(() => api.lobby(game, sel.id, k))) {
-      sound.play("click"); setBefore(was); setPulse(sel.id); setTimeout(() => setPulse(undefined), 700);
+      sound.play("click"); setBefore(was); setPulse(sel.id);
+      clearTimeout(pulsing.current);
+      pulsing.current = setTimeout(() => setPulse(undefined), 700) as unknown as number;
     }
   };
   const stance = async (i: number) => {
