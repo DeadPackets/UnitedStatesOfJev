@@ -166,7 +166,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
         </div>
 
         <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
-        {tab === "feed" ? <Feed game={game} act={act} busy={busy} /> : <>
+        {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : <>
         <Ledger game={game} />
 
         {!bill ? (
@@ -217,7 +217,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
           </div>
         )}
 
-        <FeedLine game={game} />
+        <FeedLine game={game} bill={bill} />
 
         {bill?.headline && !rolling ? (
           <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
