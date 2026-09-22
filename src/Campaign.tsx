@@ -30,9 +30,10 @@ export default function Campaign({ game, act, busy }: Props) {
 
   const draw = () => {
     asked.current = n; setFailed(false);
-    act(() => api.drafts(game)).then((ok) => { if (!ok) { asked.current = 0; setFailed(true); } });
+    act(() => api.drafts(game)).then((ok) => { if (!ok) setFailed(true); });
   };
-  useEffect(() => { if (!c.drafts.length && !busy && asked.current !== n) draw(); }, [n, c.drafts.length, busy]); // eslint-disable-line
+  // A failed fetch waits for the button; the effect only asks once per turn.
+  useEffect(() => { if (!c.drafts.length && !busy && !failed && asked.current !== n) draw(); }, [n, c.drafts.length, busy, failed]); // eslint-disable-line
   useEffect(() => { setMessage(""); setSpend({}); setSeat(""); }, [n]);
 
   const picked = Object.entries(spend).filter(([, a]) => a > 0);
@@ -59,8 +60,8 @@ export default function Campaign({ game, act, busy }: Props) {
   const colour = (id: string) => pack.factions.find((f) => f.id === id)?.color ?? "var(--ink)";
 
   const pick = (id: string) => setSpend((s) => {
-    if (s[id]) { const next = { ...s }; delete next[id]; return next; }
-    if (Object.keys(s).length >= 2) return s;
+    if (id in s) { const next = { ...s }; delete next[id]; return next; }
+    if (Object.values(s).filter((a) => a > 0).length >= 2) return s;
     return { ...s, [id]: 5 };
   });
 
