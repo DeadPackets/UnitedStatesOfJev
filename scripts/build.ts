@@ -5,8 +5,9 @@ const prompt = process.argv[3] ?? "Rome in 44 BC";
 const post = await fetch(`${base}/api/scenarios`, {
   method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt }),
 });
+// An edge error is an HTML page, not JSON: read the body only once the status says it is ours.
+if (!post.ok) { console.error(post.status, await post.text()); process.exit(1); }
 const started = await post.json();
-if (!post.ok) { console.error(post.status, started); process.exit(1); }
 const id = started.id as string;
 console.log(`${prompt} -> ${id}`);
 
@@ -16,7 +17,9 @@ const secs = (from: number) => ((Date.now() - from) / 1000).toFixed(1);
 
 for (;;) {
   await new Promise((r) => setTimeout(r, 2000));
-  const row = await fetch(`${base}/api/scenarios/${id}`).then((r) => r.json());
+  const r = await fetch(`${base}/api/scenarios/${id}`);
+  const row = r.ok ? await r.json() : null;   // a 5xx from the edge is a blip; the build runs on
+  if (!row) continue;
   if (row.step && row.step !== step) {
     if (step) console.log(`  ${step.padEnd(10)} ${secs(stepAt).padStart(6)} s`);
     step = row.step; stepAt = Date.now();
@@ -27,7 +30,7 @@ for (;;) {
     console.log(`total ${secs(t0)} s`);
     const p = row.pack;
     console.log(`\n${p.title} — ${p.era}, ${p.place}\n${p.description}`);
-    console.log(`chamber ${p.chamber.size}, threshold ${p.chamber.threshold}, ${p.deck.length} storylets, ${p.tags.length} tags`);
+    console.log(`chamber ${p.chamber.size}, threshold ${p.chamber.threshold}, ${p.tags.length} tags`);
     console.log("factions: " + p.factions.map((f: any) => `${f.name} (${p.members.filter((m: any) => m.faction === f.id).length})`).join(", "));
     console.log("problems: " + p.problems.slice(0, 3).map((x: string) => `\n  - ${x}`).join(""));
     console.log("members: " + p.members.slice(0, 4).map((m: any) => `\n  - ${m.name}, ${m.faction}, ${m.region}, ${m.temperament}, ${m.years}`).join(""));
