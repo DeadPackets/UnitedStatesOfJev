@@ -42,3 +42,25 @@ export const wireLabel = (l: Line, names: Map<string, string>) =>
 /** A resistance move and a card hit are danger, and so is any line with no ledger to take a hue from. */
 export const wireHue = (l: Line) =>
   l.kind === "resistance" || l.kind === "card" || !l.ledger ? "r-danger" : hueClass(l.ledger as LedgerKey);
+
+export const VERBS = ["decree", "law", "appoint", "spend", "proclaim", "favour", "force"] as const;
+export type VerbKey = (typeof VERBS)[number];
+
+// Most specific first: "pay the troops" is spend, "send the troops" is force.
+const CUES: [VerbKey, RegExp][] = [
+  ["force", /\b(deploy|curfew|martial|arrest|troops|soldiers|garrison|police|seal|occupy)\b/i],
+  ["appoint", /\b(appoint|install|promote|dismiss|replace|name .* as|make .* (the|my))\b/i],
+  ["favour", /\b(favou?r|promise|gift|pardon|owe|grant .* to \w+ personally)\b/i],
+  ["spend", /\b(spend|pay|fund|subsid|relief|build|buy|wages|rations)\b/i],
+  ["proclaim", /\b(tell|say|announce|address|speak|post|write to) (the|my|them)\b/i],
+  ["decree", /\b(decree|edict|order|by my own|effective today|ends today)\b/i],
+  ["law", /\b(bill|law|act|statute|legislat|table)\b/i],
+];
+const FALLBACK: VerbKey[] = ["law", "decree", "proclaim", "spend", "appoint", "favour", "force"];
+
+/** The tabs settle from the text; the player may still pick a tab and the caller stops calling this. */
+export function settleVerb(text: string, instruments: Partial<Record<VerbKey, unknown>>): VerbKey | null {
+  const has = (v: VerbKey) => instruments[v] !== undefined;
+  for (const [v, re] of CUES) if (has(v) && re.test(text)) return v;
+  return FALLBACK.find(has) ?? null;
+}

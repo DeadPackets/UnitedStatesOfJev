@@ -67,3 +67,24 @@ test("a resistance or card line is danger, a ledger or promise line takes its le
   expect(wireHue({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" })).toBe("r-danger");
   expect(wireHue({ kind: "card", ledger: "treasury", delta: -8, cause: "the flood" })).toBe("r-danger");
 });
+
+import { settleVerb } from "./rules";
+
+const all = { decree: {}, law: {}, appoint: {}, spend: {}, proclaim: {}, favour: {}, force: {} } as never;
+
+test("the verb settles from the words the player used", () => {
+  expect(settleVerb("Send troops to the eastern border and set a curfew.", all)).toBe("force");
+  expect(settleVerb("Appoint Livia to the treasury.", all)).toBe("appoint");
+  expect(settleVerb("Pay the legions four months of back wages.", all)).toBe("spend");
+  expect(settleVerb("Tell the country the grain will hold.", all)).toBe("proclaim");
+  expect(settleVerb("Promise Cassius the province he wants.", all)).toBe("favour");
+  expect(settleVerb("By my own hand, the tax on salt ends today.", all)).toBe("decree");
+  expect(settleVerb("A bill for four years of farm credit.", all)).toBe("law");
+});
+
+test("an empty box and an unpriced verb both fall back to what the pack allows", () => {
+  expect(settleVerb("", all)).toBe("law");
+  // no cue matches without `force`, so the fallback order decides it
+  expect(settleVerb("Send troops in.", { spend: {}, proclaim: {} } as never)).toBe("proclaim");
+  expect(settleVerb("anything", {} as never)).toBe(null);
+});

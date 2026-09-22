@@ -14,7 +14,8 @@ import Strip from "./Strip";
 import Peek, { type PinItem } from "./Peek";
 import Wire from "./Wire";
 import Holders from "./Holders";
-import type { LedgerKey } from "./rules";
+import Compose from "./Compose";
+import { settleVerb, type LedgerKey, type VerbKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
 const TABS = ["turn", "feed"] as const;
@@ -49,6 +50,10 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [pins, setPins] = useState<PinItem[]>([]);
   const [cause, setCause] = useState<string>();
   const [holder, setHolder] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [verb, setVerb] = useState<VerbKey | null>(null);
+  const [picked, setPicked] = useState(false);
+  useEffect(() => { if (!picked) setVerb(settleVerb(text, game.instruments)); }, [text, picked, game.instruments]);
   void holder; // the Room panel reads it from Task 13; drop this line then
   void pins; // the rail reads it from Task 12; drop this line then
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
@@ -147,7 +152,10 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
       </div>
 
       <div className="main">
-        <section className="col deskcol" aria-label="The desk">{/* the composer lands here in Task 9 */}</section>
+        <section className="col deskcol" aria-label="The desk">
+          <Compose game={game} act={act} busy={busy} verb={verb} text={text}
+            onVerb={(v) => { setPicked(true); setVerb(v); }} onText={setText} />
+        </section>
         <section className="col floorcol" aria-label={v.chamber}>
           <div className="floorbox">
             <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
