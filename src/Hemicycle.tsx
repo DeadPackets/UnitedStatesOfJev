@@ -53,7 +53,8 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
   const groups = useRef(new Map<string, SVGGElement>());
   // Below 5 units a face is mud; the 4-unit band outside it keeps the pattern readable at every chamber size.
   const face = r - 4;
-  const hotSet = new Set(hot ?? []);
+  const hotSet = useMemo(() => new Set(hot ?? []), [hot]);
+  const vocab = pack.vocabulary;
 
   useImperativeHandle(ref, () => ({
     roll(result, onCount, onDone, needed) {
@@ -75,8 +76,46 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
     },
   }), []);
 
+  // A tooltip is the only thing `hover` feeds, so the seats are built outside the hover render.
+  const seatGroups = useMemo(() => ordered.map((m, i) => {
+    const s = seats[i];
+    if (!s) return null;
+    const f = factions.get(m.faction);
+    const color = f?.color ?? "var(--ink)";
+    const p = whip?.[m.id];
+    // One source for the ink and the label: a seat the roll has not reached has no vote to announce.
+    const cast = votes && !rolling && m.id in votes ? votes[m.id] : undefined;
+    const label = `${m.name}, ${vocab.member}, ${f?.name ?? m.faction}, ${regions.get(m.region) ?? m.region}`
+      + (p === undefined ? "" : `, ${Math.round(p * 100)} percent yes`)
+      + (cast === undefined ? "" : cast ? ", voted yes" : ", voted no");
+    return (
+      // keyed by position, not member: a reorder would move DOM nodes and restart the gather animation
+      <g key={i} ref={(el) => { if (el) groups.current.set(m.id, el); else groups.current.delete(m.id); }}
+        className="seatg" role="button" tabIndex={0} aria-label={label}
+        style={{ "--i": i, "--dx": `${300 - s.x}px`, "--dy": `${170 - s.y}px`, "--r": `${r}px` } as any}
+        data-vote={cast === undefined ? undefined : cast ? "yes" : "no"}
+        data-tour={hotSet.has(m.id) ? "seat" : undefined}
+        onClick={() => onPick(m.id)} onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(m.id); } }}
+        onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
+        <circle className="hit" cx={s.x} cy={s.y} r={hit} fill="transparent" />
+        <circle className="focus" cx={s.x} cy={s.y} r={r + 6} fill="none" stroke="var(--red)" strokeWidth={2} />
+        {hotSet.has(m.id) ? <circle cx={s.x} cy={s.y} r={r + 5} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.9}>
+          <animate attributeName="r" values={`${r + 1};${r + 8};${r + 1}`} dur="1.4s" repeatCount="indefinite" /></circle> : null}
+        <circle className={`seatc ${pulse === m.id ? "pulse" : ""}`} cx={s.x} cy={s.y} r={r}
+          fill={f ? fillFor(f, scope) : "var(--ink)"} stroke={color} strokeWidth={selected === m.id ? 3 : 1.4}
+          opacity={p === undefined ? 1 : 0.4 + 0.6 * p} />
+        {face >= 5 ? <g opacity={p === undefined ? 1 : 0.4 + 0.6 * p}>
+          <circle className="well" cx={s.x} cy={s.y} r={face} fill="var(--paper)" />
+          {face >= 6 ? <text className="ini" x={s.x} y={s.y + face * 0.36} textAnchor="middle" style={{ fill: color, fontSize: face }}>{initials(m.name)}</text> : null}
+          <image className="coin" href={art(pack.id, `members/${m.id}.png`)} x={s.x - face} y={s.y - face} width={face * 2} height={face * 2}
+            clipPath={clip} preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideBroken} />
+        </g> : null}
+        <circle className="edge" cx={s.x} cy={s.y} r={r + 1.2} fill="none" stroke="var(--ink)" strokeWidth={1} />
+      </g>
+    );
+  }), [ordered, seats, factions, regions, whip, votes, rolling, hotSet, pulse, selected, onPick, r, hit, face, pack, scope, clip, vocab]);
+
   const h = hover !== null ? ordered[hover] : null;
-  const vocab = pack.vocabulary;
   return (
     <svg className={`hemi seats ${whip || votes ? "" : "gather"}`} viewBox={`0 0 ${BOX.w} ${BOX.h}`} role="group"
       aria-label={`${vocab.chamber}, ${members.length} ${vocab.seat}`}>
@@ -84,43 +123,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
         <clipPath id={`${scope}coinclip`} clipPathUnits="objectBoundingBox"><circle cx={0.5} cy={0.5} r={0.5} /></clipPath>
         <FILL_DEFS factions={pack.factions} scope={scope} />
       </defs>
-      {ordered.map((m, i) => {
-        const s = seats[i];
-        if (!s) return null;
-        const f = factions.get(m.faction);
-        const color = f?.color ?? "var(--ink)";
-        const p = whip?.[m.id];
-        // One source for the ink and the label: a seat the roll has not reached has no vote to announce.
-        const cast = votes && !rolling && m.id in votes ? votes[m.id] : undefined;
-        const label = `${m.name}, ${vocab.member}, ${f?.name ?? m.faction}, ${regions.get(m.region) ?? m.region}`
-          + (p === undefined ? "" : `, ${Math.round(p * 100)} percent yes`)
-          + (cast === undefined ? "" : cast ? ", voted yes" : ", voted no");
-        return (
-          // keyed by position, not member: a reorder would move DOM nodes and restart the gather animation
-          <g key={i} ref={(el) => { if (el) groups.current.set(m.id, el); else groups.current.delete(m.id); }}
-            className="seatg" role="button" tabIndex={0} aria-label={label}
-            style={{ "--i": i, "--dx": `${300 - s.x}px`, "--dy": `${170 - s.y}px`, "--r": `${r}px` } as any}
-            data-vote={cast === undefined ? undefined : cast ? "yes" : "no"}
-            data-tour={hotSet.has(m.id) ? "seat" : undefined}
-            onClick={() => onPick(m.id)} onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(m.id); } }}
-            onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
-            <circle className="hit" cx={s.x} cy={s.y} r={hit} fill="transparent" />
-            <circle className="focus" cx={s.x} cy={s.y} r={r + 6} fill="none" stroke="var(--red)" strokeWidth={2} />
-            {hotSet.has(m.id) ? <circle cx={s.x} cy={s.y} r={r + 5} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.9}>
-              <animate attributeName="r" values={`${r + 1};${r + 8};${r + 1}`} dur="1.4s" repeatCount="indefinite" /></circle> : null}
-            <circle className={`seatc ${pulse === m.id ? "pulse" : ""}`} cx={s.x} cy={s.y} r={r}
-              fill={f ? fillFor(f, scope) : "var(--ink)"} stroke={color} strokeWidth={selected === m.id ? 3 : 1.4}
-              opacity={p === undefined ? 1 : 0.4 + 0.6 * p} />
-            {face >= 5 ? <g opacity={p === undefined ? 1 : 0.4 + 0.6 * p}>
-              <circle className="well" cx={s.x} cy={s.y} r={face} fill="var(--paper)" />
-              {face >= 6 ? <text className="ini" x={s.x} y={s.y + face * 0.36} textAnchor="middle" style={{ fill: color, fontSize: face }}>{initials(m.name)}</text> : null}
-              <image className="coin" href={art(pack.id, `members/${m.id}.png`)} x={s.x - face} y={s.y - face} width={face * 2} height={face * 2}
-                clipPath={clip} preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideBroken} />
-            </g> : null}
-            <circle className="edge" cx={s.x} cy={s.y} r={r + 1.2} fill="none" stroke="var(--ink)" strokeWidth={1} />
-          </g>
-        );
-      })}
+      {seatGroups}
       {h ? (() => {
         const s = seats[hover!], f = factions.get(h.faction), p = whip?.[h.id];
         const sub = `${vocab.member} · ${f?.short ?? h.faction} · ${regions.get(h.region) ?? h.region}`
