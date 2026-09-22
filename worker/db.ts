@@ -67,24 +67,33 @@ export async function listReady(env: Env, ids: string[]) {
   return results;
 }
 
-const SPACING_SECONDS = 600;
+const DAY_MS = 86_400_000;
 
 export class BuildsDO extends DurableObject<Env> {
-  async take(): Promise<boolean> {
-    const day = new Date().toISOString().slice(0, 10);
-    const key = `count:${day}`;
-    const count = ((await this.ctx.storage.get<number>(key)) ?? 0) + 1;
-    if (count > Number(this.env.DAILY_BUILD_CAP)) return false;
-    await this.ctx.storage.put(key, count);
+  private async count(prefix: string, cap: number): Promise<boolean> {
+    const key = `${prefix}:${new Date().toISOString().slice(0, 10)}`;
+    const n = ((await this.ctx.storage.get<number>(key)) ?? 0) + 1;
+    if (n > cap) return false;
+    await this.ctx.storage.put(key, n);
     return true;
   }
 
-  async spaced(ip: string): Promise<boolean> {
-    const key = `ip:${ip}`;
-    const last = await this.ctx.storage.get<number>(key);
+  take(): Promise<boolean> { return this.count("count", Number(this.env.DAILY_BUILD_CAP)); }
+  takeGame(): Promise<boolean> { return this.count("games", Number(this.env.DAILY_GAME_CAP)); }
+
+  // Checking and recording are separate so a request the daily cap refuses does not also spend the
+  // caller's window: the route calls mark() only once the work is going ahead.
+  async spaced(ip: string, kind: string, windowMs: number): Promise<boolean> {
+    const last = await this.ctx.storage.get<{ at: number }>(`ip:${kind}:${ip}`);
+    return !(last && Date.now() - last.at < windowMs);
+  }
+
+  async mark(ip: string, kind: string): Promise<void> {
     const now = Date.now();
-    if (last && now - last < SPACING_SECONDS * 1000) return false;
-    await this.ctx.storage.put(key, now);
-    return true;
+    await this.ctx.storage.put(`ip:${kind}:${ip}`, { at: now });
+    // ponytail: full scan of the ip: prefix each time; add an alarm-driven sweep past a few thousand keys.
+    const stale = [...(await this.ctx.storage.list<{ at: number }>({ prefix: "ip:" }))]
+      .filter(([, v]) => !v?.at || now - v.at > DAY_MS).map(([k]) => k);
+    if (stale.length) await this.ctx.storage.delete(stale);
   }
 }

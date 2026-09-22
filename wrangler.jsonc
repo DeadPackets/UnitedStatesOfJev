@@ -16,5 +16,5 @@
   "r2_buckets": [{ "binding": "ART", "bucket_name": "usoj-art" }],
   "ai": { "binding": "AI" },
   "workflows": [{ "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" }],
-  "vars": { "DAILY_BUILD_CAP": "50" }
+  "vars": { "DAILY_BUILD_CAP": "50", "DAILY_GAME_CAP": "200" }
 }

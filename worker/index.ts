@@ -11,9 +11,9 @@ export { ScenarioBuild } from "./build";
 const app = new Hono<{ Bindings: Env }>();
 
 app.use("/api/*", async (c, next) => {
-  // 40/min: a turn is 3-7 requests; a nonstop abuser costs about $2.40 an hour at this cap.
+  // 40/min: a turn is 3-7 requests and one amend per bill, so a nonstop abuser costs about $2.40 an hour.
   // Art is exempt: one seat coin per member is up to 100 requests when a pack screen opens.
-  if (!c.req.path.includes("/art/")) {
+  if (!/^\/api\/scenarios\/[^/]+\/art\//.test(c.req.path)) {
     const { success } = await c.env.RL.limit({ key: c.req.header("cf-connecting-ip") ?? "local" });
     if (!success) return c.json({ error: "Slow down." }, 429);
   }
@@ -48,6 +48,8 @@ app.post("/api/games", async (c) => {
     if (typeof body.scenario !== "string") return c.json({ error: "Name a scenario." }, 400);
     seat = { scenario: body.scenario, faction: body.faction, promises: body.promises, seed: body.seed };
   }
+  const builds = c.env.BUILDS.get(c.env.BUILDS.idFromName("builds"));
+  if (!(await builds.takeGame())) return c.json({ error: "Today's games are used up. Try again tomorrow." }, 429);
   const id = crypto.randomUUID();
   const r = await forward(c, id, "new", { id, ...seat });
   if (r.ok) await c.env.DB.prepare("UPDATE scenarios SET builds = builds + 1 WHERE id = ?").bind(seat.scenario).run();
@@ -62,6 +64,10 @@ app.post("/api/scenarios/match", async (c) => {
   if (body === null) return c.json(badJson, 400);
   const { prompt } = body;
   if (typeof prompt !== "string" || prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
+  const ip = c.req.header("cf-connecting-ip") ?? "local";
+  const builds = c.env.BUILDS.get(c.env.BUILDS.idFromName("builds"));
+  if (!(await builds.spaced(ip, "match", 20_000))) return c.json({ error: "One search every 20 seconds." }, 429);
+  await builds.mark(ip, "match");
   return c.json(await match(c.env, prompt.trim()));
 });
 
@@ -70,11 +76,13 @@ app.post("/api/scenarios", async (c) => {
   if (body === null) return c.json(badJson, 400);
   const { prompt } = body;
   if (typeof prompt !== "string" || prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
+  const ip = c.req.header("cf-connecting-ip") ?? "local";
   const builds = c.env.BUILDS.get(c.env.BUILDS.idFromName("builds"));
-  if (!(await builds.spaced(c.req.header("cf-connecting-ip") ?? "local"))) {
+  if (!(await builds.spaced(ip, "build", 600_000))) {
     return c.json({ error: "One build every 10 minutes. Load a scenario in the meantime." }, 429);
   }
   if (!(await builds.take())) return c.json({ error: "Today's builds are used up. Try again tomorrow." }, 429);
+  await builds.mark(ip, "build");
   const id = scenarioId();
   await newScenario(c.env, id, prompt.trim());
   await c.env.BUILD.create({ id, params: { id, prompt: prompt.trim() } });
@@ -88,13 +96,16 @@ app.get("/api/scenarios/:id/art/*", async (c) => {
   return new Response(obj.body, { headers: { "content-type": "image/png", "cache-control": "public, max-age=31536000, immutable" } });
 });
 
+// A stack trace or a provider's JSON is not a message for a player.
+const plainError = (e: string) => (/^[A-Za-z]/.test(e) && e.length < 200 ? e : "The build failed. Try another prompt.");
+
 app.get("/api/scenarios/:id", async (c) => {
   const row = await getScenario(c.env, c.req.param("id"));
   if (!row) return c.json({ error: "No such scenario." }, 404);
   return c.json({
     status: row.status, step: row.step, fragments: row.fragments,
     ...(row.pack ? { pack: packView(row.pack) } : {}),
-    ...(row.error ? { error: row.error } : {}),
+    ...(row.error ? { error: plainError(row.error) } : {}),
   });
 });
 
