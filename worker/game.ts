@@ -170,7 +170,7 @@ export class GameDO extends DurableObject<Env> {
   private async acts(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
     if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
     switch (parts[1] ?? "") {
-      case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined);
+      case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined, body.memberId as string | undefined);
       case "": return this.doAct(game, pack);
       case "withdraw": return this.undoAct(game, pack, String(body.id ?? ""));
       default: throw new Reject(404, "Unknown action");
@@ -184,6 +184,14 @@ export class GameDO extends DurableObject<Env> {
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
     if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);
+    if (tag.verb === "favour" && tag.member && game.phase === "whip") {
+      const bill = game.bills.at(-1);
+      if (bill?.whip && spendCalls(game)) {
+        const m = game.members.find((x) => x.id === tag.member)!;
+        const r = await jev(this.env, whipState(pack, game, bill), { [m.id]: memberQuestion(pack, m) });
+        bill.whip[m.id] = r.answers[m.id]?.noul ?? bill.whip[m.id];
+      }
+    }
     if (tag.verb === "law") {
       const bill = game.bills.at(-1)!;
       Object.assign(bill, await this.count(game, pack, bill));
@@ -201,10 +209,12 @@ export class GameDO extends DurableObject<Env> {
   }
 
   // A refusal is a 200 because it costs 1 authority, and a Reject would keep the charge without the answer.
-  private async price(game: Game, pack: Pack, raw: string, verb?: Verb): Promise<Extra> {
+  private async price(game: Game, pack: Pack, raw: string, verb?: Verb, memberId?: string): Promise<Extra> {
     const text = raw.trim().slice(0, 1200);
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
+    const seat = memberId ? game.members.find((m) => m.id === memberId) : undefined;
+    if (memberId && !seat) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
     // C5: a tag the player never commits still spent its call.
     if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     const q = await priceAct(this.env, pack, game, text, verb).catch((e) => {
@@ -219,7 +229,7 @@ export class GameDO extends DurableObject<Env> {
       return {};
     }
     game.refusal = null;
-    game.tag = priceTag(pack, game, q);
+    game.tag = priceTag(pack, game, q, seat?.id ?? null);
     return {};
   }
 

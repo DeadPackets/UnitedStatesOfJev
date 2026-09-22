@@ -205,3 +205,28 @@ test("an appointment lowers the post's resistance and a second one replaces the 
   commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", title: "A clerk of the roll", serves: ["council"] })));
   expect(g.inForce.map((l) => l.id).sort()).toEqual(["appoint-council", "appoint-guard"]);
 });
+
+import { FAVOUR_LOYALTY, FAVOUR_MOOD, FAVOUR_STEP, favourCost } from "./acts";
+
+test("a favour costs more the further the member is from the government", () => {
+  const g = game();
+  const own = g.members.find((m) => m.faction === "harborites")!;
+  const far = [...g.members].sort((a, b) => a.loyalty - b.loyalty)[0];
+  expect(own.loyalty).toBe(100);
+  expect(favourCost(pack, g, own).authority).toBe(2);
+  expect(favourCost(pack, g, far).authority).toBe(Math.round(2 * (1 + (100 - far.loyalty) * FAVOUR_STEP)));
+  expect(favourCost(pack, g, far).authority).toBeGreaterThan(favourCost(pack, g, own).authority);
+  const tag = priceTag(pack, g, quote({ verb: "favour" }), far.id);
+  expect(tag.member).toBe(far.id);
+  expect(tag.charge.authority).toBe(favourCost(pack, g, far).authority);
+});
+
+test("a favour lifts the member and leaves a favour owed", () => {
+  const g = game();
+  const m = [...g.members].sort((a, b) => a.loyalty - b.loyalty)[0];
+  const was = m.loyalty;
+  commit(pack, g, priceTag(pack, g, quote({ verb: "favour", title: "A place on the harbour board" }), m.id));
+  expect(m.loyalty).toBe(was + FAVOUR_LOYALTY);
+  expect(m.mood).toBeCloseTo(FAVOUR_MOOD, 5);
+  expect(m.memory.some((l) => l.includes("favor"))).toBe(true);
+});

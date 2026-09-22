@@ -540,3 +540,13 @@ test("committing a law tables it, counts the whip once and prints the band", asy
   expect(game.calls).toBe(2);                       // one for the price call, one for the whip count
   expect((await post("bills", { turn: 1, text: "anything at all here" })).status).toBe(404);
 });
+
+test("a favour names a seat, and a body that names none is a 400", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(63);
+  const m = game.members[0];
+  const r = await post("acts/price", { turn: 1, text: "Give them the harbour board seat they asked for.", memberId: m.id });
+  expect(r.status).toBe(200);
+  expect(r.body.tag.member).toBe(m.id);
+  expect((await post("acts/price", { turn: 1, text: "Give them the harbour board seat.", memberId: "nobody" })).status).toBe(400);
+});

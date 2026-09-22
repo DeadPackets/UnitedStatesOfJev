@@ -1,7 +1,7 @@
 import {
-  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, holdersOf, keepPromise, movePopularity, pay,
+  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, pay,
   pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
-  type Game, type PriceTag, type Quote, type WireLine,
+  type Game, type Member, type PriceTag, type Quote, type WireLine,
 } from "./engine";
 import type { Consent, Holder, Instrument, Pack, Price, Verb } from "./pack";
 
@@ -35,7 +35,10 @@ export function discountOf(pack: Pack, game: Game, serves: string[]): number {
 }
 
 export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null = null): PriceTag {
-  const base = instrumentOf(pack, q.verb)?.price ?? { authority: 0, treasury: 0, chest: 0 };
+  const seat = member ? game.members.find((m) => m.id === member) : undefined;
+  const base = q.verb === "favour" && seat
+    ? favourCost(pack, game, seat)
+    : instrumentOf(pack, q.verb)?.price ?? { authority: 0, treasury: 0, chest: 0 };
   const d = discountOf(pack, game, q.serves);
   // C4 discounts the instrument's standing price only. The quoted sum is the act's own size, and every
   // effect is derived from it, so discounting it would make a spend buy less for less and change nothing.
@@ -87,9 +90,30 @@ function applySpend(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   return movePopularity(pack, game, tag.regions, d, tag.title);
 }
 
+export const FAVOUR_STEP = 0.02;    // TUNE: each loyalty point below 100 adds this much to the price
+export const FAVOUR_LOYALTY = 10;   // TUNE: what one favour is worth to the seat it buys
+export const FAVOUR_MOOD = 0.1;     // TUNE: how much warmer the seat is on the floor afterwards
+
+// §2: a favour is priced by the member. A hostile seat costs up to three times a co-factional one.
+export function favourCost(pack: Pack, _game: Game, m: Member): Price {
+  const base = instrumentOf(pack, "favour")?.price ?? { authority: 0, treasury: 0, chest: 0 };
+  const k = 1 + (100 - clamp(m.loyalty, 0, 100)) * FAVOUR_STEP;
+  return { authority: Math.round(base.authority * k), treasury: Math.round(base.treasury * k), chest: Math.round(base.chest * k) };
+}
+
+function applyFavour(_pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  const m = game.members.find((x) => x.id === tag.member);
+  if (!m) return [];
+  m.loyalty = clamp(m.loyalty + FAVOUR_LOYALTY, 0, 100);
+  m.mood = clamp(Math.round((m.mood + FAVOUR_MOOD) * 10) / 10, -1, 1);
+  m.memory = [...m.memory, FAVOR_OWED].slice(-5);
+  return [];
+}
+
 function applyVerb(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   switch (tag.verb) {
     case "spend": return applySpend(pack, game, tag);
+    case "favour": return applyFavour(pack, game, tag);
     default: return [];
   }
 }
