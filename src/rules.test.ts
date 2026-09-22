@@ -107,3 +107,21 @@ test("a tab is unread when its content moved after the player last opened it", (
 test("opening a tab clears its mark and nothing else", () => {
   expect(unreadTabs(g, { feed: 6, country: 7, room: 7, record: 5, pinned: 0 })).toEqual([]);
 });
+
+import { barAt, difficulty } from "./rules";
+
+const pack = { constitution: { retention: { bar: { start: 0.5, step: 0.03, cap: 0.7 } } } } as never;
+
+test("the bar climbs on the pack's printed schedule and stops at the cap", () => {
+  expect(barAt(pack, 1)).toBeCloseTo(0.5, 5);
+  expect(barAt(pack, 4)).toBeCloseTo(0.59, 5);
+  expect(barAt(pack, 20)).toBeCloseTo(0.7, 5);
+  expect(barAt({} as never, 3)).toBeCloseTo(0.56, 5);
+});
+
+test("the difficulty label comes from the seats you are short", () => {
+  expect(difficulty(-4)).toBe("Comfortable");
+  expect(difficulty(3)).toBe("Minority");
+  expect(difficulty(9)).toBe("Minority, with a handicap");
+  expect(difficulty(18)).toBe("Survival");
+});

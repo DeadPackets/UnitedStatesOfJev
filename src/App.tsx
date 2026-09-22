@@ -129,8 +129,8 @@ export default function App() {
   const resume = async () => { const id = store.get("usoj:game"); if (id) { setBusy(true); try { setGame(await api.load(id)); } catch (e) { fail(e); } finally { setBusy(false); } } };
   const playCode = async (code: string) => { await act(() => api.share(code)); };
 
-  const takeSeat = async (faction: string, promises: number[], seed: number) => {
-    const ok = await act(() => api.seat(scenario!, faction, promises, seed));
+  const takeSeat = async (faction: string, promises: number[], seed: number, platform: string) => {
+    const ok = await act(() => api.seat(scenario!, faction, promises, seed, platform));
     if (ok) go("/", true);
     return ok;
   };

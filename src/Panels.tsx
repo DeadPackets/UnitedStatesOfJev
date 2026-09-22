@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { GameView } from "./api";
 import Tiles, { shortNames, type TileDatum } from "./Tiles";
 import type { PinItem } from "./Peek";
+import { difficulty } from "./rules";
 
 /** The rubric R8 asks to be printed, in the Record tab, in plain words. */
 const RUBRIC = [
@@ -104,6 +105,11 @@ export function RecordTab({ game }: { game: GameView }) {
             return e ? <li key={k}><span>{e.name}. {e.headline}</span></li> : null;
           })}
         </ul>
+      </div>
+      <div className="panel">
+        <div className="kicker">Where you stand</div>
+        <p className="small">{difficulty(game.shortfall)}. You are <span className="num">{game.shortfall}</span> short of
+          {" "}{v.pass}{game.handicap ? <>, and the seat costs <span className="num">{game.handicap}</span> authority a {v.turn}</> : null}.</p>
       </div>
       <div className="panel">
         <div className="kicker">What the clerk checks</div>

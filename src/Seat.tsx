@@ -1,98 +1,90 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
-import { Ornament, applyTheme, art, hideBroken, initials } from "./theme";
-import { radioKeys } from "./keys";
+import Tiles, { shortNames, type TileDatum } from "./Tiles";
+import { Ornament, applyTheme } from "./theme";
+import { barAt, difficulty, LEDGER_KEYS } from "./rules";
+import { sound } from "./sound";
 
 const b36 = (n: number) => n.toString(36);
+const PAGES = ["The situation", "The room", "You"] as const;
 
 export default function Seat({ pack, busy, onSeat }: {
-  pack: PackView; busy: boolean; onSeat: (faction: string, promises: number[], seed: number) => Promise<boolean>;
+  pack: PackView; busy: boolean;
+  onSeat: (faction: string, promises: number[], seed: number, platform: string) => Promise<boolean>;
 }) {
-  const [faction, setFaction] = useState(pack.starts[0].faction);
-  const [hover, setHover] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
   const [picks, setPicks] = useState<number[]>([]);
+  const [platform, setPlatform] = useState("");
   const [stamped, setStamped] = useState(false);
   const [seed] = useState(() => Math.floor(Math.random() * 36 ** 6));
-
   useEffect(() => { applyTheme(pack.theme); }, [pack.theme]);
 
-  const seats = useMemo(() => {
-    const n = new Map<string, number>();
-    for (const m of pack.members) n.set(m.faction, (n.get(m.faction) ?? 0) + 1);
-    return n;
-  }, [pack.members]);
-  const short = useMemo(() => new Map(pack.factions.map((f) => [f.id, f.short])), [pack.factions]);
-
-  const start = pack.starts.find((s) => s.faction === faction)!;
-  const own = hover ?? faction;
-  const ownStart = pack.starts.find((s) => s.faction === own) ?? start;
+  const c = pack.constitution;
+  // The pack names the office holder's own party, so there is no picker (planning brief).
+  const start = pack.starts.find((s) => s.faction === c?.ruler.faction) ?? pack.starts[0];
+  const own = pack.members.filter((m) => m.faction === start.faction).length;
+  const gap = pack.chamber.threshold - own;
   const v = pack.vocabulary;
   const full = picks.length === 3;
-  const code = `J3-${pack.id.slice(0, 6)}-${b36(pack.factions.findIndex((f) => f.id === faction))}-${[0, 1, 2].map((i) => (picks[i] === undefined ? "_" : b36(picks[i]))).join("")}-${b36(seed).padStart(6, "0")}`;
-
+  const code = `J3-${pack.id.slice(0, 6)}-${b36(pack.factions.findIndex((f) => f.id === start.faction))}-${[0, 1, 2].map((i) => (picks[i] === undefined ? "_" : b36(picks[i]))).join("")}-${b36(seed).padStart(6, "0")}`;
   const toggle = (i: number) => setPicks((p) => (p.includes(i) ? p.filter((x) => x !== i) : p.length < 3 ? [...p, i] : p));
-  // the stamp runs first, then the call; a refused seat lifts it so the button works again
+
+  const shorts = useMemo(() => shortNames(pack.regions.map((r) => r.name)), [pack.regions]);
+  const wsum = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
+  const tiles: TileDatum[] = pack.regions.map((r, i) => ({
+    id: r.id, name: r.name, short: shorts[i], weight: r.weight / wsum,
+    p: (r.lean.find((l) => l.id === start.faction)?.value ?? 0.5),
+  }));
+  const weight = (id: string) => c?.retention.weights.find((w) => w.id === id)?.value ?? 0;
+
   const timer = useRef(0);
   useEffect(() => () => clearTimeout(timer.current), []);
   const take = () => {
     setStamped(true);
-    timer.current = setTimeout(() => onSeat(faction, picks, seed).then((ok) => { if (!ok) setStamped(false); }), 650) as unknown as number;
+    sound.play("gavel");
+    timer.current = setTimeout(() => onSeat(start.faction, picks, seed, platform.trim()).then((ok) => { if (!ok) setStamped(false); }), 650) as unknown as number;
   };
 
   return (
-    <main className="takeseat press">
+    <main className="takeseat press" onPointerDown={sound.unlock}>
       <div className="mast">
         <b>{pack.title}</b>
         <span className="flag"><Ornament kind={pack.theme.ornament} /></span>
         <span>{pack.era} · {pack.place}</span>
       </div>
 
-      <section className="stage" aria-label={`${v.chamber} preview`}>
-        <div className="stagearea">
-          <Chamber pack={pack} members={pack.members} own={own} coalition={ownStart.coalition} />
-          <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">{v.seat}</div>
-        </div>
-        <h2 className="head">{start.premise}</h2>
-        {pack.content_note ? <p className="note">{pack.content_note}</p> : null}
-        <div className="field">
-          <span className="kicker">Your code</span>
-          <div className="code" aria-label="Game code">{code}</div>
-          <span className="small muted">{full ? "Same code, same chamber, same luck." : "Pick 3 to finish the code."}</span>
-        </div>
+      <section className="stage" aria-label={PAGES[page]}>
+        <div className="kicker">{page + 1} of 3 · {PAGES[page]}</div>
+        {page === 0 ? (<>
+          <h2 className="head">{start.premise}</h2>
+          <p>{c?.briefing.situation}</p>
+          {pack.content_note ? <p className="note">{pack.content_note}</p> : null}
+          <Tiles items={tiles} label="The regions by weight" foot={(d) => `${Math.round(d.p * 100)}`} />
+        </>) : page === 1 ? (<>
+          <p>{c?.briefing.room}</p>
+          <div className="stagearea"><Chamber pack={pack} members={pack.members} own={start.faction} coalition={start.coalition} /></div>
+          <ul className="causes" aria-label="Who can stop you">
+            {(c?.holders ?? []).map((h) => (
+              <li key={h.id}>
+                <b className="num">{Math.round(h.stance * 100)}</b>
+                <span>{h.name}, {h.where === "abroad" ? "abroad" : "at home"}, weight {weight(h.id).toFixed(2)}, line {h.line}, {h.response.replace(/_/g, " ")}</span>
+              </li>
+            ))}
+          </ul>
+        </>) : (<>
+          <p>{c?.briefing.you}</p>
+          <ul className="causes" aria-label="The five ledgers here">
+            {LEDGER_KEYS.map((k) => (
+              <li key={k}><b className="num">{c?.ledgers?.[k]?.line ?? 0}</b><span>{c?.ledgers?.[k]?.name ?? k}, fails at that number</span></li>
+            ))}
+          </ul>
+          <p className="small num">{c?.retention.name ?? pack.test.name} asks for {(barAt(pack, 1) * 100).toFixed(0)} of the room at the end of the term.</p>
+          <p className="small">{difficulty(gap)}. You hold {own} of {pack.chamber.size}, and {pack.chamber.threshold} carries a vote.</p>
+        </>)}
       </section>
 
-      <aside className="rail" aria-label="Pick a faction and 3 promises">
-        <div className="field">
-          <span className="kicker" id="l-faction">Take which seat</span>
-          <ul className="picker" role="radiogroup" aria-labelledby="l-faction">
-            {pack.factions.map((f, i) => {
-              const s = pack.starts.find((x) => x.faction === f.id);
-              if (!s) return null;
-              const foes = (s.hostile ?? []).map((id) => short.get(id) ?? id);
-              return (
-                <li key={f.id}>
-                  <button className="fcard" role="radio" aria-checked={faction === f.id} tabIndex={faction === f.id ? 0 : -1}
-                    onKeyDown={radioKeys(i, pack.factions.length, (j) => setFaction(pack.factions[j].id))}
-                    onClick={() => setFaction(f.id)} onMouseEnter={() => setHover(f.id)} onMouseLeave={() => setHover(null)}
-                    onFocus={() => setHover(f.id)} onBlur={() => setHover(null)}>
-                    <span className="crest" style={{ color: f.color }} aria-hidden="true">
-                      {initials(f.name)}
-                      <img src={art(pack.id, `crests/${f.id}.png`)} alt="" onError={hideBroken} />
-                    </span>
-                    <span className="t">
-                      <b style={{ color: f.color }}>{f.name}</b>
-                      <span className="small">{s.seat_title} · {seats.get(f.id) ?? 0} of {pack.chamber.size}</span>
-                      <span className="small muted">{s.premise}</span>
-                      <span className="small">Party mood {s.party}. {foes.length ? `Hostile partners: ${foes.join(", ")}.` : "No hostile partners."}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
+      <aside className="rail" aria-label="Take the seat">
         <div className="field">
           <span className="kicker" id="l-promise">{v.promise} · {picks.length} of 3</span>
           <div className="chips" role="group" aria-labelledby="l-promise" style={{ justifyContent: "start" }}>
@@ -102,7 +94,20 @@ export default function Seat({ pack, busy, onSeat }: {
             ))}
           </div>
         </div>
-
+        <div className="field">
+          <label className="kicker" htmlFor="platform">Your platform, one sentence. Optional.</label>
+          <textarea id="platform" className="ask" rows={2} maxLength={240} value={platform} spellCheck={false}
+            placeholder="What you are standing for, and by when." onChange={(e) => setPlatform(e.target.value)} />
+        </div>
+        <div className="field">
+          <span className="kicker">Your code</span>
+          <div className="code" aria-label="Game code">{code}</div>
+          <span className="small muted">{full ? "Same code, same room, same luck." : "Pick 3 to finish the code."}</span>
+        </div>
+        <div className="row">
+          <button className="btn ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>Back</button>
+          <button className="btn ghost" disabled={page === 2} onClick={() => setPage(page + 1)}>Next</button>
+        </div>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={!full || busy || stamped} onClick={take}>
           {busy ? `Taking the ${v.seat}` : `Take the ${v.seat}`}
         </button>

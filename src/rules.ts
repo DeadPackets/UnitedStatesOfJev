@@ -82,3 +82,15 @@ export function unreadTabs(game: UnreadGame, seen: Record<string, number>): stri
   };
   return Object.keys(at).filter((k) => at[k] > (seen[k] ?? 0));
 }
+
+const BAR = { start: 0.5, step: 0.03, cap: 0.7 };
+
+/** The pack's own printed schedule (spec §6), so the player sees the ratchet coming. */
+export function barAt(pack: { constitution?: { retention?: { bar?: { start: number; step: number; cap: number } } } }, term: number) {
+  const b = pack.constitution?.retention?.bar ?? BAR;
+  return Math.min(b.cap, b.start + b.step * (term - 1));
+}
+
+/** Spec §6 minority starts: above 6 short prints a handicap, above 15 short is the survival path. */
+export const difficulty = (gap: number) =>
+  gap <= 0 ? "Comfortable" : gap > 15 ? "Survival" : gap > 6 ? "Minority, with a handicap" : "Minority";

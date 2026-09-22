@@ -195,6 +195,10 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 .code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; letter-spacing: 0.08em; min-height: 44px; padding: 10px 14px; border: 1.5px solid var(--ink); background: var(--bg); width: 100%; color: var(--ink); display: flex; align-items: center; }
 .code:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 .takeseat .rail .btn { width: 100%; }
+.takeseat .rail { gap: var(--s4); }
+.takeseat .rail .row .btn { width: auto; flex: 1 1 0; }
+.takeseat .stage .causes li b { min-width: 46px; }
+.takeseat .ask { font-size: 17px; border-bottom-width: 1.5px; }
 
 /* chamber */
 .chamber { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 12px 24px 96px; }
