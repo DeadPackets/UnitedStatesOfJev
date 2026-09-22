@@ -85,15 +85,17 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
         const f = factions.get(m.faction);
         const color = f?.color ?? "var(--ink)";
         const p = whip?.[m.id];
+        // One source for the ink and the label: a seat the roll has not reached has no vote to announce.
+        const cast = votes && !rolling && m.id in votes ? votes[m.id] : undefined;
         const label = `${m.name}, ${vocab.member}, ${f?.name ?? m.faction}, ${regions.get(m.region) ?? m.region}`
           + (p === undefined ? "" : `, ${Math.round(p * 100)} percent yes`)
-          + (votes ? (votes[m.id] ? ", voted yes" : ", voted no") : "");
+          + (cast === undefined ? "" : cast ? ", voted yes" : ", voted no");
         return (
           // keyed by position, not member: a reorder would move DOM nodes and restart the gather animation
           <g key={i} ref={(el) => { if (el) groups.current.set(m.id, el); else groups.current.delete(m.id); }}
             className="seatg" role="button" tabIndex={0} aria-label={label}
             style={{ "--i": i, "--dx": `${300 - s.x}px`, "--dy": `${170 - s.y}px`, "--r": `${r}px` } as any}
-            data-vote={votes && !rolling && m.id in votes ? (votes[m.id] ? "yes" : "no") : undefined}
+            data-vote={cast === undefined ? undefined : cast ? "yes" : "no"}
             data-tour={hotSet.has(m.id) ? "seat" : undefined}
             onClick={() => onPick(m.id)} onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(m.id); } }}
             onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
