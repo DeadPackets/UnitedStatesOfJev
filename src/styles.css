@@ -63,6 +63,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .rule { border-top: 1px solid var(--line); }
 .panel { border-top: 2px solid var(--line); padding-top: 14px; }
 .muted { color: var(--ink-2); }
+.note { color: var(--ink-2); font-size: 13px; max-width: 60ch; margin: 0; }
 .small { font-size: 13px; }
 .error { color: var(--red); font-size: 13px; }
 

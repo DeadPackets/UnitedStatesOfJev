@@ -49,6 +49,7 @@ export default function Seat({ pack, busy, onSeat }: {
           <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">{v.seat}</div>
         </div>
         <h2 className="head">{start.premise}</h2>
+        {pack.content_note ? <p className="note">{pack.content_note}</p> : null}
         <div className="field">
           <span className="kicker">Your code</span>
           <div className="code" aria-label="Game code">{code}</div>

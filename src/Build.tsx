@@ -23,6 +23,7 @@ const label = (step: string, v: Vocab) => {
   }
 };
 
+const TOO_LONG = "The build is taking too long. Try again later.";
 const hide = (e: { currentTarget: HTMLImageElement }) => { e.currentTarget.style.display = "none"; };
 const find = <T,>(s: BuildState | null, kind: string) => s?.fragments.find((f) => f.kind === kind) as T | undefined;
 
@@ -34,6 +35,7 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
   useEffect(() => {
     let live = true;
     let timer = 0;
+    const started = Date.now();
     const tick = async () => {
       try {
         const s = await api.scenario(id);
@@ -41,7 +43,11 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
         setState(s);
         if (s.status === "ready" || s.status === "failed") return;
       } catch { /* a dropped poll is not a failed build; try again on the next tick */ }
-      if (live) timer = setTimeout(tick, 2000) as unknown as number;
+      if (!live) return;
+      // A build runs one to two minutes; past 15 the Workflow is gone and no later poll will answer.
+      const age = Date.now() - started;
+      if (age > 900_000) return setState((s) => ({ status: "failed", step: s?.step ?? null, fragments: s?.fragments ?? [], error: TOO_LONG }));
+      timer = setTimeout(tick, age > 120_000 ? 5000 : 2000) as unknown as number;
     };
     tick();
     return () => { live = false; clearTimeout(timer); };
