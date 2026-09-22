@@ -2,11 +2,17 @@ import { useEffect, useRef, type ReactNode } from "react";
 import type { GamePack, ViewEvent } from "./api";
 import { Meter } from "./Ledger";
 
-function Poster({ label, children, block }: { label: string; children: ReactNode; block: boolean }) {
+function Poster({ label, children, block, onClose }: { label: string; children: ReactNode; block: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
-  // A card that is still open has to be answered, so Escape does nothing until a stance is taken.
-  return <dialog ref={ref} className="poster" aria-label={label} onCancel={(e) => { if (block) e.preventDefault(); }}>{children}</dialog>;
+  // A card that is still open has to be answered, so Escape and a backdrop click do nothing until a stance is taken.
+  return (
+    <dialog ref={ref} className="poster" aria-label={label}
+      onCancel={(e) => { if (block) e.preventDefault(); }}
+      onClose={onClose}
+      onClick={(e) => { if (!block && e.target === ref.current) onClose(); }}
+    >{children}</dialog>
+  );
 }
 
 type Props = {
@@ -20,7 +26,7 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
   const stances = event.card?.stances ?? event.stances;
   const title = event.card?.title ?? "The floor has news.";
   return (
-    <Poster label={title} block={!answered}>
+    <Poster label={title} block={!answered} onClose={onClose}>
       <div className="kicker">{pack.vocabulary.turn} {turn}</div>
       <h2>{title}</h2>
       {event.card ? <p>{event.card.body}</p> : null}
@@ -50,7 +56,7 @@ export function Announce({ pack, keys, onClose }: { pack: GamePack; keys: string
   const items = keys.map((k) => pack.escalations.find((e) => e.key === k)).filter((e) => !!e);
   if (!items.length) return null;
   return (
-    <Poster label={items[0]!.name} block={false}>
+    <Poster label={items[0]!.name} block={false} onClose={onClose}>
       <div className="kicker">{pack.title}</div>
       {items.map((e) => <div key={e!.key}><h2>{e!.name}</h2><p>{e!.headline}</p></div>)}
       <button className="btn" onClick={onClose}>Close the notice</button>

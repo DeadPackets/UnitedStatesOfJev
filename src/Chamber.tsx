@@ -217,9 +217,9 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       <div className="sr" role="status" aria-live="polite">{live}</div>
       {sel ? <MemberDrawer pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
-      {card && !rolling ? <Card pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
+      {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
         onStance={stance} onClose={() => setAnswered(null)} /> : null}
-      {notice.length ? <Announce pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
+      {notice.length ? <Announce key={game.term} pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
       <Tour step={step} onSkip={endTour} />
     </main>
   );
