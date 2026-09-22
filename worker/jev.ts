@@ -1,5 +1,5 @@
-import { BLOCS, popularity, type Bill, type Game, type Senator } from "./engine";
-import { STATES } from "./states";
+import { popularity, record, threshold, type Bill, type Game, type Member } from "./engine";
+import type { Citizen, Pack, Storylet } from "./pack";
 
 export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
@@ -46,54 +46,127 @@ export async function jev(env: Env, state: unknown, questions: Record<string, Qu
   return { answers: r.answers, usage: r.usage };
 }
 
-export const gateQuestion = (): Record<string, Question> => ({
-  gate: { type: "noul", instructions: "Is `text` a proposal for a law, program, or government policy that a legislature could vote on?",
-    criteria: { true: "It proposes, changes, funds, bans, or repeals something a government does.", false: "It is a greeting, a question, gibberish, or unrelated text." } },
+export const nouls = (answers: Answers, prefix: string): Record<string, number> =>
+  Object.fromEntries(Object.entries(answers).filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k.slice(prefix.length), v.noul ?? 0]));
+export const scores = (answers: Answers, prefix: string): Record<string, number> =>
+  Object.fromEntries(Object.entries(answers).filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k.slice(prefix.length), v.score ?? 0]));
+
+export const gateQuestion = (pack: Pack): Record<string, Question> => ({
+  gate: { type: "noul", instructions: `Is \`text\` a proposal for a ${pack.vocabulary.bill} that ${pack.vocabulary.chamber} could vote on?`,
+    criteria: { true: "It proposes, changes, funds, bans, or repeals something the government does.", false: "It is a greeting, a question, gibberish, or unrelated text." } },
 });
 
-const persona = (s: Senator) => ({
-  state: STATES[s.state].name, party: s.party === "D" ? "Democrat" : "Republican", years_in_office: s.years_in_office,
-  core_issues: s.core_issues, temperament: s.temperament, tell: s.tell, donors: s.donors,
-  ...(s.situation ? { situation: s.situation } : {}), ...(s.memory.length ? { memory: s.memory } : {}),
+// Persona fields stay English in the pack so the calibrated criteria hold (v3 spec §8).
+const persona = (pack: Pack, m: Member) => ({
+  region: pack.regions.find((r) => r.id === m.region)?.name ?? m.region,
+  faction: pack.factions.find((f) => f.id === m.faction)?.name ?? m.faction,
+  years_in_office: m.years, core_issues: m.core_issues, temperament: m.temperament, tell: m.tell,
+  patrons: m.patrons.map((p) => pack.patrons.find((x) => x.id === p)?.name ?? p),
+  ...(m.situation ? { situation: m.situation } : {}), ...(m.memory.length ? { memory: m.memory } : {}),
 });
 
-// Measured 2026-09-21 (scripts/calib.ts): naming party leadership and offers in the criteria lifts co-partisans
-// 6-10 points; an offer inside the question moves a senator ~22 points vs ~12 when it sits in the state.
-export const senatorQuestion = (s: Senator, offer?: string): Noul => ({
+// Measured 2026-09-21 (scripts/calib.ts): naming faction leadership and offers in the criteria lifts co-partisans
+// 6-10 points; an offer inside the question moves a member ~22 points vs ~12 when it sits in the state.
+export const memberQuestion = (pack: Pack, m: Member, offer?: string): Noul => ({
   type: "noul",
   instructions: {
-    senator: persona(s),
-    ...(offer ? { offer_from_president: offer, question: "Given the President's offer, would this senator vote yes on `bill` on the floor?" }
-      : { question: "Would this senator vote yes on `bill` on the floor?" }),
+    [pack.vocabulary.member]: persona(pack, m),
+    ...(offer ? { offer_from_the_government: offer, question: `Given the offer, would this ${pack.vocabulary.member} vote yes on \`bill\` on the floor?` }
+      : { question: `Would this ${pack.vocabulary.member} vote yes on \`bill\` on the floor?` }),
   },
   criteria: {
-    true: "The senator votes yes. The bill serves their core issues, donors, or state, their party's leadership backs it, or the President has offered them something they want.",
-    false: "The senator votes no. The bill hurts their core issues, donors, or state, or their party's leadership opposes it and nothing has been offered to them.",
+    true: "They vote yes. The proposal serves their core issues, patrons, or region, their faction's leadership backs it, or the government has offered them something they want.",
+    false: "They vote no. The proposal hurts their core issues, patrons, or region, or their faction's leadership opposes it and nothing has been offered to them.",
   },
 });
 
-const BLOC_DESC: Record<(typeof BLOCS)[number], string> = {
-  business: "business owners and investors", labor: "unions and working-class voters", seniors: "retirees and people over 65",
-  youth: "voters under 30", rural: "farmers and small-town voters",
-};
-
-export function whipQuestions(seated: Senator[]): Record<string, Question> {
+export function whipQuestions(pack: Pack, members: Member[]): Record<string, Question> {
   const qs: Record<string, Question> = {};
-  for (const s of seated) qs[s.id] = senatorQuestion(s);
-  qs.filibuster = { type: "noul", instructions: "Would the minority party's leader mount a filibuster to block `bill`?",
-    criteria: { true: "The bill is a major partisan priority the minority strongly opposes.", false: "The bill is minor, bipartisan, or not worth a filibuster." } };
-  for (const b of BLOCS) qs[`bloc_${b}`] = { type: "score", instructions: { bloc: BLOC_DESC[b], question: "How strongly does this bloc oppose `bill`?" },
+  for (const m of members) qs[m.id] = memberQuestion(pack, m);
+  qs.filibuster = { type: "noul", instructions: `Would the opposition's leader block \`bill\` by procedure rather than lose the vote?`,
+    criteria: { true: "The proposal is a major partisan priority the opposition strongly opposes.", false: "It is minor, cross-factional, or not worth the fight." } };
+  for (const b of pack.blocs) qs[`bloc_${b.id}`] = { type: "score", instructions: { bloc: b.description, question: "How strongly does this group oppose `bill`?" },
     criteria: ["Indifferent or supportive", "Opposed", "Outraged"] };
-  qs.constitutional = { type: "noul", instructions: "Does `bill` plainly violate the United States Constitution?",
-    criteria: { true: "It clearly breaches an enumerated right or limit, such as banning speech or a religion.", false: "It is within ordinary legislative power, even if controversial." } };
+  for (const p of pack.patrons) qs[`patron_${p.id}`] = { type: "score", instructions: { patron: p.name, wants: p.wants, hates: p.hates, question: "How strongly does this patron oppose `bill`?" },
+    criteria: ["Indifferent or supportive", "Opposed", "Outraged"] };
+  qs.constitutional = { type: "noul", instructions: `Does \`bill\` plainly exceed what the government of this polity may lawfully do?`,
+    criteria: { true: "It clearly breaches a recognized right or limit on power in this polity.", false: "It is within ordinary legislative power, even if controversial." } };
+  const veto = pack.chamber.veto;
+  if (veto) for (const m of members.filter((x) => x.flags.includes(veto.flag))) {
+    qs[`veto_${m.id}`] = { type: "noul", instructions: { [pack.vocabulary.member]: persona(pack, m), power: veto.text, question: "Would they use this power against `bill`?" },
+      criteria: { true: "The proposal threatens what they or their institution protect.", false: "They let it go to the vote." } };
+  }
   return qs;
 }
 
-export function whipState(game: Game, bill: Bill) {
-  const majority = game.seated.filter((s) => s.party === "D").length > 50 ? "Democrat" : "Republican";
+export function whipState(pack: Pack, game: Game, bill: Bill) {
+  const counts = new Map<string, number>();
+  for (const m of game.members) counts.set(m.faction, (counts.get(m.faction) ?? 0) + 1);
+  const largest = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? game.faction;
+  const name = (id: string) => pack.factions.find((f) => f.id === id)?.name ?? id;
+  const start = pack.starts.find((s) => s.faction === game.faction);
   return {
-    bill: { title: bill.title, summary: bill.summary, tags: bill.tags },
-    president: { party: game.settings.party === "D" ? "Democrat" : "Republican", popularity: popularity(game) },
-    chamber: { majority, session: game.settings.mode === "term" && game.turn >= 30 ? "election year" : "regular session" },
+    [pack.vocabulary.bill]: { title: bill.title, summary: bill.summary, tags: bill.tags },
+    government: {
+      title: start?.seat_title ?? "the government", faction: name(game.faction), popularity: popularity(pack, game),
+      // Measured -6 to -10 on co-factionals (v2 §4): the whip count must see a leadership that has turned.
+      ...(game.ledgers.party < 30 ? { party_leadership: "hostile" } : {}),
+    },
+    [pack.vocabulary.chamber]: { largest_faction: name(largest), needed_to_pass: threshold(pack, game, bill), of: pack.chamber.size },
+    record: record(pack, game),
   };
+}
+
+const citizenPersona = (pack: Pack, c: Citizen) => ({
+  name: c.name, age: c.age, job: c.job, town: c.town, region: pack.regions.find((r) => r.id === c.region)?.name ?? c.region,
+  group: pack.blocs.find((b) => b.id === c.bloc)?.name ?? c.bloc, worldview: c.worldview, issues: c.issues,
+});
+
+// After every vote and every crisis. The bill or event and the record sit in the state, the persona in the question.
+export function citizenQuestions(pack: Pack, citizens: Citizen[], event: "vote" | "crisis"): Record<string, Question> {
+  const what = event === "vote" ? "the vote in `event`" : "how the government handled `event`";
+  const qs: Record<string, Question> = {};
+  for (const c of citizens) qs[c.id] = {
+    type: "noul",
+    instructions: { citizen: citizenPersona(pack, c), question: `After ${what}, does this person approve of the government?` },
+    criteria: {
+      true: `They approve. ${what} helps their region, their group, or the issues they name, or it matches their worldview.`,
+      false: `They disapprove. ${what} hurts their region, their group, or the issues they name, or it offends their worldview.`,
+    },
+  };
+  return qs;
+}
+
+export const citizenState = (pack: Pack, game: Game, event: unknown) => ({ event, record: record(pack, game) });
+
+// Term end. chamber_loyalty is the mean of the confidence whip; public_intent the region-weighted citizen mean.
+export function testQuestions(pack: Pack, game: Game): Record<string, Question> {
+  const title = pack.starts.find((s) => s.faction === game.faction)?.seat_title ?? "the government";
+  const qs: Record<string, Question> = {};
+  for (const m of game.members) qs[`loyalty_${m.id}`] = {
+    type: "noul",
+    instructions: { [pack.vocabulary.member]: persona(pack, m), question: `confidence in the ${title}` },
+    criteria: {
+      true: `They still back the ${title} after this term's record.`,
+      false: `They have lost confidence in the ${title} after this term's record.`,
+    },
+  };
+  for (const c of pack.citizens) qs[`intent_${c.id}`] = {
+    type: "noul",
+    instructions: { citizen: citizenPersona(pack, c), question: `Would this person vote to keep the ${title} in power?` },
+    criteria: { true: `The term's record served them well enough to keep the ${title}.`, false: `The term's record was bad enough for them to want a change.` },
+  };
+  return qs;
+}
+export const testState = (pack: Pack, game: Game) => ({ [pack.vocabulary.test]: pack.test.name, record: record(pack, game) });
+
+export function eventQuestions(pack: Pack, scored: Storylet["scored"]): Record<string, Question> {
+  const qs: Record<string, Question> = {};
+  if (scored.includes("blocs")) for (const b of pack.blocs) qs[`bloc_${b.id}`] = {
+    type: "score", instructions: { bloc: b.description, question: "How strongly does this group oppose the `stance` taken on `event`?" },
+    criteria: ["Indifferent or supportive", "Opposed", "Outraged"] };
+  if (scored.includes("patrons")) for (const p of pack.patrons) qs[`patron_${p.id}`] = {
+    type: "score", instructions: { patron: p.name, wants: p.wants, hates: p.hates, question: "How strongly does this patron oppose the `stance` taken on `event`?" },
+    criteria: ["Indifferent or supportive", "Opposed", "Outraged"] };
+  return qs;
 }
