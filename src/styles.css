@@ -124,6 +124,14 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 
 /* front door: write, match, build, seat. Seat keeps the v1 shape: stage left, rail right, vertical on a phone. */
 .write, .match, .build, .takeseat { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px; }
+.landing { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--s5) var(--s6); align-items: start; }
+.landing .mast { grid-column: 1 / -1; }
+.door { display: grid; gap: var(--s2); align-content: start; }
+.door h2 { font-size: clamp(26px, 3vw, 40px); text-transform: uppercase; }
+.door .ask { font-size: clamp(20px, 2.4vw, 28px); }
+.door .field { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.sq.r-tre, .sq.r-aut, .sq.r-che, .sq.r-loy, .sq.r-pop { color: var(--c); }
 .write, .match { display: grid; gap: 18px; justify-items: start; }
 .build, .takeseat { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 18px 32px; }
 .write h1, .match h1, .build h1 { font-size: clamp(34px, 6vw, 62px); text-transform: uppercase; }

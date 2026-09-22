@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError, type GameView, type Offer, type PackView } from "./api";
-import Write from "./Write";
+import Landing from "./Landing";
+import type { Daily } from "./api";
 import Match from "./Match";
 import Build from "./Build";
 import Seat from "./Seat";
@@ -13,7 +14,7 @@ import { applyTheme, resetTheme } from "./theme";
 import "./styles.css";
 
 export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
-type Screen = "write" | "match" | "build" | "seat";
+type Screen = "landing" | "match" | "build" | "seat";
 
 const SCENARIO = /^\/s\/([a-z0-9]+)$/i;
 // Blocked storage is a browser setting, not a broken game: every read is a miss and every write is dropped.
@@ -28,8 +29,9 @@ const go = (path: string, replace = false) => {
 };
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("write");
+  const [screen, setScreen] = useState<Screen>("landing");
   const [prompt, setPrompt] = useState("");
+  const [daily, setDaily] = useState<Daily | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [scenario, setScenario] = useState<string | null>(null);
   const [pack, setPack] = useState<PackView | null>(null);
@@ -52,7 +54,7 @@ export default function App() {
       setScenario(id);
       if (push) go(`/s/${id}`);
       if (s.status === "ready" && s.pack) { setPack(s.pack); setScreen("seat"); } else setScreen("build");
-    } catch (e) { fail(e); setScreen("write"); }
+    } catch (e) { fail(e); setScreen("landing"); }
     finally { setBusy(false); setBooting(false); }
   }, []);
 
@@ -71,6 +73,7 @@ export default function App() {
   useEffect(() => {
     const m = SCENARIO.exec(location.pathname);
     if (m) { open(m[1], false); return; }
+    api.daily().then(setDaily).catch(() => {});
     const id = store.get("usoj:game");
     if (!id) return;
     // Only a game the server says is gone drops the pointer: a flat tyre on the way back is not a lost run.
@@ -86,7 +89,7 @@ export default function App() {
       if (playing) return;
       const m = SCENARIO.exec(location.pathname);
       if (m) open(m[1], false);
-      else { setScreen("write"); setPack(null); setScenario(null); }
+      else { setScreen("landing"); setPack(null); setScenario(null); }
     };
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
@@ -122,13 +125,17 @@ export default function App() {
   };
 
   // The seat is taken once: the deep link is replaced so a reload finds the saved game, not the Seat screen.
+  const resumeId = store.get("usoj:game");
+  const resume = async () => { const id = store.get("usoj:game"); if (id) { setBusy(true); try { setGame(await api.load(id)); } catch (e) { fail(e); } finally { setBusy(false); } } };
+  const playCode = async (code: string) => { await act(() => api.share(code)); };
+
   const takeSeat = async (faction: string, promises: number[], seed: number) => {
     const ok = await act(() => api.seat(scenario!, faction, promises, seed));
     if (ok) go("/", true);
     return ok;
   };
 
-  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("write"); resetTheme(); go("/"); }, []);
+  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("landing"); resetTheme(); go("/"); }, []);
   const quit = () => { store.remove("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
 
@@ -159,7 +166,7 @@ export default function App() {
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
-        : <Write busy={busy} onSubmit={find} />}
+        : <Landing daily={daily} resume={!!resumeId} busy={busy} onFind={find} onResume={resume} onCode={playCode} onPlayDaily={open} />}
       <div role="status" aria-live="polite">{toast ? <div className="toast">{toast}</div> : null}</div>
     </>
   );

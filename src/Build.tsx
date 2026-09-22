@@ -83,6 +83,7 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
         <span className="flag"><Ornament kind={state?.pack?.theme.ornament ?? "rule"} /></span>
         <span>{frame ? `${frame.era} · ${frame.place}` : "One to two minutes"}</span>
       </div>
+      {state?.pack?.content_note ? <p className="note">{state.pack.content_note}</p> : null}
 
       {failed ? (
         <section className="stage">
