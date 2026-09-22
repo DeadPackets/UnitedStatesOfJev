@@ -58,6 +58,8 @@ export interface Game {
   marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
   lastApprove: Record<string, number>;   // previous citizen mean per region, the 0.05 gate
   revolt: number | null;   // the turn loyalty fell under its line; the faction votes as opposition for it
+  wire: WireLine[];   // this turn's lines
+  pending: string | null;
   economy?: string; terms: TermRecord[]; test?: TestResult;
   midterm?: Midterm; campaign?: Campaign;
   result?: { ending: Ending; score: number };
@@ -186,7 +188,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
-    lastApprove: {}, terms: [], revolt: null,
+    lastApprove: {}, terms: [], revolt: null, wire: [], pending: null,
   };
   const shuffled = [...game.members].sort(() => r() - 0.5);
   for (const m of shuffled.slice(0, Math.max(1, Math.round(pack.chamber.size * 0.15)))) m.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)];
@@ -432,17 +434,69 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     if (line) m.memory = [...m.memory, line].slice(-5);
   }
 
+  game.phase = "over";
+}
+
+export interface TurnEnd { wire: WireLine[]; warned: Warning[]; fired: Warning[]; event: Event | null; pending: string | null }
+
+// Stubs until Tasks 14 and 15 fill them; the signatures are final.
+export const applyRates = (_pack: Pack, _game: Game): WireLine[] => [];
+export const decayPromises = (pack: Pack, game: Game): WireLine[] => { checkPromises(pack, game); return []; };
+
+// Spec §5.3, the whole boundary in order: rates, decay, warnings, the ledgers' lines, the Director, the
+// pending item. Every act resolves at once; only this function moves the clock.
+export function endTurn(pack: Pack, game: Game): TurnEnd {
+  const wire: WireLine[] = [];
+  game.revolt = null;
+  wire.push(...applyRates(pack, game));
+
+  for (const h of Object.values(game.holders)) h.resistance = clamp(round1(h.resistance - RESIST_DECAY), 0, 100);
+
+  const warnings = advanceWarnings(pack, game);
+  wire.push(...warnings.wire);
+
+  // §4: under its line the faction votes as opposition for the turn about to be played, and the class doubles.
+  // The revolt renews every turn loyalty stays under; the class doubles once a term, not once a turn.
+  if (ledgerValue(pack, game, "loyalty") <= ledgerLine(pack, "loyalty")) {
+    game.revolt = game.turn + 1;
+    if (!game.marks.doubled) {
+      const cls = new Set(game.marks.midterm ?? []);
+      for (const m of seeded(game, 0xd0b1e, game.members.filter((x) => !cls.has(x.seat)), cls.size)) cls.add(m.seat);
+      game.marks.midterm = [...cls];
+      game.marks.doubled = ["1"];
+    }
+  }
+  if (ledgerValue(pack, game, "popularity") <= ledgerLine(pack, "popularity")) {
+    const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
+    if (caller) caller.resistance = Math.max(caller.resistance, caller.line);
+  }
+
+  wire.push(...decayPromises(pack, game));
+  for (const e of on(game)) e.turn?.(pack, game);
+
   const voted = game.turn;
   game.turn += 1;
-  for (const e of on(game)) e.turn?.(pack, game);
-  checkPromises(pack, game);
-  const end = ending(pack, game);
-  if (end) {
-    game.stage = "over"; game.phase = "over";
-    game.terms.push(termPoints(game, 0));   // a term cut short still scores its bills and promises
-    game.result = { ending: end, score: score(game) };
-  } else if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; game.phase = "over"; startCampaign(pack, game); }
+  const event = game.stage === "session" || game.stage === "midterm" ? director(game, pack) : null;
+
+  if (game.result) { game.stage = "over"; game.phase = "over"; }
+  else if (game.stage === "test") game.phase = "over";
+  else if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; game.phase = "over"; startCampaign(pack, game); }
   else { game.phase = "draft"; if (voted === 10) game.stage = "midterm"; }
+
+  game.wire = wire;
+  game.pending = pendingItem(game, warnings, event);
+  return { wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
+}
+
+// The one more turn hook: the next thing that will happen, printed at the boundary.
+function pendingItem(game: Game, w: { warned: Warning[]; fired: Warning[] }, event: Event | null): string | null {
+  const open = game.warnings[0];
+  if (open) return `${open.holder} is at ${Math.round(open.number)} of a line of ${game.holders[open.holder]?.line ?? 0} and answers on turn ${open.fires}.`;
+  if (w.fired.length) return `${w.fired[0].holder} acted on its warning.`;
+  if (event) return "A card is on the desk.";
+  if (game.turn === 10) return "The half of the term falls next turn.";
+  if (game.turn === TURNS_PER_TERM) return "The test is next turn.";
+  return null;
 }
 
 function keepPromise(pack: Pack, game: Game, tag: string) {
@@ -458,7 +512,7 @@ function checkPromises(pack: Pack, game: Game) {
   const [d1, d2] = first(game, "promiseTurns") ?? [12, 20];
   for (const p of Object.values(game.promises)) {
     if (p.state !== "pending") continue;
-    if (!((game.turn > d1 && p.passed === 0) || (game.turn > d2 && p.passed < 2))) continue;
+    if (!((game.turn >= d1 && p.passed === 0) || (game.turn >= d2 && p.passed < 2))) continue;   // runs before the clock moves
     p.state = "broken";
     for (const r of pack.regions) bump(game, r.id, -6);
   }

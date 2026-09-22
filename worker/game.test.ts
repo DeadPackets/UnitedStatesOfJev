@@ -180,6 +180,14 @@ async function playTo(post: (p: string, b: unknown) => Promise<{ status: number 
       const r = await post(path, { turn, text: "Raise the harbor levy on the wharf and publish the accounts each month." });
       if (r.status !== 200) throw new Error(`${path} on turn ${turn}: ${r.status}`);
     }
+    // The Director draws at the boundary now, so last turn's card is on the desk and holds this one.
+    for (const [i, e] of game.events.entries()) {
+      if (e.stance !== undefined) continue;
+      const r = await post(`events/${i}`, { turn, stance: 0 });
+      if (r.status !== 200) throw new Error(`events/${i} on turn ${turn}: ${r.status}`);
+    }
+    const end = await post("turn/end", { turn });
+    if (end.status !== 200) throw new Error(`turn/end on turn ${turn}: ${end.status}`);
     if (game.turn === turn) throw new Error(`turn ${turn} did not advance`);
   }
 }

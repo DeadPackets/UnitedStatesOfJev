@@ -6,6 +6,7 @@ import {
 } from "./engine";
 import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, weightOf } from "./engine";
 import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
+import { endTurn } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -93,6 +94,7 @@ test("a passed bill moves the five ledgers", () => {
   const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);   // 16 of 24, own faction leads the yes votes
   const b = bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])), blocs: { dockworkers: 0, merchants: 2 }, patrons: { "grand-exchange": 0, "keelwright-hall": 2 } });
   applyVote(pack, g, b);
+  endTurn(pack, g);
   expect(b.passed).toBe(true);
   expect(b.yes).toBe(16);
   expect(b.threshold).toBe(pack.chamber.threshold);
@@ -146,12 +148,14 @@ test("promise deadlines bite at 12 and 20, or 8 and 16 under fickle base", () =>
   const g = game();
   g.turn = 13;
   applyVote(pack, g, bill(g, 0));
+  endTurn(pack, g);
   expect(g.promises.tariffs.state).toBe("broken");
 
   const h = game();
   h.escalations = ["fickle_base"];
   h.turn = 8;
   applyVote(pack, h, bill(h, 0));
+  endTurn(pack, h);
   expect(h.promises.tariffs.state).toBe("broken");
 });
 
@@ -196,10 +200,11 @@ test("the Director keeps 4 to 7 crises a term and never two in a row before turn
       // A plausible term: the coalition holds and 7 bills in 10 pass. A term that fails most of its bills
       // spends its turns on relief cards instead, which is the pressure valve working.
       applyVote(pack, g, bill(g, Math.random() < 0.7 ? 1 : 0));
-      // The dry run tests the Director, not the endings, so a run that ends early keeps going.
-      g.stage = "session";
-      const e = director(g, pack);
-      if (e) resolveEvent(pack, g, e, 0);
+      const out = endTurn(pack, g);
+      // The dry run tests the Director, not the endings or the stages, so a run that reaches the half-term
+      // or the campaign is put straight back in session for the next iteration.
+      g.stage = "session"; g.phase = "draft";
+      if (out.event) resolveEvent(pack, g, out.event, 0);
     }
     const exo = new Set(pack.deck.filter((d) => d.exogenous).map((d) => d.id));
     const crises = g.events.filter((e) => !e.relief);
@@ -418,10 +423,12 @@ test("the midterm follows turn 10's vote", () => {
   const early = game();
   early.turn = 9;
   applyVote(pack, early, bill(early, 0));
+  endTurn(pack, early);
   expect(early.stage).toBe("session");
   const g = game();
   g.turn = 10;
   applyVote(pack, g, bill(g, 0));
+  endTurn(pack, g);
   expect(g.turn).toBe(11);
   expect(g.stage).toBe("midterm");
 });
@@ -561,6 +568,7 @@ test("the campaign follows turn 20, not the test", () => {
   g.turn = 20;
   for (const r of pack.regions) g.ledgers.popularity[r.id] = 80;   // the three promises break on this vote: stay off the lame duck floor
   applyVote(pack, g, bill(g, 0.9));
+  endTurn(pack, g);
   expect(g.stage).toBe("campaign");
   expect(g.campaign!.turns.length).toBe(0);
 });
@@ -751,4 +759,50 @@ test("each response does its own thing and a coup ends the run", () => {
   expect(h.stage).toBe("over");
   expect(h.result!.ending).toBe("coup");
   expect(h.terms.length).toBe(1);
+});
+
+test("a vote no longer moves the clock; End turn does", () => {
+  const g = game();
+  applyVote(pack, g, bill(g, 1));
+  expect(g.turn).toBe(1);
+  expect(g.phase).toBe("over");
+  const out = endTurn(pack, g);
+  expect(g.turn).toBe(2);
+  expect(g.phase).toBe("draft");
+  expect(out.wire.every((w) => typeof w.cause === "string")).toBe(true);
+});
+
+test("the boundary decays resistance, advances warnings and prints the pending item", () => {
+  const g = game();
+  g.holders.council.resistance = 20;
+  g.holders.street.resistance = 80;
+  const out = endTurn(pack, g);
+  expect(g.holders.council.resistance).toBe(19);
+  expect(out.warned.map((w) => w.holder)).toEqual(["street"]);
+  expect(g.pending).toContain("70");
+});
+
+test("loyalty under its line is a revolt for one turn, and the class doubles once", () => {
+  const g = game();
+  const cls = Math.round(pack.chamber.size / 3);       // 24 / 3 = 8
+  expect(g.marks.midterm.length).toBe(cls);
+  g.ledgers.loyalty = 10;
+  endTurn(pack, g);
+  expect(g.revolt).toBe(g.turn);                       // the turn about to be played, not the one just ended
+  expect(g.marks.midterm.length).toBe(cls * 2);        // 16
+  endTurn(pack, g);
+  expect(g.revolt).toBe(g.turn);                       // still under the line, still in revolt
+  expect(g.marks.midterm.length).toBe(cls * 2);        // and the class does not double again
+});
+
+test("the half-term still follows turn 10 and the campaign still follows turn 20", () => {
+  const g = game();
+  g.turn = 10;
+  endTurn(pack, g);
+  expect(g.stage).toBe("midterm");
+  const h = game();
+  h.turn = 20;
+  endTurn(pack, h);
+  expect(h.stage).toBe("campaign");
+  expect(h.campaign!.turns).toEqual([]);
 });

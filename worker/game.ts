@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm, director,
-  effectiveWhip, encodeCode, endTerm, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
+  effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
   threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
@@ -89,6 +89,7 @@ export class GameDO extends DurableObject<Env> {
             parts[1] === "drafts" ? await this.drafts(game, pack) : await this.campaign(game, pack, body as CampaignBody);
             break;
           case "test": await this.term(s, pack); break;
+          case "turn": if (parts[1] !== "end") throw new Reject(404, "Unknown action"); this.end(game, pack); break;
           case "continue":
             if (game.stage !== "won") throw new Reject(409, "The term is not won.");
             continueTerm(pack, game); s.prose = {};
@@ -373,6 +374,12 @@ export class GameDO extends DurableObject<Env> {
     return { deltas: applyCitizens(pack, game, nouls(citizens.answers, "")) };
   }
 
+  private end(game: Game, pack: Pack) {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    if (game.events.some((e) => e.stance === undefined)) throw new Reject(409, "Answer the card on the desk first.");
+    endTurn(pack, game);
+  }
+
   private async term(s: Saved, pack: Pack) {
     const { game } = s;
     if (game.stage !== "test") throw new Reject(409, `The ${pack.vocabulary.test} is not due yet.`);
@@ -401,6 +408,8 @@ export function migrate(game: Game): void {
   game.revolt ??= null;
   game.holders ??= {};
   game.warnings ??= [];
+  game.wire ??= [];
+  game.pending ??= null;
 }
 
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
