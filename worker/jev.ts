@@ -1,7 +1,10 @@
 import { BLOCS, popularity, type Bill, type Game, type Senator } from "./engine";
 import { STATES } from "./states";
 
-export type Env = { GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string };
+export type Env = {
+  GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
+  DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow; BUILDS: DurableObjectNamespace; DAILY_BUILD_CAP: string;
+};
 export class UpstreamError extends Error { constructor(public status: number, message: string) { super(message); } }
 
 export async function post(env: Env, path: string, body: unknown): Promise<any> {

@@ -1,7 +1,14 @@
 import { Hono } from "hono";
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import { decodeCode, dailyCode } from "./engine";
 import type { Env } from "./jev";
 export { GameDO } from "./game";
+export { BuildsDO } from "./db";
+
+// Placeholder: Task 6 replaces this with the real scenario build workflow.
+export class ScenarioBuild extends WorkflowEntrypoint<Env> {
+  async run(_event: WorkflowEvent<unknown>, _step: WorkflowStep) {}
+}
 
 const app = new Hono<{ Bindings: Env }>();
 
