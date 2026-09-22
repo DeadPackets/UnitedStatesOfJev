@@ -1,14 +1,14 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm,
-  effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
+  earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
-  threshold, TURNS_PER_TERM,
+  holdersOf, threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
 } from "./engine";
 import {
-  agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, gateQuestion, jev,
-  memberQuestion, nouls, reactQuestions, reactState, scores, testQuestions, testState, UpstreamError, voteQuestions,
+  agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, gateQuestion, HOLDER_SAMPLE, holderQuestions,
+  holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
@@ -381,8 +381,18 @@ export class GameDO extends DurableObject<Env> {
   private async term(s: Saved, pack: Pack) {
     const { game } = s;
     if (game.stage !== "test") throw new Reject(409, `The ${pack.vocabulary.test} is not due yet.`);
-    const r = await jev(this.env, testState(pack, game), testQuestions(pack, game));
-    const result = runTest(pack, game, { loyalty: nouls(r.answers, "loyalty_"), intent: nouls(r.answers, "intent_") });
+    const hs = holdersOf(pack);
+    // One call per holder, each with that holder's own numbers: the v3 single call measured 93% of the cap.
+    const reads = await Promise.all(hs.map(async (h) => {
+      const rows = {
+        seats: h.members === "seats" ? game.members : [],
+        citizens: h.members === "citizens" ? seededSample(game, pack.citizens, HOLDER_SAMPLE) : [],
+      };
+      const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, rows));
+      return [h.id, holderStance(pack, h, r.answers)] as const;
+    }));
+    const stances = Object.fromEntries(reads);
+    const result = game.earlyTest ? earlyTest(pack, game, game.earlyTest, stances) : runTest(pack, game, stances);
     endTerm(pack, game, result);
   }
 

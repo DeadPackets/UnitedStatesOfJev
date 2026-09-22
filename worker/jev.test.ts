@@ -40,3 +40,22 @@ test("a citizen sees the money spent in their own region, not the whole map", ()
 test("choices reads the top probability and strips the prefix", () => {
   expect(choices({ react_a: { probabilities: { like: 0.2, boo: 0.7, share: 0.1 } }, other: { noul: 1 } }, "react_")).toEqual({ a: "boo" });
 });
+
+import { holderQuestions, holderStance, holderState, HOLDER_SAMPLE } from "./jev";
+
+test("a holder is read with its own numbers, and only its own", () => {
+  const h = pack.constitution!.holders.find((x) => x.id === "street")!;
+  const rows = { seats: [], citizens: pack.citizens.slice(0, HOLDER_SAMPLE) };
+  const qs = holderQuestions(pack, game, h, rows);
+  expect(Object.keys(qs).length).toBe(HOLDER_SAMPLE);
+  const one = qs[`stance_${pack.citizens[0].id}`] as { instructions: Record<string, unknown> };
+  expect(one.instructions.popularity_here).toBe(Math.round(game.ledgers.popularity[pack.citizens[0].region]));
+  const chamber = pack.constitution!.holders.find((x) => x.id === "council")!;
+  const cq = holderQuestions(pack, game, chamber, { seats: game.members, citizens: [] });
+  expect(Object.keys(cq).length).toBe(game.members.length);
+  const guard = pack.constitution!.holders.find((x) => x.id === "guard")!;
+  const gq = holderQuestions(pack, game, guard, { seats: [], citizens: [] });
+  expect(Object.keys(gq)).toEqual([`stance_${guard.id}`]);
+  expect((holderState(pack, game, guard) as { resistance: number }).resistance).toBe(0);
+  expect(holderStance(pack, guard, { [`stance_${guard.id}`]: { noul: 0.7 } })).toBeCloseTo(0.7, 5);
+});

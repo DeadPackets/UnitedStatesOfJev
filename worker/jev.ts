@@ -1,5 +1,5 @@
 import { popularity, record, threshold, type Bill, type Game, type Member } from "./engine";
-import type { Citizen, Pack, Storylet } from "./pack";
+import type { Citizen, Holder, Pack, Storylet } from "./pack";
 
 export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
@@ -151,26 +151,66 @@ export function citizenQuestions(pack: Pack, citizens: Citizen[], event: "vote" 
 
 export const citizenState = (pack: Pack, game: Game, event: unknown) => ({ event, record: record(pack, game) });
 
-// Term end. chamber_loyalty is the mean of the confidence whip; public_intent the region-weighted citizen mean.
-export function testQuestions(pack: Pack, game: Game): Record<string, Question> {
-  const title = pack.starts.find((s) => s.faction === game.faction)?.seat_title ?? "the government";
-  const qs: Record<string, Question> = {};
-  for (const m of game.members) qs[`loyalty_${m.id}`] = {
-    type: "noul",
-    instructions: { [pack.vocabulary.member]: persona(pack, m), question: `confidence in the ${title}` },
-    criteria: {
-      true: `They still back the ${title} after this term's record.`,
-      false: `They have lost confidence in the ${title} after this term's record.`,
-    },
+// Measured: 250 citizen questions cost 42 to 55k tokens and the v3 test call reached 93% of the 64k cap.
+// One holder is one call, and the street reads a seeded sample, not the whole roll.
+export const HOLDER_SAMPLE = 50;   // TUNE
+
+export function holderState(pack: Pack, game: Game, h: Holder): unknown {
+  const s = game.holders[h.id];
+  return {
+    holder: { name: h.name, role: h.persona.role, wants: h.wants, red_lines: h.redLines },
+    resistance: s?.resistance ?? 0, line: s?.line ?? h.line,
+    [pack.vocabulary.test]: pack.constitution?.retention.name ?? pack.test.name,
+    record: record(pack, game),
   };
-  for (const c of pack.citizens) qs[`intent_${c.id}`] = {
+}
+
+export function holderQuestions(pack: Pack, game: Game, h: Holder, rows: { seats: Member[]; citizens: Citizen[] }): Record<string, Question> {
+  const title = pack.constitution?.ruler.role ?? pack.starts.find((s) => s.faction === game.faction)?.seat_title ?? "the government";
+  const qs: Record<string, Question> = {};
+  const criteria = {
+    true: `They would keep the ${title} after this term's record.`,
+    false: `They would not keep the ${title} after this term's record.`,
+  };
+  if (h.members === "seats") {
+    for (const m of rows.seats) qs[`stance_${m.id}`] = {
+      type: "noul",
+      instructions: { [pack.vocabulary.member]: persona(pack, m), whip: Math.round(m.loyalty), question: `Would this ${pack.vocabulary.member} keep the ${title} in power?` },
+      criteria,
+    };
+    return qs;
+  }
+  if (h.members === "citizens") {
+    for (const c of rows.citizens) qs[`stance_${c.id}`] = {
+      type: "noul",
+      instructions: {
+        citizen: citizenPersona(pack, c),
+        popularity_here: Math.round(game.ledgers.popularity[c.region] ?? 50),
+        question: `Would this person keep the ${title} in power?`,
+      },
+      criteria,
+    };
+    return qs;
+  }
+  qs[`stance_${h.id}`] = {
     type: "noul",
-    instructions: { citizen: citizenPersona(pack, c), question: `Would this person vote to keep the ${title} in power?` },
-    criteria: { true: `The term's record served them well enough to keep the ${title}.`, false: `The term's record was bad enough for them to want a change.` },
+    instructions: {
+      holder: { name: h.persona.name, role: h.persona.role, bio: h.persona.bio, tell: h.persona.tell, wants: h.wants, red_lines: h.redLines },
+      resistance: game.holders[h.id]?.resistance ?? 0,
+      question: `Would ${h.name} keep the ${title} in power?`,
+    },
+    criteria,
   };
   return qs;
 }
-export const testState = (pack: Pack, game: Game) => ({ [pack.vocabulary.test]: pack.test.name, record: record(pack, game) });
+
+// _pack and _h: the caller has both and passes them so every holder read reads the same way, but the mean of
+// the stance_ answers needs neither, and tsconfig.worker.json sets noUnusedParameters.
+export function holderStance(_pack: Pack, _h: Holder, answers: Answers): number {
+  const xs = Object.entries(answers).filter(([k]) => k.startsWith("stance_")).map(([, v]) => v.noul ?? 0);
+  if (!xs.length) return 0.5;
+  return Math.min(1, Math.max(0, xs.reduce((a, b) => a + b, 0) / xs.length));
+}
 
 export function eventQuestions(pack: Pack, scored: Storylet["scored"]): Record<string, Question> {
   const qs: Record<string, Question> = {};

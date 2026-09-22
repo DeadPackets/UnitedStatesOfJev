@@ -460,3 +460,24 @@ test("a card on the desk holds the boundary", async () => {
   expect(r.status).toBe(409);
   expect(r.body.error).toContain("card");
 });
+
+test("the test reads each holder in its own Jev call, and an early test names its caller", async () => {
+  for (const early of [undefined, "guard"]) {
+    stubModels(0.9);
+    const sizes: number[] = [];
+    const stub = globalThis.fetch;
+    globalThis.fetch = (async (url: string, init: RequestInit) => {
+      const q = JSON.parse(String(init.body)).questions;
+      if (q) sizes.push(Object.keys(q).length);
+      return stub(url, init);
+    }) as unknown as typeof fetch;
+    const { game, post } = seatedGame(23);
+    game.stage = "test";
+    game.earlyTest = early;
+    const r = await post("test", {});
+    expect(r.status).toBe(200);
+    expect(sizes.sort((a, b) => a - b)).toEqual([1, 1, pack.chamber.size, 50]);   // guard, league, council, street sample
+    expect(r.body.test.holders.length).toBe(4);
+    expect(r.body.test.early).toBe(early);
+  }
+});

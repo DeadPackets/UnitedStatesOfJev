@@ -10,6 +10,7 @@ import { endTurn } from "./engine";
 import { enact, inForceAge, repeal, STRIKE_HIT } from "./engine";
 import { authorPromise, PROMISE_WINDOW } from "./engine";
 import { record, RECORD_TOKENS } from "./engine";
+import { bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -240,54 +241,77 @@ test("the Director keeps 4 to 7 crises a term and never two in a row before turn
   expect(Math.min(...counts)).toBeGreaterThanOrEqual(2);
 });
 
-test("the test mixes public intent and chamber loyalty by the pack's alpha", () => {
-  const all = (ids: string[], p: number) => Object.fromEntries(ids.map((id) => [id, p]));
-  const citizenIds = pack.citizens.map((c) => c.id);
+test("the bar climbs per term and stops at its cap", () => {
+  expect(bar(pack, 1)).toBeCloseTo(0.5, 5);
+  expect(bar(pack, 3)).toBeCloseTo(0.56, 5);
+  expect(bar(pack, 30)).toBeCloseTo(0.7, 5);
+});
 
-  const publicOnly: Pack = { ...pack, chamber: { ...pack.chamber, alpha: 1 } };
-  let won = 0;
-  for (let i = 0; i < 200; i++) {
-    const r = runTest(publicOnly, game(), { loyalty: {}, intent: all(citizenIds, 0.9) });
-    expect(r.public).toBeCloseTo(0.9, 5);
-    expect(r.regions.map((x) => x.weight)).toEqual([...r.regions.map((x) => x.weight)].sort((a, b) => b - a));
-    if (r.won) won++;
-  }
-  expect(won).toBeGreaterThanOrEqual(190);
+test("the mandate is the weighted mean of the counted holders' stances", () => {
+  const g = game();
+  // council weighs 0.4 and street 0.6 in mini.json; guard and league weigh 0, so their stances are ignored.
+  // 0.4 x 0.8 + 0.6 x 0.2 = 0.32 + 0.12 = 0.44, under the term-1 bar of 0.50.
+  const r = runTest(pack, g, { council: 0.8, street: 0.2, guard: 1, league: 1 });
+  expect(r.mandate).toBeCloseTo(0.44, 5);
+  expect(r.bar).toBeCloseTo(0.5, 5);
+  expect(r.won).toBe(false);
+  expect(r.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league"]);   // pack order
+  expect(r.holders.find((h) => h.id === "guard")!.counted).toBe(false);
+  expect(runTest(pack, g, { council: 1, street: 1 }).won).toBe(true);                     // 1.0 clears 0.50
+});
 
-  const chamberOnly: Pack = { ...pack, chamber: { ...pack.chamber, alpha: 0 } };
-  let lost = 0;
-  for (let i = 0; i < 200; i++) {
-    const g = game();
-    const r = runTest(chamberOnly, g, { loyalty: all(g.members.map((m) => m.id), 0.1), intent: all(citizenIds, 1) });
-    expect(r.loyalty).toBeCloseTo(0.1, 5);
-    expect(r.seats.map((x) => x.p)).toEqual([...r.seats.map((x) => x.p)].sort((a, b) => a - b));
-    if (!r.won) lost++;
-  }
-  expect(lost).toBe(200);
+test("a minority start prints its shortfall, is handicapped over 6 and wins on survival over 15", () => {
+  const thin = (threshold: number, own: number): Pack => ({
+    ...pack,
+    chamber: { ...pack.chamber, threshold },
+    members: pack.members.map((m, i) => ({ ...m, faction: i < own ? "harborites" : "keelwrights" })),
+  });
+  // mini.json: 13 needed, harborites hold 10 of 24, so the shortfall is 3 and nothing is handicapped.
+  expect(shortfall(pack, "harborites")).toBe(3);
+  expect(game().ledgers.authority).toBe(pack.starts[0].capital);
+
+  const hard = thin(20, 10);                                             // 20 - 10 = 10, over HANDICAP_SHORTFALL
+  expect(shortfall(hard, "harborites")).toBe(10);
+  const h = newGame("g-hard", CODE, hard, "harborites", PROMISES, CAL);
+  expect(h.ledgers.authority).toBe(pack.starts[0].capital - HANDICAP);   // 40 - 10 = 30
+
+  const alone = thin(20, 2);                                             // 20 - 2 = 18, over SURVIVAL_SHORTFALL
+  const a = newGame("g-alone", CODE, alone, "harborites", PROMISES, CAL);
+  const r = runTest(alone, a, { council: 0.45, street: 0.45 });
+  expect(r.bar).toBeCloseTo(SURVIVAL_BAR, 5);                            // its own bar, not bar(term) 0.50
+  expect(r.won).toBe(true);                                              // mandate 0.45 clears 0.40
+  expect(runTest(pack, game(), { council: 0.45, street: 0.45 }).won).toBe(false);   // the same room, normal bar
+});
+
+test("an early test brings its caller in and renormalises the weights", () => {
+  const g = game();
+  const r = earlyTest(pack, g, "guard", { council: 1, street: 1, guard: 0 });
+  expect(r.early).toBe("guard");
+  const total = r.holders.filter((h) => h.counted).reduce((a, h) => a + h.weight, 0);
+  expect(total).toBeCloseTo(1, 5);
+  expect(r.holders.find((h) => h.id === "guard")!.weight).toBeCloseTo(EARLY_WEIGHT / (1 + EARLY_WEIGHT), 5);
+  expect(r.mandate).toBeCloseTo(1 / (1 + EARLY_WEIGHT), 5);
 });
 
 test("a term ends with a score, and another term stacks two escalations", () => {
   const g = game();
   for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 1));
-  const won = runTest(pack, g, {
-    loyalty: Object.fromEntries(g.members.map((m) => [m.id, 1])),
-    intent: Object.fromEntries(pack.citizens.map((c) => [c.id, 1])),
-  });
+  const won = runTest(pack, g, { council: 1, street: 1 });
   endTerm(pack, g, won);
-  expect(won.won).toBe(true);
+  expect(won.won).toBe(true);                // 0.4 x 1 + 0.6 x 1 = 1.0, over the term-1 bar of 0.50
   expect(g.stage).toBe("won");
   expect(g.result!.ending).toBe("reelected");
   expect(g.result!.score).toBeGreaterThan(0);
   expect(g.terms[0].passed).toBe(4);
 
   const memory = g.members.map((m) => m.memory.length);
-  const approval = { ...g.ledgers.popularity };
+  const popularity = { ...g.ledgers.popularity };
   continueTerm(pack, g);
   expect(g.term).toBe(2);
   expect(g.turn).toBe(1);
   expect(g.escalations).toEqual(["hostile_press", "supermajority_era"]);
   expect(g.members.map((m) => m.memory.length)).toEqual(memory);
-  expect(g.ledgers.popularity).toEqual(approval);
+  expect(g.ledgers.popularity).toEqual(popularity);
   expect(g.bills.length).toBe(0);
   expect(g.terms.length).toBe(1);
 });
@@ -408,16 +432,14 @@ test("a conditional dated card waits for a clear turn, up to two turns late", ()
   expect(director(dropped, p)).toBeNull();
 });
 
-test("the test draws both halves whatever the reveal order is", () => {
-  const seatsOnly: Pack = { ...pack, test: { ...pack.test, reveal: "seats" }, chamber: { ...pack.chamber, alpha: 1 } };
-  const intent = Object.fromEntries(pack.citizens.map((c) => [c.id, 0.5]));
-  const drawn = new Set<number>();
-  for (let i = 0; i < 50; i++) {
-    const r = runTest(seatsOnly, game(), { loyalty: {}, intent });
-    expect(r.public).toBeCloseTo(0.5, 5);
-    drawn.add(r.drawnPublic);
-  }
-  expect(drawn.size).toBeGreaterThan(1);    // the tally is the drawn count, never the mean
+test("the v3 test screen still gets its four numbers", () => {
+  const g = game();
+  const r = runTest(pack, g, { council: 0.8, street: 0.4 });
+  expect(r.seats.length).toBe(pack.chamber.size);
+  expect(r.regions.length).toBe(pack.regions.length);
+  expect(r.drawnPublic).toBeGreaterThanOrEqual(0);
+  expect(r.loyalty).toBeCloseTo(0.8, 5);
+  expect(r.public).toBeCloseTo(0.4, 5);
 });
 
 test("a hostile party shows in the whip state, and a favor comes back as capital", () => {
@@ -467,7 +489,7 @@ test("a code that is not a string is a bad code", () => {
   expect(() => decodeCode({} as unknown as string)).toThrow("Bad code");
 });
 
-import { applyCampaign, applyMidterm, applyPost, baseBlocs, CAMPAIGN_TURNS, forecast, holdP,
+import { applyCampaign, applyMidterm, applyPost, CAMPAIGN_TURNS, forecast, holdP,
   leverCost, leverGain, midtermUp, regionIntent, replacements, rivalTargets, runMidterm, startCampaign,
   type Persona, type Reaction } from "./engine";
 
@@ -644,20 +666,6 @@ test("the forecast band is the sampling error of intent, not of a single regiona
   expect(wide.band[1] - wide.band[0]).toBeGreaterThan(0.3);        // 5 citizens total: barely a sample
   expect(narrow.public).toBeCloseTo(0.5, 6);
   expect(narrow.regions).toEqual(regions5.map((r) => ({ id: r.id, p: 0.5 })));   // sigmoid((0.5 - 0.5) * 12) = 0.5
-});
-
-test("apathy thins the turnout of the player's strongest groups at the test", () => {
-  const g = game(), h = game();
-  for (const b of pack.blocs) { g.blocs[b.id] = 0.2; h.blocs[b.id] = 0.2; }
-  g.blocs.dockworkers = 0.9; g.blocs.merchants = 0.8;
-  h.blocs.dockworkers = 0.9; h.blocs.merchants = 0.8;
-  h.stageB.apathy = 0.8;
-  expect(baseBlocs(g)).toEqual(["dockworkers", "merchants"]);
-  const answers = {
-    loyalty: Object.fromEntries(g.members.map((m) => [m.id, 0.5])),
-    intent: Object.fromEntries(pack.citizens.map((c) => [c.id, c.bloc === "dockworkers" || c.bloc === "merchants" ? 1 : 0])),
-  };
-  expect(runTest(pack, h, answers).public).toBeLessThan(runTest(pack, g, answers).public);
 });
 
 test("each ledger has a failure line, the pack may rename it and the engine reads both", () => {

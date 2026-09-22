@@ -29,10 +29,13 @@ export interface Event {
   card?: { title: string; body: string; stances: string[] };
   stance?: number; scores?: Record<string, number>; outcome?: string;
 }
+export interface HolderRow { id: string; name: string; weight: number; stance: number; counted: boolean }
 export interface TestResult {
-  loyalty: number; public: number; drawnLoyalty: number; drawnPublic: number; mandate: number; won: boolean;
-  seats: { id: string; p: number; yes: boolean }[];              // loyalty ascending, the walk
-  regions: { id: string; weight: number; p: number; yes: boolean }[];   // region weight descending, the map
+  mandate: number; bar: number; won: boolean; holders: HolderRow[]; early?: string;
+  // The v3 Test screen reads these four and the two walks. Stage C deletes them.
+  loyalty: number; public: number; drawnLoyalty: number; drawnPublic: number;
+  seats: { id: string; p: number; yes: boolean }[];
+  regions: { id: string; weight: number; p: number; yes: boolean }[];
 }
 export interface HolderState {
   id: string; stance: number; resistance: number; line: number;
@@ -195,6 +198,10 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
     lastApprove: {}, terms: [], revolt: null, wire: [], pending: null,
   };
+  // §6: a start that needs more than HANDICAP_SHORTFALL seats it does not hold opens with less authority.
+  if (shortfall(pack, start.faction) > HANDICAP_SHORTFALL) {
+    game.ledgers.authority = clamp(game.ledgers.authority - HANDICAP, 0, 200);
+  }
   const shuffled = [...game.members].sort(() => r() - 0.5);
   for (const m of shuffled.slice(0, Math.max(1, Math.round(pack.chamber.size * 0.15)))) m.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)];
   game.marks.midterm = shuffled.slice(0, Math.round(pack.chamber.size / 3)).map((m) => m.seat);
@@ -365,7 +372,9 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
   empty_chest: { chest: 0.5 },
   hostile_court: { struckAt: 0.5 },
   rival_surge: { stageB: 2 },            // rivalTargets spend
-  apathy: { stageB: 0.8 },               // runTest turnout
+  // Parked for Stage B: apathy re-homes onto the street holder's citizen sample, which is where turnout now
+  // lives. Nothing reads stageB.apathy in Stage A.
+  apathy: { stageB: 0.8 },
   defections: { whip: (game, m) => (m.faction === game.faction ? -0.05 : 0) },
   loud_opposition: { stageB: 1.5 },      // applyPost
   crisis_fatigue: { noRelief: true },
@@ -1031,40 +1040,72 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
 
 /* ---------- the test, endings, score ---------- */
 
-export interface TestAnswers { loyalty: Record<string, number>; intent: Record<string, number> }
+export const BAR = { start: 0.5, step: 0.03, cap: 0.7 };   // TUNE, R5: the pack may move all three
 
-// The pack names no base bloc, so the player's base is the groups that approve of them most at term end.
-export const baseBlocs = (game: Game, n = 2): string[] =>
-  Object.entries(game.blocs).sort((a, b) => b[1] - a[1]).slice(0, n).map(([id]) => id);
+export function bar(pack: Pack, term: number): number {
+  const b = pack.constitution?.retention.bar ?? BAR;
+  return Math.min(b.cap, b.start + b.step * (term - 1));
+}
 
-// Both halves are always drawn, one draw per seat and per region, so the tally is the drawn count, not the
-// mean. pack.test.reveal only decides which half the UI walks.
-export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResult {
-  const seats = game.members.map((m) => ({ id: m.id, p: clamp(answers.loyalty[m.id] ?? 0, 0, 1) })).sort((a, b) => a.p - b.p);
-  const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
-  const apathy = game.stageB.apathy;
-  const thin = new Set(apathy ? baseBlocs(game) : []);
-  for (const c of pack.citizens) {
-    const g = per.get(c.region);
-    if (!g) continue;
-    const w = c.weight * (thin.has(c.bloc) ? apathy! : 1);
-    g.w += w; g.s += w * (answers.intent[c.id] ?? 0);
-  }
-  const regions = pack.regions
-    .map((r) => { const g = per.get(r.id)!; return { id: r.id, weight: r.weight, p: g.w ? clamp(g.s / g.w, 0, 1) : 0.5 }; })
-    .sort((a, b) => b.weight - a.weight);
+// §6 minority starts. Measured off the pack's own roster, so a midterm that changes hands cannot move it:
+// the handicap and the survival path are properties of the start, not of the chamber on the day.
+export const HANDICAP_SHORTFALL = 6;    // TUNE, §6: above this the start carries a printed handicap
+export const HANDICAP = 10;             // TUNE, §6: the authority that handicap costs
+export const SURVIVAL_SHORTFALL = 15;   // TUNE, §6: above this the win path is survival
+export const SURVIVAL_BAR = 0.4;        // TUNE, §6: the survival path's own bar
+
+export const shortfall = (pack: Pack, faction: string): number =>
+  pack.chamber.threshold - pack.members.filter((m) => m.faction === faction).length;
+
+function result(pack: Pack, game: Game, rows: HolderRow[], theBar: number, early?: string): TestResult {
+  const counted = rows.filter((r) => r.counted);
+  const mandate = counted.reduce((a, r) => a + r.weight * r.stance, 0);
+  const chamber = rows.find((r) => holdersOf(pack).find((h) => h.id === r.id)?.members === "seats");
+  const street = rows.find((r) => holdersOf(pack).find((h) => h.id === r.id)?.members === "citizens");
+  const loyalty = chamber?.stance ?? mandate, pub = street?.stance ?? mandate;
+  const regions = pack.regions.map((r) => ({ id: r.id, weight: r.weight, p: pub })).sort((a, b) => b.weight - a.weight);
+  // foreign_meddling shades the marked regions in the reveal only: the mandate above is already decided on
+  // the holders' stances, which is what "decided on the means" means.
   for (const e of on(game)) e.test?.(game, regions);
+  return {
+    mandate, bar: theBar, won: mandate >= theBar, holders: rows,
+    ...(early ? { early } : {}),
+    loyalty, public: pub, drawnLoyalty: loyalty, drawnPublic: pub,
+    seats: game.members.map((m) => ({ id: m.id, p: loyalty, yes: roll() < loyalty })).sort((a, b) => a.p - b.p),
+    regions: regions.map((r) => ({ ...r, yes: roll() < r.p })),
+  };
+}
 
-  const wsum = regions.reduce((a, r) => a + r.weight, 0) || 1;
-  const loyalty = mean(seats.map((s) => s.p));
-  const pub = regions.reduce((a, r) => a + r.weight * r.p, 0) / wsum;
-  const drawnSeats = seats.map((s) => ({ ...s, yes: roll() < s.p }));
-  const drawnRegions = regions.map((r) => ({ ...r, yes: roll() < r.p }));
-  const drawnLoyalty = drawnSeats.filter((s) => s.yes).length / (drawnSeats.length || 1);
-  const drawnPublic = drawnRegions.reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
-  const a = pack.chamber.alpha;
-  const mandate = a * drawnPublic + (1 - a) * drawnLoyalty;
-  return { loyalty, public: pub, drawnLoyalty, drawnPublic, mandate, won: mandate >= 0.5, seats: drawnSeats, regions: drawnRegions };
+const holderRows = (pack: Pack, game: Game, stances: Record<string, number>): HolderRow[] =>
+  holdersOf(pack).map((h) => ({
+    id: h.id, name: h.name, weight: game.holders[h.id]?.weight ?? weightOf(pack, h.id),
+    stance: clamp(stances[h.id] ?? game.holders[h.id]?.stance ?? 0.5, 0, 1),
+    counted: (game.holders[h.id]?.weight ?? weightOf(pack, h.id)) > 0,
+  }));
+
+// Spec §6: decided on the means. The draws in `seats` and `regions` are the reveal, never the verdict.
+export function runTest(pack: Pack, game: Game, stances: Record<string, number>): TestResult {
+  const rows = holderRows(pack, game, stances);
+  for (const h of holdersOf(pack)) {
+    const s = game.holders[h.id];
+    if (s && stances[h.id] !== undefined) s.stance = clamp(stances[h.id], 0, 1);
+  }
+  // §6: a deep minority start wins by reaching the test at all, scored on its own bar.
+  const theBar = shortfall(pack, game.faction) > SURVIVAL_SHORTFALL ? SURVIVAL_BAR : bar(pack, game.term);
+  return result(pack, game, rows, theBar);
+}
+
+export const EARLY_WEIGHT = 0.3;   // TUNE: what an uncounted holder brings to the test it calls
+
+// R4 and §6: the same formula, the current term's bar, the caller's weight renormalised with the others.
+// No rounding: three counted holders rounded to 0.333 sum to 0.999 and the mandate reads these numbers.
+// An early test is the failure of the survival path, so it is judged on the term's bar, never SURVIVAL_BAR.
+export function earlyTest(pack: Pack, game: Game, holderId: string, stances: Record<string, number>): TestResult {
+  const rows = holderRows(pack, game, stances).map((r) =>
+    r.id === holderId ? { ...r, weight: Math.max(r.weight, EARLY_WEIGHT), counted: true } : r);
+  const total = rows.filter((r) => r.counted).reduce((a, r) => a + r.weight, 0) || 1;
+  const norm = rows.map((r) => (r.counted ? { ...r, weight: r.weight / total } : r));
+  return result(pack, game, norm, bar(pack, game.term), holderId);
 }
 
 // The only end a turn can reach on its own is a coup; every other stop is a holder's response or the test.
