@@ -661,6 +661,8 @@ test("the clerks stop at six calls a turn, whichever route asks", async () => {
   expect(game.calls).toBe(6);
 
   game.calls = 0;
+  expect((await post("bills/1/lobby", { turn: 1, memberId: "nobody", action: "pork" })).status).toBe(400);
+  expect(game.calls).toBe(0);   // a refused route gives its charge back
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
   expect(game.calls).toBe(1);
 });

@@ -158,17 +158,22 @@ export class GameDO extends DurableObject<Env> {
     const CALLS: Record<string, number> = { lobby: 1, amend: 3, vote: 1 };
     const owed = parts[3] === undefined ? CALLS[action ?? ""] ?? 0 : 0;   // amend/:i adopts a draft and calls no model
     if (owed && !spendCalls(game, owed)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
-    switch (action) {
-      case "whip":
-        if (bill!.whip) throw new Reject(409, "Already counted.");
-        Object.assign(bill!, await this.count(game, pack, bill!));
-        return {};
-      case "lobby": await this.lobby(game, pack, bill!, String(body.memberId ?? ""), body.action as LobbyAction); return {};
-      case "amend":
-        parts[3] !== undefined ? this.adopt(bill!, Number(parts[3])) : await this.amend(game, pack, bill!);
-        return {};
-      case "vote": return this.vote(game, pack, bill!);
-      default: throw new Reject(404, "Unknown action");
+    try {
+      switch (action) {
+        case "whip":
+          if (bill!.whip) throw new Reject(409, "Already counted.");
+          Object.assign(bill!, await this.count(game, pack, bill!));
+          return {};
+        case "lobby": await this.lobby(game, pack, bill!, String(body.memberId ?? ""), body.action as LobbyAction); return {};
+        case "amend":
+          parts[3] !== undefined ? this.adopt(bill!, Number(parts[3])) : await this.amend(game, pack, bill!);
+          return {};
+        case "vote": return this.vote(game, pack, bill!);
+        default: throw new Reject(404, "Unknown action");
+      }
+    } catch (e) {
+      if (e instanceof Reject) game.calls -= owed;   // a Reject is not rolled back, and a 4xx must move nothing
+      throw e;
     }
   }
 
