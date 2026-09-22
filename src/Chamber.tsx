@@ -80,9 +80,9 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   useEffect(() => { if (bill && !whipped) { sound.play("chime"); setLive(`${v.bill}: ${bill.title}.`); } }, [bill?.id, whipped]); // eslint-disable-line
   useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
-  const weakest = whipped && !voted
+  const weakest = useMemo(() => (whipped && !voted
     ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
-    : undefined;
+    : undefined), [whipped, voted, game.members, game.faction, bill?.whip]); // eslint-disable-line
   const steps = TOUR(v);
   const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
   const step: TourStep | null = !tour || tab !== "turn" ? null
