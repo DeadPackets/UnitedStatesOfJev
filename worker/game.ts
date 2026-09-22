@@ -34,10 +34,14 @@ function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
     if (!m) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
     return { kind: "favor", memberId: m.id };
   }
-  const rows = (raw?.kind === "spend" ? raw.regions ?? [] : []).slice(0, 3);
+  const raws: unknown = raw?.kind === "spend" ? raw.regions ?? [] : [];
+  if (!Array.isArray(raws)) throw new Reject(400, "Send a list of regions.");
+  const rows = (raws as { id: string; amount: number }[]).slice(0, 3);
   if (rows.length > 2) throw new Reject(400, "Two regions at most.");
+  // Two rows on one region would be charged twice and spent once: Jev only sees the last of them.
+  if (new Set(rows.map((r) => r?.id)).size !== rows.length) throw new Reject(400, "One row per region.");
   for (const r of rows) {
-    if (!pack.regions.some((x) => x.id === r.id)) throw new Reject(400, "No such region.");
+    if (!pack.regions.some((x) => x.id === r?.id)) throw new Reject(400, "No such region.");
     if (!(SPEND_STEPS as readonly number[]).includes(r.amount)) throw new Reject(400, "Spend 0, 5 or 10.");
   }
   return { kind: "spend", regions: rows };
@@ -107,8 +111,9 @@ export class GameDO extends DurableObject<Env> {
     } catch (e) {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError) return Response.json({ error: "The chamber is in recess. Try again." }, { status: 503 });
+      // Whatever broke, the player gets the same sentence: a D1 message or a TypeError is not for them.
       console.error(e);
-      return Response.json({ error: e instanceof Error ? e.message : "The turn did not finish. Try again." }, { status: 502 });
+      return Response.json({ error: "The turn did not finish. Try again." }, { status: 502 });
     }
   }
 
@@ -209,7 +214,7 @@ export class GameDO extends DurableObject<Env> {
   private async lobby(game: Game, pack: Pack, bill: Bill, memberId: string, action: LobbyAction) {
     if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
     const m = game.members.find((x) => x.id === memberId);
-    if (!m || !(action in LOBBY_COSTS)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
+    if (!m || !Object.hasOwn(LOBBY_COSTS, action)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
     if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
     // Gating on the priced cost stops applyLobby's clamp at 0 from ever handing out a free offer.
     if (game.ledgers.capital < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
@@ -345,10 +350,11 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
     const event = game.events[i];
     if (!event) throw new Reject(404, "No such card.");
     if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
-    if (!(stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
+    if (!(Number.isInteger(stance) && stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
     const storylet = pack.deck.find((s) => s.id === event.id);
     const taken = event.stances[stance];
     const state = { event: event.card ?? { title: storylet?.title_hint ?? event.id }, stance: taken, record: record(pack, game) };

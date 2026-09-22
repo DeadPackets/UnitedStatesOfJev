@@ -366,3 +366,32 @@ test("blank campaign drafts are a 503 the player can retry, not three lines nobo
   globalThis.fetch = ok;
   expect((await post("campaign/drafts", {})).body.campaign.drafts).toHaveLength(3);
 });
+
+test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeError", async () => {
+  stubModels(0.9);
+  const { do_, game, post } = seatedGame(51);
+  game.stage = "campaign";
+  game.campaign = { drafts: ["Keep the course."], messages: [], turns: [], rival: [], intent: {} };
+  const body = (lever: unknown) => ({ n: 0, message: "Keep the course.", lever });
+  const r = pack.regions[0].id;
+
+  expect((await post("campaign", body({ kind: "spend", regions: 5 }))).status).toBe(400);
+  expect((await post("campaign", body({ kind: "spend", regions: [{ id: r, amount: 5 }, { id: r, amount: 5 }] }))).body.error)
+    .toBe("One row per region.");
+  expect(game.campaign.turns).toHaveLength(0);
+
+  game.stage = "session";
+  const own = game.members[0];
+  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
+  const capital = game.ledgers.capital;
+  expect((await post("bills/1/lobby", { turn: 1, memberId: own.id, action: "toString" })).status).toBe(400);
+  expect(game.ledgers.capital).toBe(capital);
+
+  // A card left open is answered on the floor, never after the term is scored.
+  game.events.push({ id: "gen-01", turn: 1, relief: false, stances: ["Hold", "Fold"] });
+  expect((await post("events/0", { turn: game.turn, stance: 1.5 })).status).toBe(400);
+  game.stage = "campaign";
+  expect((await post("events/0", { stance: 0 })).status).toBe(409);
+  expect(do_.saved.game.events[0].stance).toBeUndefined();
+});
