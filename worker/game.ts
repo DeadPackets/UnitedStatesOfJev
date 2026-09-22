@@ -133,6 +133,7 @@ export class GameDO extends DurableObject<Env> {
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
     const saved = row ? JSON.parse(row.v as string) as Saved : null;
     if (!saved?.game) throw new Reject(404, "No such game.");
+    saved.game.posts ??= [];   // a game saved before Stage B has no feed
     return (this.saved = saved);
   }
 

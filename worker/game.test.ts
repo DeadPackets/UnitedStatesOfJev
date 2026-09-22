@@ -41,6 +41,19 @@ test("create() picks the start by faction id, not array position, when starts ar
   expect(pickStart(shuffled, 99)).toBeUndefined();
 });
 
+test("a game stored before the feed existed still loads and ships an empty feed", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 7 });
+  const { posts: _none, ...old } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const row = { v: JSON.stringify({ game: old, prose: {} }) };
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
+  const doInstance = new GameDO(ctx, {} as any) as any;
+  doInstance.ctx = ctx;
+  doInstance.pack = pack;
+  const r = await doInstance.fetch(new Request("https://do/state"));
+  expect(r.status).toBe(200);
+  expect((await r.json() as any).posts).toEqual([]);
+});
+
 test("a second request while one is in flight gets 409 one move at a time", async () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 1 });
   const game: Game = newGame("g-busy", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
