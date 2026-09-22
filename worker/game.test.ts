@@ -72,6 +72,8 @@ const canned = (name: string, user: string): unknown => {
     case "bill": return { title: "Harbor Levy", summary: "It raises the levy on the wharf.", tags: ["tariffs"] };
     case "headline": case "halfterm": return { title: "The seats change hands", lede: "The council woke up smaller. Nobody in the chair slept." };
     case "quotes": return { quotes: [] };
+    case "replies": return { replies: [{ name: "Citizen 1", text: "The wharf still floods." }], rival: "They promised the accounts and published nothing." };
+    case "messages": return { messages: ["We kept the levy honest.", "We won the fight over the wharf.", "They would sell the harbor."] };
     case "outcome": return { line: "It held." };
     case "card": return { title: "A storm", body: "The wharf floods.", stances: ["Hold the line"] };
     case "ending": return { title: "Out", body: "The term ends." };
@@ -92,8 +94,11 @@ function stubModels(intent: number) {
     const body = JSON.parse(String(init.body));
     if (body.questions) {
       // A citizen's vote intent drives the midterm draw; every other answer is a comfortable yes.
-      const answers = Object.fromEntries(Object.keys(body.questions).map((k) =>
-        [k, { noul: k.startsWith("vote_") ? intent : 0.9, score: 0.5 }]));
+      // A choice question goes on the wire as criteria keys, and answers with probabilities over them.
+      const answers = Object.fromEntries(Object.entries(body.questions as Record<string, any>).map(([k, q]) =>
+        [k, q.type === "choice"
+          ? { probabilities: Object.fromEntries(Object.keys(q.criteria).map((o, i) => [o, i === 0 ? 0.7 : 0.1])) }
+          : { noul: k.startsWith("vote_") ? intent : 0.9, score: 0.5 }]));
       return Response.json({ answers, usage: { input_tokens: 1 } });
     }
     const name = body.response_format?.json_schema?.name;
@@ -119,8 +124,13 @@ function seatedGame(seed: number) {
 }
 
 async function playTo(post: (p: string, b: unknown) => Promise<{ status: number }>, game: Game, n: number) {
-  while (game.turn <= n) {
+  while (game.turn <= n && (game.stage === "session" || game.stage === "midterm")) {
     const turn = game.turn;
+    if (game.stage === "midterm") {
+      const r = await post("midterm", { turn });
+      if (r.status !== 200) throw new Error(`midterm on turn ${turn}: ${r.status}`);
+      continue;
+    }
     for (const path of ["bills", `bills/${turn}/whip`, `bills/${turn}/vote`]) {
       const r = await post(path, { turn, text: "Raise the harbor levy on the wharf and publish the accounts each month." });
       if (r.status !== 200) throw new Error(`${path} on turn ${turn}: ${r.status}`);
@@ -202,4 +212,56 @@ test("amend after adopt is refused: adopt leaves an empty amendments array, not 
   expect(bill.title).toBe("New");
   expect(bill.amendments).toEqual([]);
   await expect(doInstance.amend(game, pack, bill)).rejects.toMatchObject({ status: 409 });
+});
+
+test("one post a turn, 240 characters, and the view carries the reactions", async () => {
+  stubModels(0.5);
+  const { post } = seatedGame(12);
+  const ok = await post("post", { turn: 1, text: "Tolls come down at the harbour." });
+  expect(ok.status).toBe(200);
+  const p = ok.body.posts.at(-1)!;
+  expect(p.likes + p.boos + p.shares + p.ignores).toBe(250);
+  expect(p.replies.length).toBeGreaterThan(0);
+  expect(typeof p.rival).toBe("string");
+  expect(typeof p.won).toBe("boolean");
+  expect((await post("post", { turn: 1, text: "Twice." })).status).toBe(409);
+  expect((await post("post", { turn: 1, text: "x".repeat(241) })).status).toBe(400);
+});
+
+test("a campaign turn needs a draft, a lever it can pay for, and four of them reach the test", async () => {
+  stubModels(1);
+  const { game, post } = seatedGame(13);
+  await playTo(post, game, 10);
+  // Saturated approval settles every midterm roll, so the class holds and the term reaches the campaign.
+  for (const r of pack.regions) game.ledgers.approval[r.id] = 999;
+  await playTo(post, game, 20);
+  expect(game.stage).toBe("campaign");
+  stubModels(0.6);
+
+  const d = (await post("campaign/drafts", {})).body;
+  expect(d.stage).toBe("campaign");
+  expect(d.campaign.drafts.length).toBe(3);
+  expect(d.campaign.gains.spend[pack.regions[0].id].length).toBe(3);
+  const three = [0, 1, 2].map((i) => ({ id: pack.regions[i % pack.regions.length].id, amount: 10 }));
+  expect((await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
+  expect((await post("campaign", { message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
+
+  // The favor is the one lever that spends capital, so it is priced before it is charged.
+  const own = game.members.find((m) => m.faction === game.faction)!;
+  const capital = game.ledgers.capital;
+  let g = (await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
+  expect(g.campaign.turns[0].lever.kind).toBe("favor");
+  expect(g.ledgers.capital).toBeLessThan(capital);
+  g = (await post("campaign/drafts", {})).body;
+  game.ledgers.capital = 0;
+  expect((await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
+
+  for (let i = 1; i < 4; i++) {
+    if (!g.campaign.drafts.length) g = (await post("campaign/drafts", {})).body;
+    g = (await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
+  }
+  expect(g.campaign.turns.length).toBe(4);
+  expect(g.stage).toBe("test");
+  expect(g.campaign.turns[0].band[0]).toBeLessThan(g.campaign.turns[0].public);
+  expect((await post("campaign/drafts", {})).status).toBe(409);
 });
