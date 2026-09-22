@@ -118,7 +118,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
     promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
-    members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyOf(start, m, start.faction), mood: 0 })),
+    members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
     lastApprove: {}, terms: [],
@@ -131,7 +131,6 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
 
 const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>
   faction === own ? 100 : (start.hostile ?? []).includes(faction) ? 25 : start.coalition.includes(faction) ? 70 : 0;
-const loyaltyOf = (start: Pack["starts"][number], m: PackMember, own: string) => loyaltyFor(start, m.faction, own);
 
 export function nationalApproval(pack: Pack, game: Game): number {
   let w = 0, sum = 0;

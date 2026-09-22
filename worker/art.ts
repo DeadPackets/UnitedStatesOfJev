@@ -52,10 +52,6 @@ export function cells(sheetBytes: Uint8Array): Uint8Array[] {
   return out;
 }
 
-export async function sheet(env: Env, prompt: string): Promise<Uint8Array[]> {
-  return cells(await muse(env, prompt, "1:1"));
-}
-
 function medianCut(d: Uint8Array, n: number): Rgb[] {
   const all: Rgb[] = [];
   for (let i = 0; i < d.length; i += 4) all.push([d[i], d[i + 1], d[i + 2]]);

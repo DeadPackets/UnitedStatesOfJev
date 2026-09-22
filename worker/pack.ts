@@ -114,7 +114,6 @@ export type Citizen = z.infer<typeof CitizenSchema>;
 export type Faction = z.infer<typeof FactionSchema>;
 export type Region = z.infer<typeof RegionSchema>;
 export type Storylet = z.infer<typeof StoryletSchema>;
-export type Start = z.infer<typeof StartSchema>;
 
 // Largest remainder method, minimum one seat per faction that held any share.
 export function scaleSeats(shares: Record<string, number>, size: number): Record<string, number> {

@@ -36,6 +36,7 @@ export async function luna<T>(env: Env, schema: z.ZodType<T>, name: string, syst
 }
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+const nameOf = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
 // The pack's own words and language, so the parliamentarian says decree when the era does.
 const world = (pack: Pack) => ` Write in ${pack.lang}. The setting is ${pack.title}, ${pack.place}, ${pack.era}. Call a ${pack.vocabulary.bill} a "${pack.vocabulary.bill}" and the chamber "${pack.vocabulary.chamber}".`;
 export const billDraftSchema = (pack: Pack) => z.object({ title: z.string(), summary: z.string(), tags: z.array(z.enum(pack.tags as [string, ...string[]])) });
@@ -72,14 +73,13 @@ export async function narrate(env: Env, pack: Pack, bill: Bill, defectors: Membe
 // The speakers are the seats whose vote least matched their whip count, so the quote explains the surprise.
 export async function quotes(env: Env, pack: Pack, bill: Bill, speakers: Member[]): Promise<{ name: string; text: string }[]> {
   if (!speakers.length) return [];
-  const name = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
   const d = await luna(env, QuotesSchema, "quotes",
     `You are the clerk taking down what ${pack.vocabulary.member}s said right after the vote. One sentence for each speaker given, at most 25 words, in their own voice, no stage directions. Copy the name as given.${world(pack)}`,
     JSON.stringify({
       [pack.vocabulary.bill]: { title: bill.title, summary: bill.summary },
       outcome: bill.passed ? pack.vocabulary.pass : pack.vocabulary.fail, yes: bill.yes, needed: bill.threshold,
       speakers: speakers.map((m) => ({
-        name: m.name, faction: name(m.faction, pack.factions), region: name(m.region, pack.regions),
+        name: m.name, faction: nameOf(m.faction, pack.factions), region: nameOf(m.region, pack.regions),
         voted: bill.votes?.[m.id] ? "yes" : "no", was_expected_to_vote_yes: Math.round((bill.whip?.[m.id] ?? 0) * 100) + "%",
         core_issues: m.core_issues, temperament: m.temperament, tell: m.tell,
       })),
@@ -142,12 +142,11 @@ export async function halfTerm(env: Env, pack: Pack, state: unknown) {
 // Only the flipped seats. Identity is already fixed by code: the model writes prose and a name.
 export async function newMembers(env: Env, pack: Pack, slots: { id: string; seat: string; region: string; faction: string; temperament: string; years: string }[]) {
   if (!slots.length) return [];
-  const name = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
   const d = await luna(env, PersonaSchema(pack), "newmembers",
     `You write the people who just won these seats. Each row has its region, faction, temperament and years: never change them. Write name, bio (at most 40 words), tell (one visible habit, at most 18 words) and 1 to 3 core_issues from the tags. Names are invented, plausible for the period and place, never a real person. Every row is a different person.`,
     JSON.stringify({
       tags: pack.tags,
-      rows: slots.map((s) => ({ id: s.id, region: name(s.region, pack.regions), faction: name(s.faction, pack.factions), temperament: s.temperament, years: s.years })),
+      rows: slots.map((s) => ({ id: s.id, region: nameOf(s.region, pack.regions), faction: nameOf(s.faction, pack.factions), temperament: s.temperament, years: s.years })),
     }), Math.min(4000, 400 + slots.length * 160));
   return d.rows.slice(0, slots.length).map((r) => ({ id: r.id, name: clip(r.name, 60), bio: clip(r.bio, 400), tell: clip(r.tell, 200), core_issues: r.core_issues }));
 }
