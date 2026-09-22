@@ -92,7 +92,7 @@ export function encodeCode(c: Code): string {
   return `J3-${c.scenario}-${b36(c.faction, 1)}-${c.promises.map((p) => b36(p, 1)).join("")}-${b36(c.seed & 0x7fffffff, 6)}`;
 }
 export function decodeCode(code: string): Code {
-  const m = /^J3-([0-9A-Z]{6})-([0-9A-Z])-([0-9A-Z]{3})-([0-9A-Z]{6})$/.exec(code.trim().toUpperCase());
+  const m = typeof code === "string" && /^J3-([0-9A-Z]{6})-([0-9A-Z])-([0-9A-Z]{3})-([0-9A-Z]{6})$/.exec(code.trim().toUpperCase());
   if (!m) throw new Error("Bad code");
   return {
     scenario: m[1], faction: un36(m[2]), seed: un36(m[4]),
@@ -166,7 +166,10 @@ export type EscalationEffects = {
   stageB?: number;
 };
 
-const seeded = <T,>(game: Game, salt: number, xs: T[], n: number): T[] => [...xs].sort(() => rng(game.seed ^ salt)() - 0.5).slice(0, n);
+const seeded = <T,>(game: Game, salt: number, xs: T[], n: number): T[] => {
+  const r = rng(game.seed ^ salt);
+  return [...xs].sort(() => r() - 0.5).slice(0, n);
+};
 
 export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
   hostile_press: { verdict: (pack, game) => { for (const r of pack.regions) bump(game, r.id, -1); } },
@@ -261,17 +264,26 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     let line: string | undefined;
     if (act === "threat" && !votes[m.id]) { m.mood = clamp(m.mood - 0.15, -1, 1); line = `The ${pack.vocabulary.seat} was threatened over "${bill.title}" and still voted ${pack.vocabulary.fail}.`; }
     else if (bill.offers[m.id]) line = votes[m.id] ? `Took the offer on "${bill.title}" and voted with the government.` : `Refused the offer on "${bill.title}".`;
+    else if (votes[m.id] && m.memory.includes(FAVOR_OWED)) {
+      m.memory = m.memory.filter((x) => x !== FAVOR_OWED);
+      L.capital = clamp(L.capital + 10, 0, 200);
+      line = `Returned the favor and voted for "${bill.title}".`;
+    }
     else if (m.faction === game.faction && !votes[m.id]) line = `Broke with their own faction and voted against "${bill.title}".`;
     if (line) m.memory = [...m.memory, line].slice(-5);
   }
 
+  const voted = game.turn;
   game.turn += 1;
   for (const e of on(game)) e.turn?.(pack, game);
   checkPromises(pack, game);
   const end = ending(pack, game);
-  if (end) { game.stage = "over"; game.phase = "over"; game.result = { ending: end, score: score(game) }; }
-  else if (game.turn > TURNS_PER_TERM) { game.stage = "test"; game.phase = "over"; }
-  else { game.phase = "draft"; if (game.turn === 10) game.stage = "midterm"; }
+  if (end) {
+    game.stage = "over"; game.phase = "over";
+    game.terms.push(termPoints(game, 0));   // a term cut short still scores its bills and promises
+    game.result = { ending: end, score: score(game) };
+  } else if (game.turn > TURNS_PER_TERM) { game.stage = "test"; game.phase = "over"; }
+  else { game.phase = "draft"; if (voted === 10) game.stage = "midterm"; }
 }
 
 function keepPromise(pack: Pack, game: Game, tag: string) {
@@ -292,12 +304,15 @@ function checkPromises(pack: Pack, game: Game) {
   }
 }
 
+export const FAVOR_OWED = "Took a favor from the government and has not repaid it.";
+
 export function applyLobby(pack: Pack, game: Game, bill: Bill, member: Member, action: LobbyAction): { cost: number; offer: string; leak: boolean } {
   const cost = Math.round(LOBBY_COSTS[action] * (first(game, "lobbyCost") ?? 1));
   game.ledgers.capital = clamp(game.ledgers.capital - cost, 0, 200);
   const offer = pack.lobby[action].text;
   bill.offers[member.id] = offer;
   (bill.acts ??= {})[member.id] = action;
+  if (action === "favor") member.memory = [...member.memory, FAVOR_OWED].slice(-5);
   const p = first(game, "leak");
   const leak = p !== undefined && roll() < p;
   if (leak) for (const r of pack.regions) bump(game, r.id, -2);
@@ -351,6 +366,10 @@ export const meets = (pack: Pack, game: Game, c: Condition) => (c.op === "<" ? v
 const near = (pack: Pack, game: Game, c: Condition) => meets(pack, game, c) && Math.abs(val(pack, game, c) - c.value) <= (NEAR[c.ledger] ?? 5);
 
 const turnFor = (game: Game, s: Storylet) => turnOf(s.date, game.calendar.start_date, game.calendar.unit) ?? s.turn ?? null;
+const dueAt = (game: Game, s: Storylet, late: number) => {
+  const t = turnFor(game, s);
+  return t !== null && t <= game.turn && game.turn - t <= late;
+};
 
 function pick(pack: Pack, game: Game, pool: Storylet[]): Storylet | null {
   const weights = pool.map((s) => s.weight * ((s.needs ?? []).some((c) => near(pack, game, c)) ? 2 : 1));
@@ -369,19 +388,26 @@ export function director(game: Game, pack: Pack): Event | null {
   d.intensity = clamp(d.intensity + (last && !last.passed ? 25 : -10) + (crisisLast ? 20 : 0) + (game.streak >= 3 ? 10 : 0), 0, 100);
   if (game.stage !== "session" && game.stage !== "midterm") return null;
 
-  const fired = new Set(game.events.map((e) => e.id));
-  const dated = pack.deck.find((s) => s.kind === "dated" && !fired.has(s.id) && turnFor(game, s) === game.turn
-    && (s.exogenous || (s.needs ?? []).every((c) => meets(pack, game, c))));
-  if (dated) return fire(game, dated, false);
-
   const lo = first(game, "dirLo") ?? 30, hi = first(game, "dirHi") ?? 70;
   const gap = game.turn - d.lastCrisis;
+  const clear = gap >= 2 || game.turn >= 17;
+
+  // A flood or a comet lands on its turn whatever else happened; a conditional dated card waits for a clear
+  // turn like any crisis, up to two turns late, then drops.
+  const pending = pack.deck.filter((s) => s.kind === "dated" && !game.events.some((e) => e.id === s.id));
+  const exo = pending.find((s) => s.exogenous && dueAt(game, s, 0));
+  if (exo) return fire(game, exo, false);
+  if (clear) {
+    const due = pending.find((s) => !s.exogenous && dueAt(game, s, 2) && (s.needs ?? []).every((c) => meets(pack, game, c)));
+    if (due) return fire(game, due, false);
+  }
+
   const forced = game.turn >= 17 && game.turn <= TURNS_PER_TERM && d.lastCrisis < 16;
   // Measured over 200 dry-run terms: with v2's -15 relief drop, intensity pins near 90 and a term gets 2.3
   // crises, not 4 to 7. Relief drops 40, and a relief that does not fire still rolls the ordinary crisis.
   let crisis = false, relief = false;
   if (forced) crisis = true;
-  else if (gap < 2 && game.turn < 17) crisis = false;              // never two in a row before turn 17
+  else if (!clear) crisis = false;                                 // never two in a row before turn 17
   else if (d.intensity < lo) crisis = roll() < 0.7;
   else if (d.intensity > hi) { relief = !on(game).some((e) => e.noRelief) && roll() < 0.6; crisis = !relief && roll() < 0.25; }
   else crisis = roll() < 0.25;
@@ -431,7 +457,7 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
     case "chest": L.chest = clamp(round1(L.chest + d), 0, 9999); break;
     case "bloc": if (e.id && e.id in game.blocs) game.blocs[e.id] = clamp(game.blocs[e.id] + d, 0, 1); break;
     case "patron": if (e.id && e.id in game.patrons) game.patrons[e.id] = clamp(game.patrons[e.id] + d, -2, 2); break;
-    case "streak": game.streak = Math.max(0, game.streak + d); break;
+    case "streak": game.streak = Math.max(0, game.streak + d); game.bestStreak = Math.max(game.bestStreak, game.streak); break;
     case "turn": break;   // the deck may not move the clock
     case "seat": {
       const mark = SEAT_MARK[e.set ?? ""];
@@ -451,8 +477,8 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
 
 export interface TestAnswers { loyalty: Record<string, number>; intent: Record<string, number> }
 
-// Each seat and each region is one draw against its own probability, so the reveal has real drama
-// and the tally is the drawn count, not the mean.
+// Both halves are always drawn, one draw per seat and per region, so the tally is the drawn count, not the
+// mean. pack.test.reveal only decides which half the UI walks.
 export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResult {
   const seats = game.members.map((m) => ({ id: m.id, p: clamp(answers.loyalty[m.id] ?? 0, 0, 1) })).sort((a, b) => a.p - b.p);
   const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
@@ -467,9 +493,8 @@ export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResul
   const pub = regions.reduce((a, r) => a + r.weight * r.p, 0) / wsum;
   const drawnSeats = seats.map((s) => ({ ...s, yes: roll() < s.p }));
   const drawnRegions = regions.map((r) => ({ ...r, yes: roll() < r.p }));
-  const reveal = pack.test.reveal;
-  const drawnLoyalty = reveal === "regions" ? loyalty : drawnSeats.filter((s) => s.yes).length / (drawnSeats.length || 1);
-  const drawnPublic = reveal === "seats" ? pub : drawnRegions.reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
+  const drawnLoyalty = drawnSeats.filter((s) => s.yes).length / (drawnSeats.length || 1);
+  const drawnPublic = drawnRegions.reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
   const a = pack.chamber.alpha;
   const mandate = a * drawnPublic + (1 - a) * drawnLoyalty;
   return { loyalty, public: pub, drawnLoyalty, drawnPublic, mandate, won: mandate >= 0.5, seats: drawnSeats, regions: drawnRegions };

@@ -1,8 +1,10 @@
 import { test, expect } from "bun:test";
 import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
-  applyEscalation, ESCALATION_EFFECTS, nationalApproval, newGame, resolveEvent, runTest, scenarioTag, threshold, type Bill, type Game,
+  applyEscalation, ESCALATION_EFFECTS, FAVOR_OWED, nationalApproval, newGame, resolveEvent, runTest, scenarioTag,
+  termPoints, threshold, type Bill, type Game,
 } from "./engine";
+import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
 import mini from "./fixtures/mini.json";
@@ -188,9 +190,11 @@ test("the Director keeps 4 to 7 crises a term and never two in a row before turn
       const e = director(g, pack);
       if (e) resolveEvent(pack, g, e, 0);
     }
-    const crises = g.events.filter((e) => !e.relief).map((e) => e.turn);
+    const exo = new Set(pack.deck.filter((d) => d.exogenous).map((d) => d.id));
+    const crises = g.events.filter((e) => !e.relief);
     for (let i = 1; i < crises.length; i++) {
-      if (crises[i] < 17) expect(crises[i] - crises[i - 1]).toBeGreaterThan(1);
+      // An exogenous dated card lands on its turn whatever else happened; every other crisis respects the gap.
+      if (crises[i].turn < 17 && !exo.has(crises[i].id)) expect(crises[i].turn - crises[i - 1].turn).toBeGreaterThan(1);
     }
     counts.push(crises.length);
   }
@@ -266,4 +270,122 @@ test("every escalation of the twenty has a hook or a stored number", () => {
   expect(g.marks.meddling.length).toBe(2);
   expect(g.members.filter((m) => m.situation === "is under investigation for corruption").length).toBeGreaterThanOrEqual(4);
   expect(Object.keys(g.stageB).sort()).toEqual(["apathy", "loud_opposition", "rival_surge", "split_chamber"]);
+});
+
+/* ---------- fix round 1 ---------- */
+
+test("a term cut short still scores its bills and promises", () => {
+  const g = game();
+  const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);
+  for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
+  g.ledgers.capital = 5;
+  g.ledgers.party = 15;
+  applyVote(pack, g, bill(g, 0));
+  expect(g.result!.ending).toBe("impeached");
+  expect(g.terms.length).toBe(1);
+  expect(g.terms[0]).toEqual(termPoints(g, 0));
+  // 4 passed x 10 + 1 kept promise x 25 + mandate 0 + capital 0 + best streak 4 x 5
+  expect(g.terms[0].points).toBe(85);
+  expect(g.result!.score).toBe(85);
+});
+
+test("the seeded region lists differ by seed", () => {
+  const sets = new Set<string>();
+  for (let seed = 1; seed <= 10; seed++) {
+    const g = newGame("g", encodeCode({ scenario: scenarioTag(mini.id), faction: 0, promises: [0, 1, 2], seed }), pack, "harborites", PROMISES, CAL);
+    applyEscalation(pack, g, "foreign_meddling");
+    applyEscalation(pack, g, "famine");
+    sets.add(`${g.marks.meddling.join(",")}|${g.marks.famine.join(",")}`);
+  }
+  expect(sets.size).toBeGreaterThanOrEqual(2);
+});
+
+// A deck whose generic cards can never fire, so only the dated card under test can draw.
+const datedPack = (turn: number, exogenous: boolean): Pack => ({
+  ...pack,
+  deck: [
+    ...pack.deck.filter((s) => s.kind === "generic").map((s) => ({ ...s, needs: [{ ledger: "turn" as const, id: null, op: "<" as const, value: 0 }] })),
+    { id: "dat-x", kind: "dated", date: null, turn, exogenous, needs: null, weight: 1, title_hint: "x", stances: ["a"], scored: ["none"], results: [], memory: null },
+  ] as Pack["deck"],
+});
+
+test("an exogenous dated card fires on its turn even right after a crisis", () => {
+  const g = game();
+  g.turn = 5;
+  g.director.lastCrisis = 5;                // gap 0: a generic crisis would be blocked
+  expect(director(g, datedPack(5, true))!.id).toBe("dat-x");
+});
+
+test("a conditional dated card waits for a clear turn, up to two turns late", () => {
+  const p = datedPack(5, false);
+  const blocked = game();
+  blocked.turn = 5;
+  blocked.director.lastCrisis = 5;
+  expect(director(blocked, p)).toBeNull();
+  blocked.turn = 6;
+  expect(director(blocked, p)).toBeNull();  // gap 1, still blocked
+  blocked.turn = 7;
+  expect(director(blocked, p)!.id).toBe("dat-x");
+
+  const dropped = game();
+  dropped.turn = 8;                         // three turns late
+  dropped.director.lastCrisis = 5;
+  expect(director(dropped, p)).toBeNull();
+});
+
+test("the test draws both halves whatever the reveal order is", () => {
+  const seatsOnly: Pack = { ...pack, test: { ...pack.test, reveal: "seats" }, chamber: { ...pack.chamber, alpha: 1 } };
+  const intent = Object.fromEntries(pack.citizens.map((c) => [c.id, 0.5]));
+  const drawn = new Set<number>();
+  for (let i = 0; i < 50; i++) {
+    const r = runTest(seatsOnly, game(), { loyalty: {}, intent });
+    expect(r.public).toBeCloseTo(0.5, 5);
+    drawn.add(r.drawnPublic);
+  }
+  expect(drawn.size).toBeGreaterThan(1);    // the tally is the drawn count, never the mean
+});
+
+test("a hostile party shows in the whip state, and a favor comes back as capital", () => {
+  const g = game();
+  expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).not.toContain("party_leadership");
+  g.ledgers.party = 20;
+  expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).toContain('"party_leadership":"hostile"');
+
+  const h = game();
+  const b = bill(h, 0);
+  const m = h.members[0];
+  applyLobby(pack, h, b, m, "favor");
+  expect(m.memory).toContain(FAVOR_OWED);
+  applyVote(pack, h, b);                    // the bill the favor bought does not repay it
+  expect(m.memory).toContain(FAVOR_OWED);
+  const capital = h.ledgers.capital;
+  applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((x) => [x.id, x.id === m.id ? 1 : 0])) }));
+  expect(h.ledgers.capital).toBe(capital - 5 + 10);
+  expect(m.memory).not.toContain(FAVOR_OWED);
+});
+
+test("the midterm follows turn 10's vote", () => {
+  const early = game();
+  early.turn = 9;
+  applyVote(pack, early, bill(early, 0));
+  expect(early.stage).toBe("session");
+  const g = game();
+  g.turn = 10;
+  applyVote(pack, g, bill(g, 0));
+  expect(g.turn).toBe(11);
+  expect(g.stage).toBe("midterm");
+});
+
+test("a storylet streak effect counts toward the best streak", () => {
+  const p: Pack = { ...pack, deck: pack.deck.map((s) => (s.id === "gen-01" ? { ...s, results: [{ ledger: "streak" as const, id: null, delta: 3, set: null, chance: null }] } : s)) };
+  const g = game();
+  resolveEvent(p, g, { id: "gen-01", turn: 1, relief: false, stances: [] }, 0);
+  expect(g.streak).toBe(3);
+  expect(g.bestStreak).toBe(3);
+});
+
+test("a code that is not a string is a bad code", () => {
+  expect(() => decodeCode(undefined as unknown as string)).toThrow("Bad code");
+  expect(() => decodeCode(42 as unknown as string)).toThrow("Bad code");
+  expect(() => decodeCode({} as unknown as string)).toThrow("Bad code");
 });
