@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
 import { Ornament, applyTheme, art, hideBroken, initials } from "./theme";
@@ -32,7 +32,12 @@ export default function Seat({ pack, busy, onSeat }: {
 
   const toggle = (i: number) => setPicks((p) => (p.includes(i) ? p.filter((x) => x !== i) : p.length < 3 ? [...p, i] : p));
   // the stamp runs first, then the call; a refused seat lifts it so the button works again
-  const take = () => { setStamped(true); setTimeout(() => onSeat(faction, picks, seed).then((ok) => { if (!ok) setStamped(false); }), 650); };
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const take = () => {
+    setStamped(true);
+    timer.current = setTimeout(() => onSeat(faction, picks, seed).then((ok) => { if (!ok) setStamped(false); }), 650) as unknown as number;
+  };
 
   return (
     <main className="takeseat press">
