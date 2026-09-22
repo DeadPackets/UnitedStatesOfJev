@@ -119,7 +119,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
         ) : null}
         {walk.seats.length ? (
           <ChamberFloor pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
-            votes={votes} onPick={() => {}} />
+            votes={votes} />
         ) : null}
         {done ? (
           // The pack writes win and lose as whole sentences, so the verdict is prose, not a stamp.

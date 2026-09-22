@@ -18,6 +18,8 @@ export function orderMembers(members: Seated[], own: string, coalition: string[]
 }
 
 const showImg = (e: { currentTarget: SVGImageElement }) => { e.currentTarget.classList.add("on"); };
+// A read-only floor passes no handler; a fresh arrow here would defeat the memo on every parent render.
+const NOOP = () => {};
 
 export type RollHandle = {
   roll: (votes: Record<string, boolean>, onCount: (n: number) => void, onDone: () => void, needed?: number) => void;
@@ -26,7 +28,7 @@ export type RollHandle = {
 type ChamberProps = {
   pack: GamePack; members: Seated[]; own: string; coalition: string[];
   whip?: Record<string, number>; votes?: Record<string, boolean>;
-  selected?: string; onPick: (id: string) => void; hot?: string[]; pulse?: string; rolling?: boolean;
+  selected?: string; onPick?: (id: string) => void; hot?: string[]; pulse?: string; rolling?: boolean;
 };
 
 /**
@@ -34,7 +36,7 @@ type ChamberProps = {
  * seat instead of painting attributes, so the ink and paper of a vote come from the stylesheet.
  */
 export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chamber(
-  { pack, members, own, coalition, whip, votes, selected, onPick, hot, pulse, rolling }, ref,
+  { pack, members, own, coalition, whip, votes, selected, onPick = NOOP, hot, pulse, rolling }, ref,
 ) {
   const ordered = useMemo(() => orderMembers(members, own, coalition, whip), [members, own, coalition, whip]);
   const seats = useMemo(() => points(pack.theme.layout, members.length), [pack.theme.layout, members.length]);

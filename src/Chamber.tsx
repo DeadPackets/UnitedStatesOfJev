@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
@@ -84,12 +84,14 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
     ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
     : undefined;
   const steps = TOUR(v);
+  const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
   const step: TourStep | null = !tour || tab !== "turn" ? null
     : !bill ? steps.write
     : !whipped ? steps.count
     : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
     : !voted ? steps.vote : null;
-  const endTour = () => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
+  const hotSeat = useMemo(() => (step?.id === "lobby" && weakest ? [weakest.id] : undefined), [step?.id, weakest?.id]);
+  const endTour =() => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
   const wasVoted = useRef(voted);
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
@@ -124,8 +126,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       <section className="stage" aria-label={v.chamber}>
         <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
           whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
-          hot={step?.id === "lobby" && weakest ? [weakest.id] : undefined}
-          onPick={(id) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }} />
+          hot={hotSeat} onPick={pickSeat} />
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>

@@ -44,7 +44,7 @@ export default function Seat({ pack, busy, onSeat }: {
 
       <section className="stage" aria-label={`${v.chamber} preview`}>
         <div className="stagearea">
-          <Chamber pack={pack} members={pack.members} own={own} coalition={ownStart.coalition} onPick={() => {}} />
+          <Chamber pack={pack} members={pack.members} own={own} coalition={ownStart.coalition} />
           <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">{v.seat}</div>
         </div>
         <h2 className="head">{start.premise}</h2>

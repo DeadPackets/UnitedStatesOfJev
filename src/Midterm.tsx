@@ -96,7 +96,7 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
       <section className="stage" aria-label={v.chamber}>
         <div className="kicker">Government seats</div>
         <ChamberFloor pack={pack} members={members} own={game.faction} coalition={game.coalition}
-          whip={done ? NO_WHIP : undefined} votes={result && !done ? votes : undefined} hot={hot} onPick={() => {}} />
+          whip={done ? NO_WHIP : undefined} votes={result && !done ? votes : undefined} hot={hot} />
         <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={size} aria-valuenow={mine} aria-label="Government seats">
           <div className={`fill ${done && mine < need ? "fail" : ""}`} style={{ width: `${(mine / size) * 100}%` }} />
           <div className="tick" style={{ left: `${(need / size) * 100}%` }}><span className="num">{need}</span></div>
