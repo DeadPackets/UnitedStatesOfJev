@@ -108,7 +108,7 @@ export default function Seat({ pack, busy, onSeat }: {
         <div className="field">
           <span className="kicker">Your code</span>
           <div className="code" aria-label="Game code">{code}</div>
-          <span className="small muted">{full ? "Same code, same room, same luck." : "Pick 3 to finish the code."}</span>
+          <span className="small muted">{full ? "Same code, same room." : "Pick 3 to finish the code."}</span>
         </div>
         <div className="row">
           <button className="btn ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>Back</button>

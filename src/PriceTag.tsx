@@ -25,8 +25,8 @@ export default function Tag({ game, act, busy, onDone }: {
   }
   const t = game.tag;
   if (!t) return null;
-  const chips = (k: string, xs: string[], red = false) => (xs.length ? (
-    <div className="tagr"><span className="k">{k}</span><span className="vs">{xs.map((x) => <span key={x} className={`chip ${red ? "red" : "faint"}`}>{x}</span>)}</span></div>
+  const chips = (k: string, xs: string[]) => (xs.length ? (
+    <div className="tagr"><span className="k">{k}</span><span className="vs">{xs.map((x) => <span key={x} className="chip faint">{x}</span>)}</span></div>
   ) : null);
   return (
     <figure className="tag" data-tour="tag">
@@ -54,7 +54,7 @@ export default function Tag({ game, act, busy, onDone }: {
           ))}
         </dl>
         {chips("Serves", t.serves)}
-        {chips("Hits", t.hits, true)}
+        {chips("Hits", t.hits)}
         {chips("Keeps", t.keeps)}
         {t.stances.length ? (
           <div className="tagr"><span className="k">Room</span><span className="vs">

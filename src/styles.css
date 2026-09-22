@@ -68,8 +68,6 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 .btn:not(:disabled):active { transform: scale(0.96); }
 .btn.ghost { background: var(--bg); color: var(--ink); }
 .btn.ghost:not(:disabled):hover { background: var(--ink); color: var(--bg); }
-.btn.hot { background: var(--danger); border-color: var(--danger); color: #fff; }
-.btn.hot:not(:disabled):hover { background: var(--bg); color: var(--danger); }
 .btn.busy { padding-left: 24px; }  /* the spinner side loses 2 px, so the label still reads centred */
 .btn.busy::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -122,8 +120,8 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 .seats .seatg[data-vote="no"] .seatc { fill: var(--paper); stroke: var(--ink); stroke-width: 2px; opacity: 0.8; }
 .seatlabel .sub { font-weight: 400; font-size: 11px; opacity: 0.8; }
 
-/* front door: write, match, build, seat. Seat keeps the v1 shape: stage left, rail right, vertical on a phone. */
-.write, .match, .build, .takeseat { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px; }
+/* front door: landing, match, build, seat. Seat keeps the v1 shape: stage left, rail right, vertical on a phone. */
+.match, .build, .takeseat { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px; }
 .landing { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px;
   display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--s5) var(--s6); align-items: start; }
 .landing .mast { grid-column: 1 / -1; }
@@ -132,9 +130,9 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 .door .ask { font-size: clamp(20px, 2.4vw, 28px); }
 .door .field { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .sq.r-tre, .sq.r-aut, .sq.r-che, .sq.r-loy, .sq.r-pop { color: var(--c); }
-.write, .match { display: grid; gap: 18px; justify-items: start; }
+.match { display: grid; gap: 18px; justify-items: start; }
 .build, .takeseat { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 18px 32px; }
-.write h1, .match h1, .build h1 { font-size: clamp(34px, 6vw, 62px); text-transform: uppercase; }
+.match h1, .build h1 { font-size: clamp(34px, 6vw, 62px); text-transform: uppercase; }
 .mast { grid-column: 1 / -1; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 0; }
 .mast b { font: 800 22px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
 .mast span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
@@ -366,8 +364,7 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .ledger { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .ledger .k { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .ledger .v { font: 700 36px/1.1 var(--display); }
-.billpad textarea { width: 100%; min-height: 128px; resize: vertical; border: 0; background: transparent; padding: 0; outline: none; font: 700 26px/1.15 var(--display); color: var(--ink); }
-.billpad textarea::placeholder { color: var(--ink-2); }
+.billpad::placeholder { color: var(--ink-2); }
 .billcard h2 { font-size: 36px; margin: 6px 0 8px; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }

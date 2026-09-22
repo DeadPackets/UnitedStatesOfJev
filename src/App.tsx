@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, ApiError, type GameView, type Offer, type PackView } from "./api";
+import { api, ApiError, type Daily, type GameView, type Offer, type PackView } from "./api";
 import Landing from "./Landing";
-import type { Daily } from "./api";
 import Match from "./Match";
 import Build from "./Build";
 import Seat from "./Seat";
@@ -126,8 +125,7 @@ export default function App() {
 
   // The seat is taken once: the deep link is replaced so a reload finds the saved game, not the Seat screen.
   const resumeId = store.get("usoj:game");
-  const resume = async () => { const id = store.get("usoj:game"); if (id) { setBusy(true); try { setGame(await api.load(id)); } catch (e) { fail(e); } finally { setBusy(false); } } };
-  const playCode = async (code: string) => { await act(() => api.share(code)); };
+  const resume = () => { if (resumeId) act(() => api.load(resumeId)); };
 
   const takeSeat = async (faction: string, promises: number[], seed: number, platform: string) => {
     const ok = await act(() => api.seat(scenario!, faction, promises, seed, platform));
@@ -166,7 +164,7 @@ export default function App() {
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
-        : <Landing daily={daily} resume={!!resumeId} busy={busy} onFind={find} onResume={resume} onCode={playCode} onPlayDaily={open} />}
+        : <Landing daily={daily} resume={!!resumeId} busy={busy} onFind={find} onResume={resume} onCode={(code) => act(() => api.share(code))} onPlayDaily={open} />}
       <div role="status" aria-live="polite">{toast ? <div className="toast">{toast}</div> : null}</div>
     </>
   );

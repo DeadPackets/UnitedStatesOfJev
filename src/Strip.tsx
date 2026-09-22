@@ -5,7 +5,7 @@ import { Num } from "./Ledger";
 import { LEDGER_KEYS, danger, hueClass, ledgerDelta, ledgerValue, roomTo, type LedgerKey } from "./rules";
 
 // The strip bar needs a top for each ledger; the failure line is the only number that carries meaning.
-const SCALE: Record<LedgerKey, number> = { treasury: 200, authority: 30, chest: 200, loyalty: 100, popularity: 100 };   // TUNE
+const SCALE: Record<LedgerKey, number> = { treasury: 200, authority: 100, chest: 200, loyalty: 100, popularity: 100 };   // TUNE
 
 /** Five slots, fixed order, fixed hue: the only tier that may be read in one second (research §2). */
 export default function Strip({ game, open, onOpen }: {

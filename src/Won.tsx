@@ -35,7 +35,7 @@ export default function Won({ game, act, busy }: { game: GameView; act: Act; bus
       <div className="row" style={{ "--i": 5 } as any}>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.continue(game))}>Another term</button>
         <button className="btn ghost" disabled={busy} onClick={() => act(() => api.stop(game))}>Stop here</button>
-        <span className="small muted">Another term carries every act in force, every appointment and every grudge. Stopping here banks the score and writes the last page.</span>
+        <span className="small muted">Another term carries the acts in force and the grudges. Stopping here banks the score and writes the last page.</span>
       </div>
     </main>
   );

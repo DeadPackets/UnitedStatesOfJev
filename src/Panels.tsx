@@ -108,8 +108,8 @@ export function RecordTab({ game }: { game: GameView }) {
       </div>
       <div className="panel">
         <div className="kicker">Where you stand</div>
-        <p className="small">{difficulty(game.shortfall)}. You are <span className="num">{game.shortfall}</span> short of
-          {" "}{v.pass}{game.handicap ? <>, and the seat costs <span className="num">{game.handicap}</span> authority a {v.turn}</> : null}.</p>
+        <p className="small">{difficulty(game.shortfall)}. {game.shortfall > 0 ? <>You need <span className="num">{game.shortfall}</span> more votes than you hold</> : "You hold enough votes alone"}
+          {game.handicap ? <>, and you opened with <span className="num">{game.handicap}</span> less authority</> : null}.</p>
       </div>
       <div className="panel">
         <div className="kicker">What the clerk checks</div>

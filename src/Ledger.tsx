@@ -13,8 +13,7 @@ export function Num({ value, decimals = 0, className, instant = false }: { value
     const el = ref.current; if (!el) return;
     const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
     if (reduced || instant || Math.abs(shown.current - value) < 0.05) { write(value); return; }
-    const stop = tween(shown.current, value, 600, write, () => write(value));
-    return stop;
+    return tween(shown.current, value, 600, write, () => write(value));
   }, [value, decimals, reduced, instant]);
   return <span ref={ref} className={`num ${className ?? ""}`}>{value.toFixed(decimals)}</span>;
 }

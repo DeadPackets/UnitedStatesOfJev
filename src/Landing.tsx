@@ -26,7 +26,7 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
             </div>
           ) : null}
           <div className="row">
-            <button className={`btn ${daily.played ? "ghost" : "hot"}`} disabled={busy} onClick={() => onPlayDaily(daily.scenario)}>
+            <button className={`btn ${daily.played ? "ghost" : ""}`} disabled={busy} onClick={() => onPlayDaily(daily.scenario)}>
               {daily.played ? "Play it again as practice" : "Take the seat"}
             </button>
             <span className="small muted num">Streak {daily.streak} · played {daily.plays}</span>
@@ -37,7 +37,7 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
       <section className="panel door" aria-label="Any polity">
         <div className="kicker">Any polity</div>
         <h2>Name a place and a time.</h2>
-        <p className="muted">Germany in 2021. Rome in 44 BC. A Mars colony in 2091. Write it in any language.</p>
+        <p className="muted">Rome in 44 BC, or a Mars colony in 2091. Write it in any language.</p>
         <textarea className="ask" rows={2} value={text} spellCheck={false} placeholder="Egypt after the 2011 revolution"
           aria-label="Name a place and a time" onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }} />
@@ -50,7 +50,7 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
       {resume ? (
         <section className="panel door" aria-label="Resume">
           <div className="kicker">Where you left off</div>
-          <button className="btn hot" disabled={busy} onClick={onResume}>Back to the desk</button>
+          <button className="btn" disabled={busy} onClick={onResume}>Back to the desk</button>
         </section>
       ) : null}
 
