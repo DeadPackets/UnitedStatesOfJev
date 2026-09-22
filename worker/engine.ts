@@ -1,60 +1,71 @@
-import { STATES, STATE_IDS } from "./states";
+import type { Pack, Member as PackMember, Storylet } from "./pack";
+import { TEMPLATES } from "./gen/templates";
+import { turnOf, type Calendar } from "./gen/validate";
 
-export type Party = "D" | "R";
-export type Mode = "term" | "sandbox" | "agenda";
-export interface Settings { v: 1; party: Party; seats: number; mode: Mode; pop: -1 | 0 | 1; lobby: boolean; amend: boolean; agenda: number; seed: number }
-export interface RosterSenator { id: string; seat: string; state: string; party: Party; name: string; bio: string; core_issues: string[]; temperament: string; tell: string; donors: string[]; years_in_office: "new" | "mid" | "long" }
-export interface Senator extends RosterSenator { situation?: string; memory: string[] }
+// Kept here because pack.ts and gen/assign.ts read it; the pack fills names, never rules.
+export const TEMPERAMENTS = ["loyalist", "deal-maker", "populist", "ideologue", "institutionalist", "maverick"] as const;
+
+export type EscalationKey = Pack["escalations"][number]["key"];
+export type Condition = NonNullable<Storylet["needs"]>[number];
+export type Effect = Storylet["results"][number];
+export type Ending = keyof Pack["endings"];
+
+export interface Member extends PackMember {
+  memory: string[]; situation?: string;
+  loyalty: number;   // 0..100; 100 own faction, 0 opposition, coalition partners from their start hostility
+  mood: number;      // permanent whip modifier -1..1 from grudges and honored favors
+}
 export interface BillDraft { title: string; summary: string; tags: string[] }
 export interface Bill extends BillDraft {
-  id: number; text: string; offers: Record<string, string>;
-  whip?: Record<string, number>; filibuster?: number; blocs?: Record<string, number>; constitutional?: number;
-  amendments?: BillDraft[]; votes?: Record<string, boolean>; passed?: boolean; struck?: boolean; headline?: { title: string; lede: string };
+  id: number; text: string; offers: Record<string, string>; acts?: Record<string, LobbyAction>;
+  whip?: Record<string, number>; filibuster?: number; blocs?: Record<string, number>;
+  patrons?: Record<string, number>; constitutional?: number; vetoes?: Record<string, number>;
+  amendments?: BillDraft[]; votes?: Record<string, boolean>; yes?: number; threshold?: number;
+  passed?: boolean; struck?: boolean; vetoed?: boolean;
+  headline?: { title: string; lede: string }; quotes?: { name: string; text: string }[];
 }
+export interface Event {
+  id: string; turn: number; relief: boolean; stances: string[];
+  card?: { title: string; body: string; stances: string[] };
+  stance?: number; scores?: Record<string, number>; outcome?: string;
+}
+export interface TestResult {
+  loyalty: number; public: number; drawnLoyalty: number; drawnPublic: number; mandate: number; won: boolean;
+  seats: { id: string; p: number; yes: boolean }[];              // loyalty ascending, the walk
+  regions: { id: string; weight: number; p: number; yes: boolean }[];   // region weight descending, the map
+}
+export interface TermRecord { term: number; passed: number; kept: number; broken: number; mandate: number; points: number }
 export interface Game {
-  id: string; code: string; settings: Settings; turn: number; capital: number;
-  approval: Record<string, number>; seated: Senator[]; bills: Bill[]; phase: "draft" | "whip" | "over";
-  result?: { reelected: boolean; score: number };
+  id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
+  term: number; turn: number; stage: "session" | "midterm" | "campaign" | "test" | "won" | "over";
+  phase: "draft" | "whip" | "over";
+  ledgers: { approval: Record<string, number>; capital: number; party: number; chest: number };
+  patrons: Record<string, number>;   // -2..2
+  blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
+  promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
+  members: Member[]; bills: Bill[]; events: Event[];
+  director: { intensity: number; lastCrisis: number; seen: string[] };
+  streak: number; bestStreak: number;
+  escalations: EscalationKey[]; stageB: Partial<Record<EscalationKey, number>>;
+  marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
+  lastApprove: Record<string, number>;   // previous citizen mean per region, the 0.05 gate
+  economy?: string; terms: TermRecord[]; test?: TestResult;
+  result?: { ending: Ending; score: number };
 }
 
-export const TAGS = ["taxes", "spending", "healthcare", "guns", "immigration", "energy", "climate", "farming", "defense", "veterans", "education", "labor", "tech", "trade", "housing", "crime", "courts", "elections", "infrastructure", "civil-rights"] as const;
-export const TEMPERAMENTS = ["loyalist", "deal-maker", "populist", "ideologue", "institutionalist", "maverick"] as const;
-export const DONORS = ["oil and gas", "banks", "unions", "tech", "farm lobby", "hospitals", "defense contractors", "real estate", "teachers", "small business"] as const;
-export const BLOCS = ["business", "labor", "seniors", "youth", "rural"] as const;
+export const TURNS_PER_TERM = 20;
+export const LOBBY_COSTS = { pork: 10, favor: 15, threat: 20 } as const;
+export type LobbyAction = keyof typeof LOBBY_COSTS;
 export const SITUATIONS = [
-  "up for re-election this year", "facing a primary challenger from their party's base", "retiring after this term",
-  "just lost their largest donor", "home state hit by a major disaster this month", "under an ethics investigation",
-  "eyeing a run for governor", "home-state unemployment is rising fast", "recently switched committee to appropriations",
-  "leading their party's messaging on this issue", "publicly feuding with the President", "owes the President a favor from last session",
+  "faces a challenger for their seat this term", "is retiring at the end of this term", "just lost their largest patron",
+  "their region was hit by disaster this month", "is under investigation for corruption", "wants a higher office",
+  "their region's trade has collapsed", "was just given a seat on the treasury board", "leads their faction's line on this issue",
+  "is feuding in public with the ruler", "owes the ruler a favor from last term", "has a brother in the opposition",
 ];
-export const LOBBY = {
-  pork: { cost: 10, label: "Promise a project", text: (s: Senator) => `The President promises a $200 million federal project in ${STATES[s.state].name}.` },
-  favor: { cost: 15, label: "Trade a favor", text: (s: Senator) => `The President offers to back the senator's own ${s.core_issues[0]} bill next session.` },
-  threat: { cost: 20, label: "Threaten a primary", text: () => `The President threatens to back a primary challenger against the senator.` },
-} as const;
-export type LobbyAction = keyof typeof LOBBY;
-export const BILLS_PER_TERM: Record<Mode, number> = { term: 40, sandbox: Infinity, agenda: 10 };
-
-const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-export function encodeCode(s: Settings): string {
-  const mode = { term: "T", sandbox: "S", agenda: "A" }[s.mode];
-  const pop = { "-1": "U", "0": "E", "1": "P" }[String(s.pop) as "-1" | "0" | "1"];
-  let seed = "", n = s.seed >>> 0;
-  for (let i = 0; i < 6; i++) { seed = B32[n & 31] + seed; n >>>= 5; }
-  return `J1-${s.party}${String(s.seats).padStart(2, "0")}${mode}${pop}${s.lobby ? "L" : "-"}${s.amend ? "A" : "-"}${s.mode === "agenda" ? s.agenda : "X"}-${seed}`;
-}
-export function decodeCode(code: string): Settings {
-  const m = /^J1-([DR])(\d\d)([TSA])([UEP])([L-])([A-])([0-9X])-([0-9A-HJKMNP-TV-Z]{6})$/i.exec(code.trim().toUpperCase());
-  if (!m) throw new Error("Bad code");
-  const seats = Number(m[2]);
-  if (seats < 40 || seats > 60) throw new Error("Seats must be 40 to 60");
-  let seed = 0; for (const ch of m[8]) seed = (seed * 32 + B32.indexOf(ch)) >>> 0;
-  return {
-    v: 1, party: m[1] as Party, seats, mode: ({ T: "term", S: "sandbox", A: "agenda" } as const)[m[3] as "T" | "S" | "A"],
-    pop: ({ U: -1, E: 0, P: 1 } as const)[m[4] as "U" | "E" | "P"], lobby: m[5] === "L", amend: m[6] === "A",
-    agenda: m[7] === "X" ? 0 : Number(m[7]), seed,
-  };
-}
+const INVESTIGATION = SITUATIONS[4];
+// Relief cards are the relief- templates, which the deck step numbers gen-NN by template index.
+const RELIEF = new Set(TEMPLATES.flatMap((t, i) => (t.id.startsWith("relief-") ? [`gen-${String(i + 1).padStart(2, "0")}`] : [])));
+const WAR_TAGS = /defen[cs]e|security|war|army|navy|military|conscript/i;
 
 export function rng(seed: number): () => number {
   let a = seed >>> 0;
@@ -64,88 +75,442 @@ export function hash(str: string): number {
   let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
-const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
-const leanToward = (state: string, party: Party) => STATES[state].lean * (party === "R" ? 1 : -1);
+export const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
+const round1 = (x: number) => Math.round(x * 10) / 10;
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+// Votes, event draws and test draws are true random: input randomness fair, output randomness exciting.
+const roll = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;
 
-export const SEATS = STATE_IDS.flatMap((st) => [`${st}-1`, `${st}-2`]);
+const B36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const b36 = (n: number, w: number) => { let s = ""; for (let i = 0; i < w; i++) { s = B36[n % 36] + s; n = Math.floor(n / 36); } return s; };
+const un36 = (s: string) => [...s].reduce((a, c) => a * 36 + B36.indexOf(c), 0);
 
-// Which party holds each seat for a code, roster-free so the client can preview a chamber while the slider moves.
-export function seatParties(s: Settings): Record<string, Party> {
-  const r = rng(s.seed);
-  const score = new Map(SEATS.map((seat) => [seat, leanToward(seat.slice(0, 2), s.party) + (r() - 0.5) * 6]));
-  const ranked = [...SEATS].sort((a, b) => score.get(b)! - score.get(a)!);
-  const other: Party = s.party === "D" ? "R" : "D";
-  return Object.fromEntries(SEATS.map((seat) => [seat, ranked.indexOf(seat) < s.seats ? s.party : other]));
+export interface Code { scenario: string; faction: number; promises: [number, number, number]; seed: number }
+// scenario6 is a hash tag, not the id: the DO and D1 hold the real scenario id.
+export const scenarioTag = (id: string) => b36(hash(id) % 36 ** 6, 6);
+export function encodeCode(c: Code): string {
+  return `J3-${c.scenario}-${b36(c.faction, 1)}-${c.promises.map((p) => b36(p, 1)).join("")}-${b36(c.seed & 0x7fffffff, 6)}`;
+}
+export function decodeCode(code: string): Code {
+  const m = /^J3-([0-9A-Z]{6})-([0-9A-Z])-([0-9A-Z]{3})-([0-9A-Z]{6})$/.exec(code.trim().toUpperCase());
+  if (!m) throw new Error("Bad code");
+  return {
+    scenario: m[1], faction: un36(m[2]), seed: un36(m[4]),
+    promises: [...m[3]].map(un36) as [number, number, number],
+  };
 }
 
-export function seatChamber(roster: RosterSenator[], s: Settings): Senator[] {
-  const parties = seatParties(s);
-  const r = rng(s.seed ^ 0x5bd1e995);
-  const seated = SEATS.map((seat) => ({ ...roster.find((x) => x.seat === seat && x.party === parties[seat])!, memory: [] as string[] }) as Senator);
-  const shuffled = [...seated].sort(() => r() - 0.5);
-  shuffled.slice(0, 15).forEach((sen, i) => { sen.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)] ?? SITUATIONS[i % SITUATIONS.length]; });
-  return seated;
+export const leanOf = (pack: Pack, region: string, faction: string) =>
+  pack.regions.find((r) => r.id === region)?.lean.find((l) => l.id === faction)?.value ?? 0;
+
+export function newGame(id: string, code: string, pack: Pack, faction: string, promises: string[], calendar: Calendar): Game {
+  const c = decodeCode(code);
+  const start = pack.starts.find((s) => s.faction === faction) ?? pack.starts[0];
+  const r = rng(c.seed);
+  const game: Game = {
+    id, code, pack: pack.id, faction: start.faction, seed: c.seed, calendar,
+    term: 1, turn: 1, stage: "session", phase: "draft",
+    ledgers: {
+      approval: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
+      capital: start.capital, party: start.party, chest: 0,
+    },
+    patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
+    blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
+    promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
+    members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyOf(start, m, start.faction), mood: 0 })),
+    bills: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
+    streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
+    lastApprove: {}, terms: [],
+  };
+  const shuffled = [...game.members].sort(() => r() - 0.5);
+  for (const m of shuffled.slice(0, Math.max(1, Math.round(pack.chamber.size * 0.15)))) m.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)];
+  game.marks.midterm = shuffled.slice(0, Math.round(pack.chamber.size / 3)).map((m) => m.seat);
+  return game;
 }
 
-export function startApproval(s: Settings): Record<string, number> {
-  const r = rng(s.seed ^ 0x9e3779b9);
-  return Object.fromEntries(STATE_IDS.map((id) => [id, clamp(Math.round(50 + leanToward(id, s.party) * 0.5 + s.pop * 8 + (r() - 0.5) * 6), 20, 80)]));
+const loyaltyOf = (start: Pack["starts"][number], m: PackMember, own: string) =>
+  m.faction === own ? 100 : (start.hostile ?? []).includes(m.faction) ? 25 : start.coalition.includes(m.faction) ? 70 : 0;
+
+export function nationalApproval(pack: Pack, game: Game): number {
+  let w = 0, sum = 0;
+  for (const r of pack.regions) { w += r.weight; sum += r.weight * (game.ledgers.approval[r.id] ?? 50); }
+  return w ? sum / w : 50;
+}
+export const popularity = (pack: Pack, game: Game) => { const a = nationalApproval(pack, game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
+const bump = (game: Game, region: string, d: number) => { game.ledgers.approval[region] = clamp(round1((game.ledgers.approval[region] ?? 50) + d), 0, 100); };
+
+// Up to 8 lines of record, for citizen and test calls and for Luna.
+export function record(pack: Pack, game: Game) {
+  const p = Object.values(game.promises);
+  return {
+    term: game.term, [pack.vocabulary.turn]: game.turn,
+    kept: p.filter((x) => x.state === "kept").map((x) => x.label),
+    broken: p.filter((x) => x.state === "broken").map((x) => x.label),
+    streak: game.streak, [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
+    headlines: game.bills.filter((b) => b.headline).slice(-3).map((b) => b.headline!.title),
+    ...(game.economy ? { economy: game.economy } : {}),
+  };
 }
 
-export function newGame(id: string, code: string, roster: RosterSenator[]): Game {
-  const settings = decodeCode(code);
-  return { id, code, settings, turn: 0, capital: 100, approval: startApproval(settings), seated: seatChamber(roster, settings), bills: [], phase: "draft" };
+/* ---------- escalations: spec §7's twenty, each a few lines at its own hook ---------- */
+
+export type EscalationEffects = {
+  start?: (pack: Pack, game: Game) => void;
+  turn?: (pack: Pack, game: Game) => void;
+  verdict?: (pack: Pack, game: Game, bill: Bill) => void;
+  whip?: (game: Game, m: Member) => number;
+  supermajority?: (bill: Bill) => boolean;
+  test?: (game: Game, regions: { id: string; p: number }[]) => void;
+  lobbyCost?: number; chest?: number; struckAt?: number; leak?: number;
+  promiseTurns?: [number, number]; dirLo?: number; dirHi?: number; noRelief?: true;
+  stageB?: number;
+};
+
+const seeded = <T,>(game: Game, salt: number, xs: T[], n: number): T[] => [...xs].sort(() => rng(game.seed ^ salt)() - 0.5).slice(0, n);
+
+export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
+  hostile_press: { verdict: (pack, game) => { for (const r of pack.regions) bump(game, r.id, -1); } },
+  supermajority_era: { supermajority: () => true },
+  recession: { start: (pack, game) => { game.economy = "recession"; for (const p of pack.patrons.slice(0, 2)) game.patrons[p.id] = -1; } },
+  scandal_season: { start: (_pack, game) => { for (const m of seeded(game, 0x5ca2, game.members, 4)) m.situation = INVESTIGATION; } },
+  short_fuse: { dirLo: 20, dirHi: 60 },
+  split_chamber: { stageB: 8 },          // stage B
+  costly_favors: { lobbyCost: 1.5 },
+  fickle_base: { promiseTurns: [8, 16] },
+  empty_chest: { chest: 0.5 },
+  hostile_court: { struckAt: 0.5 },
+  rival_surge: { stageB: 2 },            // stage B
+  apathy: { stageB: 0.8 },               // stage B
+  defections: { whip: (game, m) => (m.faction === game.faction ? -0.05 : 0) },
+  loud_opposition: { stageB: 1.5 },      // stage B
+  crisis_fatigue: { noRelief: true },
+  leaks: { leak: 0.3 },
+  war_footing: {
+    supermajority: (bill) => bill.tags.some((t) => WAR_TAGS.test(t)),
+    turn: (_pack, game) => { game.ledgers.capital = clamp(game.ledgers.capital - 2, 0, 200); },
+  },
+  famine: {
+    start: (pack, game) => { game.marks.famine = seeded(game, 0xfa11, pack.regions, 10).map((r) => r.id); for (const id of game.marks.famine) bump(game, id, -2); },
+    turn: (_pack, game) => { for (const id of (game.marks.famine ?? []).slice(0, 3)) bump(game, id, -0.5); },
+  },
+  succession_crisis: { start: (_pack, game) => { game.ledgers.party = 35; } },
+  foreign_meddling: {
+    start: (pack, game) => { game.marks.meddling = seeded(game, 0xf0e1, pack.regions, 2).map((r) => r.id); },
+    test: (game, regions) => { for (const id of game.marks.meddling ?? []) { const r = regions.find((x) => x.id === id); if (r) r.p = clamp(r.p - 0.05, 0, 1); } },
+  },
+};
+
+const on = (game: Game) => game.escalations.map((k) => ESCALATION_EFFECTS[k]);
+const first = <K extends "lobbyCost" | "chest" | "struckAt" | "leak" | "promiseTurns" | "dirLo" | "dirHi">(game: Game, k: K) =>
+  on(game).map((e) => e[k]).find((v) => v !== undefined);
+
+export function applyEscalation(pack: Pack, game: Game, key: EscalationKey): void {
+  const e = ESCALATION_EFFECTS[key];
+  if (e.stageB !== undefined) game.stageB[key] = e.stageB;
+  e.start?.(pack, game);
 }
 
+/* ---------- the floor ---------- */
+
+export function threshold(pack: Pack, game: Game, bill: Bill): number {
+  const forced = on(game).some((e) => e.supermajority?.(bill));
+  const veto = Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6);
+  return forced || veto || (bill.filibuster ?? 0) >= 0.5 ? pack.chamber.supermajority : pack.chamber.threshold;
+}
+
+export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const m of game.members) {
+    let p = (bill.whip?.[m.id] ?? 0) + m.mood;
+    for (const e of on(game)) p += e.whip?.(game, m) ?? 0;
+    if (m.loyalty > 0 && m.loyalty < 30) p = Math.min(p, 0.15);   // a coalition partner under 30 votes as opposition
+    out[m.id] = clamp(p, 0, 1);
+  }
+  return out;
+}
 export const expectedYes = (whip: Record<string, number>) => Object.values(whip).reduce((a, b) => a + b, 0);
-export const passThreshold = (bill: Bill) => ((bill.filibuster ?? 0) >= 0.5 ? 60 : 51);
-export const popularity = (game: Game) => { const a = nationalApproval(game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
-export function nationalApproval(game: Game): number {
-  let ev = 0, sum = 0;
-  for (const id of STATE_IDS) { ev += STATES[id].ev; sum += STATES[id].ev * game.approval[id]; }
-  return sum / ev;
-}
+export const drawVotes = (whip: Record<string, number>) => Object.fromEntries(Object.keys(whip).map((id) => [id, roll() < whip[id]]));
 
-export function drawVotes(whip: Record<string, number>, seed: number, billId: number): Record<string, boolean> {
-  const r = rng((seed ^ Math.imul(billId + 1, 0x9e3779b1)) >>> 0);
-  return Object.fromEntries(Object.keys(whip).sort().map((id) => [id, r() < whip[id]]));
-}
-
-export function applyVote(game: Game, bill: Bill): void {
-  const votes = drawVotes(bill.whip!, game.settings.seed, bill.id);
+export function applyVote(pack: Pack, game: Game, bill: Bill): void {
+  const whip = effectiveWhip(game, bill);
+  const th = threshold(pack, game, bill);
+  const votes = drawVotes(whip);
   const yes = Object.values(votes).filter(Boolean).length;
-  const passed = yes >= passThreshold(bill);
-  const struck = passed && (bill.constitutional ?? 0) >= 0.7;
-  Object.assign(bill, { votes, passed, struck });
-  const outraged = Object.values(bill.blocs ?? {}).filter((s) => s >= 1.5).length;
-  for (const id of STATE_IDS) {
-    const ps = game.seated.filter((s) => s.state === id).map((s) => bill.whip![s.id]);
-    const mean = ps.reduce((a, b) => a + b, 0) / ps.length;
-    // Tuned on a scripted 10-bill agenda: the earlier (-2 fail, -1 per bloc) dropped approval 15 points in one term.
-    const delta = passed ? (struck ? 0 : (mean - 0.4) * 12) : -1.5;
-    game.approval[id] = clamp(Math.round((game.approval[id] + delta - outraged * 0.5) * 10) / 10, 0, 100);
-  }
-  game.capital = clamp(game.capital + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
-  for (const s of game.seated) {
-    const offer = bill.offers[s.id];
+  const passed = yes >= th;
+  const struck = passed && (bill.constitutional ?? 0) >= (first(game, "struckAt") ?? 0.7);
+  Object.assign(bill, { votes, yes, threshold: th, passed, struck, vetoed: Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6) });
+
+  const L = game.ledgers;
+  L.capital = clamp(L.capital + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
+  const own = game.members.filter((m) => m.faction === game.faction);
+  const ownYes = own.filter((m) => votes[m.id]).length;
+  L.party = clamp(L.party + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
+
+  game.streak = passed && !struck ? game.streak + 1 : 0;
+  game.bestStreak = Math.max(game.bestStreak, game.streak);
+  // Jev scores opposition 0..2, so 1 is neutral for a patron and 1 - s/2 is a bloc's approval.
+  for (const [id, s] of Object.entries(bill.patrons ?? {})) if (id in game.patrons) game.patrons[id] = clamp(round1(game.patrons[id] + (1 - s)), -2, 2);
+  for (const [id, s] of Object.entries(bill.blocs ?? {})) if (id in game.blocs) game.blocs[id] = clamp(1 - s / 2, 0, 1);
+  L.chest = round1(L.chest + Object.values(game.patrons).reduce((a, b) => a + Math.max(0, b), 0) * (first(game, "chest") ?? 1));
+
+  if (passed && !struck) for (const t of bill.tags) keepPromise(pack, game, t);
+  for (const e of on(game)) e.verdict?.(pack, game, bill);
+
+  for (const m of game.members) {
+    const act = bill.acts?.[m.id];
     let line: string | undefined;
-    if (offer) line = votes[s.id] ? `Took the President's offer on "${bill.title}" and voted yes.` : `Refused the President's offer on "${bill.title}" and voted no.`;
-    else if (s.party === game.settings.party && !votes[s.id]) line = `Broke with the President and voted no on "${bill.title}".`;
-    if (line) s.memory = [...s.memory, line].slice(-5);
+    if (act === "threat" && !votes[m.id]) { m.mood = clamp(m.mood - 0.15, -1, 1); line = `The ${pack.vocabulary.seat} was threatened over "${bill.title}" and still voted ${pack.vocabulary.fail}.`; }
+    else if (bill.offers[m.id]) line = votes[m.id] ? `Took the offer on "${bill.title}" and voted with the government.` : `Refused the offer on "${bill.title}".`;
+    else if (m.faction === game.faction && !votes[m.id]) line = `Broke with their own faction and voted against "${bill.title}".`;
+    if (line) m.memory = [...m.memory, line].slice(-5);
   }
+
   game.turn += 1;
-  game.phase = game.turn >= BILLS_PER_TERM[game.settings.mode] ? "over" : "draft";
-  if (game.phase === "over") game.result = endTerm(game);
+  for (const e of on(game)) e.turn?.(pack, game);
+  checkPromises(pack, game);
+  const end = ending(pack, game);
+  if (end) { game.stage = "over"; game.phase = "over"; game.result = { ending: end, score: score(game) }; }
+  else if (game.turn > TURNS_PER_TERM) { game.stage = "test"; game.phase = "over"; }
+  else { game.phase = "draft"; if (game.turn === 10) game.stage = "midterm"; }
 }
 
-export function endTerm(game: Game): { reelected: boolean; score: number } {
-  const approval = nationalApproval(game);
+function keepPromise(pack: Pack, game: Game, tag: string) {
+  const p = game.promises[tag];
+  if (!p || p.state !== "pending") return;
+  if (++p.passed < 2) return;
+  p.state = "kept";
+  game.ledgers.party = clamp(game.ledgers.party + 5, 0, 100);
+  for (const r of pack.regions) bump(game, r.id, 4);
+}
+function checkPromises(pack: Pack, game: Game) {
+  const [d1, d2] = first(game, "promiseTurns") ?? [12, 20];
+  for (const p of Object.values(game.promises)) {
+    if (p.state !== "pending") continue;
+    if (!((game.turn > d1 && p.passed === 0) || (game.turn > d2 && p.passed < 2))) continue;
+    p.state = "broken";
+    for (const r of pack.regions) bump(game, r.id, -6);
+  }
+}
+
+export function applyLobby(pack: Pack, game: Game, bill: Bill, member: Member, action: LobbyAction): { cost: number; offer: string; leak: boolean } {
+  const cost = Math.round(LOBBY_COSTS[action] * (first(game, "lobbyCost") ?? 1));
+  game.ledgers.capital = clamp(game.ledgers.capital - cost, 0, 200);
+  const offer = pack.lobby[action].text;
+  bill.offers[member.id] = offer;
+  (bill.acts ??= {})[member.id] = action;
+  const p = first(game, "leak");
+  const leak = p !== undefined && roll() < p;
+  if (leak) for (const r of pack.regions) bump(game, r.id, -2);
+  return { cost, offer, leak };
+}
+
+/* ---------- citizens ---------- */
+
+// Per-region delta from the approve Noul, applied only where the region's mean moved more than 0.05.
+export function applyCitizens(pack: Pack, game: Game, approve: Record<string, number>): Record<string, number> {
+  const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
+  const bloc = new Map(pack.blocs.map((b) => [b.id, [] as number[]]));
+  for (const c of pack.citizens) {
+    const a = approve[c.id];
+    if (a === undefined) continue;
+    const g = per.get(c.region);
+    if (g) { g.w += c.weight; g.s += c.weight * a; }
+    bloc.get(c.bloc)?.push(a);
+  }
+  const deltas: Record<string, number> = {};
+  for (const r of pack.regions) {
+    const g = per.get(r.id)!;
+    if (!g.w) continue;
+    const m = g.s / g.w;
+    const prior = game.lastApprove[r.id];
+    game.lastApprove[r.id] = m;
+    if (prior !== undefined && Math.abs(m - prior) <= 0.05) continue;
+    const d = round1(clamp((m - 0.5) * 10, -6, 6));
+    deltas[r.id] = d;
+    bump(game, r.id, d);
+  }
+  for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(mean(xs));
+  return deltas;
+}
+
+/* ---------- the Director ---------- */
+
+const VALUE: Record<Condition["ledger"], (pack: Pack, game: Game, id?: string | null) => number> = {
+  approval: (pack, game) => nationalApproval(pack, game),
+  capital: (_p, game) => game.ledgers.capital,
+  party: (_p, game) => game.ledgers.party,
+  chest: (_p, game) => game.ledgers.chest,
+  bloc: (_p, game, id) => game.blocs[id ?? ""] ?? 0.5,
+  patron: (_p, game, id) => game.patrons[id ?? ""] ?? 0,
+  streak: (_p, game) => game.streak,
+  turn: (_p, game) => game.turn,
+};
+const NEAR: Partial<Record<Condition["ledger"], number>> = { bloc: 0.05, patron: 0.5 };
+const val = (pack: Pack, game: Game, c: Condition) => VALUE[c.ledger](pack, game, c.id);
+export const meets = (pack: Pack, game: Game, c: Condition) => (c.op === "<" ? val(pack, game, c) < c.value : val(pack, game, c) > c.value);
+const near = (pack: Pack, game: Game, c: Condition) => meets(pack, game, c) && Math.abs(val(pack, game, c) - c.value) <= (NEAR[c.ledger] ?? 5);
+
+const turnFor = (game: Game, s: Storylet) => turnOf(s.date, game.calendar.start_date, game.calendar.unit) ?? s.turn ?? null;
+
+function pick(pack: Pack, game: Game, pool: Storylet[]): Storylet | null {
+  const weights = pool.map((s) => s.weight * ((s.needs ?? []).some((c) => near(pack, game, c)) ? 2 : 1));
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0) return null;
+  let x = roll() * total;
+  for (let i = 0; i < pool.length; i++) if ((x -= weights[i]) < 0) return pool[i];
+  return pool[pool.length - 1];
+}
+
+// Runs after every verdict. Returns the card drawn, already pushed onto game.events.
+export function director(game: Game, pack: Pack): Event | null {
+  const d = game.director;
+  const last = game.bills.at(-1);
+  const crisisLast = game.events.some((e) => e.turn === game.turn - 1);
+  d.intensity = clamp(d.intensity + (last && !last.passed ? 25 : -10) + (crisisLast ? 20 : 0) + (game.streak >= 3 ? 10 : 0), 0, 100);
+  if (game.stage !== "session" && game.stage !== "midterm") return null;
+
+  const fired = new Set(game.events.map((e) => e.id));
+  const dated = pack.deck.find((s) => s.kind === "dated" && !fired.has(s.id) && turnFor(game, s) === game.turn
+    && (s.exogenous || (s.needs ?? []).every((c) => meets(pack, game, c))));
+  if (dated) return fire(game, dated, false);
+
+  const lo = first(game, "dirLo") ?? 30, hi = first(game, "dirHi") ?? 70;
+  const gap = game.turn - d.lastCrisis;
+  const forced = game.turn >= 17 && game.turn <= TURNS_PER_TERM && d.lastCrisis < 16;
+  // Measured over 200 dry-run terms: with v2's -15 relief drop, intensity pins near 90 and a term gets 2.3
+  // crises, not 4 to 7. Relief drops 40, and a relief that does not fire still rolls the ordinary crisis.
+  let crisis = false, relief = false;
+  if (forced) crisis = true;
+  else if (gap < 2 && game.turn < 17) crisis = false;              // never two in a row before turn 17
+  else if (d.intensity < lo) crisis = roll() < 0.7;
+  else if (d.intensity > hi) { relief = !on(game).some((e) => e.noRelief) && roll() < 0.6; crisis = !relief && roll() < 0.25; }
+  else crisis = roll() < 0.25;
+  if (!crisis && !relief) return null;
+
+  const recent = new Set(game.events.filter((e) => game.turn - e.turn < 6).map((e) => e.id));
+  const pool = pack.deck.filter((s) => s.kind === "generic" && RELIEF.has(s.id) === relief && !recent.has(s.id)
+    && (s.needs ?? []).every((c) => meets(pack, game, c)));
+  const card = pick(pack, game, pool);
+  return card ? fire(game, card, relief) : null;
+}
+
+function fire(game: Game, s: Storylet, relief: boolean): Event {
+  const e: Event = { id: s.id, turn: game.turn, relief, stances: s.stances };
+  game.events.push(e);
+  if (relief) game.director.intensity = clamp(game.director.intensity - 40, 0, 100);
+  else game.director.lastCrisis = game.turn;
+  if (!game.director.seen.includes(s.id)) game.director.seen.push(s.id);
+  return e;
+}
+
+// Stance choice moves the world through the blocs and patrons Jev scored on it; the template's results are fixed.
+export function resolveEvent(pack: Pack, game: Game, event: Event, stance: number, scores?: Record<string, number>): void {
+  event.stance = stance;
+  if (scores) {
+    event.scores = scores;
+    for (const [id, s] of Object.entries(scores)) {
+      if (id in game.patrons) game.patrons[id] = clamp(round1(game.patrons[id] + (1 - s)), -2, 2);
+      if (id in game.blocs) game.blocs[id] = clamp(1 - s / 2, 0, 1);
+    }
+  }
+  const card = pack.deck.find((s) => s.id === event.id);
+  for (const e of card?.results ?? []) applyEffect(pack, game, e, card?.memory);
+}
+
+const SEAT_MARK: Record<string, { mood: number; loyalty: number }> = {
+  hostile: { mood: -0.2, loyalty: -40 }, favor: { mood: 0.3, loyalty: 10 },
+  courted: { mood: 0.2, loyalty: 10 }, "kept-word": { mood: 0.05, loyalty: 10 },
+};
+function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) {
+  if (e.chance != null && roll() >= e.chance) return;
+  const d = e.delta ?? 0, L = game.ledgers;
+  switch (e.ledger) {
+    case "approval": for (const r of pack.regions) bump(game, r.id, d); break;
+    case "capital": L.capital = clamp(L.capital + d, 0, 200); break;
+    case "party": L.party = clamp(L.party + d, 0, 100); break;
+    case "chest": L.chest = clamp(round1(L.chest + d), 0, 9999); break;
+    case "bloc": if (e.id && e.id in game.blocs) game.blocs[e.id] = clamp(game.blocs[e.id] + d, 0, 1); break;
+    case "patron": if (e.id && e.id in game.patrons) game.patrons[e.id] = clamp(game.patrons[e.id] + d, -2, 2); break;
+    case "streak": game.streak = Math.max(0, game.streak + d); break;
+    case "turn": break;   // the deck may not move the clock
+    case "seat": {
+      const mark = SEAT_MARK[e.set ?? ""];
+      if (!mark) break;
+      const pool = e.set === "courted" ? game.members.filter((m) => m.faction !== game.faction) : game.members;
+      const m = pool[Math.floor(roll() * pool.length)];
+      if (!m) break;
+      m.mood = clamp(round1(m.mood + mark.mood), -1, 1);
+      m.loyalty = clamp(m.loyalty + mark.loyalty, 0, 100);
+      if (memory) m.memory = [...m.memory, memory].slice(-5);
+      break;
+    }
+  }
+}
+
+/* ---------- the test, endings, score ---------- */
+
+export interface TestAnswers { loyalty: Record<string, number>; intent: Record<string, number> }
+
+// Each seat and each region is one draw against its own probability, so the reveal has real drama
+// and the tally is the drawn count, not the mean.
+export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResult {
+  const seats = game.members.map((m) => ({ id: m.id, p: clamp(answers.loyalty[m.id] ?? 0, 0, 1) })).sort((a, b) => a.p - b.p);
+  const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
+  for (const c of pack.citizens) { const g = per.get(c.region); if (g) { g.w += c.weight; g.s += c.weight * (answers.intent[c.id] ?? 0); } }
+  const regions = pack.regions
+    .map((r) => { const g = per.get(r.id)!; return { id: r.id, weight: r.weight, p: g.w ? clamp(g.s / g.w, 0, 1) : 0.5 }; })
+    .sort((a, b) => b.weight - a.weight);
+  for (const e of on(game)) e.test?.(game, regions);
+
+  const wsum = regions.reduce((a, r) => a + r.weight, 0) || 1;
+  const loyalty = mean(seats.map((s) => s.p));
+  const pub = regions.reduce((a, r) => a + r.weight * r.p, 0) / wsum;
+  const drawnSeats = seats.map((s) => ({ ...s, yes: roll() < s.p }));
+  const drawnRegions = regions.map((r) => ({ ...r, yes: roll() < r.p }));
+  const reveal = pack.test.reveal;
+  const drawnLoyalty = reveal === "regions" ? loyalty : drawnSeats.filter((s) => s.yes).length / (drawnSeats.length || 1);
+  const drawnPublic = reveal === "seats" ? pub : drawnRegions.reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
+  const a = pack.chamber.alpha;
+  const mandate = a * drawnPublic + (1 - a) * drawnLoyalty;
+  return { loyalty, public: pub, drawnLoyalty, drawnPublic, mandate, won: mandate >= 0.5, seats: drawnSeats, regions: drawnRegions };
+}
+
+export function ending(pack: Pack, game: Game): Ending | null {
+  if (game.ledgers.capital <= 0 && game.ledgers.party < 20) return "impeached";
+  if (game.turn >= 18 && nationalApproval(pack, game) < 35) return "lame_duck";
+  return null;
+}
+
+// EV ÷ 2 in v2 becomes mandate × 100: a lost term still scores its bills and promises.
+export function termPoints(game: Game, mandate: number): TermRecord {
+  const p = Object.values(game.promises);
   const passed = game.bills.filter((b) => b.passed && !b.struck).length;
-  return { reelected: approval >= 50, score: Math.round(passed * 10 + approval + game.capital / 4) };
+  const kept = p.filter((x) => x.state === "kept").length, broken = p.filter((x) => x.state === "broken").length;
+  const points = passed * 10 + kept * 25 - broken * 15 + Math.round(mandate * 100) + Math.round(game.ledgers.capital / 4) + game.bestStreak * 5;
+  return { term: game.term, passed, kept, broken, mandate, points };
+}
+export const score = (game: Game) => Math.round(game.terms.reduce((a, t) => a + t.points * 1.5 ** (t.term - 1), 0));
+
+export function endTerm(pack: Pack, game: Game, test: TestResult): void {
+  game.test = test;
+  game.terms.push(termPoints(game, test.mandate));
+  game.stage = test.won ? "won" : "over";
+  game.phase = "over";
+  game.result = { ending: test.won ? "reelected" : (ending(pack, game) ?? "defeated"), score: score(game) };
 }
 
-export function dailyCode(date = new Date()): string {
-  const day = date.toISOString().slice(0, 10);
-  const seed = hash(day);
-  return encodeCode({ v: 1, party: seed & 1 ? "D" : "R", seats: 50, mode: "agenda", pop: 0, lobby: true, amend: true, agenda: seed % 10, seed });
+export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
+  pack.escalations.map((e) => e.key).filter((k) => !game.escalations.includes(k));
+
+// Members, memory, ledgers and director.seen carry over; two more escalations stack.
+export function continueTerm(pack: Pack, game: Game): void {
+  game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
+  game.bills = []; game.events = []; game.streak = 0; game.bestStreak = 0;
+  game.director.intensity = 0; game.director.lastCrisis = -1;
+  game.test = undefined; game.result = undefined;
+  for (const p of Object.values(game.promises)) { p.passed = 0; p.state = "pending"; }
+  const add = remainingEscalations(pack, game).slice(0, 2);
+  game.escalations.push(...add);
+  for (const k of add) applyEscalation(pack, game, k);
+  if (!add.length) for (const r of pack.regions) bump(game, r.id, -2);
 }
