@@ -189,3 +189,110 @@ Model calls per route, one term (20 bill turns, up to 18 amends, 20 votes, 11 cr
 | `.../test` | 1 | 0 | 1 (310 questions: 60 loyalty + 250 intent) | 2628 ms |
 
 The test's one Jev call answered in 2.6 s.
+
+## Stage B live numbers, 2026-09-22
+
+Three scripted terms (`bun scripts/term.ts`) and one term played in Chrome, all against a local `wrangler dev` with
+remote D1, Vectorize, R2 and Workers AI. **391 requests, every one 200, no 5xx.** Costs are OpenRouter's own
+`usage.cost`, logged per call in a temporary instrumentation pass and removed again.
+
+| Run | Pack | Seat | Reached | Ending | Wall | Requests |
+|---|---|---|---|---|---|---|
+| 1 | Rome `v3nj3k`, 60 seats, 6 regions | Caesarians | turn 20, midterm, 4 campaign turns, the test | `defeated`, score 210, mandate 0.451 | 349.4 s | 145 |
+| 2 | Germany `1wybd8`, 25 seats, 7 regions | SPD | turn 17, midterm | `impeached`, score 35 | 264.0 s | 115 |
+| 3 | Germany `1wybd8` | SPD, pledges matched to the bills | turn 18, midterm | `lame_duck`, score 73 | 299.6 s | 125 |
+
+Germany proves the small chamber: 25 seats, 13 to pass, 17 for a supermajority, a class of 8 at the half term.
+It has **7 regions, not 16** — the plan's figure was wrong, and the treemap is drawn from `pack.regions`
+either way.
+
+### Seconds and cost per route, one full Rome term
+
+The Chrome term, whose log carries every call's usage. One term is **$0.2153**, of which Stage B's three new
+routes are **$0.060 (28%)**.
+
+| Route | n | Median | Median cost | Model calls |
+|---|---|---|---|---|
+| `bills` | 20 | 2.1 s | $0.00018 | Jev gate (1 q), Luna `bill` |
+| `bills/:b/whip` | 20 | 0.6 s | $0.00079 | Jev 83 q, 18.7k tokens |
+| `bills/:b/amend` | 17 | 5.7 s | $0.00285 | Luna `amendments`, 3 parallel Jev re-whips |
+| `bills/:b/vote` | 20 | 4.4 s | $0.00281 | Jev 250 q / 54.0k, Luna `quotes`, `headline`, `card` |
+| `events/:i` | 12 | 1.6 s | $0.00245 | Jev 15 q, Jev 250 q / 54.8k, Luna `outcome` |
+| **`post`** | 20 | **4.1 s** | **$0.00238** | Jev 250 q / 41.7k, Luna `replies`, Jev 50 q / 8.2k |
+| **`midterm`** | 1 | **13.1 s** | **$0.00355** | Jev 250 q / 53.7k, Luna `newMembers`, `halfTerm` |
+| **`campaign/drafts`** | 4 | 1.6 s | $0.00015 | Luna `messages` |
+| **`campaign`** | 4 | **1.6 s** | **$0.00226** | Jev 250 q / 53.7k |
+| `test` | 1 | 2.6 s | $0.00267 | Jev 310 q / 59.8k, Luna `ending` |
+
+The midterm is the slowest single call in the game because it chains three: the draw, the replacements and the
+headline. On Germany's 25 seats it is 7.0 to 7.9 s; on Rome's 60 it is 11.2 to 13.1 s. The portrait sheets for
+flipped seats run in `waitUntil` and never hold the response: the 12 replacement faces of the Chrome term were
+served from R2 about two minutes later.
+
+**The largest Jev request measured is the test at turn 20: 59,758 tokens, 93% of the 64k cap.** The state carries
+`record(pack, game)`, which grows with the term, so the headroom shrinks as the run goes on. A pack with more than
+250 citizens, or a longer record, will hit the cap in the last turns before it hits it anywhere else.
+
+### Experiment 1: do blocs split on a partisan post?
+
+v2 §16's target is bloc means at least 0.2 apart on a partisan post. Each of the 250 citizens answers one Choice
+(`like`, `boo`, `share`, `ignore`); the bloc mean below scores like and share as +1, boo as −1, ignore as 0, over
+the 50 citizens of each of Rome's five blocs. The term script cycles three fixed texts, so each was measured six
+or seven times in one term.
+
+| Post | Character | Bloc-mean spread, min / median / max |
+|---|---|---|
+| "Food and fuel ... no family here eats worse because a merchant found a new price" | **partisan**: names a winner (the city's bread) and a loser (merchants) | **0.34 / 0.54 / 0.54** |
+| "The roads, the water and the public buildings get fixed ... read the accounts" | **neutral**: works and published accounts | 0.12 / 0.24 / 0.26 |
+| "An official who robs the public will answer for it in a court" | reads partisan, is not | 0.02 / 0.12 / 0.28 |
+
+The partisan post clears 0.2 in **6 of 6** posts and splits the same way every time: `urban_plebs` 0.90 to 0.94,
+`italian_landholders` or `equestrians` 0.36 to 0.58. The neutral post clears 0.2 in 5 of 7, so "neutral" is not
+flat, only narrower. The anti-corruption text is the interesting negative: partisan in tone, near-unanimous in
+reaction, because nobody's bloc loses by it.
+
+**Jev never picks `share`.** Across 5,000 reactions (20 posts x 250 citizens) the tally is 3,807 like, 271 boo,
+**0 share**, 922 ignore. `share` is only ever the second-most-likely option, and `choices()` takes the argmax, so
+`applyPost`'s `hot` list is always empty: no region ever writes a feed memory line into its members, and the
+`+2 x share` term in the approval delta is dead code in practice. The option wording is the suspect (`like` and
+`share` are not exclusive to a reader); nothing else is wrong.
+
+The same tally explains the balance: 76% of citizens like an average post, so the per-region delta is almost
+always positive. Twenty posts carried national approval from 58 to 90 in run 1 and from 58 to 86 in the Chrome
+term, while 17 turns with three posts fell from 56 to 22. The Feed is the strongest approval lever in the game by
+a distance, and it is optional.
+
+### Experiment 2: what does a 10-unit spend move?
+
+v2 §16's target is 0.03 to 0.06 of region intent. Measured as the spent region's intent change minus the mean
+change of the regions with no money that turn, which cancels the drift every campaign turn has.
+
+| Turn | Spend | Spent region | Unspent mean | **Net** |
+|---|---|---|---|---|
+| Chrome, canvass 2 | 10 on `east` (no rival) | +0.009 | −0.039 | **+0.048** |
+| Chrome, canvass 3 | 5 on `latium` (no rival) | +0.034 | +0.001 | **+0.033** |
+| Chrome, canvass 4 | 10 on `gaul` (rival works it) | +0.080 | +0.005 | +0.075 |
+| Run 1, canvass 3 | 5 on `italy` (rival works it) | +0.058 | +0.002 | +0.056 |
+
+The clean 10-unit number is **+0.048**, inside the target. A contested region reads higher because the money also
+lifts the drag the rival's own 5 units put there the turn before. The first canvass is not measurable: its
+"before" is `startCampaign`'s seed from the approval ledger, and Jev's first read of citizen intent drops every
+region by 0.3 to 0.6.
+
+**The four canvass turns cannot rescue a term.** One region at 10 is worth `alpha x weight x 0.048` of the
+mandate, about 0.006; four turns of the best play available are worth about 0.01. The mandate is decided by the
+term's record, which is what the campaign is a summary of.
+
+### Experiment 4: the forecast band against the drawn share
+
+The band is ±1.96 standard errors of the weighted intent, from the citizen sample, not the per-region draw.
+
+| Run | Last canvass point | Band | Test `public` | Test `drawnPublic` |
+|---|---|---|---|---|
+| 1 (Rome, scripted) | 45.5% | 39.4% to 51.7% | 53.1% | **47.0%**, inside |
+| Chrome (Rome) | 47.3% | 41.2% to 53.5% | 42.8% | **48.0%**, inside |
+
+The band is 12.3 points wide and contained the drawn share in both runs. It contained the test's own point
+estimate in one of the two: the campaign and the test ask Jev different questions (`voteQuestions` with the
+canvass messages against `testQuestions` with the whole record), and in run 1 they disagreed by 7.6 points.
+The band is an honest read of sampling error, not of that disagreement.
