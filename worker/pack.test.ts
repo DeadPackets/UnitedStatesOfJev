@@ -32,6 +32,15 @@ test("scaleSeats uses largest remainder with a minimum of one seat", () => {
   expect(seats).toEqual({ SPD: 28, CDU: 27, Greens: 16, FDP: 12, AfD: 11, Linke: 5, SSW: 1 });
 });
 
+test("scaleSeats clamps to size when forced minimums overflow", () => {
+  const shares: Record<string, number> = { dominant: 999989 };
+  for (let i = 0; i < 11; i++) shares[`minor${i}`] = 1;
+  const seats = scaleSeats(shares, 24);
+  expect(Object.values(seats).reduce((a, b) => a + b, 0)).toBe(24);
+  expect(Object.values(seats).every((v) => v >= 1)).toBe(true);
+  expect(seats.dominant).toBe(13);
+});
+
 test("packView strips citizens and member personas", () => {
   const pack = PackSchema.parse({ ...mini, citizens: makeCitizens() });
   const view = packView(pack);

@@ -80,7 +80,7 @@ export const PackSchema = z.object({
     layout: z.enum(LAYOUTS),
   }),
   chamber: z.object({
-    size: z.number(), threshold: z.number(), supermajority: z.number(), alpha: z.number(),
+    size: z.number(), threshold: z.number(), supermajority: z.number(), alpha: z.number().min(0).max(1),
     veto: z.object({ flag: z.enum(SEAT_FLAGS), text: z.string() }).nullable().optional(),
   }),
   factions: z.array(FactionSchema).min(2).max(12),
@@ -94,7 +94,8 @@ export const PackSchema = z.object({
   promises: z.array(z.object({ tag: z.string(), label: z.string() })).length(8),
   tags: z.array(z.string()).min(16).max(24),
   deck: z.array(StoryletSchema).min(20),
-  escalations: z.array(z.object({ key: z.enum(ESCALATION_KEYS), name: z.string(), headline: z.string() })).length(20),
+  escalations: z.array(z.object({ key: z.enum(ESCALATION_KEYS), name: z.string(), headline: z.string() })).length(20)
+    .refine((a) => new Set(a).size === 20),
   test: z.object({ name: z.string(), win: z.string(), lose: z.string(), reveal: z.enum(["regions", "seats", "both"]) }),
   endings: z.object({ reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string() }),
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
@@ -116,6 +117,12 @@ export function scaleSeats(shares: Record<string, number>, size: number): Record
   const keys = Object.keys(shares);
   const quotas = new Map(keys.map((k) => [k, (shares[k] / total) * size]));
   const seats = new Map(keys.map((k) => [k, Math.max(Math.floor(quotas.get(k)!), shares[k] > 0 ? 1 : 0)]));
+  let over = [...seats.values()].reduce((a, b) => a + b, 0) - size;
+  while (over > 0) {
+    const [maxKey] = [...seats.entries()].filter(([, v]) => v > 1).sort((a, b) => b[1] - a[1])[0];
+    seats.set(maxKey, seats.get(maxKey)! - 1);
+    over--;
+  }
   let remaining = size - [...seats.values()].reduce((a, b) => a + b, 0);
   const ranked = [...keys].sort((a, b) => {
     const remA = quotas.get(a)! - Math.floor(quotas.get(a)!), remB = quotas.get(b)! - Math.floor(quotas.get(b)!);
