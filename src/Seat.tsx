@@ -38,7 +38,7 @@ export default function Seat({ pack, busy, onSeat }: {
     <main className="takeseat press">
       <div className="mast">
         <b>{pack.title}</b>
-        <Ornament kind={pack.theme.ornament} />
+        <span className="flag"><Ornament kind={pack.theme.ornament} /></span>
         <span>{pack.era} · {pack.place}</span>
       </div>
 

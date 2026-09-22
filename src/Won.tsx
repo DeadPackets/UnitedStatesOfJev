@@ -12,7 +12,7 @@ export default function Won({ game, act, busy }: { game: GameView; act: Act; bus
   const next = [pack.escalations[i], pack.escalations[i + 1]].filter((e) => !!e);
   return (
     <main className="over stagger press">
-      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.test.name}</b><Ornament kind={pack.theme.ornament} /></div>
+      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.test.name}</b><span className="flag"><Ornament kind={pack.theme.ornament} /></span></div>
       <h1 style={{ "--i": 1 } as any}>{game.ending?.title ?? pack.endings.reelected}</h1>
       {game.ending ? <p style={{ "--i": 2 } as any}>{game.ending.body}</p> : null}
 

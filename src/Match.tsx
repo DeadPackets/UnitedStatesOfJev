@@ -6,7 +6,7 @@ export default function Match({ offers, busy, onPlay, onBuild }: {
 }) {
   return (
     <main className="match press">
-      <div className="mast"><b>The archive</b><Ornament kind="rule" /><span>{offers.length === 1 ? "One match" : `${offers.length} matches`}</span></div>
+      <div className="mast"><b>The archive</b><span className="flag"><Ornament kind="rule" /></span><span>{offers.length === 1 ? "One match" : `${offers.length} matches`}</span></div>
       <h1>Someone already wrote this era.</h1>
       <ul className="cards">
         {offers.map((o, i) => (

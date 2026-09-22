@@ -114,6 +114,10 @@ textarea, input, select { font: inherit; color: inherit; }
 .mast b { font: 800 22px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
 .mast span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .orn { flex: none; fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
+/* DESIGN.md's masthead rule: the pack's ornament sits on a hairline that carries the flag across */
+.mast .flag { flex: 1 1 40px; min-width: 40px; display: flex; align-items: center; gap: 12px; }
+.mast .flag::before, .mast .flag::after { content: ""; flex: 1 1 0; border-top: 1px solid var(--line); }
+.mast .flag:empty { gap: 0; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
 /* the premise is the pitch: a sentence at poster size on a poster measure, not a wall of caps */
 .head { font: 800 clamp(27px, 3.8vw, 50px)/1.02 var(--display); letter-spacing: -0.01em; max-width: 26ch; margin: 6px 0 2px; }

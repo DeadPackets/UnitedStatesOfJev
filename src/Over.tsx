@@ -24,7 +24,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
   const lost = !!r && r.ending !== "reelected";
   return (
     <main className="over stagger press">
-      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.title}</b><Ornament kind={pack.theme.ornament} /></div>
+      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.title}</b><span className="flag"><Ornament kind={pack.theme.ornament} /></span></div>
       <h1 className={lost ? "lose" : ""} style={{ "--i": 1 } as any}>
         {r ? pack.endings[r.ending] : (game.ending?.title ?? pack.test.name)}
       </h1>

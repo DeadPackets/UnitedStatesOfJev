@@ -80,7 +80,7 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
       {wiping ? <div className="wipe" aria-hidden="true" /> : null}
       <div className="mast">
         <b>{frame?.title ?? "Building the era"}</b>
-        <Ornament kind={state?.pack?.theme.ornament ?? "rule"} />
+        <span className="flag"><Ornament kind={state?.pack?.theme.ornament ?? "rule"} /></span>
         <span>{frame ? `${frame.era} · ${frame.place}` : "One to two minutes"}</span>
       </div>
 

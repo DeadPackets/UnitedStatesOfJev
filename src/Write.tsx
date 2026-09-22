@@ -8,7 +8,7 @@ export default function Write({ busy, onSubmit }: { busy: boolean; onSubmit: (pr
 
   return (
     <main className="write press">
-      <div className="mast"><b>United States of Jev</b><Ornament kind="rule" /><span>Any polity, one term</span></div>
+      <div className="mast"><b>United States of Jev</b><span className="flag"><Ornament kind="rule" /></span><span>Any polity, one term</span></div>
       <h1>Name a place and a time.</h1>
       <p className="muted">Germany in 2021. Rome in 44 BC. A Mars colony in 2091. Write it in any language.</p>
       <textarea className="ask" rows={3} value={text} autoFocus spellCheck={false}
