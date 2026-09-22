@@ -56,6 +56,18 @@ export const gateQuestion = (pack: Pack): Record<string, Question> => ({
     criteria: { true: "It proposes, changes, funds, bans, or repeals something the government does.", false: "It is a greeting, a question, gibberish, or unrelated text." } },
 });
 
+export type MatchCandidate = { id: string; title: string; era: string; place: string; description: string };
+
+// Candidates sit in the question, not the state, per §2: Jev sees at most 21 options and the prompt, under 3k tokens.
+export const matchQuestion = (candidates: MatchCandidate[]): Choice => ({
+  type: "choice",
+  instructions: {
+    candidates: Object.fromEntries(candidates.map((c) => [c.id, { title: c.title, era: c.era, place: c.place, description: c.description }])),
+    question: "Does `prompt` describe the same scenario as one of `candidates`, a close variant of one, or something new?",
+  },
+  options: [...candidates.map((c) => c.id), "none_of_these"],
+});
+
 // Persona fields stay English in the pack so the calibrated criteria hold (v3 spec §8).
 const persona = (pack: Pack, m: Member) => ({
   region: pack.regions.find((r) => r.id === m.region)?.name ?? m.region,

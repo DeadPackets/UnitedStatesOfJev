@@ -4,6 +4,7 @@ import { decodeCode, dailyCode } from "./engine";
 import type { Env } from "./jev";
 import { getScenario, newScenario } from "./db";
 import { packView } from "./pack";
+import { match } from "./match";
 export { GameDO } from "./game";
 export { BuildsDO } from "./db";
 export { ScenarioBuild } from "./build";
@@ -34,6 +35,12 @@ app.post("/api/games", async (c) => {
 });
 // 6 base36 characters: 2.2 billion ids, short enough to read out.
 const scenarioId = () => [...crypto.getRandomValues(new Uint8Array(6))].map((b) => (b % 36).toString(36)).join("");
+
+app.post("/api/scenarios/match", async (c) => {
+  const { prompt } = await c.req.json<{ prompt?: string }>();
+  if (typeof prompt !== "string" || prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
+  return c.json(await match(c.env, prompt.trim()));
+});
 
 app.post("/api/scenarios", async (c) => {
   const { prompt } = await c.req.json<{ prompt?: string }>();
