@@ -167,9 +167,9 @@ function eyeRow(cell: Uint8Array): number {
     for (let x = 0; x < 128; x++) s += luma(d, (y * 128 + x) * 4);
     rows[y] = s;
   }
-  // Window starts at 25%, not 0: dark hair outranks the eyes on 9 of the 16 fixture cells.
+  // Window 25%–50%: above it dark hair wins on 9/16 fixture cells, below it beards win on 6/16 of a live sheet.
   let at = 32, dark = Infinity;
-  for (let y = 32; y + 8 <= 77; y++) {
+  for (let y = 32; y + 8 <= 64; y++) {
     let s = 0;
     for (let k = 0; k < 8; k++) s += rows[y + k];
     if (s < dark) { dark = s; at = y; }
