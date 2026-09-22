@@ -35,14 +35,14 @@ test("alignment passes on the fixture sheet", () => {
 });
 
 test("alignment fails, without throwing, when more than 2 cells drift", () => {
-  const sheet = PhotonImage.new_from_byteslice(SHEET);
+  // Synthetic cells: paper with one dark "eye line" 18 rows (face space) below the fixture median.
+  const d = new Uint8Array(400 * 400 * 4).fill(240);
+  for (let y = 188; y < 212; y++) for (let x = 0; x < 400; x++) d.set([20, 20, 20, 255], (y * 400 + x) * 4);
+  const img = new PhotonImage(d, 400, 400);
+  const low = img.get_bytes();
+  img.free();
   const shifted = [...CELLS];
-  for (let i = 0; i < 3; i++) {
-    const c = crop(sheet, i * 400, 60, i * 400 + 400, 460);
-    shifted[i] = c.get_bytes();
-    c.free();
-  }
-  sheet.free();
+  for (let i = 4; i < 7; i++) shifted[i] = low;
   const a = alignment(shifted);
   expect(a.rows.length).toBe(16);
   expect(a.ok).toBe(false);

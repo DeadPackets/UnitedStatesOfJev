@@ -167,12 +167,20 @@ function eyeRow(cell: Uint8Array): number {
     for (let x = 0; x < 128; x++) s += luma(d, (y * 128 + x) * 4);
     rows[y] = s;
   }
-  // Window 25%–50%: above it dark hair wins on 9/16 fixture cells, below it beards win on 6/16 of a live sheet.
-  let at = 32, dark = Infinity;
-  for (let y = 32; y + 8 <= 64; y++) {
-    let s = 0;
-    for (let k = 0; k < 8; k++) s += rows[y + k];
-    if (s < dark) { dark = s; at = y; }
+  // Darkest 8-row band in 25%–60%; a beard below 50% loses to eyes above it that are within 15% of its darkness.
+  const band = (lo: number, hi: number) => {
+    let at = lo, dark = Infinity;
+    for (let y = lo; y + 8 <= hi; y++) {
+      let s = 0;
+      for (let k = 0; k < 8; k++) s += rows[y + k];
+      if (s < dark) { dark = s; at = y; }
+    }
+    return { at, dark };
+  };
+  let { at, dark } = band(32, 77);
+  if (at + 4 > 64) {
+    const up = band(32, 64);
+    if (up.dark <= dark * 1.15) at = up.at;
   }
   return at + 4;
 }
