@@ -6,6 +6,7 @@ import Build from "./Build";
 import Seat from "./Seat";
 import Chamber from "./Chamber";
 import Midterm from "./Midterm";
+import Campaign from "./Campaign";
 import Test from "./Test";
 import Won from "./Won";
 import Over from "./Over";
@@ -117,6 +118,7 @@ export default function App() {
         : game ? (
             showTest ? <Test game={game} act={act} busy={busy} onDone={() => setRevealed(testKey)} />
             : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => setCounted(midtermKey)} />
+            : game.stage === "campaign" ? <Campaign game={game} act={act} busy={busy} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
             : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} />)
