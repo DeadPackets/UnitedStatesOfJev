@@ -333,6 +333,7 @@ button.tile { cursor: pointer; min-height: 44px; }
 .railpanel, .feed { display: grid; gap: 18px; align-content: start; }
 .feed textarea { width: 100%; resize: vertical; border: 1.5px solid var(--ink); background: var(--bg); padding: 10px 12px; outline: none; }
 .feed textarea::placeholder { color: var(--ink-2); }
+.feed textarea:disabled { border-color: var(--tone); color: var(--ink-2); }
 .feed .lede { font-size: 19px; line-height: 1.3; }
 .feedline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 14px 0 0; }
 .reacts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
