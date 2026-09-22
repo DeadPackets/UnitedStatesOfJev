@@ -21,10 +21,13 @@ export function useSheet(onClose: () => void) {
     const watch = new MutationObserver(() => {
       if (d.open || timer.current) return;
       // A sheet that opened itself can outlive its opener, and the browser then restores focus to
-      // <body>. That restore lands after this mutation, so the check waits for the exit to finish;
-      // the screen's one primary action is where the player is going next, so send it there.
+      // <body>. Read that here, at the close: a click on empty space during the exit window also
+      // leaves <body> focused, and must not be taken for a failed restore. The wait is still needed
+      // in case the restore lands after this mutation; the screen's one primary action is where
+      // the player is going next, so send it there.
+      const adrift = document.activeElement === document.body || d.contains(document.activeElement);
       timer.current = setTimeout(() => {
-        if (document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
+        if (adrift && document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
         onClose();
       }, UNMOUNT) as unknown as number;
     });
