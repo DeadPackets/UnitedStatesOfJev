@@ -435,3 +435,28 @@ test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeErro
   expect((await post("events/0", { stance: 0 })).status).toBe(409);
   expect(do_.saved.game.events[0].stance).toBeUndefined();
 });
+
+test("End turn moves the clock, draws the card and prints the wire", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(21);
+  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
+  expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
+  expect(game.turn).toBe(1);
+  const r = await post("turn/end", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(r.body.turn).toBe(2);
+  expect(Array.isArray(r.body.wire)).toBe(true);
+  expect((await post("turn/end", { turn: 1 })).status).toBe(409);   // the stale-turn guard
+  game.stage = "test";
+  expect((await post("turn/end", { turn: 2 })).status).toBe(409);
+});
+
+test("a card on the desk holds the boundary", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(22);
+  game.events.push({ id: "gen-01", turn: 1, relief: false, stances: ["Hold", "Pay"] });
+  const r = await post("turn/end", { turn: 1 });
+  expect(r.status).toBe(409);
+  expect(r.body.error).toContain("card");
+});
