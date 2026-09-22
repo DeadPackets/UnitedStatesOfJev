@@ -21,13 +21,14 @@ function Pct({ value, from }: { value: number; from: number | null }) {
 }
 
 type MemberDrawerProps = {
-  pack: GamePack; member: ViewMember; capital: number; bill?: ViewBill; before: number | null; busy: boolean;
+  pack: GamePack; member: ViewMember; capital: number; costs: Record<LobbyKind, number>;
+  bill?: ViewBill; before: number | null; busy: boolean;
   onLobby: (kind: LobbyKind) => void; onClose: () => void;
 };
 
 /** The 256 px plate on paper, the faction in its colour, the pack's own lobby offers. No bio, no tell: the
  *  view keeps both in the Worker, so what the seat said on this bill stands in for them. */
-export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobby, onClose }: MemberDrawerProps) {
+export function MemberDrawer({ pack, member, capital, costs, bill, before, busy, onLobby, onClose }: MemberDrawerProps) {
   const { ref, dismiss } = useSheet(onClose);
   const done = useRef<HTMLButtonElement>(null);
   const faction = pack.factions.find((f) => f.id === member.faction);
@@ -76,9 +77,9 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
         <div className="lobby">
           <div className="kicker">{v.lobby} · <span className="num">{capital}</span> {v.capital}</div>
           {kinds.map((k) => (
-            <button key={k} disabled={busy || capital < pack.lobby[k].cost} onClick={() => onLobby(k)}>
+            <button key={k} disabled={busy || capital < costs[k]} onClick={() => onLobby(k)}>
               <span className="t"><b>{pack.lobby[k].label}</b><span className="small muted">{pack.lobby[k].text}</span></span>
-              <span className="num muted">−{pack.lobby[k].cost}</span>
+              <span className="num muted">−{costs[k]}</span>
             </button>
           ))}
         </div>

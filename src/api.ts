@@ -20,6 +20,7 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "c
   members: ViewMember[];
   bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];
+  lobbyCosts: Record<LobbyAction, number>;   // this term's price per offer, escalations already applied
   coalition: string[];
   seatTitle: string;
   turnsPerTerm: number;

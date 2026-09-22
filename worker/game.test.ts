@@ -31,6 +31,14 @@ test("the view strips personas, citizens and the deck", () => {
   expect(v.turnsPerTerm).toBe(20);
 });
 
+test("the view prices every lobby offer, escalations included", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 3 });
+  const game: Game = newGame("g-cost", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  expect(view(pack, { game, prose: {} }).lobbyCosts).toEqual({ pork: 10, favor: 15, threat: 20 });
+  game.escalations.push("costly_favors");
+  expect(view(pack, { game, prose: {} }).lobbyCosts).toEqual({ pork: 15, favor: 23, threat: 30 });
+});
+
 test("create() picks the start by faction id, not array position, when starts are shuffled", () => {
   // PackSchema now rejects starts out of factions order, so shuffle after validation: pickStart
   // stays defensive even though a stored pack can no longer reach this shape through the schema.

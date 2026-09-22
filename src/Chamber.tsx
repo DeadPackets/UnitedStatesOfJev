@@ -242,7 +242,8 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
-      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
+      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.capital}
+        costs={game.lobbyCosts} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
       {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
         onStance={stance} onClose={() => setAnswered(null)} /> : null}

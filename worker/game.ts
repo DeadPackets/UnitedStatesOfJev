@@ -411,6 +411,9 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   return {
     ...rest, ...extra,
     scenario: game.pack, pack: pv,
+    // What an offer costs this term, priced here so the drawer never reads the pack's own number.
+    lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])
+      .map((k) => [k, lobbyCost(game, k)])) as Record<LobbyAction, number>,
     members: members.map(({ bio, tell, ...m }) => m),
     bills: bills.map((b) => {
       const cur = b.id < game.turn ? { ...b, vetoes: undefined, offers: {} } : b;
