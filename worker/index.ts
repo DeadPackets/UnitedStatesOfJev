@@ -82,8 +82,7 @@ app.post("/api/scenarios/match", async (c) => {
   if (typeof prompt !== "string") return prompt;
   const ip = ipOf(c);
   const builds = buildsDO(c.env);
-  if (!(await builds.spaced(ip, "match", 20_000))) return c.json({ error: "One search every 20 seconds." }, 429);
-  await builds.mark(ip, "match");
+  if ((await builds.claim(ip, "match", 20_000)) !== "ok") return c.json({ error: "One search every 20 seconds." }, 429);
   return c.json(await match(c.env, prompt));
 });
 
@@ -92,11 +91,9 @@ app.post("/api/scenarios", async (c) => {
   if (typeof prompt !== "string") return prompt;
   const ip = ipOf(c);
   const builds = buildsDO(c.env);
-  if (!(await builds.spaced(ip, "build", 600_000))) {
-    return c.json({ error: "One build every 10 minutes. Load a scenario in the meantime." }, 429);
-  }
-  if (!(await builds.take())) return c.json({ error: "Today's builds are used up. Try again tomorrow." }, 429);
-  await builds.mark(ip, "build");
+  const claim = await builds.claim(ip, "build", 600_000, true);
+  if (claim === "spaced") return c.json({ error: "One build every 10 minutes. Load a scenario in the meantime." }, 429);
+  if (claim === "capped") return c.json({ error: "Today's builds are used up. Try again tomorrow." }, 429);
   const id = scenarioId();
   await newScenario(c.env, id, prompt);
   await c.env.BUILD.create({ id, params: { id, prompt } });
