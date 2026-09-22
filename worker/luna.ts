@@ -65,7 +65,7 @@ export async function narrate(env: Env, pack: Pack, bill: Bill, defectors: Membe
       [pack.vocabulary.bill]: bill.title, summary: bill.summary, yes: bill.yes, needed: bill.threshold, of: pack.chamber.size,
       outcome: bill.passed ? pack.vocabulary.pass : pack.vocabulary.fail, struck_down: bill.struck,
       notable_defectors: defectors.map((m) => `${m.name} (${m.faction}, ${m.region})`), group_opposition_0_to_2: bill.blocs ?? {},
-    }), 160);
+    }), 220);
   return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
 }
 
