@@ -538,7 +538,7 @@ export function decayPromises(pack: Pack, game: Game): WireLine[] {
   return wire;
 }
 
-// Spec §5.3, the whole boundary in order: rates, decay, warnings, the ledgers' lines, the Director, the
+// Spec §5.3, the whole boundary in order: rates, decay, the ledgers' lines and the warnings, the Director, the
 // pending item. Every act resolves at once; only this function moves the clock.
 export function endTurn(pack: Pack, game: Game): TurnEnd {
   const wire: WireLine[] = [];
@@ -546,6 +546,11 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   wire.push(...applyRates(pack, game));
 
   for (const h of Object.values(game.holders)) h.resistance = clamp(round1(h.resistance - RESIST_DECAY), 0, 100);
+  // After the decay, so the pushed holder is still at its line when the warnings read it.
+  if (ledgerValue(pack, game, "popularity") <= ledgerLine(pack, "popularity")) {
+    const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
+    if (caller) caller.resistance = Math.max(caller.resistance, caller.line);
+  }
 
   const warnings = advanceWarnings(pack, game);
   wire.push(...warnings.wire);
@@ -561,36 +566,33 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
       game.marks.doubled = ["1"];
     }
   }
-  if (ledgerValue(pack, game, "popularity") <= ledgerLine(pack, "popularity")) {
-    const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
-    if (caller) caller.resistance = Math.max(caller.resistance, caller.line);
-  }
 
   wire.push(...decayPromises(pack, game));
   for (const e of on(game)) e.turn?.(pack, game);
 
   const voted = game.turn;
   game.turn += 1;
-  const event = game.stage === "session" || game.stage === "midterm" ? director(game, pack) : null;
-
   if (game.result) { game.stage = "over"; game.phase = "over"; }
   else if (game.stage === "test") game.phase = "over";
   else if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; game.phase = "over"; startCampaign(pack, game); }
   else { game.phase = "draft"; if (voted === 10) game.stage = "midterm"; }
+  // After the stage moves, so no card is drawn onto the campaign, where nothing can answer it.
+  const event = director(game, pack);
 
   game.wire = wire;
-  game.pending = pendingItem(game, warnings, event);
+  game.pending = pendingItem(pack, game, warnings, event);
   return { wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
 }
 
 // The one more turn hook: the next thing that will happen, printed at the boundary.
-function pendingItem(game: Game, w: { warned: Warning[]; fired: Warning[] }, event: Event | null): string | null {
+function pendingItem(pack: Pack, game: Game, w: { warned: Warning[]; fired: Warning[] }, event: Event | null): string | null {
+  const name = (id: string) => holdersOf(pack).find((h) => h.id === id)?.name ?? id;
   const open = game.warnings[0];
-  if (open) return `${open.holder} is at ${Math.round(open.number)} of a line of ${game.holders[open.holder]?.line ?? 0} and answers on turn ${open.fires}.`;
-  if (w.fired.length) return `${w.fired[0].holder} acted on its warning.`;
+  if (open) return `${name(open.holder)} is at ${Math.round(open.number)} of a line of ${game.holders[open.holder]?.line ?? 0} and answers on turn ${open.fires}.`;
+  if (w.fired.length) return `${name(w.fired[0].holder)} acted on its warning.`;
   if (event) return "A card is on the desk.";
-  if (game.turn === 10) return "The half of the term falls next turn.";
-  if (game.turn === TURNS_PER_TERM) return "The test is next turn.";
+  if (game.turn === 10) return "The half of the term falls at the end of this turn.";
+  if (game.turn === TURNS_PER_TERM) return "This is the last turn of the term.";
   return null;
 }
 

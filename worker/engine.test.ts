@@ -847,11 +847,26 @@ test("the half-term still follows turn 10 and the campaign still follows turn 20
   g.turn = 10;
   endTurn(pack, g);
   expect(g.stage).toBe("midterm");
-  const h = game();
-  h.turn = 20;
-  endTurn(pack, h);
-  expect(h.stage).toBe("campaign");
-  expect(h.campaign!.turns).toEqual([]);
+  for (let i = 0; i < 30; i++) {
+    const h = game();
+    h.turn = 20;
+    const out = endTurn(pack, h);
+    expect(h.stage).toBe("campaign");
+    expect(h.campaign!.turns).toEqual([]);
+    expect(out.event).toBeNull();   // no card lands on the campaign, where nothing can answer it
+  }
+});
+
+test("popularity under its line puts the early test caller at its line, and it warns and fires", () => {
+  const g = game();
+  for (const r of REGIONS) g.ledgers.popularity[r] = 20;   // under the line of 30
+  const out = endTurn(pack, g);
+  expect(out.warned.map((w) => w.holder)).toEqual(["council"]);
+  endTurn(pack, g);
+  const fired = endTurn(pack, g);
+  expect(fired.fired.map((w) => w.holder)).toEqual(["council"]);
+  expect(g.stage).toBe("test");
+  expect(g.earlyTest).toBe("council");
 });
 
 test("a law in force collects every turn until it is repealed", () => {
