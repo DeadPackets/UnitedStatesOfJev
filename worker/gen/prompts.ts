@@ -1,5 +1,4 @@
 import { FONT_PAIRS, ESCALATION_KEYS, type Citizen, type Member, type Storylet } from "../pack";
-import type { Env } from "../jev";
 import type { Sources } from "../sources";
 import type { Facts } from "./facts";
 import type { Frame } from "./frame";
@@ -10,7 +9,7 @@ export type GenCtx = {
   sources: Sources; facts: Facts; frame: Frame; calendar: Calendar | null;
   members: Member[]; citizens: Citizen[]; deck: Storylet[];
 };
-export type Step = (env: Env, ctx: GenCtx) => Promise<Partial<GenCtx>>;
+export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 export const HISTORIAN = `You are a parliamentarian and historian. You write a "polity pack" for a legislative strategy game: the player holds the top governing seat of a legislature for a term of 20 turns, passes bills, whips members, answers crises, and faces a test of confidence at the end.`;
 
@@ -20,7 +19,7 @@ Never mention the game, its design, the player, or that anything is fictional. N
 
 export const FRAME_RULES = `Fill every field of the JSON schema. Rules per field:
 - description: at most 60 words, shown on a match card.
-- content_note: what you excluded or reframed under the content rule, one sentence, or null.
+- content_note: what you excluded or reframed under the content rule, one sentence, or null. Written for a reader of the period: it never names a source, a sheet, or this brief.
 - vocabulary: the era's own words for each game term (seat, chamber, member, bill, pass, fail, capital, turn, midterm, campaign, test, feed, post, whip, lobby, promise, patron, approval).
 - theme: fonts is one of ${FONT_PAIRS.join("; ")}. ink on paper must read at 4.5:1 contrast. layout: hemicycle for continental parliaments, benches for Westminster, horseshoe for Commonwealth hybrids, circle for councils and curiae, classroom for mass assemblies, court for monarchies and juntas.
 - chamber: size 24 to 72. threshold is the simple majority of size, supermajority the two-thirds or the era's rule. alpha is the weight of public opinion in the end test, 0 to 1. veto is null unless one class of seat can freeze a bill.

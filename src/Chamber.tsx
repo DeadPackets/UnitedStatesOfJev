@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
-import { api, type GameView, type ViewBill } from "./api";
+import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
@@ -11,7 +11,6 @@ import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
 
-type Amendment = NonNullable<ViewBill["amendments"]>[number] & { expected: number };
 type Vocab = GameView["pack"]["vocabulary"];
 const TABS = ["turn", "feed"] as const;
 
@@ -22,7 +21,9 @@ const TOUR = (v: Vocab): Record<string, TourStep> => ({
   vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: `The count is a forecast, not a promise. Every ${v.member} rolls their own dice.` },
 });
 
-export default function Chamber({ game, act, busy, onQuit }: { game: GameView; act: Act; busy: boolean; onQuit: () => void }) {
+type ChamberProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
+
+export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberProps) {
   const reduced = useReducedMotion();
   const pack = game.pack;
   const v = pack.vocabulary;
@@ -31,7 +32,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const [dismissed, setDismissed] = useState(-1);
   const [tab, setTab] = useState<(typeof TABS)[number]>("turn");
   const [text, setText] = useState("");
-  const [pick, setPick] = useState<string | null>(null);
+  // `n` counts openings, so re-picking the same seat during a sheet's exit still mounts a fresh dialog.
+  const [pick, setPick] = useState<{ id: string; n: number } | null>(null);
   const [muted, setMuted] = useState(sound.muted);
   const [rolling, setRolling] = useState(false);
   const [pulse, setPulse] = useState<string>();
@@ -39,7 +41,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const [before, setBefore] = useState<number | null>(null);
   const [live, setLive] = useState("");
   const [answered, setAnswered] = useState<string | null>(null);
-  const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(-2) : []));
+  // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
+  const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
   const floor = useRef<RollHandle>(null);
 
@@ -54,8 +57,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const shownYes = rollYes ?? yes;
   const crossed = voted && !rolling && bill!.passed;
   const margin = Math.abs(yes - need);
-  const sel = pick ? game.members.find((m) => m.id === pick) : undefined;
-  const amendments = bill?.amendments as Amendment[] | undefined;
+  const sel = pick ? game.members.find((m) => m.id === pick.id) : undefined;
+  const amendments = bill?.amendments;
   const event = game.events.at(-1);
   const openCard = event && event.stance === undefined ? game.events.length - 1 : -1;
   const card = event && (event.stance === undefined || answered === event.id) ? event : undefined;
@@ -80,26 +83,32 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   useEffect(() => { if (bill && !whipped) { sound.play("chime"); setLive(`${v.bill}: ${bill.title}.`); } }, [bill?.id, whipped]); // eslint-disable-line
   useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
-  const weakest = whipped && !voted
+  const weakest = useMemo(() => (whipped && !voted
     ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
-    : undefined;
+    : undefined), [whipped, voted, game.members, game.faction, bill?.whip]); // eslint-disable-line
   const steps = TOUR(v);
+  const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
   const step: TourStep | null = !tour || tab !== "turn" ? null
     : !bill ? steps.write
     : !whipped ? steps.count
     : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
     : !voted ? steps.vote : null;
+  const hotSeat = useMemo(() => (step?.id === "lobby" && weakest ? [weakest.id] : undefined), [step?.id, weakest?.id]);
   const endTour = () => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
   const wasVoted = useRef(voted);
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
   const draft = async () => { if (await act(() => api.draft(game, text))) { setText(""); setDismissed(-1); } };
   // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
+  const pulsing = useRef(0);
+  useEffect(() => () => clearTimeout(pulsing.current), []);
   const lobby = async (k: LobbyKind) => {
     if (!sel || !bill?.whip) return;
     const was = bill.whip[sel.id];
     if (await act(() => api.lobby(game, sel.id, k))) {
-      sound.play("click"); setBefore(was); setPulse(sel.id); setTimeout(() => setPulse(undefined), 700);
+      sound.play("click"); setBefore(was); setPulse(sel.id);
+      clearTimeout(pulsing.current);
+      pulsing.current = setTimeout(() => setPulse(undefined), 700) as unknown as number;
     }
   };
   const stance = async (i: number) => {
@@ -124,8 +133,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       <section className="stage" aria-label={v.chamber}>
         <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
           whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
-          hot={step?.id === "lobby" && weakest ? [weakest.id] : undefined}
-          onPick={(id) => { if (!rolling) setPick(id); }} />
+          hot={hotSeat} onPick={pickSeat} />
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>
@@ -151,19 +159,20 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       <aside className="rail" aria-label="The desk">
         <div className="tabs" role="tablist" aria-label="Desk views">
           {TABS.map((t) => (
-            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`}
+            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={tab === t ? "railpanel" : undefined}
               tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
               onKeyDown={(e) => {
                 const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-                if (!d) return;
-                const next = TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length];
+                const next = d ? TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length]
+                  : e.key === "Home" ? TABS[0] : e.key === "End" ? TABS[TABS.length - 1] : undefined;
+                if (!next) return;
                 setTab(next); document.getElementById(`tab-${next}`)?.focus();
               }}>{t === "turn" ? v.turn : v.feed}</button>
           ))}
         </div>
 
-        <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
-        {tab === "feed" ? <Feed game={game} act={act} busy={busy} /> : <>
+        <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
+        {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : <>
         <Ledger game={game} />
 
         {!bill ? (
@@ -172,7 +181,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
             <textarea id="bill" value={text} onChange={(e) => setText(e.target.value)}
               placeholder={`Say what your ${v.bill} does, and who pays for it.`} maxLength={1200} rows={4} />
             <div className="actions">
-              <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || text.trim().length < 12} onClick={draft}>
+              <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy || text.trim().length < 12} onClick={draft}>
                 {busy ? "Drafting" : `Send the ${v.bill}`}
               </button>
             </div>
@@ -191,13 +200,15 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
               </div>
             ) : null}
             <div className="actions">
-              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
+              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
               {whipped && !voted ? <>
-                <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
+                <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
                 {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
                 <span className="small muted">Tap a {v.seat} to make an offer.</span>
               </> : null}
-              {voted && !rolling ? <button className="btn" disabled={busy} onClick={() => setDismissed(bill.id)}>Next {v.bill}</button> : null}
+              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); }}>
+                {game.stage === "session" ? `Next ${v.bill}` : "Continue"}
+              </button> : null}
             </div>
             {amendments?.length && !voted ? (
               <div className="amend"><div className="kicker">Adopt an amendment</div>
@@ -212,7 +223,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
           </div>
         )}
 
-        <FeedLine game={game} />
+        <FeedLine game={game} bill={bill} />
 
         {bill?.headline && !rolling ? (
           <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
@@ -237,7 +248,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
-      {sel ? <MemberDrawer pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
+      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.capital}
+        costs={game.lobbyCosts} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
       {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
         onStance={stance} onClose={() => setAnswered(null)} /> : null}

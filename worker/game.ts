@@ -14,7 +14,8 @@ import {
 import { getScenario } from "./db";
 import { packView, type Pack } from "./pack";
 import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
-import { chunk, portraitSheet, SHEET } from "./build";
+import { portraitSheet, SHEET } from "./build";
+import { chunk } from "./gen/prompts";
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -24,7 +25,7 @@ export function pickStart(pack: Pack, f: number) {
   return faction && pack.starts.find((s) => s.faction === faction.id);
 }
 
-export type CampaignBody = { message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
+export type CampaignBody = { n?: number; message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
 
 // Two levers, nothing else: up to two regions at 0, 5 or 10 from the chest, or one seat favor from capital.
 function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
@@ -33,10 +34,14 @@ function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
     if (!m) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
     return { kind: "favor", memberId: m.id };
   }
-  const rows = (raw?.kind === "spend" ? raw.regions ?? [] : []).slice(0, 3);
+  const raws: unknown = raw?.kind === "spend" ? raw.regions ?? [] : [];
+  if (!Array.isArray(raws)) throw new Reject(400, "Send a list of regions.");
+  const rows = (raws as { id: string; amount: number }[]).slice(0, 3);
   if (rows.length > 2) throw new Reject(400, "Two regions at most.");
+  // Two rows on one region would be charged twice and spent once: Jev only sees the last of them.
+  if (new Set(rows.map((r) => r?.id)).size !== rows.length) throw new Reject(400, "One row per region.");
   for (const r of rows) {
-    if (!pack.regions.some((x) => x.id === r.id)) throw new Reject(400, "No such region.");
+    if (!pack.regions.some((x) => x.id === r?.id)) throw new Reject(400, "No such region.");
     if (!(SPEND_STEPS as readonly number[]).includes(r.amount)) throw new Reject(400, "Spend 0, 5 or 10.");
   }
   return { kind: "spend", regions: rows };
@@ -70,6 +75,9 @@ export class GameDO extends DurableObject<Env> {
       if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
       if (this.busy) throw new Reject(409, "one move at a time");
       this.busy = true;
+      // Engine mutations run before the Jev awaits, so an upstream failure would leave the cached game
+      // half-applied and the next save would persist it. Roll back to the state the request started from.
+      const before = structuredClone(s);
       let extra: Extra = {};
       try {
         switch (parts[0]) {
@@ -93,6 +101,9 @@ export class GameDO extends DurableObject<Env> {
         }
         await this.epilogue(s, pack);
         this.save(s);
+      } catch (e) {
+        if (!(e instanceof Reject)) this.saved = before;
+        throw e;
       } finally {
         this.busy = false;
       }
@@ -100,8 +111,9 @@ export class GameDO extends DurableObject<Env> {
     } catch (e) {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError) return Response.json({ error: "The chamber is in recess. Try again." }, { status: 503 });
+      // Whatever broke, the player gets the same sentence: a D1 message or a TypeError is not for them.
       console.error(e);
-      return Response.json({ error: e instanceof Error ? e.message : "Something went wrong." }, { status: 502 });
+      return Response.json({ error: "The turn did not finish. Try again." }, { status: 502 });
     }
   }
 
@@ -202,7 +214,7 @@ export class GameDO extends DurableObject<Env> {
   private async lobby(game: Game, pack: Pack, bill: Bill, memberId: string, action: LobbyAction) {
     if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
     const m = game.members.find((x) => x.id === memberId);
-    if (!m || !(action in LOBBY_COSTS)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
+    if (!m || !Object.hasOwn(LOBBY_COSTS, action)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
     if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
     // Gating on the priced cost stops applyLobby's clamp at 0 from ever handing out a free offer.
     if (game.ledgers.capital < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
@@ -308,14 +320,20 @@ export class GameDO extends DurableObject<Env> {
   private async drafts(game: Game, pack: Pack) {
     if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
     const c = game.campaign!;
-    if (c.drafts.length === 3) return;
-    c.drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
-      .catch(() => ["Keep the course.", "The work is not finished.", "The other side would undo it."]);
+    if (c.drafts.length === 3 && c.drafts.every((d) => d.trim())) return;
+    // Nothing is stored on a failure: the campaign screen offers "Ask for the drafts" again, and a blank
+    // draft would leave the player with three radios they cannot submit.
+    const drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
+      .catch(() => []);
+    if (drafts.length !== 3) throw new Reject(503, "The narrator did not answer. Try again.");
+    c.drafts = drafts;
   }
 
   private async campaign(game: Game, pack: Pack, body: CampaignBody) {
     if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
     const c = game.campaign!;
+    // game.turn does not move during the campaign, so the campaign turn index is this stage's stale-turn guard.
+    if (Number(body.n) !== c.turns.length) throw new Reject(409, "Stale turn. Reload the game.");
     const message = String(body.message ?? "").trim().slice(0, 200);
     if (!message) throw new Reject(400, "Pick a message.");
     const lever = readLever(pack, game, body.lever);
@@ -332,10 +350,11 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
     const event = game.events[i];
     if (!event) throw new Reject(404, "No such card.");
     if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
-    if (!(stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
+    if (!(Number.isInteger(stance) && stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
     const storylet = pack.deck.find((s) => s.id === event.id);
     const taken = event.stances[stance];
     const state = { event: event.card ?? { title: storylet?.title_hint ?? event.id }, stance: taken, record: record(pack, game) };
@@ -392,11 +411,16 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   return {
     ...rest, ...extra,
     scenario: game.pack, pack: pv,
+    // What an offer costs this term, priced here so the drawer never reads the pack's own number.
+    lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])
+      .map((k) => [k, lobbyCost(game, k)])) as Record<LobbyAction, number>,
     members: members.map(({ bio, tell, ...m }) => m),
     bills: bills.map((b) => {
       const cur = b.id < game.turn ? { ...b, vetoes: undefined, offers: {} } : b;
       if (cur.id < game.turn - 1) return { ...cur, whip: undefined, votes: undefined, quotes: undefined };
-      if (!cur.whip || cur.votes) return cur;
+      if (cur.votes) return cur;
+      // The bar a bill has to clear is known the moment it is drafted, escalations and all.
+      if (!cur.whip) return { ...cur, needed: threshold(pack, game, cur) };
       const whip = effectiveWhip(game, cur);
       return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),

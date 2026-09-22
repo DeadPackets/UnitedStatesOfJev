@@ -1,10 +1,9 @@
 import { jev, type Env, type Question } from "../jev";
 import type { Citizen, Member } from "../pack";
 import * as personas from "./personas";
-import type { GenCtx } from "./prompts";
+import { chunk, type GenCtx } from "./prompts";
 
 const BATCH = 50;
-const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 const key = (a: string, b: string) => [a, b].sort().join("+");
 const rank = (s: string) => s.replace(/(\d+)/, (d) => d.padStart(6, "0"));
 
@@ -53,10 +52,14 @@ async function rewrite<T extends { id: string }>(
 ): Promise<T[]> {
   const byId = new Map(rows.map((r) => [r.id, r]));
   // 12 rewrites at once: a 100-seat chamber can flag dozens of pairs, and each is a paid persona call.
+  // One regen per loser: a row flagged in two pairs would otherwise be paid for twice and last write wins.
+  const done = new Set<string>();
   const jobs = pairs.slice(0, 12).flatMap(([a, b]) => {
     const x = byId.get(a), y = byId.get(b);
     if (!x || !y) return [];
     const loser = rank(x) > rank(y) ? x : y, keeper = loser === x ? y : x;
+    if (done.has(loser.id)) return [];
+    done.add(loser.id);
     return [regen(loser, keeper).then((r) => byId.set(loser.id, r))];
   });
   await Promise.all(jobs);

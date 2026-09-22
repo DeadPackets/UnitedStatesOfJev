@@ -4,7 +4,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { view, pickStart, GameDO, seededSample } = await import("./game");
-import { encodeCode, newGame, scenarioTag, type Game } from "./engine";
+import { encodeCode, hash, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -29,6 +29,23 @@ test("the view strips personas, citizens and the deck", () => {
   expect("director" in v).toBe(false);
   expect(v.coalition).not.toContain("harborites");   // partners only, never the player's own faction
   expect(v.turnsPerTerm).toBe(20);
+});
+
+test("the view prices every lobby offer, escalations included", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 3 });
+  const game: Game = newGame("g-cost", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  expect(view(pack, { game, prose: {} }).lobbyCosts).toEqual({ pork: 10, favor: 15, threat: 20 });
+  game.escalations.push("costly_favors");
+  expect(view(pack, { game, prose: {} }).lobbyCosts).toEqual({ pork: 15, favor: 23, threat: 30 });
+});
+
+test("a drafted bill already carries the bar it has to clear", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 4 });
+  const game: Game = newGame("g-need", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  game.bills.push({ id: game.turn, title: "A bill", summary: "", text: "", tags: [], offers: {} });
+  expect(view(pack, { game, prose: {} }).bills[0].needed).toBe(pack.chamber.threshold);
+  game.escalations.push("supermajority_era");
+  expect(view(pack, { game, prose: {} }).bills[0].needed).toBe(pack.chamber.supermajority);
 });
 
 test("create() picks the start by faction id, not array position, when starts are shuffled", () => {
@@ -172,11 +189,11 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
   for (const l of g.midterm.lost) {
     const seat = g.members.find((m: any) => m.seat === l.seat)!;
     expect(before).not.toContain(seat.id);
-    expect(seat.id).toBe(`r1-${l.seat}`);
+    expect(seat.id).toBe(`r${hash("g-mid").toString(36)}-1-${l.seat}`);
     expect(seat.faction).toBe(l.to);
     expect(seat.name.length).toBeGreaterThan(0);
     expect(seat.memory).toEqual([]);
-    expect(seat.portrait).toBe(`members/r1-${l.seat}.png`);
+    expect(seat.portrait).toBe(`members/r${hash("g-mid").toString(36)}-1-${l.seat}.png`);
     expect("bio" in seat || "tell" in seat).toBe(false);
   }
   expect(background.length).toBe(1);        // the portrait sheet runs after the answer, never before it
@@ -196,7 +213,7 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   expect(body.phase).toBe("draft");
   expect(body.midterm.lost.map((l: any) => l.seat)).toEqual(["seat-01"]);
   expect(body.members).toHaveLength(pack.chamber.size);
-  expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe("r1-seat-01");
+  expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe(`r${hash("g-mid").toString(36)}-1-seat-01`);
   await Promise.all(background);
 });
 
@@ -294,25 +311,104 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
   expect(d.campaign.drafts.length).toBe(3);
   expect(d.campaign.gains.spend[pack.regions[0].id].length).toBe(3);
   const three = [0, 1, 2].map((i) => ({ id: pack.regions[i % pack.regions.length].id, amount: 10 }));
-  expect((await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
-  expect((await post("campaign", { message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
+  expect((await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
+  expect((await post("campaign", { n: 0, message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
+  // The campaign does not move game.turn, so the turn index is what a repeated POST is caught by.
+  expect((await post("campaign", { n: 1, message: d.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
 
   // The favor is the one lever that spends capital, so it is priced before it is charged.
   const own = game.members.find((m) => m.faction === game.faction)!;
   const capital = game.ledgers.capital;
-  let g = (await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
+  let g = (await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
   expect(g.campaign.turns[0].lever.kind).toBe("favor");
   expect(g.ledgers.capital).toBeLessThan(capital);
   g = (await post("campaign/drafts", {})).body;
   game.ledgers.capital = 0;
-  expect((await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
+  expect((await post("campaign", { n: 1, message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
+  // A replayed turn is refused, and the one it replays is still there to play.
+  expect((await post("campaign", { n: 0, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
 
   for (let i = 1; i < 4; i++) {
     if (!g.campaign.drafts.length) g = (await post("campaign/drafts", {})).body;
-    g = (await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
+    g = (await post("campaign", { n: g.campaign.turns.length, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
   }
   expect(g.campaign.turns.length).toBe(4);
   expect(g.stage).toBe("test");
   expect(g.campaign.turns[0].band[0]).toBeLessThan(g.campaign.turns[0].public);
   expect((await post("campaign/drafts", {})).status).toBe(409);
+});
+
+test("a Jev failure mid-vote leaves the stored game exactly as the request found it", async () => {
+  stubModels(0.9);
+  const { do_, post } = seatedGame(31);
+  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  expect((await post(`bills/1/whip`, { turn: 1 })).status).toBe(200);
+  const before = structuredClone(do_.saved);
+
+  // applyVote has already moved the turn, the ledgers and the members when the citizen call goes out.
+  const ok = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.questions && Object.keys(body.questions).some((k) => k.startsWith("c-"))) {
+      return new Response("upstream is down", { status: 503 });
+    }
+    return ok(url as never, init);
+  }) as unknown as typeof fetch;
+
+  const r = await post("bills/1/vote", { turn: 1 });
+  expect(r.status).toBe(503);
+  expect(do_.saved).toEqual(before);
+  expect(do_.saved.game.turn).toBe(1);
+});
+
+test("blank campaign drafts are a 503 the player can retry, not three lines nobody can pick", async () => {
+  stubModels(0.6);
+  const { do_, post } = seatedGame(41);
+  do_.saved.game.stage = "campaign";
+  do_.saved.game.campaign = { drafts: [], messages: [], turns: [], rival: [], intent: {} };
+
+  const ok = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.response_format?.json_schema?.name === "messages") {
+      return Response.json({ choices: [{ message: { content: JSON.stringify({ messages: ["", "   ", ""] }) } }] });
+    }
+    return ok(url as never, init);
+  }) as unknown as typeof fetch;
+
+  const r = await post("campaign/drafts", {});
+  expect(r.status).toBe(503);
+  expect(do_.saved.game.campaign.drafts).toEqual([]);
+
+  globalThis.fetch = ok;
+  expect((await post("campaign/drafts", {})).body.campaign.drafts).toHaveLength(3);
+});
+
+test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeError", async () => {
+  stubModels(0.9);
+  const { do_, game, post } = seatedGame(51);
+  game.stage = "campaign";
+  game.campaign = { drafts: ["Keep the course."], messages: [], turns: [], rival: [], intent: {} };
+  const body = (lever: unknown) => ({ n: 0, message: "Keep the course.", lever });
+  const r = pack.regions[0].id;
+
+  expect((await post("campaign", body({ kind: "spend", regions: 5 }))).status).toBe(400);
+  expect((await post("campaign", body({ kind: "spend", regions: [{ id: r, amount: 5 }, { id: r, amount: 5 }] }))).body.error)
+    .toBe("One row per region.");
+  expect(game.campaign.turns).toHaveLength(0);
+
+  game.stage = "session";
+  const own = game.members[0];
+  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
+  const capital = game.ledgers.capital;
+  expect((await post("bills/1/lobby", { turn: 1, memberId: own.id, action: "toString" })).status).toBe(400);
+  expect(game.ledgers.capital).toBe(capital);
+
+  // A card left open is answered on the floor, never after the term is scored.
+  game.events.push({ id: "gen-01", turn: 1, relief: false, stances: ["Hold", "Fold"] });
+  expect((await post("events/0", { turn: game.turn, stance: 1.5 })).status).toBe(400);
+  game.stage = "campaign";
+  expect((await post("events/0", { stance: 0 })).status).toBe(409);
+  expect(do_.saved.game.events[0].stance).toBeUndefined();
 });

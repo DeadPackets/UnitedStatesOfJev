@@ -2,7 +2,7 @@ import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
 import type { Citizen, Member } from "../pack";
-import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
+import { CONTENT_RULE, HISTORIAN, chunk, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, matchName, members as checkMembers, realNames } from "./validate";
 
 const NamesSchema = z.object({ members: z.array(z.string()), citizens: z.array(z.string()) });
@@ -18,8 +18,6 @@ const CitizenProse = z.object({ rows: z.array(z.object({
 })) });
 
 type Prose = { id: string; name?: string; bio: string; core_issues: string[]; tell: string; patrons: string[] };
-
-const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 // ---- names: one call for members, citizens in parallel chunks of 80; no call sees another's picks, so
 // uniqueness (within and across the two lists) stays a code-side set check, plus one sequential top-up ----
@@ -57,15 +55,19 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   addTo(memberPool, memberRes.members);
   for (const r of citizenRes) addTo(citizenPool, r.citizens);
 
-  const shortM = needM - memberPool.length, shortC = needC - citizenPool.length;
-  if (shortM > 0 || shortC > 0) {
-    const r = await ask(Math.max(shortM, 0), Math.max(shortC, 0), {}, [...memberPool, ...citizenPool]);
+  // Top up until both pools are full: a pool one name short puts the internal id, "m12", in the chamber.
+  const short = () => [needM - memberPool.length, needC - citizenPool.length];
+  for (let i = 0; i < 3 && short().some((n) => n > 0); i++) {
+    const [m, c] = short();
+    const r = await ask(Math.max(m, 0), Math.max(c, 0), {}, [...memberPool, ...citizenPool]);
     addTo(memberPool, r.members);
     addTo(citizenPool, r.citizens);
   }
+  const [m, c] = short();
+  if (m > 0 || c > 0) throw new NeedsRepair([`the name pools are short by ${Math.max(m, 0)} members and ${Math.max(c, 0)} citizens`], "");
   return {
-    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] ?? m.id })),
-    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] ?? c.id })),
+    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] })),
+    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] })),
   };
 }
 
@@ -73,7 +75,7 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
 
 const MEMBER_SYSTEM = `${HISTORIAN}
 You write the people of the chamber. Each row already has its name, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell and patrons.
-- bio: at most 40 words. What they did before the seat, where they are from, what they want. Concrete work and places of the period.
+- bio: at most 40 words. Where they are from, what they did before the seat, and the one thing they want. Concrete work and places of the period.
 - core_issues: 1 to 3 ids from the tags list.
 - tell: one visible habit a whip would read, at most 18 words.
 - patrons: 0 to 2 ids from the patrons list.
@@ -84,7 +86,7 @@ const CITIZEN_SYSTEM = `${HISTORIAN}
 You write ordinary people of the place. Each row already has its name, region, bloc and age: never change them. Write only job, town, worldview and issues.
 - job: the work of the period, two or three words.
 - town: a place inside that region.
-- worldview: one sentence, at most 25 words, in their own terms, what they want from the government.
+- worldview: one sentence, at most 25 words, in their own terms, the one thing they want from the government.
 - issues: exactly 2 ids from the tags list.
 Every row is a different person.
 ${CONTENT_RULE}`;

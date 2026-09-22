@@ -2,16 +2,54 @@ import { useEffect, useRef, type ReactNode } from "react";
 import type { GamePack, ViewEvent } from "./api";
 import { Meter } from "./Ledger";
 
-function Poster({ label, children, block, onClose }: { label: string; children: ReactNode; block: boolean; onClose: () => void }) {
+/** The sheet keeps its exit on screen for one transition, then the caller unmounts it. */
+const UNMOUNT = 200;
+
+/**
+ * A modal sheet: it shows on mount, and every way out of it goes through the dialog's own close,
+ * so the browser hands focus back to the opener. The unmount is driven off the open attribute
+ * rather than the `close` event, because the attribute is the one signal every path has to
+ * produce, and the guard makes it fire once per sheet however it was closed.
+ */
+export function useSheet(onClose: () => void, block = false) {
   const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
+  const timer = useRef(0);
+  // The close watcher answers a second Escape whatever `cancel` says, so a sheet that must be
+  // answered is opened again rather than left mounted and hidden.
+  const blocked = useRef(block);
+  blocked.current = block;
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (!d.open) d.showModal();
+    const watch = new MutationObserver(() => {
+      if (d.open || timer.current) return;
+      if (blocked.current) { d.showModal(); return; }
+      // A self-opened sheet can outlive its opener and leave <body> focused; a click during the exit
+      // does the same, so the fallback to the primary action runs only when the window passed untouched.
+      let touched = false;
+      const touch = () => { touched = true; };
+      document.addEventListener("pointerdown", touch, { capture: true, once: true });
+      timer.current = setTimeout(() => {
+        document.removeEventListener("pointerdown", touch, { capture: true });
+        if (!touched && document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
+        onClose();
+      }, UNMOUNT) as unknown as number;
+    });
+    watch.observe(d, { attributeFilter: ["open"] });
+    return () => { watch.disconnect(); clearTimeout(timer.current); };
+  }, []); // eslint-disable-line
+  return { ref, dismiss: () => ref.current?.close() };
+}
+
+function Poster({ label, children, block, onClose }: { label: string; children: (dismiss: () => void) => ReactNode; block: boolean; onClose: () => void }) {
+  const { ref, dismiss } = useSheet(onClose, block);
   // A card that is still open has to be answered, so Escape and a backdrop click do nothing until a stance is taken.
   return (
     <dialog ref={ref} className="poster" aria-label={label}
       onCancel={(e) => { if (block) e.preventDefault(); }}
-      onClose={onClose}
-      onClick={(e) => { if (!block && e.target === ref.current) onClose(); }}
-    >{children}</dialog>
+      onClick={(e) => { if (!block && e.target === ref.current) dismiss(); }}
+    >{children(dismiss)}</dialog>
   );
 }
 
@@ -23,10 +61,13 @@ type Props = {
 /** The crisis card: the poster, three stances, then what the five groups think of the answer. */
 export default function Card({ pack, event, blocs, turn, busy, onStance, onClose }: Props) {
   const answered = event.stance !== undefined;
+  // Answering removes the stance the player was standing on, so focus moves to the one action left.
+  const done = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (answered) done.current?.focus(); }, [answered]);
   const stances = event.card?.stances ?? event.stances;
   const title = event.card?.title ?? "The floor has news.";
   return (
-    <Poster label={title} block={!answered} onClose={onClose}>
+    <Poster label={title} block={!answered} onClose={onClose}>{(dismiss) => (<>
       <div className="kicker">{pack.vocabulary.turn} {turn}</div>
       <h2>{title}</h2>
       {event.card ? <p>{event.card.body}</p> : null}
@@ -44,10 +85,10 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
             ))}
           </div>
           <p className="lede">{event.outcome ?? stances[event.stance!]}</p>
-          <button className="btn" onClick={onClose}>Close the card</button>
+          <button ref={done} className="btn" onClick={dismiss}>Close the card</button>
         </>
       )}
-    </Poster>
+    </>)}</Poster>
   );
 }
 
@@ -56,10 +97,10 @@ export function Announce({ pack, keys, onClose }: { pack: GamePack; keys: string
   const items = keys.map((k) => pack.escalations.find((e) => e.key === k)).filter((e) => !!e);
   if (!items.length) return null;
   return (
-    <Poster label={items[0]!.name} block={false} onClose={onClose}>
+    <Poster label={items[0]!.name} block={false} onClose={onClose}>{(dismiss) => (<>
       <div className="kicker">{pack.title}</div>
       {items.map((e) => <div key={e!.key}><h2>{e!.name}</h2><p>{e!.headline}</p></div>)}
-      <button className="btn" onClick={onClose}>Close the notice</button>
-    </Poster>
+      <button className="btn" onClick={dismiss}>Close the notice</button>
+    </>)}</Poster>
   );
 }

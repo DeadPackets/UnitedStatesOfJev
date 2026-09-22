@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, type GameView } from "./api";
+import { api, type GameView, type ViewBill } from "./api";
 import type { Act } from "./App";
 
 const LIMIT = 240;
@@ -32,20 +32,21 @@ function Duel({ post, v }: { post: Post; v: GameView["pack"]["vocabulary"] }) {
   return <span className={`stampsm tiny ${post.won ? "pass" : "fail"}`}>{post.won ? v.pass : v.fail} {post.agree.mine} of {n}</span>;
 }
 
-/** The one line the Turn tab shows under the bill card. */
-export function FeedLine({ game }: { game: GameView }) {
+/** The one line the Turn tab shows under the bill card, for the bill on the desk. */
+export function FeedLine({ game, bill }: { game: GameView; bill?: ViewBill }) {
   const v = game.pack.vocabulary;
-  const post = game.posts.find((p) => p.turn === game.turn);
+  const post = game.posts.find((p) => p.turn === (bill?.id ?? game.turn));
   if (!post) return <p className="small muted feedline">Nothing sent this {v.turn}.</p>;
   return <p className="small feedline"><Reactions post={post} /><Duel post={post} v={v} /></p>;
 }
 
-export default function Feed({ game, act, busy }: { game: GameView; act: Act; busy: boolean }) {
+export default function Feed({ game, bill, act, busy }: { game: GameView; bill?: ViewBill; act: Act; busy: boolean }) {
   const v = game.pack.vocabulary;
   const [text, setText] = useState("");
-  const latest = game.bills.at(-1);
-  const sent = game.posts.some((p) => p.turn === game.turn);
-  const shut = sent || game.stage !== "session" || (latest?.id === game.turn && !!latest.votes);
+  // The box belongs to the bill on the desk: the vote shuts it, and clearing the desk opens the next one.
+  const turn = bill?.id ?? game.turn;
+  const sent = game.posts.some((p) => p.turn === turn);
+  const shut = sent || game.stage !== "session" || !!bill?.votes;
   const left = LIMIT - text.length;
   const region = (id: string) => game.pack.regions.find((r) => r.id === id)?.name ?? id;
   const home = (name: string) => { const c = game.citizens.find((x) => x.name === name); return c ? `${name}, ${region(c.region)}` : name; };

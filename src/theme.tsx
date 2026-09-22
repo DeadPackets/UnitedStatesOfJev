@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Faction, Pack } from "../worker/pack";
 
 type Fill = Faction["fill"];
@@ -25,24 +26,28 @@ function marks(fill: Fill, ink: string) {
 /**
  * One 6x6 pattern per faction: the faction colour with its marks in ink, so the fill reads
  * without colour. `solid` factions get no pattern; `fillFor` hands back their flat colour.
+ * `scope` keeps the ids to one chamber: two floors on a page own separate defs.
  */
-export function FILL_DEFS({ factions, ink = "var(--ink)" }: { factions: Faction[]; ink?: string }) {
+export const FILL_DEFS = memo(function FILL_DEFS({ factions, scope, ink = "var(--ink)" }: { factions: Faction[]; scope: string; ink?: string }) {
   return (
     <>
       {factions.filter((f) => f.fill !== "solid").map((f) => (
-        <pattern key={f.id} id={`fill-${f.id}`} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform={TILT[f.fill]}>
+        <pattern key={f.id} id={`${scope}fill-${f.id}`} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform={TILT[f.fill]}>
           <rect width={6} height={6} fill={f.color} />
           {marks(f.fill, ink)}
         </pattern>
       ))}
     </>
   );
-}
+});
 
-export const fillFor = (f: Faction) => (f.fill === "solid" ? f.color : `url(#fill-${f.id})`);
+export const fillFor = (f: Faction, scope: string) => (f.fill === "solid" ? f.color : `url(#${scope}fill-${f.id})`);
 
 /** R2 art, served by the Worker: `members/<id>.png`, `members/<id>-plate.png`, `masthead.png`, `crests/<id>.png`. */
 export const art = (packId: string, file: string) => `/api/scenarios/${packId}/art/${file}`;
+
+/** An R2 image that never landed leaves the initials under it, not a broken-image glyph. */
+export const hideBroken = (e: { currentTarget: HTMLElement | SVGElement }) => { e.currentTarget.style.display = "none"; };
 
 export const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase();
 
@@ -84,6 +89,15 @@ export function applyTheme(t: Partial<Pack["theme"]>) {
   }
   if (t.texture) root.dataset.texture = t.texture;
   if (t.ornament) root.dataset.ornament = t.ornament;
+}
+
+/** Back to the stylesheet's own look: the next pack starts from the default, not from the last one. */
+export function resetTheme() {
+  const root = document.documentElement;
+  for (const k of ["--ink", "--paper", "--bg", "--accent", "--display", "--sans"]) root.style.removeProperty(k);
+  document.getElementById("packfonts")?.remove();
+  delete root.dataset.texture;
+  delete root.dataset.ornament;
 }
 
 type OrnamentKind = Pack["theme"]["ornament"];

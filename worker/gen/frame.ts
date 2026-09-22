@@ -24,7 +24,7 @@ export const FrameSchema = z.object({
     layout: z.enum(LAYOUTS),
   }),
   chamber: z.object({
-    size: z.number().int().min(24).max(100), threshold: z.number().int(), supermajority: z.number().int(),
+    size: z.number().int().min(24).max(100), threshold: z.number().int().min(1), supermajority: z.number().int().min(2),
     alpha: z.number().min(0).max(1), veto: z.object({ flag: z.enum(SEAT_FLAGS), text: z.string() }).nullable(),
   }),
   factions: z.array(z.object({

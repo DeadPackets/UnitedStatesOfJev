@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
-import { Ornament, applyTheme, art, initials } from "./theme";
+import { Ornament, applyTheme, art, hideBroken, initials } from "./theme";
+import { radioKeys } from "./keys";
 
-const hide = (e: { currentTarget: HTMLImageElement }) => { e.currentTarget.style.display = "none"; };
 const b36 = (n: number) => n.toString(36);
 
 export default function Seat({ pack, busy, onSeat }: {
@@ -33,19 +33,24 @@ export default function Seat({ pack, busy, onSeat }: {
 
   const toggle = (i: number) => setPicks((p) => (p.includes(i) ? p.filter((x) => x !== i) : p.length < 3 ? [...p, i] : p));
   // the stamp runs first, then the call; a refused seat lifts it so the button works again
-  const take = () => { setStamped(true); setTimeout(() => onSeat(faction, picks, seed).then((ok) => { if (!ok) setStamped(false); }), 650); };
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const take = () => {
+    setStamped(true);
+    timer.current = setTimeout(() => onSeat(faction, picks, seed).then((ok) => { if (!ok) setStamped(false); }), 650) as unknown as number;
+  };
 
   return (
     <main className="takeseat press">
       <div className="mast">
         <b>{pack.title}</b>
-        <Ornament kind={pack.theme.ornament} />
+        <span className="flag"><Ornament kind={pack.theme.ornament} /></span>
         <span>{pack.era} · {pack.place}</span>
       </div>
 
       <section className="stage" aria-label={`${v.chamber} preview`}>
         <div className="stagearea">
-          <Chamber pack={pack} members={pack.members} own={own} coalition={ownStart.coalition} onPick={() => {}} />
+          <Chamber pack={pack} members={pack.members} own={own} coalition={ownStart.coalition} />
           <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">{v.seat}</div>
         </div>
         <h2 className="head">{start.premise}</h2>
@@ -61,18 +66,19 @@ export default function Seat({ pack, busy, onSeat }: {
         <div className="field">
           <span className="kicker" id="l-faction">Take which seat</span>
           <ul className="picker" role="radiogroup" aria-labelledby="l-faction">
-            {pack.factions.map((f) => {
+            {pack.factions.map((f, i) => {
               const s = pack.starts.find((x) => x.faction === f.id);
               if (!s) return null;
               const foes = (s.hostile ?? []).map((id) => short.get(id) ?? id);
               return (
                 <li key={f.id}>
-                  <button className="fcard" role="radio" aria-checked={faction === f.id}
+                  <button className="fcard" role="radio" aria-checked={faction === f.id} tabIndex={faction === f.id ? 0 : -1}
+                    onKeyDown={radioKeys(i, pack.factions.length, (j) => setFaction(pack.factions[j].id))}
                     onClick={() => setFaction(f.id)} onMouseEnter={() => setHover(f.id)} onMouseLeave={() => setHover(null)}
                     onFocus={() => setHover(f.id)} onBlur={() => setHover(null)}>
                     <span className="crest" style={{ color: f.color }} aria-hidden="true">
                       {initials(f.name)}
-                      <img src={art(pack.id, `crests/${f.id}.png`)} alt="" onError={hide} />
+                      <img src={art(pack.id, `crests/${f.id}.png`)} alt="" onError={hideBroken} />
                     </span>
                     <span className="t">
                       <b style={{ color: f.color }}>{f.name}</b>

@@ -15,7 +15,7 @@ import { dedupe } from "./gen/dedupe";
 import { deck } from "./gen/deck";
 import { calendarStep } from "./gen/calendar";
 import { NeedsRepair, matchName, realNames } from "./gen/validate";
-import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./gen/prompts";
+import { CONTENT_RULE, FRAME_RULES, HISTORIAN, chunk, sourceBlock, type GenCtx } from "./gen/prompts";
 
 export type BuildParams = { id: string; prompt: string };
 
@@ -30,14 +30,15 @@ const GEN_RETRY = { ...RETRY, retries: { ...RETRY.retries, limit: 1 } } as const
 const PAGES = 6, PEOPLE = 12, PARTIES = 12;
 export const SHEET = 16;
 
-export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 const nonNull = <T>(a: (T | null)[]): T[] => a.filter((x): x is T => x !== null);
 const rgb = (hex: string): Rgb => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
 const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);
 
 // ---- refusals: one retry of the whole step on Grok, then the build fails with a plain message ----
 
-const REFUSAL_MARKERS = ["refus", "policy", "safety", "content", "cannot help", "can't help"];
+// Narrow on purpose: a bare "content" or "policy" also matches an ordinary schema or content-type 400,
+// which then costs a Grok retry and tells the player the models would not write their scenario.
+const REFUSAL_MARKERS = ["refus", "content_policy", "content policy", "content_filter", "moderation", "safety", "cannot help", "can't help"];
 const refused = (e: unknown): e is UpstreamError =>
   e instanceof UpstreamError && (e.status === 400 || e.status === 403) &&
   REFUSAL_MARKERS.some((m) => e.message.toLowerCase().includes(m));
@@ -66,10 +67,9 @@ async function onRefusal<T>(env: Env, step: string, fn: (env: Env) => Promise<T>
 const signedYear = (y: number) => `${y < 0 ? "-" : ""}${String(Math.abs(y)).padStart(4, "0")}-01-01`;
 
 async function fetchStep(p: Plan): Promise<Partial<GenCtx>> {
-  const edition = (p.lang || "en").split("-")[0];
   const start = signedYear(p.year);
   const [wikipedia, people, parties] = await Promise.all([
-    Promise.all(p.lookups.slice(0, PAGES).map((t) => fetchWikipedia(edition, t, p.keywords).catch(() => null))),
+    Promise.all(p.lookups.slice(0, PAGES).map((t) => fetchWikipedia(p.lang, t, p.keywords).catch(() => null))),
     Promise.all(p.people.slice(0, PEOPLE).map((l) => lookupPerson(l, start).catch(() => null))),
     Promise.all(p.parties.slice(0, PARTIES).map((l) => lookupParty(l).catch(() => null))),
   ]);
@@ -178,8 +178,10 @@ export async function portraitSheet(env: Env, scenario: string, pack: Pack, grou
     await Promise.all(group.map(async (m, i) => {
       const cell = cut[i];
       if (!cell) return;
-      await put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell));
-      await put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper));
+      await Promise.all([
+        put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell)),
+        put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper)),
+      ]);
     }));
     return true;
   } catch (e) {
@@ -261,6 +263,8 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
       merge(await gen("personas", (e) => personasStep(e, ctx),
         (r) => ({ kind: "members", names: r.members!.slice(0, 8).map((m) => m.name) })));
       merge(await gen("dedupe", (e) => dedupe(e, ctx)));
+      // A dedupe rewrite hands out a new name after membersStep's real-name check has already run.
+      merge({ members: renameClashes(ctx.members, realNames(ctx.frame, ctx.facts)) });
       merge(await gen("deck", (e) => deck(e, ctx)));
       const art = await stage("art", (e) => artStep(e, id, ctx), (r) => ({ kind: "art", masthead: r.masthead, crests: r.crests.length }));
       await stage("index", (e) => indexStep(e, id, ctx));
@@ -271,7 +275,9 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
         return built;
       });
     } catch (e) {
-      await step.do("failed", RETRY, () => failScenario(env, id, plain(e)));
+      // Only the sentences the build writes on purpose are for the player; everything else is a log line.
+      const why = e instanceof NonRetryableError ? plain(e) : "The build failed. Try another prompt.";
+      await step.do("failed", RETRY, () => failScenario(env, id, why));
       throw e;
     }
 

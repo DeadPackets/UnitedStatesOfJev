@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { animate, useReducedMotion } from "motion/react";
 import type { GamePack, ViewBill, ViewMember } from "./api";
 import { art, initials as letters } from "./theme";
+import { useSheet } from "./Card";
 
 const TENURE = { long: "veteran", mid: "second term", new: "first term" } as const;
 export type LobbyKind = keyof GamePack["lobby"];
@@ -9,7 +10,8 @@ export type LobbyKind = keyof GamePack["lobby"];
 function Pct({ value, from }: { value: number; from: number | null }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduced = useReducedMotion();
-  useEffect(() => {
+  // Layout, not passive: same reason as `Num` — React owns this span's text too.
+  useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     if (from === null || reduced) { el.textContent = String(Math.round(value * 100)); return; }
     const c = animate(from * 100, value * 100, { duration: 0.9, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => { el.textContent = String(Math.round(v)); } });
@@ -19,15 +21,16 @@ function Pct({ value, from }: { value: number; from: number | null }) {
 }
 
 type MemberDrawerProps = {
-  pack: GamePack; member: ViewMember; capital: number; bill?: ViewBill; before: number | null; busy: boolean;
+  pack: GamePack; member: ViewMember; capital: number; costs: Record<LobbyKind, number>;
+  bill?: ViewBill; before: number | null; busy: boolean;
   onLobby: (kind: LobbyKind) => void; onClose: () => void;
 };
 
 /** The 256 px plate on paper, the faction in its colour, the pack's own lobby offers. No bio, no tell: the
  *  view keeps both in the Worker, so what the seat said on this bill stands in for them. */
-export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobby, onClose }: MemberDrawerProps) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
+export function MemberDrawer({ pack, member, capital, costs, bill, before, busy, onLobby, onClose }: MemberDrawerProps) {
+  const { ref, dismiss } = useSheet(onClose);
+  const done = useRef<HTMLButtonElement>(null);
   const faction = pack.factions.find((f) => f.id === member.faction);
   const region = pack.regions.find((g) => g.id === member.region);
   const patrons = member.patrons.map((id) => pack.patrons.find((p) => p.id === id)?.name ?? id);
@@ -39,8 +42,10 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
   const said = bill?.quotes?.find((q) => q.name === member.name)?.text;
   const offered = bill?.offers[member.id];
   const canLobby = !!bill?.whip && !bill.votes && !offered;
+  // An accepted offer takes the lobby buttons away, so focus moves to the one action left.
+  useEffect(() => { if (!canLobby) done.current?.focus(); }, [canLobby]);
   return (
-    <dialog ref={ref} className="drawer" aria-label={member.name} onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose(); }}>
+    <dialog ref={ref} className="drawer" aria-label={member.name} onClick={(e) => { if (e.target === ref.current) dismiss(); }}>
       <div className="plate" aria-hidden="true">
         <span>{letters(member.name)}</span>
         <img src={art(pack.id, `members/${member.id}-plate.png`)} alt="" loading="eager"
@@ -72,14 +77,14 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
         <div className="lobby">
           <div className="kicker">{v.lobby} · <span className="num">{capital}</span> {v.capital}</div>
           {kinds.map((k) => (
-            <button key={k} disabled={busy || capital < pack.lobby[k].cost} onClick={() => onLobby(k)}>
+            <button key={k} disabled={busy || capital < costs[k]} onClick={() => onLobby(k)}>
               <span className="t"><b>{pack.lobby[k].label}</b><span className="small muted">{pack.lobby[k].text}</span></span>
-              <span className="num muted">−{pack.lobby[k].cost}</span>
+              <span className="num muted">−{costs[k]}</span>
             </button>
           ))}
         </div>
       ) : null}
-      <button className="btn ghost" onClick={onClose}>Close the file</button>
+      <button ref={done} className="btn ghost" onClick={dismiss}>Close the file</button>
     </dialog>
   );
 }

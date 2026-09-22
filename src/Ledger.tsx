@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { animate, useReducedMotion } from "motion/react";
 import type { GamePack, GameView } from "./api";
 
@@ -7,7 +7,9 @@ export function Num({ value, decimals = 0, className, instant = false }: { value
   const ref = useRef<HTMLSpanElement>(null);
   const shown = useRef(value);
   const reduced = useReducedMotion();
-  useEffect(() => {
+  // Layout, not passive: React commits `value` into this span, so the roll must be the last
+  // writer before the paint or a target arriving mid-roll is the digit the frame shows.
+  useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
     if (reduced || instant || Math.abs(shown.current - value) < 0.05) { write(value); return; }

@@ -9,7 +9,7 @@ import { turnOf } from "./validate";
 const LEDGERS = ["approval", "capital", "party", "chest", "bloc", "patron", "streak", "turn"] as const;
 const Condition = z.object({ ledger: z.enum(LEDGERS), id: z.string().nullable(), op: z.enum(["<", ">"]), value: z.number() });
 const Effect = z.object({
-  ledger: z.enum([...LEDGERS, "seat"]), id: z.string().nullable(), delta: z.number().nullable(),
+  ledger: z.enum([...LEDGERS, "seat"]), id: z.string().nullable(), delta: z.number().min(-15).max(15).nullable(),
   set: z.string().nullable(), chance: z.number().min(0).max(1).nullable(),
 });
 

@@ -28,7 +28,7 @@ export async function match(env: Env, prompt: string): Promise<MatchResult> {
   if (candidates.length === 0) return { build: true };
 
   const { answers } = await jev(env, { prompt }, { match: matchQuestion(candidates) });
-  return decide(candidates, answers.match.probabilities ?? {});
+  return decide(candidates, answers.match?.probabilities ?? {});
 }
 
 export function decide(candidates: MatchCandidate[], probabilities: Record<string, number>): MatchResult {

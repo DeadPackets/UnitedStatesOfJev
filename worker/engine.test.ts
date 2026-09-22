@@ -316,6 +316,44 @@ test("an exogenous dated card fires on its turn even right after a crisis", () =
   expect(director(g, datedPack(5, true))!.id).toBe("dat-x");
 });
 
+// Two exogenous cards on one turn, so the second has to wait a turn for its slot.
+const twoDatedPack = (turn: number): Pack => ({
+  ...datedPack(turn, true),
+  deck: [
+    ...datedPack(turn, true).deck,
+    { id: "dat-y", kind: "dated", date: null, turn, exogenous: true, needs: null, weight: 1, title_hint: "y", stances: ["a"], scored: ["none"], results: [], memory: null },
+  ] as Pack["deck"],
+});
+
+test("a card dated turn 1 still fires: the Director first runs after the turn-1 vote", () => {
+  const g = game();
+  g.turn = 2;
+  expect(director(g, datedPack(1, true))!.id).toBe("dat-x");
+});
+
+test("two exogenous cards due on one turn both fire, one turn apart", () => {
+  const p = twoDatedPack(5);
+  const g = game();
+  g.turn = 5;
+  expect(director(g, p)!.id).toBe("dat-x");
+  g.turn = 6;
+  expect(director(g, p)!.id).toBe("dat-y");
+  g.turn = 7;
+  expect(director(g, p)).toBeNull();
+});
+
+test("a dated card that fired in term 1 does not fire again on the same date of term 2", () => {
+  const p = datedPack(5, true);
+  const g = game();
+  g.turn = 5;
+  expect(director(g, p)!.id).toBe("dat-x");
+  continueTerm(p, g);
+  expect(g.events).toEqual([]);
+  expect(g.director.seen).toContain("dat-x");
+  g.turn = 5;
+  expect(director(g, p)).toBeNull();
+});
+
 test("a conditional dated card waits for a clear turn, up to two turns late", () => {
   const p = datedPack(5, false);
   const blocked = game();

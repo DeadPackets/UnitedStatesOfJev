@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { fetchWikipedia, lookupPerson } from "./sources";
+import { edition, fetchWikipedia, lookupPerson } from "./sources";
 import page from "./fixtures/wiki-page.json";
 import people from "./fixtures/wiki-people.json";
 
@@ -68,4 +68,19 @@ test("fetchWikipedia returns null instead of throwing on a missing page", async 
     "prop=sections": { error: { code: "missingtitle", info: "The page you specified doesn't exist." } },
   });
   expect(await fetchWikipedia("en", "Weird Page", [], parseError)).toBeNull();
+});
+
+test("a lang the model invented never reaches the Wikipedia host", async () => {
+  expect(edition("en")).toBe("en");
+  expect(edition("pt-BR")).toBe("pt");
+  expect(edition("zh-hant")).toBe("zh");
+  expect(edition("evil.example/#")).toBe("en");
+  expect(edition("en.wikipedia.org@evil.example")).toBe("en");
+  expect(edition("")).toBe("en");
+  expect(edition("../../etc")).toBe("en");
+
+  const seen: string[] = [];
+  const fetchImpl = (async (url: string | URL) => { seen.push(String(url)); throw new Error("stop"); }) as typeof fetch;
+  await fetchWikipedia("evil.example/#", "Test Page", [], fetchImpl).catch(() => null);
+  expect(seen[0].startsWith("https://en.wikipedia.org/w/api.php")).toBe(true);
 });

@@ -1,6 +1,7 @@
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num } from "./Ledger";
+import { Ornament } from "./theme";
 
 /** The term was won: the inaugural page, the term's score, and what another term brings. */
 export default function Won({ game, act, busy }: { game: GameView; act: Act; busy: boolean }) {
@@ -11,7 +12,7 @@ export default function Won({ game, act, busy }: { game: GameView; act: Act; bus
   const next = [pack.escalations[i], pack.escalations[i + 1]].filter((e) => !!e);
   return (
     <main className="over stagger press">
-      <div className="kicker" style={{ "--i": 0 } as any}>{pack.test.name}</div>
+      <div className="mast" style={{ "--i": 0 } as any}><b>{pack.test.name}</b><span className="flag"><Ornament kind={pack.theme.ornament} /></span></div>
       <h1 style={{ "--i": 1 } as any}>{game.ending?.title ?? pack.endings.reelected}</h1>
       {game.ending ? <p style={{ "--i": 2 } as any}>{game.ending.body}</p> : null}
 
@@ -35,7 +36,7 @@ export default function Won({ game, act, busy }: { game: GameView; act: Act; bus
         </div>
       ) : null}
 
-      <div className="row" style={{ "--i": 5, justifyContent: "center" } as any}>
+      <div className="row" style={{ "--i": 5 } as any}>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.continue(game))}>Another term</button>
         <button className="btn ghost" disabled={busy} onClick={() => act(() => api.stop(game))}>Stop here</button>
       </div>

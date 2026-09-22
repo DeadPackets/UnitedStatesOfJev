@@ -72,23 +72,28 @@ const DAY_MS = 86_400_000;
 export class BuildsDO extends DurableObject<Env> {
   private async count(prefix: string, cap: number): Promise<boolean> {
     const key = `${prefix}:${new Date().toISOString().slice(0, 10)}`;
+    // A cap that is not a number must close the gate, not open it: it is a spending limit.
+    if (!Number.isFinite(cap)) return false;
     const n = ((await this.ctx.storage.get<number>(key)) ?? 0) + 1;
     if (n > cap) return false;
     await this.ctx.storage.put(key, n);
     return true;
   }
 
-  take(): Promise<boolean> { return this.count("count", Number(this.env.DAILY_BUILD_CAP)); }
   takeGame(): Promise<boolean> { return this.count("games", Number(this.env.DAILY_GAME_CAP)); }
 
-  // Checking and recording are separate so a request the daily cap refuses does not also spend the
-  // caller's window: the route calls mark() only once the work is going ahead.
-  async spaced(ip: string, kind: string, windowMs: number): Promise<boolean> {
+  // The window check, the daily slot and the mark are one RPC on purpose: a DO serialises a call, not a
+  // sequence of them, so three separate awaits let a burst from one IP through the per-IP window together.
+  // The daily slot is taken last, so a request the window refuses does not also spend it.
+  async claim(ip: string, kind: string, windowMs: number, daily = false): Promise<"ok" | "spaced" | "capped"> {
     const last = await this.ctx.storage.get<{ at: number }>(`ip:${kind}:${ip}`);
-    return !(last && Date.now() - last.at < windowMs);
+    if (last && Date.now() - last.at < windowMs) return "spaced";
+    if (daily && !(await this.count("count", Number(this.env.DAILY_BUILD_CAP)))) return "capped";
+    await this.mark(ip, kind);
+    return "ok";
   }
 
-  async mark(ip: string, kind: string): Promise<void> {
+  private async mark(ip: string, kind: string): Promise<void> {
     const now = Date.now();
     await this.ctx.storage.put(`ip:${kind}:${ip}`, { at: now });
     // ponytail: full scan of the ip: prefix each time; add an alarm-driven sweep past a few thousand keys.

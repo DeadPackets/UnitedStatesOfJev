@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { shortNames, squarify } from "./Tiles";
+import { floorWeights, shortNames, squarify } from "./Tiles";
 
 const items = [
   { id: "a", weight: 0.4 }, { id: "b", weight: 0.25 }, { id: "c", weight: 0.15 },
@@ -37,6 +37,46 @@ test("every tile keeps a readable aspect", () => {
   for (const r of out) expect(Math.max(r.w / r.h, r.h / r.w)).toBeLessThan(4);
 });
 
+// The campaign map is tapped, so a 2% region has to be a target: 44 px on its short side, in its own slot.
+test("a floored map holds a 44px target in every tile, phone and desktop", () => {
+  const skewed = [0.42, 0.18, 0.11, ...Array(17).fill(0.29 / 17)];
+  for (const [w, h] of [[760, 471], [358, 448]]) {
+    const lay = floorWeights(skewed, w * h);
+    const out = squarify(lay.map((weight, i) => ({ weight, i })), { x: 0, y: 0, w, h });
+    for (const r of out) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(44);
+  }
+});
+
+// squarify renormalises by the sum it is handed, so one dominant region next to a long tail used to
+// erode the floor it had just been given: 59 lifted tiles plus a 0.5 region gave a 29 px side on a phone.
+test("a long tail beside one big region still holds its targets", () => {
+  const tail = [0.5, ...Array(59).fill(0.5 / 59)];
+  for (const [w, h] of [[760, 471], [358, 448]]) {
+    const lay = floorWeights(tail, w * h);
+    const out = squarify(lay.map((weight, i) => ({ weight, i })), { x: 0, y: 0, w, h });
+    for (const r of out) {
+      expect(r.w * r.h).toBeGreaterThanOrEqual(44 * 44);
+      expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(44);
+    }
+  }
+});
+
+test("the floor only lifts the tiles that need it", () => {
+  const even = Array(8).fill(0.125);
+  expect(floorWeights(even, 760 * 471)).toEqual(even);
+});
+
 test("two regions that start alike keep different shorts", () => {
   expect(shortNames(["Harbor City", "Harbor Hills", "Northreach"])).toEqual(["HAR", "HARB", "NOR"]);
+});
+
+test("names too short to grow apart are numbered", () => {
+  expect(shortNames(["Rome", "Rom", "Rom"])).toEqual(["ROM", "ROM2", "ROM3"]);
+});
+
+// Luna may hand the reveal a region weighted 0; the row aspect divides by the smallest value in it.
+test("a zero-weight region leaves every tile finite", () => {
+  const out = squarify([{ id: "a", weight: 0.6 }, { id: "b", weight: 0.4 }, { id: "z", weight: 0 }], { x: 0, y: 0, w: 100, h: 62 });
+  expect(out).toHaveLength(3);
+  for (const r of out) for (const n of [r.x, r.y, r.w, r.h]) expect(Number.isFinite(n)).toBe(true);
 });

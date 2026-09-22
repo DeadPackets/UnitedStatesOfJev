@@ -20,6 +20,7 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "c
   members: ViewMember[];
   bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];
+  lobbyCosts: Record<LobbyAction, number>;   // this term's price per offer, escalations already applied
   coalition: string[];
   seatTitle: string;
   turnsPerTerm: number;
@@ -42,8 +43,8 @@ export class ApiError extends Error { constructor(public status: number, message
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
   const r = await fetch(`/api${path}`, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
-  const data = await r.json().catch(() => ({ error: "Bad response" }));
-  if (!r.ok) throw new ApiError(r.status, data.error ?? "Something went wrong");
+  const data = await r.json().catch(() => ({ error: "The server sent something we cannot read." }));
+  if (!r.ok) throw new ApiError(r.status, data.error ?? "The request failed. Try again.");
   return data as T;
 }
 
@@ -63,7 +64,8 @@ export const api = {
   midterm: (g: GameView) => call<GameView>(`/games/${g.id}/midterm`, { turn: g.turn }),
   post: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/post`, { turn: g.turn, text }),
   drafts: (g: GameView) => call<GameView>(`/games/${g.id}/campaign/drafts`, {}),
-  campaign: (g: GameView, message: string, lever: Lever) => call<GameView>(`/games/${g.id}/campaign`, { message, lever }),
+  campaign: (g: GameView, message: string, lever: Lever) =>
+    call<GameView>(`/games/${g.id}/campaign`, { n: g.campaign?.turns.length ?? 0, message, lever }),
   resolve: (g: GameView, i: number, stance: number) => call<GameView>(`/games/${g.id}/events/${i}`, { turn: g.turn, stance }),
   test: (g: GameView) => call<GameView>(`/games/${g.id}/test`, {}),
   continue: (g: GameView) => call<GameView>(`/games/${g.id}/continue`, {}),

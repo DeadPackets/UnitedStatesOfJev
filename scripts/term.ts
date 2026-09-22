@@ -107,7 +107,7 @@ while (g.stage === "session") {
     g = await api(`/games/${g.id}/midterm`, { turn: g.turn });
     const m = g.midterm!;
     console.log(`   ${V.midterm}: ${m.up.length} up, ${m.lost.length} lost (${m.lostOwn} own side)${m.wipeout ? " (wipeout)" : ""} in ${ms(m0)} | ${m.headline?.title ?? "(no headline)"}`);
-    console.log(`     new: ${g.members.filter((x) => x.id.startsWith(`r${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
+    console.log(`     new: ${g.members.filter((x) => x.id.startsWith("r") && x.id.includes(`-${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
   }
 }
 
@@ -123,7 +123,7 @@ while (g.stage === "campaign") {
   const lever = c.turns.length % 2 === 1 && own && g.ledgers.capital >= 25
     ? { kind: "favor", memberId: own.id }
     : { kind: "spend", regions: g.ledgers.chest >= 5 ? [{ id: c.rival[0] ?? g.pack.regions[0].id, amount: 5 }] : [] };
-  g = await api(`/games/${g.id}/campaign`, { message: c.drafts[0], lever });
+  g = await api(`/games/${g.id}/campaign`, { n: c.turns.length, message: c.drafts[0], lever });
   const t = g.campaign!.turns.at(-1)!;
   console.log(`${V.campaign} ${t.n}/4 "${t.message}"`);
   console.log(`     lever ${t.lever.kind} cost ${t.cost.chest}/${t.cost.capital}` +

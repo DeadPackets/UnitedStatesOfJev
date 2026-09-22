@@ -56,6 +56,22 @@ describe("frame validation", () => {
     expect(has(check(mkFrame({ start_date: "1950-01-01" }), mkFacts()), "no dated event")).toBe(true);
   });
 
+  test("a month calendar the code fixed is not asked for an event in its first year", () => {
+    // The events cluster around the anchor, so a month turn wins and puts them all past turn 12. With the
+    // anchor on turn 16 the start date is 457 days earlier, and no event falls in its first year.
+    const facts = mkFacts({
+      dated_events: [
+        { date: "2012-10-10", title: "a" }, { date: "2012-12-15", title: "b" },
+        { date: "2013-02-20", title: "c" }, { date: "2013-04-10", title: "d" },
+      ],
+      anchor: 1,
+    });
+    const cal = pickCalendar(facts)!;
+    expect(cal.unit).toBe("month");
+    expect(has(check(mkFrame({ start_date: cal.start_date }), facts), "no dated event")).toBe(true);
+    expect(check(mkFrame({ start_date: cal.start_date }), facts, cal.start_date)).toEqual([]);
+  });
+
   test("a leader seated as a member is a violation", () => {
     expect(members(mkFrame(), [{ id: "m1", name: "Bella Blue" }]).length).toBe(1);
     expect(members(mkFrame(), [{ id: "m1", name: "Ossin Venn" }])).toEqual([]);

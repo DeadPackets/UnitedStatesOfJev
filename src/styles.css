@@ -12,7 +12,7 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; min-height: 100dvh; }
 /* halftone paper: one cheap repeating gradient, masked so it never sits behind text-heavy areas */
 /* drifts one 7px period per loop, so the seam never shows; transform only, so it stays on the compositor */
 body::before { content: ""; position: fixed; inset: -7px; z-index: 0; pointer-events: none; opacity: 0.55; animation: drift 5s linear infinite;
@@ -37,6 +37,7 @@ body::after { content: ""; position: fixed; top: 0; bottom: 0; left: -100vw; wid
 #root { position: relative; z-index: 1; }
 h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 0.95; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 p { text-wrap: pretty; max-width: 65ch; }
+li, figcaption { text-wrap: pretty; }
 .num { font-variant-numeric: tabular-nums; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; touch-action: manipulation; }
 button:disabled { opacity: 0.4; cursor: default; }
@@ -52,6 +53,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .btn.ghost:not(:disabled):hover { background: var(--ink); color: var(--bg); }
 .btn.hot { background: var(--red); border-color: var(--red); color: #fff; }
 .btn.hot:not(:disabled):hover { background: var(--bg); color: var(--red); }
+.btn.busy { padding-left: 24px; }  /* the spinner side loses 2 px, so the label still reads centred */
 .btn.busy::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .link { min-height: 44px; display: inline-flex; align-items: center; padding: 0 6px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; transition: color var(--t-fast); }
@@ -95,6 +97,7 @@ textarea, input, select { font: inherit; color: inherit; }
 @keyframes coinpulse { 40% { r: calc(var(--r) * 1.45); } }
 .seats .ini { font-family: var(--display); font-weight: 800; }
 .seats .edge { pointer-events: none; }
+.seats .hit { pointer-events: fill; }
 .seats .coin { opacity: 0; transition: opacity var(--t-state) var(--ease-out); }
 .seats .coin.on { opacity: 1; }
 .seats .seatg[data-vote] .well, .seats .seatg[data-vote] .ini, .seats .seatg[data-vote] .coin { opacity: 0; }
@@ -111,9 +114,14 @@ textarea, input, select { font: inherit; color: inherit; }
 .mast b { font: 800 22px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
 .mast span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .orn { flex: none; fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
+/* DESIGN.md's masthead rule: the pack's ornament sits on a hairline that carries the flag across */
+.mast .flag { flex: 1 1 40px; min-width: 40px; display: flex; align-items: center; gap: 12px; }
+.mast .flag::before, .mast .flag::after { content: ""; flex: 1 1 0; border-top: 1px solid var(--line); }
+.mast .flag:empty { gap: 0; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
-.head { font: 800 clamp(24px, 4vw, 40px)/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
-.lede { font: 700 clamp(19px, 2.4vw, 27px)/1.25 var(--display); max-width: 46ch; margin: 0; }
+/* the premise is the pitch: a sentence at poster size on a poster measure, not a wall of caps */
+.head { font: 800 clamp(26px, 3.2vw, 44px)/1.05 var(--display); letter-spacing: -0.01em; max-width: 32ch; margin: 6px 0 2px; }
+.lede { font: 700 clamp(19px, 2.4vw, 27px)/1.25 var(--display); max-width: 46ch; margin: 0; text-wrap: balance; }
 .masthead { width: 100%; aspect-ratio: 4 / 1; object-fit: cover; display: block; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper); }
 
 /* write */
@@ -145,8 +153,11 @@ textarea, input, select { font: inherit; color: inherit; }
 .picker { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .fcard { width: 100%; display: flex; align-items: start; gap: 12px; text-align: left; padding: 10px 12px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), transform var(--t-fast); }
 .fcard:hover { border-color: var(--ink); }
-.fcard[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
-.fcard:active { transform: scale(0.99); }
+/* the pick is the whole card taking ink, never a stripe down one side */
+.fcard[aria-checked="true"] { border-color: var(--ink); border-width: 2px; background: var(--tone); }
+/* the picked card comes up to full ink: the state reads, and no line of it sits at 4.5:1 */
+.fcard[aria-checked="true"] .muted { color: var(--ink); }
+.fcard:active { transform: scale(0.96); }
 .fcard .t { display: grid; gap: 3px; min-width: 0; }
 .fcard b { font: 800 19px/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
 .crest { flex: none; width: 46px; height: 46px; position: relative; display: grid; place-items: center; background: var(--paper); outline: 1.5px solid var(--ink); outline-offset: -1.5px; font: 800 16px var(--display); overflow: hidden; }
@@ -164,20 +175,24 @@ textarea, input, select { font: inherit; color: inherit; }
 .chamber { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 12px 24px 96px; }
 .topbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); }
 .topbar h1 { font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase; }
-.topbar nav { display: flex; align-items: center; gap: 2px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.topbar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 2px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
 .stage { display: grid; gap: 14px; align-content: start; }
 .stage .prompt { font: 700 28px/1 var(--display); color: var(--ink-2); text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
-.count { display: flex; align-items: baseline; gap: 14px; min-height: 76px; }
-.count .n { font: 800 80px/1 var(--display); letter-spacing: -0.02em; }
+/* the count is the screen: one numeral at poster scale, everything beside it a caption on its baseline */
+.count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; }
+.count .n { font: 800 clamp(64px, 12vw, 132px)/0.9 var(--display); letter-spacing: -0.03em; }
+.count > .muted:not(.n), .campaign .forecast > .muted {
+  font: 600 12px/1.35 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; max-width: 22ch; color: var(--ink-2);
+  align-self: flex-end; padding-bottom: 8px; }
 .count .n.fail { color: var(--red); }
 .count.bounce .n { animation: bounce 400ms var(--ease-out); }
 @keyframes bounce { 40% { transform: scale(1.06); } }
-.whipbar { position: relative; height: 10px; background: var(--tone); }
+.whipbar { position: relative; height: 14px; background: var(--tone); }
 .whipbar .fill { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width 800ms var(--ease-expo), background var(--t-state); }
 .whipbar .fill.fail { background: var(--red); }
-.whipbar .tick { position: absolute; top: -7px; width: 2px; height: 24px; background: var(--ink); transition: background var(--t-state), opacity var(--t-state); }
+.whipbar .tick { position: absolute; top: -5px; width: 2px; height: 24px; background: var(--ink); transition: background var(--t-state), opacity var(--t-state); }
 .whipbar .tick.hot { background: var(--red); }
-.whipbar .tick span { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; color: var(--ink-2); }
+.whipbar .tick span { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; color: var(--ink-2); }
 .rail { display: grid; gap: 18px; align-content: start; }
 .ledger { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .ledger .k { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
@@ -192,7 +207,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .stampsm.pass { color: var(--ink); } .stampsm.fail { color: var(--red); }
 .stampin { animation: stampin 450ms var(--ease-expo) both; }
 @keyframes stampin { from { opacity: 0; transform: rotate(-8deg) scale(1.6); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
-.stampsm.tiny { font-size: 13px; padding: 3px 8px; border-width: 2px; }
+/* a pledge stamp is wide and stacks: at 4 degrees its corners cross the row above, so it sits nearly straight */
+.stampsm.tiny { font-size: 13px; padding: 3px 8px; border-width: 2px; transform: rotate(-2deg); }
 .stampsm.wait { color: var(--ink-2); border-style: dashed; }
 .stampsm.shake { animation: stampin 450ms var(--ease-expo) both, shake 240ms var(--ease-out) 450ms 2; }
 @keyframes shake { 25% { transform: translateX(calc(var(--sh, 2px) * -1)) rotate(-4deg); } 75% { transform: translateX(var(--sh, 2px)) rotate(-4deg); } }
@@ -203,32 +219,46 @@ textarea, input, select { font: inherit; color: inherit; }
 .meter .v { font: 700 26px/1 var(--display); }
 .meter .bar { grid-column: 1 / -1; position: relative; height: 8px; background: var(--tone); overflow: hidden; }
 .meter .bar i { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width 700ms var(--ease-expo); }
-.pledges { display: flex; flex-wrap: wrap; gap: 8px; }
+/* not five of the same row: approval is the half the test scores, so the ledger leads with it */
+.meters.panel { gap: 14px; }
+.meters.panel > .meter:first-child { margin-bottom: 4px; }
+.meters.panel > .meter:first-child .k { color: var(--ink); }
+.meters.panel > .meter:first-child .v { font-size: clamp(40px, 4.2vw, 54px); line-height: 0.88; }
+.meters.panel > .meter:first-child .bar { height: 14px; }
+.pledges { display: flex; flex-wrap: wrap; gap: 12px 8px; }
 .quotes { display: grid; gap: 10px; }
-.pull { margin: 0; border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font: 700 19px/1.25 var(--display); }
+.pull { margin: 0; border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font: 700 19px/1.25 var(--display); text-wrap: balance; }
 .pull cite { display: block; margin-top: 4px; font: 500 12px/1 var(--sans); font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 
 .amend { display: grid; gap: 8px; margin-top: 14px; }
 .amend .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--ink); background: var(--bg); display: grid; gap: 4px; transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .amend .opt2:hover { background: var(--ink); color: var(--bg); }
 .amend .opt2:hover .muted { color: var(--tone); }
-.amend .opt2:active { transform: scale(0.98); }
+.amend .opt2:active { transform: scale(0.96); }
 
 /* crisis card and term notices: the same poster, centred */
 .poster { width: min(560px, calc(100vw - 32px)); border: 0; border-top: 6px solid var(--line); border-bottom: 2px solid var(--line); padding: 22px 24px 26px;
-  background: var(--paper); color: var(--ink); display: grid; gap: 14px; transition: opacity var(--t-state), transform var(--t-state) var(--ease-out); }
+  background: var(--paper); color: var(--ink); display: grid; gap: 14px;
+  transition: opacity var(--t-state), transform var(--t-state) var(--ease-out), display var(--t-state) allow-discrete, overlay var(--t-state) allow-discrete; }
 .poster::backdrop { background: rgb(0 0 0 / 0.45); }
 .poster h2 { font-size: clamp(26px, 5vw, 40px); text-transform: uppercase; }
 .poster p { margin: 0; }
 .poster .amend { margin-top: 0; }
 @starting-style { .poster[open] { opacity: 0; transform: scale(0.96); } }
+/* the exit is softer and shorter than the enter: a small lift, not the arrival in reverse */
+.poster:not([open]) { display: none; opacity: 0; transform: translateY(-12px); transition-duration: 150ms; }
 
 /* drawer as native dialog */
 .drawer { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(420px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: 2px solid var(--line); padding: 28px 26px; background: var(--bg); color: var(--ink);
-  overflow: auto; display: grid; gap: 16px; align-content: start; transition: transform var(--t-state) var(--ease-out), opacity var(--t-state); }
+  overflow: auto; display: grid; gap: 16px; align-content: start;
+  transition: transform var(--t-state) var(--ease-out), opacity var(--t-state), display var(--t-state) allow-discrete, overlay var(--t-state) allow-discrete; }
 .drawer::backdrop { background: rgb(0 0 0 / 0.35); }
 @starting-style { .drawer[open] { transform: translateX(24px); opacity: 0; } }
-.drawer:not([open]) { display: none; }
+.drawer:not([open]) { display: none; transform: translateX(12px); opacity: 0; transition-duration: 150ms; }
+/* the sheet fades its backdrop with it, so the page is never bare under a closing sheet */
+.poster::backdrop, .drawer::backdrop { transition: opacity 150ms, display 150ms allow-discrete, overlay 150ms allow-discrete; }
+@starting-style { .poster[open]::backdrop, .drawer[open]::backdrop { opacity: 0; } }
+.poster:not([open])::backdrop, .drawer:not([open])::backdrop { opacity: 0; }
 .who h2 { font-size: 30px; }
 .plate { width: 256px; height: 256px; max-width: 100%; position: relative; overflow: hidden; background: var(--paper); color: var(--ink-2);
   border-top: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line); display: grid; place-items: center; font: 800 56px var(--display); }
@@ -240,12 +270,13 @@ textarea, input, select { font: inherit; color: inherit; }
 .lobby { display: grid; gap: 8px; }
 .lobby button { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--ink); background: var(--bg); transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .lobby button:not(:disabled):hover { background: var(--ink); color: var(--bg); }
-.lobby button:not(:disabled):active { transform: scale(0.98); }
+.lobby button:not(:disabled):active { transform: scale(0.96); }
 .memory { display: grid; gap: 6px; padding-left: 16px; margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
 
 /* over */
-.over { max-width: 760px; margin: 0 auto; padding: clamp(24px, 8vh, 80px) 20px 80px; display: grid; gap: 28px; text-align: center; justify-items: center; }
-.over h1 { font-size: clamp(38px, 8vw, 78px); text-transform: uppercase; letter-spacing: 0.01em; overflow-wrap: anywhere; }
+/* the ending is a front page, not a receipt: the flag, then the headline across the measure */
+.over { max-width: 900px; margin: 0 auto; padding: clamp(20px, 6vh, 64px) 24px 96px; display: grid; gap: 30px; justify-items: start; }
+.over h1 { font-size: clamp(46px, 10vw, 118px); line-height: 0.9; letter-spacing: -0.02em; overflow-wrap: anywhere; }
 .over h1.lose { color: var(--red); }
 .over .ledger { width: 100%; max-width: 520px; }
 
@@ -266,12 +297,16 @@ textarea, input, select { font: inherit; color: inherit; }
 .sq.on { background: currentColor; }
 
 .verdict { display: grid; gap: 16px; justify-items: start; margin-top: 8px; }
+/* the last thing the term says gets the size of a headline, on its own rule */
+.stage .verdict { border-top: 2px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.stage .verdict .lede { font: 800 clamp(28px, 3.6vw, 46px)/1.05 var(--display); max-width: 20ch; }
 .verdict .lede { color: var(--ink); }
 .verdict .lede.fail { color: var(--red); }
 
-.coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; }
+/* the mark never eats a click: only its own button takes one, so the control it points at stays live */
+.coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; pointer-events: none; }
 .coach .kicker { color: var(--bg); opacity: 0.7; }
-.coach .link { color: var(--bg); opacity: 0.75; min-height: 36px; padding: 0; }
+.coach .link { color: var(--bg); opacity: 0.75; padding: 0; pointer-events: auto; }
 [data-tour-hot="true"] { animation: hot 1.4s ease-in-out infinite; }
 @keyframes hot { 50% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--red) 0%, transparent); } 0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--red) 55%, transparent); } }
 
@@ -284,9 +319,12 @@ textarea, input, select { font: inherit; color: inherit; }
   .topbar h1 { font-size: 18px; }
   .topbar nav { font-size: 12px; }
   .topbar nav .link { padding: 0 4px; }
-  .count .n { font-size: 60px; }
+  /* the flag keeps its ornament but gives the rule back to the title, which wraps hard at this width */
+  .mast .flag { flex: none; min-width: 0; }
+  .mast .flag::before, .mast .flag::after { display: none; }
   .drawer { inset: auto 0 0 0; width: 100vw; height: auto; max-height: 86dvh; border-left: 0; border-top: 2px solid var(--line); }
   @starting-style { .drawer[open] { transform: translateY(24px); opacity: 0; } }
+  .drawer:not([open]) { transform: translateY(12px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -316,7 +354,9 @@ textarea, input, select { font: inherit; color: inherit; }
 .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
 .tile.hit { animation: hit 420ms var(--ease-expo); }
 @keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
-button.tile { cursor: pointer; min-height: 44px; }
+/* a tappable tile's size comes from its floored layout weight, never from a min that overflows its slot */
+/* a column undoes the button's own vertical centring, so a name sits where it does on the map that reveals */
+button.tile { cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
 @media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
 /* the 50% mark writes its label below the bar, so the map keeps clear of it */
 .whipbar + .tiles { margin-top: 16px; }
@@ -346,26 +386,26 @@ button.tile { cursor: pointer; min-height: 44px; }
 
 /* the campaign: the forecast band over the map, the two levers side by side in the rail */
 .campaign .forecast { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.campaign .forecast .n { font: 800 clamp(44px, 7vw, 72px)/1 var(--display); letter-spacing: -0.02em; }
+.campaign .forecast .n { font: 800 clamp(56px, 10vw, 110px)/0.9 var(--display); letter-spacing: -0.03em; }
 .campaign .band { margin-bottom: 22px; }
 .campaign .band .seg { position: absolute; top: 0; bottom: 0; background: var(--ink-2); opacity: 0.45; transition: left 700ms var(--ease-expo), width 700ms var(--ease-expo); }
-.campaign .band .pt { position: absolute; top: -7px; width: 3px; height: 24px; background: var(--ink); transform: translateX(-1px); transition: left 700ms var(--ease-expo); }
+.campaign .band .pt { position: absolute; top: -5px; width: 3px; height: 24px; background: var(--ink); transform: translateX(-1px); transition: left 700ms var(--ease-expo); }
 .campaign .band .tick { background: var(--ink-2); }
 /* the rival's two regions keep their area readable: a hatch inside a ruled edge, not a fill */
 .campaign .tile.lost { background-image: repeating-linear-gradient(45deg, var(--tone) 0 2px, transparent 2px 8px); outline: 2px solid var(--ink-2); outline-offset: -2px; }
 .campaign .tile.lost .nm, .campaign .tile.lost .wt { background: none; }
 .campaign .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
-.campaign button.tile { min-width: 44px; }
 .campaign .drafts { display: grid; gap: 8px; }
-.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state); }
+.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state), transform var(--t-fast) var(--ease-out); }
+.campaign .drafts .opt2:active { transform: scale(0.96); }
 .campaign .drafts .opt2:hover { border-color: var(--ink); }
-.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
+.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-width: 2px; background: var(--tone); }
 .campaign .levers { display: grid; gap: 10px; }
 .campaign .tworadio { gap: 8px; }
 .campaign .opt[aria-checked="true"] { background: var(--ink); color: var(--bg); }
 .campaign .row.step { flex-wrap: nowrap; gap: 6px; }
 .campaign .row.step span { flex: 1 1 auto; min-width: 0; }
-.campaign .row.step .opt { padding: 0 14px; }
+.campaign .row.step .opt { padding: 0 14px; min-width: 44px; }
 .campaign .seats { max-height: 320px; overflow: auto; }
 .campaign .seats .fcard { justify-content: space-between; align-items: center; }
 .campaign .seats .fcard .t { flex: 1 1 auto; text-align: left; }

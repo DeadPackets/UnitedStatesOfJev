@@ -47,15 +47,14 @@ describe("names", () => {
     expect(new Set(all).size).toBe(all.length);
   });
 
-  test("a shortfall from duplicate names triggers one sequential top-up call", async () => {
+  test("a shortfall is topped up three times, and a pool that never fills is a repair, not an id in the chamber", async () => {
     seen.length = 0; series = 0; forceDup = true;
-    const r = await names({} as never, ctx(60, 250));
-    expect(seen.length).toBe(6);
+    // This stub repeats a name on every call, so the pools can never fill; a member named "m12" is the
+    // outcome this guards against.
+    await expect(names({} as never, ctx(60, 250))).rejects.toMatchObject({ name: "NeedsRepair" });
+    expect(seen.length).toBe(8);                 // five first-pass calls, then three top-ups
     const topUp = seen[5];
     expect(topUp.need.members).toBeGreaterThan(0);
     expect(topUp.already_used!.length).toBeGreaterThan(0);
-    const all = [...r.members!.map((m) => m.name), ...r.citizens!.map((c) => c.name)];
-    expect(new Set(all).size).toBe(all.length);
-    expect(all.every((n) => n !== "")).toBe(true);
   });
 });
