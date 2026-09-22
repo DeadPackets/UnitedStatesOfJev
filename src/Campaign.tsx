@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
-import Tiles, { type TileDatum } from "./Tiles";
+import Tiles, { shortNames, type TileDatum } from "./Tiles";
 import { Num, national } from "./Ledger";
 import { Ornament } from "./theme";
-import { CAMPAIGN_TURNS, SPEND_STEPS, leverCost, type Lever } from "../worker/engine";
+import { CAMPAIGN_TURNS, SPEND_STEPS, type Lever } from "../worker/engine";
 
 type Props = { game: GameView; act: Act; busy: boolean };
 
@@ -40,18 +40,25 @@ export default function Campaign({ game, act, busy }: Props) {
   const lever: Lever = kind === "spend"
     ? { kind: "spend", regions: picked.map(([id, amount]) => ({ id, amount })) }
     : { kind: "favor", memberId: seat };
-  const cost = leverCost(game as never, lever);
+  // Priced here, not by the engine: the client never imports the engine's escalation tables.
+  const cost = kind === "spend"
+    ? { chest: picked.reduce((s, [, a]) => s + a, 0), capital: 0 }
+    : { chest: 0, capital: c.gains.favorCost };
   const spendGain = picked.reduce((s, [id, a]) => s + (c.gains.spend[id]?.[SPEND_STEPS.indexOf(a as (typeof SPEND_STEPS)[number])] ?? 0), 0);
   const favorGain = c.gains.favor;
-  const ready = !!message && (kind === "spend" ? picked.length > 0 : !!seat)
-    && cost.chest <= game.ledgers.chest && cost.capital <= game.ledgers.capital;
+  // With neither a region step nor the favor affordable, the turn still has to run: an empty spend costs nothing.
+  const stuck = game.ledgers.chest < SPEND_STEPS[1] && game.ledgers.capital < c.gains.favorCost;
+  const run: Lever = stuck ? { kind: "spend", regions: [] } : lever;
+  const ready = !!message && (stuck || ((kind === "spend" ? picked.length > 0 : !!seat)
+    && cost.chest <= game.ledgers.chest && cost.capital <= game.ledgers.capital));
 
   const last = c.turns.at(-1);
   const pWin = (id: string) => last?.regions.find((r) => r.id === id)?.p
     ?? 1 / (1 + Math.exp(-((c.intent[id] ?? 0.5) - 0.5) * 12));
   const wsum = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
-  const items: TileDatum[] = pack.regions.map((r) => ({
-    id: r.id, name: r.name, short: r.name.slice(0, 3).toUpperCase(), weight: r.weight / wsum, p: pWin(r.id),
+  const shorts = shortNames(pack.regions.map((r) => r.name));
+  const items: TileDatum[] = pack.regions.map((r, i) => ({
+    id: r.id, name: r.name, short: shorts[i], weight: r.weight / wsum, p: pWin(r.id),
   }));
   const point = last ? last.public : national(pack, Object.fromEntries(pack.regions.map((r) => [r.id, (c.intent[r.id] ?? 0.5) * 100]))) / 100;
 
@@ -163,9 +170,10 @@ export default function Campaign({ game, act, busy }: Props) {
             </div>
           </div>
           <p className="muted small num">α {alpha.toFixed(2)} public to {(1 - alpha).toFixed(2)} chamber</p>
+          {stuck ? <p className="muted small">Nothing left to spend</p> : null}
 
           <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || !ready}
-            onClick={() => act(() => api.campaign(game, message, lever))}>
+            onClick={() => act(() => api.campaign(game, message, run))}>
             {busy ? "Counting" : n === CAMPAIGN_TURNS ? v.test : `Run the ${v.turn}`}
           </button>
         </div>

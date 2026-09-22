@@ -162,7 +162,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
           ))}
         </div>
 
-        <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className="railpanel">
+        <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
         {tab === "feed" ? <Feed game={game} act={act} busy={busy} /> : <>
         <Ledger game={game} />
 

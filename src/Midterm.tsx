@@ -26,7 +26,7 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   const [failed, setFailed] = useState(false);
   const [shown, setShown] = useState(0);
   const [done, setDone] = useState(false);
-  const key = `usoj:midterm:${game.id}`;
+  const key = `usoj:midterm:${game.id}:${game.term}`;
   const [replay] = useState(() => { try { return localStorage.getItem(key) === "1"; } catch { return false; } });
 
   const run = () => {

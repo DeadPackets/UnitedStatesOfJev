@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { squarify } from "./Tiles";
+import { shortNames, squarify } from "./Tiles";
 
 const items = [
   { id: "a", weight: 0.4 }, { id: "b", weight: 0.25 }, { id: "c", weight: 0.15 },
@@ -35,4 +35,8 @@ test("one tile takes the whole box", () => {
 test("every tile keeps a readable aspect", () => {
   const out = squarify(items, { x: 0, y: 0, w: 100, h: 62 });
   for (const r of out) expect(Math.max(r.w / r.h, r.h / r.w)).toBeLessThan(4);
+});
+
+test("two regions that start alike keep different shorts", () => {
+  expect(shortNames(["Harbor City", "Harbor Hills", "Northreach"])).toEqual(["HAR", "HARB", "NOR"]);
 });

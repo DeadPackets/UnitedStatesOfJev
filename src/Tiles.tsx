@@ -76,6 +76,20 @@ export default function Tiles({ items, state = {}, hit, selected = [], onPick, f
 
 export type RevealRegion = { id: string; weight: number; p: number; yes: boolean };
 
+/** Tile labels: three letters, grown one letter at a time until no two names share a short. */
+export function shortNames(names: string[]): string[] {
+  const used = new Set<string>();
+  return names.map((name) => {
+    let short = name.slice(0, 3).toUpperCase();
+    if (used.has(short)) for (let k = 3; k < name.length; k++) {
+      const cand = (short + name[k]).toUpperCase();
+      if (!used.has(cand)) { short = cand; break; }
+    }
+    used.add(short);
+    return short;
+  });
+}
+
 /**
  * The region half of the reveal, on its own interval: smallest weight first, so the big tiles
  * decide it last. It reports the weighted share as it goes and calls `onDone` at the end.
@@ -116,16 +130,9 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
 
   const state = Object.fromEntries(order.slice(0, shown).map((r) =>
     [r.id, flash === r.id ? "flash" : r.yes ? "won" : "lost"] as [string, TileState]));
-  const used = new Set<string>();
-  const items: TileDatum[] = regions.map((r) => {
-    const name = names.get(r.id) ?? r.id;
-    let short = name.slice(0, 3).toUpperCase();
-    if (used.has(short)) for (let k = 3; k < name.length; k++) {
-      const cand = (short + name[k]).toUpperCase();
-      if (!used.has(cand)) { short = cand; break; }
-    }
-    used.add(short);
-    return { id: r.id, name, short, weight: r.weight / wsum, p: r.p };
-  });
+  const labels = regions.map((r) => names.get(r.id) ?? r.id);
+  const shorts = shortNames(labels);
+  const items: TileDatum[] = regions.map((r, i) =>
+    ({ id: r.id, name: labels[i], short: shorts[i], weight: r.weight / wsum, p: r.p }));
   return <Tiles items={items} state={state} hit={order[shown - 1]?.id} label={label} />;
 }

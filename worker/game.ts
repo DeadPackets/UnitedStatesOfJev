@@ -377,8 +377,9 @@ export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
 };
 
 // What each lever is worth, priced here so the campaign screen never reads the engine.
-const gains = (pack: Pack) => ({
+const gains = (pack: Pack, game: Game) => ({
   favor: leverGain(pack, { kind: "favor", memberId: "" }),
+  favorCost: lobbyCost(game, "favor"),
   spend: Object.fromEntries(pack.regions.map((r) =>
     [r.id, SPEND_STEPS.map((amount) => leverGain(pack, { kind: "spend", regions: [{ id: r.id, amount }] }))])),
 });
@@ -400,7 +401,7 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
       return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),
     citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
-    campaign: game.campaign && { ...game.campaign, gains: gains(pack) },
+    campaign: game.campaign && { ...game.campaign, gains: gains(pack, game) },
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
     seatTitle: start?.seat_title ?? "the government",
     turnsPerTerm: TURNS_PER_TERM,
