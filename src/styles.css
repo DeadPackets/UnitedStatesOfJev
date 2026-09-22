@@ -355,8 +355,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .tile.hit { animation: hit 420ms var(--ease-expo); }
 @keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 /* a tappable tile's size comes from its floored layout weight, never from a min that overflows its slot */
-/* display:block undoes the button's own centring, so a name sits where it does on the map that reveals */
-button.tile { cursor: pointer; display: block; }
+/* a column undoes the button's own vertical centring, so a name sits where it does on the map that reveals */
+button.tile { cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; }
 @media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
 /* the 50% mark writes its label below the bar, so the map keeps clear of it */
 .whipbar + .tiles { margin-top: 16px; }
