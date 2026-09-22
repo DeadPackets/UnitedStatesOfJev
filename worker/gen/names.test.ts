@@ -6,6 +6,7 @@ const seen: { need: { members: number; citizens: number }; already_used?: string
 // Each call invents names from its own counter, disjoint from every other call unless the pool forces a collision.
 let series = 0;
 let forceDup = false;
+let dupCitizens = false;
 
 mock.module("../luna", () => ({
   luna: async (_env: unknown, _schema: unknown, _name: string, _system: string, user: string) => {
@@ -13,7 +14,7 @@ mock.module("../luna", () => ({
     seen.push(req);
     const take = (n: number, tag: string) => Array.from({ length: n }, () => {
       series++;
-      return forceDup && series % 2 === 0 ? "Dup Name" : `${tag} ${series}`;
+      return (forceDup || (dupCitizens && tag === "Citizen")) && series % 2 === 0 ? "Dup Name" : `${tag} ${series}`;
     });
     return { members: take(req.need.members, "Member"), citizens: take(req.need.citizens, "Citizen") };
   },
@@ -34,7 +35,7 @@ const ctx = (m: number, c: number): GenCtx => ({
 
 describe("names", () => {
   test("60 members + 250 citizens: one member call, four 80-name citizen chunks, deduped, no shortfall", async () => {
-    seen.length = 0; series = 0; forceDup = false;
+    seen.length = 0; series = 0; forceDup = false; dupCitizens = false;
     const r = await names({} as never, ctx(60, 250));
     expect(seen.length).toBe(5);
     expect(seen[0].need).toEqual({ members: 60, citizens: 0 });
@@ -48,7 +49,7 @@ describe("names", () => {
   });
 
   test("a shortfall is topped up three times, and a pool that never fills is a repair, not an id in the chamber", async () => {
-    seen.length = 0; series = 0; forceDup = true;
+    seen.length = 0; series = 0; forceDup = true; dupCitizens = false;
     // This stub repeats a name on every call, so the pools can never fill; a member named "m12" is the
     // outcome this guards against.
     await expect(names({} as never, ctx(60, 250))).rejects.toMatchObject({ name: "NeedsRepair" });
@@ -56,5 +57,12 @@ describe("names", () => {
     const topUp = seen[5];
     expect(topUp.need.members).toBeGreaterThan(0);
     expect(topUp.already_used!.length).toBeGreaterThan(0);
+  });
+
+  test("citizens short after the top-ups reuse the pool instead of failing the build", async () => {
+    seen.length = 0; series = 0; forceDup = false; dupCitizens = true;
+    const r = await names({} as never, ctx(60, 250));
+    expect(new Set(r.members!.map((m) => m.name)).size).toBe(60);
+    expect(r.citizens!.every((c) => c.name.startsWith("Citizen") || c.name === "Dup Name")).toBe(true);
   });
 });

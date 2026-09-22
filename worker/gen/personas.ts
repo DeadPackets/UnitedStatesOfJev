@@ -64,10 +64,11 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
     addTo(citizenPool, r.citizens);
   }
   const [m, c] = short();
-  if (m > 0 || c > 0) throw new NeedsRepair([`the name pools are short by ${Math.max(m, 0)} members and ${Math.max(c, 0)} citizens`], "");
+  // Citizens are ordinary people, and a place with few names repeats them (a live Zanzibar build came back 79 short).
+  if (m > 0 || (c > 0 && !citizenPool.length)) throw new NeedsRepair([`the name pools are short by ${Math.max(m, 0)} members and ${Math.max(c, 0)} citizens`], "");
   return {
     members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] })),
-    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] })),
+    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i % citizenPool.length] })),
   };
 }
 
