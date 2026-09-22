@@ -320,3 +320,7 @@ button.tile { cursor: pointer; min-height: 44px; }
 @media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
 /* the 50% mark writes its label below the bar, so the map keeps clear of it */
 .whipbar + .tiles { margin-top: 16px; }
+
+/* midterm night: the government count under the floor, the size of the verdict it is */
+.midtermnight .stage p.num { font: 900 clamp(28px, 6vw, 48px)/1 var(--display); margin: 8px 0 0; text-align: center; }
+.midtermnight .verdict h2 { font-size: 28px; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.01em; }

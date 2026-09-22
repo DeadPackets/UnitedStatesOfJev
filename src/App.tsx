@@ -5,6 +5,7 @@ import Match from "./Match";
 import Build from "./Build";
 import Seat from "./Seat";
 import Chamber from "./Chamber";
+import Midterm from "./Midterm";
 import Test from "./Test";
 import Won from "./Won";
 import Over from "./Over";
@@ -28,6 +29,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<string | null>(null);
+  const [counted, setCounted] = useState<string | null>(null);
 
   const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "Network hiccup. Try again.");
 
@@ -104,6 +106,9 @@ export default function App() {
   // The test POST lands the run on `won` or `over`, so the reveal holds the screen until it has played.
   const testKey = game?.test ? `${game.id}#${game.terms.length}` : null;
   const showTest = !!game && (game.stage === "test" || (!!testKey && revealed !== testKey));
+  // The midterm POST hands the stage straight back, so the night holds the screen until the player leaves it.
+  const midtermKey = game?.midterm ? `${game.id}#${game.term}` : null;
+  const showMidterm = !!game && (game.stage === "midterm" || (!!midtermKey && counted !== midtermKey));
 
   return (
     <>
@@ -111,6 +116,7 @@ export default function App() {
       {booting ? null
         : game ? (
             showTest ? <Test game={game} act={act} busy={busy} onDone={() => setRevealed(testKey)} />
+            : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => setCounted(midtermKey)} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
             : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} />)
