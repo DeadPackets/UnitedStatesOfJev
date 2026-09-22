@@ -55,15 +55,19 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   addTo(memberPool, memberRes.members);
   for (const r of citizenRes) addTo(citizenPool, r.citizens);
 
-  const shortM = needM - memberPool.length, shortC = needC - citizenPool.length;
-  if (shortM > 0 || shortC > 0) {
-    const r = await ask(Math.max(shortM, 0), Math.max(shortC, 0), {}, [...memberPool, ...citizenPool]);
+  // Top up until both pools are full: a pool one name short puts the internal id, "m12", in the chamber.
+  const short = () => [needM - memberPool.length, needC - citizenPool.length];
+  for (let i = 0; i < 3 && short().some((n) => n > 0); i++) {
+    const [m, c] = short();
+    const r = await ask(Math.max(m, 0), Math.max(c, 0), {}, [...memberPool, ...citizenPool]);
     addTo(memberPool, r.members);
     addTo(citizenPool, r.citizens);
   }
+  const [m, c] = short();
+  if (m > 0 || c > 0) throw new NeedsRepair([`the name pools are short by ${Math.max(m, 0)} members and ${Math.max(c, 0)} citizens`], "");
   return {
-    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] ?? m.id })),
-    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] ?? c.id })),
+    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] })),
+    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i] })),
   };
 }
 

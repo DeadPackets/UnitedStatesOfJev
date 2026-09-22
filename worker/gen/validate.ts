@@ -69,11 +69,15 @@ export function frame(f: Frame, sheet?: Facts | null, expectStart?: string | nul
   const seats = f.factions.reduce((s, x) => s + x.seats, 0);
   if (seats !== f.chamber.size) e.push(`faction seats sum to ${seats}, not the chamber size ${f.chamber.size}`);
   if (f.chamber.threshold > f.chamber.size || f.chamber.supermajority <= f.chamber.threshold) e.push("threshold and supermajority are out of order");
+  // A bar below a simple majority is a rule no chamber runs on: it passes a bill the room voted down.
+  if (f.chamber.threshold < Math.ceil(f.chamber.size / 2)) e.push(`threshold ${f.chamber.threshold} is below a majority of ${f.chamber.size}`);
   if (f.chamber.size > 30 && f.factions.length < 3) e.push(`only ${f.factions.length} factions for a chamber of ${f.chamber.size}; at least 3 are needed`);
 
   for (const r of f.regions) for (const l of r.lean) if (!fids.has(l.id)) e.push(`region ${r.id} leans to unknown faction ${l.id}`);
   for (const p of f.patrons) for (const t of [...p.wants, ...p.hates]) if (!tags.has(t)) e.push(`patron ${p.id} uses tag ${t}, which is not in tags`);
   for (const p of f.promises) if (!tags.has(p.tag)) e.push(`promise tag ${p.tag} is not in tags`);
+  // A game keys its three picked promises by tag, so two promises on one tag would collapse into one.
+  if (new Set(f.promises.map((p) => p.tag)).size !== f.promises.length) e.push("two promises share a tag");
   const starts = new Set(f.starts.map((s) => s.faction));
   for (const x of f.factions) if (!starts.has(x.id)) e.push(`no start for faction ${x.id}`);
   for (const s of f.starts) for (const c of [...s.coalition, ...s.hostile]) if (!fids.has(c)) e.push(`start ${s.faction} names unknown faction ${c}`);

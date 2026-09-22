@@ -29,7 +29,7 @@ export function mergeWikidata(sheet: Facts, people: { label: string; born: numbe
   return {
     ...sheet,
     people: sheet.people.map((p) => {
-      const w = people.find((q) => q.label === p.name || last(q.label) === last(p.name));
+      const w = people.find((q) => q.label === p.name) ?? people.find((q) => last(q.label) === last(p.name));
       if (!w) return p;
       return { ...p, born: w.born !== null ? String(w.born) : p.born, died: w.died !== null ? String(w.died) : p.died };
     }),

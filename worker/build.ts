@@ -36,7 +36,9 @@ const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice
 
 // ---- refusals: one retry of the whole step on Grok, then the build fails with a plain message ----
 
-const REFUSAL_MARKERS = ["refus", "policy", "safety", "content", "cannot help", "can't help"];
+// Narrow on purpose: a bare "content" or "policy" also matches an ordinary schema or content-type 400,
+// which then costs a Grok retry and tells the player the models would not write their scenario.
+const REFUSAL_MARKERS = ["refus", "content_policy", "content policy", "content_filter", "moderation", "safety", "cannot help", "can't help"];
 const refused = (e: unknown): e is UpstreamError =>
   e instanceof UpstreamError && (e.status === 400 || e.status === 403) &&
   REFUSAL_MARKERS.some((m) => e.message.toLowerCase().includes(m));
@@ -261,6 +263,8 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
       merge(await gen("personas", (e) => personasStep(e, ctx),
         (r) => ({ kind: "members", names: r.members!.slice(0, 8).map((m) => m.name) })));
       merge(await gen("dedupe", (e) => dedupe(e, ctx)));
+      // A dedupe rewrite hands out a new name after membersStep's real-name check has already run.
+      merge({ members: renameClashes(ctx.members, realNames(ctx.frame, ctx.facts)) });
       merge(await gen("deck", (e) => deck(e, ctx)));
       const art = await stage("art", (e) => artStep(e, id, ctx), (r) => ({ kind: "art", masthead: r.masthead, crests: r.crests.length }));
       await stage("index", (e) => indexStep(e, id, ctx));
