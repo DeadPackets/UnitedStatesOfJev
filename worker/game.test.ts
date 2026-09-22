@@ -603,3 +603,27 @@ test("the view carries the tag, the acts, the budget and the rival, and hides th
   expect("director" in v).toBe(false);
   expect(JSON.stringify(v)).not.toContain("swan");
 });
+
+test("the holders an act moved are read again before the turn ends", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(68);
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
+  await post("acts", { turn: 1 });               // serves guard, hits league, bypasses the council
+  expect(game.holders.league.stance).toBe(0.5);
+  const r = await post("turn/end", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(game.holders.league.stance).toBeCloseTo(0.9, 5);   // the stub answers 0.9 to every stance question
+  expect(game.holders.street.stance).toBe(0.5);             // the street never moved, so it was never asked
+  expect(game.turn).toBe(2);
+});
+
+test("the read never spends more than the turn has left", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(69);
+  await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
+  await post("acts", { turn: 1 });
+  game.calls = 6;
+  const r = await post("turn/end", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(game.holders.league.stance).toBe(0.5);             // nothing left to spend, so nothing was asked
+});

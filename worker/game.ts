@@ -4,7 +4,7 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, type PriceTag,
+  pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -368,12 +368,34 @@ export class GameDO extends DurableObject<Env> {
     return { deltas: applyCitizens(pack, game, nouls(citizens.answers, "")) };
   }
 
+  // §8: one call per holder, each with that holder's own numbers, and only the ones this turn moved.
+  private async readHolders(game: Game, pack: Pack) {
+    const moved = new Set(game.wire.filter((w) => w.kind === "resistance" && w.id).map((w) => w.id!));
+    const rows = holdersOf(pack).filter((h) => moved.has(h.id)).slice(0, callsLeft(game));
+    if (!rows.length) return;
+    spendCalls(game, rows.length);
+    const reads = await Promise.all(rows.map(async (h) => {
+      const sample = {
+        seats: h.members === "seats" ? game.members : [],
+        citizens: h.members === "citizens" ? streetSample(game, pack.citizens, HOLDER_SAMPLE) : [],
+      };
+      const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, sample));
+      return [h.id, holderStance(pack, h, r.answers)] as const;
+    }));
+    for (const [id, s] of reads) if (game.holders[id]) game.holders[id].stance = clamp(s, 0, 1);
+  }
+
   private async end(game: Game, pack: Pack) {
     if (game.stage !== "session") throw new Reject(409, "Not now.");
     if (game.events.some((e) => e.stance === undefined)) throw new Reject(409, "Answer the card on the desk first.");
+    await this.readHolders(game, pack);
     const out = endTurn(pack, game);
-    if (out.event) {
-      const storylet = pack.deck.find((s) => s.id === out.event!.id);
+    // A foreign move is built from the holder's own state, so it has no row in the deck to look up.
+    if (out.event?.kind === "foreign" && out.event.holder) {
+      const h = holdersOf(pack).find((x) => x.id === out.event!.holder);
+      if (h) out.event.card = await cardText(this.env, pack, foreignStorylet(pack, game, h), record(pack, game)).catch(() => undefined);
+    } else if (out.event) {
+      const storylet = deckOf(pack, game).find((s) => s.id === out.event!.id);
       if (storylet) out.event.card = await cardText(this.env, pack, storylet, record(pack, game)).catch(() => undefined);
     }
   }
