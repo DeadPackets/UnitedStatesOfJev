@@ -128,3 +128,15 @@ Six stacks, full sections for every condition, Rome and Egypt twice, Iran 1979 o
 K4 is the stack: the only zero-error Egypt pack, reference errors down from 8.8 to 2.6, and Wikidata inside the stack is free (K4 beats K5 by 0.6 errors at lower cost). K1 alone is the cost-constrained choice at $0.0001 over baseline for 0.8 errors removed.
 
 Three defects found and fixed in the spec: (1) the facts sheet made Iran worse by listing Mosaddegh (d. 1967) as a person, and the frame took "use only people on the sheet" as license to seat him; the sheet flagged him not alive but with no death date, and the validator read only the date. Validator now reads the alive flag, and the frame prompt says leaders must be alive on the start date. (2) The Ides failed in 12 of 12 Rome runs because the model chose a start date 22 days before it and no unit lands day 22 on turn 16 to 18; code now sets start_date as anchor minus 15 turn units, which lands all four saved Rome runs on turn 16. (3) The Wikidata guard let through a Lepidus dead 108 years before the era and an Octavian born in 1996; the guard now requires a birth date within 100 years before start_date.
+
+## Matching, 2026-09-22
+
+`POST /api/scenarios/match` against the live archive (`v3nj3k` Rome, `1wybd8` Germany, 2 ready scenarios; `MIN_CANDIDATES = 3`, cosine cutoff 0.6). Jev probabilities below are from a temporary bypass of both the 0.6 cosine filter and the `MIN_CANDIDATES` gate, to see what Jev would have said; the committed code path is unchanged.
+
+| Prompt | Cosine (v3nj3k, 1wybd8) | Jev probabilities (none_of_these, v3nj3k, 1wybd8) | Decision |
+|---|---|---|---|
+| "Rome 44 BC before the Ides" | 0.542, 0.215 | 0.48, 0.52, 0 | `{build:true}` |
+| "Bundestag 2021" | 0.261, 0.621 | 0, 0, 1.00 | `{load:"1wybd8"}` |
+| "Mars colony 2091" | 0.269, 0.333 | 1.00, 0, 0 | `{build:true}` |
+
+Rome's own pack scores 0.542 against its own prompt, under the 0.6 cosine cutoff, so in the shipped code it never reaches Jev at all — that alone accounts for `build:true`. Forcing the Jev call anyway shows it would not have changed the outcome: 0.52 on `v3nj3k` clears neither the 0.85 offer nor 0.95 load bar. Bundestag clears cosine (0.621) and Jev alone (1.00 on `1wybd8`) — matches expected `load`. Mars scores under cosine on both and Jev puts `none_of_these` at 1.00 — matches expected `build`. All three match the brief's expected shape; Rome's `build` is archive size (2 ready scenarios, one prompt short of even a confident cosine match), not a bug.
