@@ -5,11 +5,13 @@ import Tiles, { shortNames, type TileDatum } from "./Tiles";
 import { Num, national } from "./Ledger";
 import { Ornament } from "./theme";
 import { CAMPAIGN_TURNS, SPEND_STEPS, type Lever } from "../worker/engine";
+import { radioKeys } from "./keys";
 
 type Props = { game: GameView; act: Act; busy: boolean };
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 const points = (x: number) => `+${(x * 100).toFixed(2)}`;
+const LEVERS = ["spend", "favor"] as const;
 
 /**
  * The four closing turns: one message of three, then one lever. The gains are the engine's own
@@ -110,8 +112,11 @@ export default function Campaign({ game, act, busy }: Props) {
       <aside className="rail" aria-label={v.campaign}>
         <div className="panel drafts" role="radiogroup" aria-label="Three drafts">
           <div className="kicker">Three drafts</div>
-          {c.drafts.map((d) => (
-            <button key={d} className="opt2" role="radio" aria-checked={message === d} onClick={() => setMessage(d)}>{d}</button>
+          {c.drafts.map((d, i) => (
+            <button key={d} className="opt2" role="radio" aria-checked={message === d}
+              tabIndex={message === d || (!message && i === 0) ? 0 : -1}
+              onKeyDown={radioKeys(i, c.drafts.length, (j) => setMessage(c.drafts[j]))}
+              onClick={() => setMessage(d)}>{d}</button>
           ))}
           {!c.drafts.length ? (
             failed ? <button className="btn ghost" disabled={busy} onClick={draw}>Ask for the drafts</button>
@@ -122,8 +127,11 @@ export default function Campaign({ game, act, busy }: Props) {
         <div className="panel levers">
           <div className="kicker">One lever</div>
           <div className="row tworadio" role="radiogroup" aria-label="One lever">
-            <button className="opt" role="radio" aria-checked={kind === "spend"} onClick={() => setKind("spend")}>Regions</button>
-            <button className="opt" role="radio" aria-checked={kind === "favor"} onClick={() => setKind("favor")}>{v.seat}</button>
+            {LEVERS.map((k, i) => (
+              <button key={k} className="opt" role="radio" aria-checked={kind === k} tabIndex={kind === k ? 0 : -1}
+                onKeyDown={radioKeys(i, LEVERS.length, (j) => setKind(LEVERS[j]))}
+                onClick={() => setKind(k)}>{k === "spend" ? "Regions" : v.seat}</button>
+            ))}
           </div>
 
           {kind === "spend" ? (
@@ -146,9 +154,12 @@ export default function Campaign({ game, act, busy }: Props) {
             <>
               <p className="muted small">The weakest first. One {v.member}, {cost.capital} {v.capital}.</p>
               <ul className="picker seats" role="radiogroup" aria-label={v.seat}>
-                {weakest.map((m) => (
+                {weakest.map((m, i) => (
                   <li key={m.id}>
-                    <button className="fcard" role="radio" aria-checked={seat === m.id} onClick={() => setSeat(m.id)}>
+                    <button className="fcard" role="radio" aria-checked={seat === m.id}
+                      tabIndex={seat === m.id || (!seat && i === 0) ? 0 : -1}
+                      onKeyDown={radioKeys(i, weakest.length, (j) => setSeat(weakest[j].id))}
+                      onClick={() => setSeat(m.id)}>
                       <span className="sq on" style={{ color: factionColour.get(m.faction) ?? "var(--ink)" }} />
                       <span className="t"><b>{m.name}</b><span className="muted small">{regionName.get(m.region) ?? m.region}</span></span>
                       <span className="num">{m.loyalty}</span>

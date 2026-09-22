@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
 import { Ornament, applyTheme, art, hideBroken, initials } from "./theme";
+import { radioKeys } from "./keys";
 
 const b36 = (n: number) => n.toString(36);
 
@@ -65,13 +66,14 @@ export default function Seat({ pack, busy, onSeat }: {
         <div className="field">
           <span className="kicker" id="l-faction">Take which seat</span>
           <ul className="picker" role="radiogroup" aria-labelledby="l-faction">
-            {pack.factions.map((f) => {
+            {pack.factions.map((f, i) => {
               const s = pack.starts.find((x) => x.faction === f.id);
               if (!s) return null;
               const foes = (s.hostile ?? []).map((id) => short.get(id) ?? id);
               return (
                 <li key={f.id}>
-                  <button className="fcard" role="radio" aria-checked={faction === f.id}
+                  <button className="fcard" role="radio" aria-checked={faction === f.id} tabIndex={faction === f.id ? 0 : -1}
+                    onKeyDown={radioKeys(i, pack.factions.length, (j) => setFaction(pack.factions[j].id))}
                     onClick={() => setFaction(f.id)} onMouseEnter={() => setHover(f.id)} onMouseLeave={() => setHover(null)}
                     onFocus={() => setHover(f.id)} onBlur={() => setHover(null)}>
                     <span className="crest" style={{ color: f.color }} aria-hidden="true">

@@ -158,8 +158,9 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
               tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
               onKeyDown={(e) => {
                 const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-                if (!d) return;
-                const next = TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length];
+                const next = d ? TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length]
+                  : e.key === "Home" ? TABS[0] : e.key === "End" ? TABS[TABS.length - 1] : undefined;
+                if (!next) return;
                 setTab(next); document.getElementById(`tab-${next}`)?.focus();
               }}>{t === "turn" ? v.turn : v.feed}</button>
           ))}
