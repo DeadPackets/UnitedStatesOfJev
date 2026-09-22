@@ -5,6 +5,7 @@ import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
 import { Num } from "./Ledger";
 import { Ornament } from "./theme";
+import { TileReveal } from "./Tiles";
 import { sound } from "./sound";
 
 type Props = { game: GameView; act: Act; busy: boolean; onDone: () => void };
@@ -22,8 +23,11 @@ export default function Test({ game, act, busy, onDone }: Props) {
   const [failed, setFailed] = useState(false);
   const [shown, setShown] = useState(0);
   const [done, setDone] = useState(false);
+  const [tilesDone, setTilesDone] = useState(false);
+  const [share, setShare] = useState(0);
   const key = `usoj:test:${game.id}`;
   const [replay] = useState(() => { try { return localStorage.getItem(key) === "1"; } catch { return false; } });
+  const [skipped, setSkipped] = useState(false);
 
   const run = () => {
     called.current = true; setFailed(false);
@@ -39,19 +43,22 @@ export default function Test({ game, act, busy, onDone }: Props) {
   // 40 s over the whole walk, clamped so a 6-region list is not a slideshow and a 200-seat floor still ticks.
   const beat = n ? Math.min(1200, Math.max(120, 40000 / n)) : 0;
 
+  // the tiles own the region half and its clock; the seat walk starts where they stop
+  const base = walk.regions.length;
   useEffect(() => {
-    if (!n || done) return;
+    if (!n || done || (base > 0 && !tilesDone)) return;
+    if (!walk.seats.length) { setDone(true); return; }
     if (reduced) { const t = setTimeout(() => { setShown(n); setDone(true); }, 2000); return () => clearTimeout(t); }
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
-      const k = Math.min(n, Math.floor((now - t0) / beat) + 1);
+      const k = Math.min(n, base + Math.floor((now - t0) / beat) + 1);
       setShown(k);
       if (k < n) raf = requestAnimationFrame(tick); else setDone(true);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [n, beat, reduced, done]); // eslint-disable-line
+  }, [n, beat, base, reduced, done, tilesDone]); // eslint-disable-line
 
   useEffect(() => { if (shown > 0 && !done) sound.play("tick", { pitch: shown }); }, [shown]); // eslint-disable-line
   useEffect(() => {
@@ -61,7 +68,6 @@ export default function Test({ game, act, busy, onDone }: Props) {
   }, [done]); // eslint-disable-line
 
   const names = useMemo(() => new Map(pack.regions.map((r) => [r.id, r.name])), [pack.regions]);
-  const rShown = Math.min(shown, walk.regions.length);
   const sShown = Math.max(0, shown - walk.regions.length);
   const votes = useMemo(() => Object.fromEntries(walk.seats.slice(0, sShown).map((s) => [s.id, s.yes])), [walk.seats, sShown]);
 
@@ -77,10 +83,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
   }
 
   const a = pack.chamber.alpha;
-  const wsum = test.regions.reduce((s, r) => s + r.weight, 0) || 1;
-  const pub = walk.regions.length
-    ? walk.regions.slice(0, rShown).reduce((s, r) => s + (r.yes ? r.weight : 0), 0) / wsum
-    : test.drawnPublic;
+  const pub = walk.regions.length ? share : test.drawnPublic;
   const loy = walk.seats.length
     ? walk.seats.slice(0, sShown).filter((s) => s.yes).length / (test.seats.length || 1)
     : test.drawnLoyalty;
@@ -94,7 +97,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
         <nav aria-label={pack.test.name}>
           <Ornament kind={pack.theme.ornament} />
           <span className="num" style={{ padding: "0 8px" }}>{shown} of {n}</span>
-          {replay && !done ? <button className="link" onClick={() => { setShown(n); setDone(true); }}>Skip the count</button> : null}
+          {replay && !done ? <button className="link" onClick={() => { setSkipped(true); setShown(n); setDone(true); }}>Skip the count</button> : null}
         </nav>
       </header>
 
@@ -109,6 +112,11 @@ export default function Test({ game, act, busy, onDone }: Props) {
           <div className={`fill ${done && !test.won ? "fail" : ""}`} style={{ width: `${Math.min(100, pct)}%` }} />
           <div className="tick" style={{ left: "50%" }}><span className="num">50</span></div>
         </div>
+        {walk.regions.length ? (
+          <TileReveal regions={walk.regions} names={names} skip={skipped} label="The count by weight"
+            onProgress={(i, s) => { setShare(s); setShown((k) => Math.max(k, i)); }}
+            onDone={() => setTilesDone(true)} />
+        ) : null}
         {walk.seats.length ? (
           <ChamberFloor pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
             votes={votes} onPick={() => {}} />
@@ -125,16 +133,12 @@ export default function Test({ game, act, busy, onDone }: Props) {
       <aside className="rail" aria-label={pack.test.name}>
         {walk.regions.length ? (
           <div className="panel">
-            <div className="kicker">The count by weight</div>
-            <ol className="regionwalk">
-              {walk.regions.map((r, i) => (
-                <li key={r.id} className={i < rShown ? (r.yes ? "yes" : "no") : "wait"}>
-                  <span className="k">{names.get(r.id) ?? r.id}</span>
-                  <span className="num small muted">{Math.round((r.weight / wsum) * 100)}%</span>
-                  <div className="bar"><i style={{ width: i < rShown ? `${Math.round(r.p * 100)}%` : 0 }} /></div>
-                </li>
-              ))}
-            </ol>
+            <div className="kicker">{v.approval}</div>
+            <div className="meter">
+              <div className="k">Weighted share</div>
+              <div className="v"><Num key={`p${done}`} value={pub * 100} decimals={1} instant={done} />%</div>
+              <div className="bar"><i style={{ width: `${Math.min(100, pub * 100)}%` }} /></div>
+            </div>
           </div>
         ) : null}
         {walk.seats.length ? (

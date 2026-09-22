@@ -305,3 +305,27 @@ textarea, input, select { font: inherit; color: inherit; }
   @keyframes wipefade { 0%, 100% { opacity: 0; } 35%, 65% { opacity: 1; } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* the test and the campaign: the map as weighted tiles. Won is ink, lost keeps its area under a hairline hatch */
+.tiles { position: relative; width: 100%; aspect-ratio: 100/62; border: 1px solid var(--ink); background: var(--paper); }
+.tile { position: absolute; border: 1px solid var(--ink); background: var(--paper); overflow: hidden;
+  padding: 5px 6px; text-align: left; color: var(--ink); font: inherit; cursor: default;
+  transition: background-color var(--t-state) var(--ease-expo), color var(--t-state) var(--ease-expo), border-color var(--t-state); }
+.tile .nm { font: 700 13px/1.05 var(--display); letter-spacing: 0.05em; text-transform: uppercase; display: block; }
+.tile .wt { font-size: 10px; color: var(--ink-2); display: block; margin-top: 2px; }
+.tile.tiny { display: grid; place-items: center; padding: 0; }
+.tile.tiny .nm { font-size: 11px; }
+.tile.tiny .wt { display: none; }
+.tile.lost { background-image: repeating-linear-gradient(45deg, var(--ink-2) 0 1px, transparent 1px 7px); }
+.tile.lost .nm, .tile.lost .wt { background: var(--paper); width: fit-content; padding-right: 4px; }
+.tile.won { background-color: var(--ink); color: var(--paper); background-image: none; }
+.tile.won .wt { color: var(--tone); }
+.tile.flash { background-color: var(--accent) !important; background-image: none !important; border-color: var(--accent); color: var(--paper); }
+.tile.flash .wt { color: var(--paper); }
+.tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
+.tile.hit { animation: hit 420ms var(--ease-expo); }
+@keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+button.tile { cursor: pointer; min-height: 44px; }
+@media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
+/* the 50% mark writes its label below the bar, so the map keeps clear of it */
+.whipbar + .tiles { margin-top: 16px; }
