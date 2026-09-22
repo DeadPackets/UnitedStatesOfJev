@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { animate, useReducedMotion } from "motion/react";
 import type { GamePack, ViewBill, ViewMember } from "./api";
 import { art, initials as letters } from "./theme";
@@ -10,7 +10,8 @@ export type LobbyKind = keyof GamePack["lobby"];
 function Pct({ value, from }: { value: number; from: number | null }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduced = useReducedMotion();
-  useEffect(() => {
+  // Layout, not passive: same reason as `Num` — React owns this span's text too.
+  useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     if (from === null || reduced) { el.textContent = String(Math.round(value * 100)); return; }
     const c = animate(from * 100, value * 100, { duration: 0.9, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => { el.textContent = String(Math.round(v)); } });
