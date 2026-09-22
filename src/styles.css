@@ -53,6 +53,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .btn.ghost:not(:disabled):hover { background: var(--ink); color: var(--bg); }
 .btn.hot { background: var(--red); border-color: var(--red); color: #fff; }
 .btn.hot:not(:disabled):hover { background: var(--bg); color: var(--red); }
+.btn.busy { padding-left: 24px; }  /* the spinner side loses 2 px, so the label still reads centred */
 .btn.busy::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .link { min-height: 44px; display: inline-flex; align-items: center; padding: 0 6px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; transition: color var(--t-fast); }
@@ -148,7 +149,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .fcard { width: 100%; display: flex; align-items: start; gap: 12px; text-align: left; padding: 10px 12px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), transform var(--t-fast); }
 .fcard:hover { border-color: var(--ink); }
 .fcard[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
-.fcard:active { transform: scale(0.99); }
+.fcard:active { transform: scale(0.96); }
 .fcard .t { display: grid; gap: 3px; min-width: 0; }
 .fcard b { font: 800 19px/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
 .crest { flex: none; width: 46px; height: 46px; position: relative; display: grid; place-items: center; background: var(--paper); outline: 1.5px solid var(--ink); outline-offset: -1.5px; font: 800 16px var(--display); overflow: hidden; }
@@ -214,7 +215,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .amend .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--ink); background: var(--bg); display: grid; gap: 4px; transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .amend .opt2:hover { background: var(--ink); color: var(--bg); }
 .amend .opt2:hover .muted { color: var(--tone); }
-.amend .opt2:active { transform: scale(0.98); }
+.amend .opt2:active { transform: scale(0.96); }
 
 /* crisis card and term notices: the same poster, centred */
 .poster { width: min(560px, calc(100vw - 32px)); border: 0; border-top: 6px solid var(--line); border-bottom: 2px solid var(--line); padding: 22px 24px 26px;
@@ -250,7 +251,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .lobby { display: grid; gap: 8px; }
 .lobby button { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--ink); background: var(--bg); transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .lobby button:not(:disabled):hover { background: var(--ink); color: var(--bg); }
-.lobby button:not(:disabled):active { transform: scale(0.98); }
+.lobby button:not(:disabled):active { transform: scale(0.96); }
 .memory { display: grid; gap: 6px; padding-left: 16px; margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
 
 /* over */
@@ -368,7 +369,8 @@ button.tile { cursor: pointer; min-height: 44px; }
 .campaign .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
 .campaign button.tile { min-width: 44px; }
 .campaign .drafts { display: grid; gap: 8px; }
-.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state); }
+.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state), transform var(--t-fast) var(--ease-out); }
+.campaign .drafts .opt2:active { transform: scale(0.96); }
 .campaign .drafts .opt2:hover { border-color: var(--ink); }
 .campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
 .campaign .levers { display: grid; gap: 10px; }
