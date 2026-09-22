@@ -191,3 +191,7 @@ are decoration. Nothing constrains the generator's choice.
 16. **Midterm class per term.** `marks.midterm` is seeded once, so "Another term" puts the same
     third of the seats up again. (a) Keep, the replay is intended. (b) Re-seed per term. **Recommend
     (b)**: a one-line change, and the second term should not be a rerun of the first.
+17. **Drop `motion`?** The client uses two exports (`animate` for the rolling digits,
+    `useReducedMotion`) and pays 23 kB gzip of 115 for them, measured by the React pass. About 15
+    lines of rAF plus `matchMedia` replace both. (a) Replace and drop the dependency. (b) Keep it
+    for the animations to come. **Recommend (a)** unless you plan spring physics; a one-hour job.
