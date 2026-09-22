@@ -30,7 +30,9 @@ test("the view strips personas, citizens and the deck", () => {
 });
 
 test("create() picks the start by faction id, not array position, when starts are shuffled", () => {
-  const shuffled: Pack = PackSchema.parse({ ...mini, citizens: citizens(), starts: [...mini.starts].reverse() });
+  // PackSchema now rejects starts out of factions order, so shuffle after validation: pickStart
+  // stays defensive even though a stored pack can no longer reach this shape through the schema.
+  const shuffled: Pack = { ...pack, starts: [...pack.starts].reverse() };
   expect(shuffled.starts[0].faction).toBe("tidebound");   // reversed: no longer lines up with factions[0]
   const start = pickStart(shuffled, 0);                   // factions[0] is harborites
   expect(start?.faction).toBe("harborites");
