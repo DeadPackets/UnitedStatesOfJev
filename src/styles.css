@@ -293,6 +293,7 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .tabled { display: grid; gap: var(--s3); border-top: 2px solid var(--ink); padding-top: var(--s3); flex: none; }
 .tabled h2 { font-size: 28px; margin: 4px 0 6px; }
 .tabled .actions { margin-top: var(--s2); }
+.deskopen { display: none; }
 .floorbox { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; }
 .holders { display: grid; gap: var(--s2); flex: none; }
 .holderrow { display: grid; gap: 4px; }
@@ -494,6 +495,32 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
   .drawer { inset: auto 0 0 0; width: 100vw; height: auto; max-height: 86dvh; border-left: 0; border-top: 2px solid var(--line); }
   @starting-style { .drawer[open] { transform: translateY(24px); opacity: 0; } }
   .drawer:not([open]) { transform: translateY(12px); }
+  body:has(.desk) { height: auto; overflow: auto; }
+  .desk { height: auto; display: block; padding: 0 15px calc(var(--wire) + 56px); }
+  .strip { grid-template-columns: repeat(5, 1fr); }
+  .led { padding: 8px 4px 10px; border-right: 1px solid var(--tone); min-width: 0; }
+  .led:last-child { border-right: 0; }
+  .led .v { font-size: 26px; }
+  .led .ledk .kicker { font-size: 9px; letter-spacing: 0.04em; }
+  .led .d, .led .room { display: none; }
+  /* the cell is the tap target for its peek, which buys a large Fitts target for free (research §5) */
+  .peek { position: static; grid-template-columns: 1fr; gap: var(--s3); border: 2px solid var(--c); margin-bottom: var(--s3); }
+  .main { grid-template-columns: 1fr; gap: var(--s4); padding-top: var(--s4); }
+  .floorcol { order: 1; } .railcol { order: 2; } .deskcol { order: 3; }
+  .floorbox { min-height: 210px; }
+  .tabbar { position: fixed; left: 0; right: 0; bottom: var(--wire); z-index: var(--z-sticky);
+    background: var(--bg); border-top: 2px solid var(--ink); border-bottom: 0; }
+  .tabbar button { min-height: 52px; font-size: 9px; padding: 0 2px; }
+  .tabbar button[aria-selected="true"] { box-shadow: inset 0 3px 0 var(--ink); }
+  .railbody { overflow: visible; }
+  /* the desk is a sheet the thumb opens, with the price tag above the keyboard */
+  .deskcol { position: fixed; left: 0; right: 0; bottom: calc(var(--wire) + 52px); z-index: var(--z-sticky);
+    background: var(--bg); border-top: 2px solid var(--ink); padding: var(--s2) 15px var(--s3);
+    max-height: 72dvh; overflow: auto; transform: translateY(100%); transition: transform var(--t-state) var(--ease-out); }
+  .deskcol[data-open="true"] { transform: none; }
+  .deskopen { display: inline-flex; position: fixed; right: 15px; bottom: calc(var(--wire) + 62px); z-index: var(--z-sticky); }
+  .verbs button { font-size: 10px; }
+  .campaignview .causes { max-height: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -504,6 +531,7 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
   .stamp.hit { animation: stampfade 200ms ease forwards !important; }
   @keyframes stampfade { from { opacity: 0; transform: translate(-50%, -50%) rotate(-6deg); } to { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg); } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .deskcol { transition: none !important; }
 }
 
 /* the test: the map as weighted tiles. Won is ink, lost keeps its area under a hairline hatch */

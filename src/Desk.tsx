@@ -56,6 +56,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [text, setText] = useState("");
   const [verb, setVerb] = useState<VerbKey | null>(null);
   const [picked, setPicked] = useState(false);
+  const [sheet, setSheet] = useState(false);
   useEffect(() => { if (!picked) setVerb(settleVerb(text, game.instruments)); }, [text, picked, game.instruments]);
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
@@ -160,7 +161,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
       </div>
 
       <div className="main">
-        <section className="col deskcol" aria-label="The desk">
+        <section className="col deskcol" aria-label="The desk" data-open={sheet}>
           <Compose game={game} act={act} busy={busy} verb={verb} text={text}
             onVerb={(v) => { setPicked(true); setVerb(v); }} onText={setText} />
           <Tag game={game} act={act} busy={busy} onDone={() => { setText(""); setPicked(false); }} />
@@ -313,6 +314,9 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
       {notice.length ? <Announce key={game.term} pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
       <Tour step={step} onSkip={endTour} />
       <Wire game={game} onPick={(k, c) => { setPeek(k); setCause(c); }} />
+      <button className="btn deskopen" aria-expanded={sheet} onClick={() => setSheet(!sheet)}>
+        {sheet ? "Close the desk" : "Write an act"}
+      </button>
     </main>
   );
 }
