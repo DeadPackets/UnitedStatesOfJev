@@ -80,8 +80,8 @@ export type RevealRegion = { id: string; weight: number; p: number; yes: boolean
  * The region half of the reveal, on its own interval: smallest weight first, so the big tiles
  * decide it last. It reports the weighted share as it goes and calls `onDone` at the end.
  */
-export function TileReveal({ regions, names, skip = false, label, onProgress, onDone }: {
-  regions: RevealRegion[]; names: Map<string, string>; skip?: boolean; label?: string;
+export function TileReveal({ regions, names, skip = false, label, ms = 40000, onProgress, onDone }: {
+  regions: RevealRegion[]; names: Map<string, string>; skip?: boolean; label?: string; ms?: number;
   onProgress: (shown: number, share: number) => void; onDone: () => void;
 }) {
   const reduced = useReducedMotion();
@@ -102,7 +102,7 @@ export function TileReveal({ regions, names, skip = false, label, onProgress, on
       return;
     }
     let i = 0;
-    const step = Math.max(400, Math.min(1400, 40000 / Math.max(1, order.length)));
+    const step = Math.max(400, Math.min(1400, ms / Math.max(1, order.length)));
     const t = setInterval(() => {
       const r = order[i];
       i += 1;
@@ -116,9 +116,16 @@ export function TileReveal({ regions, names, skip = false, label, onProgress, on
 
   const state = Object.fromEntries(order.slice(0, shown).map((r) =>
     [r.id, flash === r.id ? "flash" : r.yes ? "won" : "lost"] as [string, TileState]));
+  const used = new Set<string>();
   const items: TileDatum[] = regions.map((r) => {
     const name = names.get(r.id) ?? r.id;
-    return { id: r.id, name, short: name.slice(0, 3).toUpperCase(), weight: r.weight / wsum, p: r.p };
+    let short = name.slice(0, 3).toUpperCase();
+    if (used.has(short)) for (let k = 3; k < name.length; k++) {
+      const cand = (short + name[k]).toUpperCase();
+      if (!used.has(cand)) { short = cand; break; }
+    }
+    used.add(short);
+    return { id: r.id, name, short, weight: r.weight / wsum, p: r.p };
   });
   return <Tiles items={items} state={state} hit={order[shown - 1]?.id} label={label} />;
 }

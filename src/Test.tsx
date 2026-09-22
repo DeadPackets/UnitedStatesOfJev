@@ -113,7 +113,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
           <div className="tick" style={{ left: "50%" }}><span className="num">50</span></div>
         </div>
         {walk.regions.length ? (
-          <TileReveal regions={walk.regions} names={names} skip={skipped} label="The count by weight"
+          <TileReveal regions={walk.regions} names={names} skip={skipped} label="The count by weight" ms={40000 * walk.regions.length / (n || 1)}
             onProgress={(i, s) => { setShare(s); setShown((k) => Math.max(k, i)); }}
             onDone={() => setTilesDone(true)} />
         ) : null}
