@@ -16,7 +16,7 @@ import Wire from "./Wire";
 import Holders from "./Holders";
 import Compose from "./Compose";
 import Tag from "./PriceTag";
-import { settleVerb, unreadTabs, type LedgerKey, type VerbKey } from "./rules";
+import { mandateOf, settleVerb, unreadTabs, type LedgerKey, type VerbKey } from "./rules";
 import Rail, { type Tab } from "./Rail";
 import { Country, Room, RecordTab } from "./Panels";
 
@@ -85,6 +85,10 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [held, setHeld] = useState<string[]>([]);
   const warning = game.warnings.find((w) => !held.includes(`${w.holder}@${w.at}`)) ?? null;
   const warnedHolder = warning ? game.holders.find((h) => h.id === warning.holder) : undefined;
+  // the worker owns the schedule: a discount on the wire is what opens this panel
+  const campaigning = game.discount < 1;
+  const counted = game.holders.filter((h) => h.weight > 0);
+  const mandate = mandateOf(counted);
 
   // Roll call: reveal votes one by one, accelerating, and walk the last five when the count is close.
   const rolledFor = useRef(voted ? bill!.id : -1);
@@ -253,6 +257,30 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
             </div>
           </>
         )}
+          {campaigning ? (
+            <div className="campaignview panel">
+              <div className="kicker">{v.campaign} · acts aimed at the counted holders cost <span className="num">{Math.round((1 - game.discount) * 100)}</span> per cent less</div>
+              <div className="count">
+                <Num value={mandate * 100} decimals={1} className={`n ${mandate < game.bar ? "fail" : ""}`} />
+                <span className="muted num">of {(game.bar * 100).toFixed(0)} needed</span>
+              </div>
+              <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(mandate * 100)} aria-label={v.test}>
+                <div className={`fill ${mandate < game.bar ? "fail" : ""}`} style={{ width: `${Math.min(100, mandate * 100)}%` }} />
+                <div className="tick" style={{ left: `${game.bar * 100}%` }}><span className="num">{(game.bar * 100).toFixed(0)}</span></div>
+              </div>
+              <ul className="causes" aria-label="The arithmetic, holder by holder">
+                {counted.map((h) => (
+                  <li key={h.id}>
+                    <b className="num">{(h.weight * h.stance * 100).toFixed(1)}</b>
+                    <span>{h.name}, {h.weight.toFixed(2)} of the room at {Math.round(h.stance * 100)}, moved by {h.levers.map((l) => game.instruments[l]?.name ?? l).join(", ")}</span>
+                  </li>
+                ))}
+              </ul>
+              {game.rival ? (
+                <p className="small">{game.rival.line} {game.rival.region ? `In ${game.pack.regions.find((r) => r.id === game.rival!.region)?.name ?? game.rival.region}.` : ""}</p>
+              ) : null}
+            </div>
+          ) : null}
           <Holders holders={game.holders} warnings={game.warnings} onPick={(id) => { setHolder(id); setTab("room"); setSeen((s) => ({ ...s, room: game.turn })); }} />
         </section>
         <aside className="col railcol" aria-label="The rail">

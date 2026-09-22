@@ -310,6 +310,9 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .plateh .res b { position: absolute; top: -3px; width: 2px; height: 13px; background: var(--danger); }
 .plateh.near .small, .plateh.over .small { color: var(--ink); }
 .plateh.over .small { color: var(--danger); }
+.campaignview { flex: none; display: grid; gap: var(--s2); }
+.campaignview .count .n { font: 800 clamp(40px, 5vw, 64px)/0.9 var(--display); }
+.campaignview .causes { max-height: 22vh; overflow: auto; }
 .desk .hemi { width: 100%; height: auto; max-height: 52vh; margin-inline: auto; }
 .railbody { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; padding-right: 2px; }
 .tabbar { display: flex; gap: 1px; border-bottom: 1px solid var(--ink); flex: none; }

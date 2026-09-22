@@ -125,3 +125,16 @@ test("the difficulty label comes from the seats you are short", () => {
   expect(difficulty(9)).toBe("Minority, with a handicap");
   expect(difficulty(18)).toBe("Survival");
 });
+
+import { mandateOf } from "./rules";
+
+test("the mandate is the weighted sum over the counted holders only", () => {
+  const holders = [
+    { id: "senate", weight: 0.3, stance: 0.6 },
+    { id: "plebs", weight: 0.5, stance: 0.4 },
+    { id: "patricians", weight: 0.2, stance: 0.8 },
+    { id: "legions", weight: 0, stance: 0.1 },
+  ];
+  expect(mandateOf(holders)).toBeCloseTo(0.54, 5);
+  expect(mandateOf([])).toBe(0);
+});

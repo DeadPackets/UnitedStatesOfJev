@@ -94,3 +94,7 @@ export function barAt(pack: { constitution?: { retention?: { bar?: { start: numb
 /** Spec §6 minority starts: above 6 short prints a handicap, above 15 short is the survival path. */
 export const difficulty = (gap: number) =>
   gap <= 0 ? "Comfortable" : gap > 15 ? "Survival" : gap > 6 ? "Minority, with a handicap" : "Minority";
+
+/** Spec §6: the same weighted sum the test runs, printed live so the arithmetic is never a surprise. */
+export const mandateOf = (holders: { weight: number; stance: number }[]) =>
+  holders.reduce((a, h) => a + h.weight * h.stance, 0);
