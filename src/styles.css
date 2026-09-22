@@ -182,7 +182,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; }
 .count .n { font: 800 clamp(64px, 12vw, 132px)/0.9 var(--display); letter-spacing: -0.03em; }
 .count > .muted:not(.n), .campaign .forecast > .muted {
-  font: 600 12px/1.35 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; max-width: 19ch; color: var(--ink-2);
+  font: 600 12px/1.35 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; max-width: 22ch; color: var(--ink-2);
   align-self: flex-end; padding-bottom: 8px; }
 .count .n.fail { color: var(--red); }
 .count.bounce .n { animation: bounce 400ms var(--ease-out); }
@@ -355,7 +355,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .tile.hit { animation: hit 420ms var(--ease-expo); }
 @keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 /* a tappable tile's size comes from its floored layout weight, never from a min that overflows its slot */
-button.tile { cursor: pointer; }
+/* display:block undoes the button's own centring, so a name sits where it does on the map that reveals */
+button.tile { cursor: pointer; display: block; }
 @media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
 /* the 50% mark writes its label below the bar, so the map keeps clear of it */
 .whipbar + .tiles { margin-top: 16px; }
