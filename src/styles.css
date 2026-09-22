@@ -319,6 +319,9 @@ textarea, input, select { font: inherit; color: inherit; }
   .topbar h1 { font-size: 18px; }
   .topbar nav { font-size: 12px; }
   .topbar nav .link { padding: 0 4px; }
+  /* the flag keeps its ornament but gives the rule back to the title, which wraps hard at this width */
+  .mast .flag { flex: 0 1 auto; min-width: 0; }
+  .mast .flag::before, .mast .flag::after { display: none; }
   .drawer { inset: auto 0 0 0; width: 100vw; height: auto; max-height: 86dvh; border-left: 0; border-top: 2px solid var(--line); }
   @starting-style { .drawer[open] { transform: translateY(24px); opacity: 0; } }
   .drawer:not([open]) { transform: translateY(12px); }
