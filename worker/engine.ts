@@ -26,6 +26,8 @@ export interface Bill extends BillDraft {
 }
 export interface Event {
   id: string; turn: number; relief: boolean; stances: string[];
+  kind?: "crisis" | "relief" | "foreign" | "swan";
+  holder?: string;
   card?: { title: string; body: string; stances: string[] };
   stance?: number; scores?: Record<string, number>; outcome?: string;
 }
@@ -554,6 +556,8 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
 
   const L = game.ledgers;
   L.authority = clamp(L.authority + (passed ? LAW_PASSED : -LAW_LOST) - (struck ? STRUCK_DECREE : 0), 0, 200);
+  pushWire(game, [{ kind: "ledger", ledger: "authority",
+    delta: (passed ? LAW_PASSED : -LAW_LOST) - (struck ? STRUCK_DECREE : 0), cause: bill.title }]);
   const own = game.members.filter((m) => m.faction === game.faction);
   const ownYes = own.filter((m) => votes[m.id]).length;
   L.loyalty = clamp(L.loyalty + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
@@ -688,6 +692,7 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   for (const e of on(game)) e.turn?.(pack, game);
 
   const voted = game.turn;
+  game.quiet = [...game.wire, ...wire].some((w) => w.kind === "ledger") ? 0 : game.quiet + 1;
   pushWire(game, wire);
   game.calls = 0; game.swing = 0; game.tag = null; game.refusal = null;
   game.turn += 1;
@@ -984,6 +989,44 @@ function pick(pack: Pack, game: Game, pool: Storylet[]): Storylet | null {
   return pool[pool.length - 1];
 }
 
+export const FIC_TURNS = 3;       // TUNE: after this many turns with no ledger move a card must fire
+export const SWAN_CHANCE = 0.06;  // TUNE, R20: one unweighted roll a turn, about one a term
+export const FOREIGN_PRICE = 6;   // TUNE: what conceding to a foreign power costs the treasury
+export const FOREIGN_AT = 0.5;    // TUNE: the share of its line at which an abroad holder moves
+
+export const deckOf = (pack: Pack, game: Game): Storylet[] => [...pack.deck, ...game.extra];
+
+// R20: a foreign move comes from the abroad holder's own state, not from the deck.
+export function foreignPending(pack: Pack, game: Game): Holder | null {
+  const rows = holdersOf(pack).filter((h) => h.where === "abroad" && h.responses.length);
+  const over = rows.filter((h) => (game.holders[h.id]?.resistance ?? 0) >= h.line * FOREIGN_AT);
+  if (!over.length) return null;
+  return over.sort((a, b) => (game.holders[b.id]?.resistance ?? 0) - (game.holders[a.id]?.resistance ?? 0))[0];
+}
+
+export const foreignStorylet = (_pack: Pack, game: Game, h: Holder): Storylet => ({
+  id: `foreign-${h.id}-${game.term}`, kind: "foreign", weight: 1,
+  title_hint: h.responses[0], stances: ["Give them what they ask", "Refuse them"],
+  scored: ["none"], needs: [], results: [], memory: null,
+});
+
+// A foreign move has no Hold: conceding buys the payments back, refusing costs the same as a bypass.
+export function resolveForeign(pack: Pack, game: Game, event: Event, stance: number): WireLine[] {
+  const h = holdersOf(pack).find((x) => x.id === event.holder);
+  if (!h) return [];
+  const id = `gives-${h.id}`;
+  if (stance !== 0) {
+    repeal(game, id);
+    return raiseResistance(pack, game, [h.id], RESIST_BYPASS, `${h.name} was refused`);
+  }
+  const wire = pay(pack, game, { authority: 0, treasury: FOREIGN_PRICE, chest: 0 }, `${h.name} was given what it asked`);
+  wire.push(...easeResistance(pack, game, [h.id], RESIST_SERVE, h.name));
+  if (h.gives && h.gives.per === "turn" && !game.inForce.some((l) => l.id === id)) {
+    enact(game, { id, verb: "favour", title: `${h.name} pays`, perTurn: [{ ledger: h.gives.ledger, delta: h.gives.amount }], repealConsent: "none", sunset: null });
+  }
+  return wire;
+}
+
 // Runs after every verdict. Returns the card drawn, already pushed onto game.events.
 export function director(game: Game, pack: Pack): Event | null {
   const d = game.director;
@@ -991,6 +1034,10 @@ export function director(game: Game, pack: Pack): Event | null {
   const crisisLast = game.events.some((e) => e.turn === game.turn - 1);
   d.intensity = clamp(d.intensity + (last && !last.passed ? 25 : -10) + (crisisLast ? 20 : 0) + (game.streak >= 3 ? 10 : 0), 0, 100);
   if (game.stage !== "session" && game.stage !== "midterm") return null;
+  const abroad = foreignPending(pack, game);
+  if (abroad && !d.seen.includes(`foreign-${abroad.id}-${game.term}`)) {
+    return fire(game, foreignStorylet(pack, game, abroad), false, abroad.id);
+  }
 
   const lo = first(game, "dirLo") ?? 30, hi = first(game, "dirHi") ?? 70;
   const gap = game.turn - d.lastCrisis;
@@ -1001,15 +1048,22 @@ export function director(game: Game, pack: Pack): Event | null {
   // `seen` carries across terms, so a dated card that fired in term 1 does not fire again on the same
   // calendar date of term 2. One turn late is the slack that lets a second card due the same turn still fire,
   // and that lets a card dated turn 1 fire at all: the Director first runs after the turn-1 vote.
-  const pending = pack.deck.filter((s) => s.kind === "dated" && !game.director.seen.includes(s.id));
+  const pending = deckOf(pack, game).filter((s) => s.kind === "dated" && !game.director.seen.includes(s.id));
   const exo = pending.find((s) => s.exogenous && dueAt(game, s, 1));
   if (exo) return fire(game, exo, false);
   if (clear) {
     const due = pending.find((s) => !s.exogenous && dueAt(game, s, 2) && (s.needs ?? []).every((c) => meets(pack, game, c)));
     if (due) return fire(game, due, false);
   }
+  // R20: rare, but still a crisis for the cadence. Above the gap check a 6% roll would land a card the
+  // turn after a crisis and break "never two in a row before the late turns".
+  const swans = deckOf(pack, game).filter((s) => s.kind === "swan" && !d.seen.includes(s.id));
+  if (clear && swans.length && d.swan !== String(game.term) && roll() < SWAN_CHANCE) {
+    d.swan = String(game.term);
+    return fire(game, swans[Math.floor(roll() * swans.length)], false);
+  }
 
-  const forced = game.turn >= 17 && game.turn <= TURNS_PER_TERM && d.lastCrisis < 16;
+  const forced = (game.turn >= CAMPAIGN_FROM && game.turn <= TURNS_PER_TERM && d.lastCrisis < CAMPAIGN_FROM - 1) || game.quiet >= FIC_TURNS;
   // Measured over 200 dry-run terms: with v2's -15 relief drop, intensity pins near 90 and a term gets 2.3
   // crises, not 4 to 7. Relief drops 40, and a relief that does not fire still rolls the ordinary crisis.
   let crisis = false, relief = false;
@@ -1021,14 +1075,15 @@ export function director(game: Game, pack: Pack): Event | null {
   if (!crisis && !relief) return null;
 
   const recent = new Set(game.events.filter((e) => game.turn - e.turn < 6).map((e) => e.id));
-  const pool = pack.deck.filter((s) => s.kind === "generic" && RELIEF.has(s.id) === relief && !recent.has(s.id)
+  const pool = deckOf(pack, game).filter((s) => s.kind === "generic" && RELIEF.has(s.id) === relief && !recent.has(s.id)
     && (s.needs ?? []).every((c) => meets(pack, game, c)));
   const card = pick(pack, game, pool);
   return card ? fire(game, card, relief) : null;
 }
 
-function fire(game: Game, s: Storylet, relief: boolean): Event {
-  const e: Event = { id: s.id, turn: game.turn, relief, stances: s.stances };
+function fire(game: Game, s: Storylet, relief: boolean, holder?: string): Event {
+  const kind = s.kind === "swan" ? "swan" : s.kind === "foreign" ? "foreign" : relief ? "relief" : "crisis";
+  const e: Event = { id: s.id, turn: game.turn, relief, stances: s.stances, kind, ...(holder ? { holder } : {}) };
   game.events.push(e);
   if (relief) game.director.intensity = clamp(game.director.intensity - 40, 0, 100);
   else game.director.lastCrisis = game.turn;
@@ -1039,6 +1094,7 @@ function fire(game: Game, s: Storylet, relief: boolean): Event {
 // Stance choice moves the world through the blocs and patrons Jev scored on it; the template's results are fixed.
 export function resolveEvent(pack: Pack, game: Game, event: Event, stance: number, scores?: Record<string, number>): void {
   event.stance = stance;
+  if (event.kind === "foreign") { pushWire(game, resolveForeign(pack, game, event, stance)); return; }
   if (scores) {
     event.scores = scores;
     for (const [id, s] of Object.entries(scores)) {
@@ -1046,7 +1102,7 @@ export function resolveEvent(pack: Pack, game: Game, event: Event, stance: numbe
       if (id in game.blocs) game.blocs[id] = clamp(1 - s / 2, 0, 1);
     }
   }
-  const card = pack.deck.find((s) => s.id === event.id);
+  const card = deckOf(pack, game).find((s) => s.id === event.id);
   for (const e of card?.results ?? []) applyEffect(pack, game, e, card?.memory);
 }
 
@@ -1193,6 +1249,11 @@ export function continueTerm(pack: Pack, game: Game): void {
   game.earlyTest = undefined; game.warnings = []; game.wire = []; game.pending = null; game.revolt = null;
   game.calls = 0; game.swing = 0; game.quiet = 0; game.tag = null; game.refusal = null;
   game.rival = null; game.acts = []; game.emergency = null;
+  // R21: the run has left the calendar behind, so the next period's dated cards become ordinary ones.
+  for (const s of pack.deck.filter((x) => x.kind === "dated" && !game.director.seen.includes(x.id))) {
+    game.extra.push({ ...s, id: `re-${s.id}`, kind: "generic", date: null, turn: null });
+    game.director.seen.push(s.id);
+  }
   game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
   for (const h of Object.values(game.holders)) { h.resistance = round1(h.resistance * RESIST_CARRY); h.warnedAt = null; }
   for (const [tag, p] of Object.entries(game.promises)) {

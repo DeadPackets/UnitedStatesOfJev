@@ -982,3 +982,75 @@ test("the citizens' read is capped like every other Jev answer", () => {
   applyCitizens(pack, g, Object.fromEntries(pack.citizens.map((c) => [c.id, 0])));
   for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBeCloseTo(before[r], 5);
 });
+
+import { deckOf, FIC_TURNS, foreignPending, FOREIGN_PRICE, resolveForeign } from "./engine";
+
+test("an abroad holder over half its line puts a foreign move on the desk, and only once a term", () => {
+  const g = game();
+  expect(foreignPending(pack, g)).toBeNull();
+  g.holders.league.resistance = 30;                 // its line is 50
+  expect(foreignPending(pack, g)!.id).toBe("league");
+  const card = director(g, pack)!;
+  expect(card.kind).toBe("foreign");
+  expect(card.holder).toBe("league");
+  expect(card.stances).toHaveLength(2);
+  expect(director(g, pack)?.kind).not.toBe("foreign");
+});
+
+test("giving a foreign power what it asks costs treasury and starts its payments", () => {
+  const g = game();
+  g.ledgers.treasury = 30;
+  g.holders.league.resistance = 40;
+  const e = { id: "foreign-league-1", turn: 1, relief: false, kind: "foreign" as const, holder: "league", stances: ["Give", "Refuse"] };
+  resolveForeign(pack, g, e, 0);
+  expect(g.ledgers.treasury).toBe(30 - FOREIGN_PRICE);
+  expect(g.holders.league.resistance).toBe(30);
+  expect(g.inForce.find((l) => l.id === "gives-league")!.perTurn[0]).toEqual({ ledger: "treasury", delta: 4 });
+
+  const h = game();
+  h.holders.league.resistance = 40;
+  resolveForeign(pack, h, { ...e }, 1);
+  expect(h.holders.league.resistance).toBe(52);      // RESIST_BYPASS
+  expect(h.inForce).toEqual([]);
+});
+
+test("three quiet turns owe the player a card", () => {
+  const g = game();
+  endTurn(pack, g);
+  expect(g.quiet).toBe(1);                       // no act, no vote, no rate: not one ledger line
+  const h = game();
+  h.quiet = FIC_TURNS;
+  h.director.lastCrisis = h.turn;                // even with a crisis last turn, the floor fires
+  const card = director(h, pack);
+  expect(card).not.toBeNull();
+  expect(card!.relief).toBe(false);
+});
+
+test("a black swan waits for a clear turn and fires at most once a term", () => {
+  const g = game();
+  expect(deckOf(pack, g).filter((s) => s.kind === "swan")).toHaveLength(0);   // mini.json ships none
+  const swans = [1, 2, 3].map((i) => ({
+    id: `swan-0${i}`, kind: "swan" as const, weight: 1, title_hint: "The mole gives way in a night storm",
+    stances: ["Rebuild it now", "Let the ships wait"], scored: ["blocs" as const], results: [], memory: null,
+  }));
+  g.extra.push(...swans);
+  expect(deckOf(pack, g).filter((s) => s.kind === "swan")).toHaveLength(3);
+
+  g.director.lastCrisis = g.turn;                   // the turn after a crisis is never clear
+  for (let i = 0; i < 40; i++) expect(director(g, pack)?.kind).not.toBe("swan");
+
+  const h = game();
+  h.extra.push(...swans);
+  h.director.swan = String(h.term);                 // one a term, and this term already spent it
+  for (let i = 0; i < 40; i++) expect(director(h, pack)?.kind).not.toBe("swan");
+});
+
+test("a continue turns the calendar's unfired cards into ordinary ones", () => {
+  const g = game();
+  const dated = pack.deck.filter((s) => s.kind === "dated").map((s) => s.id);
+  endTerm(pack, g, runTest(pack, g, { council: 1, street: 1 }));
+  continueTerm(pack, g);
+  for (const id of dated) expect(g.director.seen).toContain(id);
+  expect(g.extra.filter((s) => s.kind === "generic").length).toBe(dated.length);
+  expect(deckOf(pack, g).length).toBe(pack.deck.length + dated.length);
+});
