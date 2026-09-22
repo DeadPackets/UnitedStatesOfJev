@@ -13,6 +13,7 @@ import { sound } from "./sound";
 import Strip from "./Strip";
 import Peek, { type PinItem } from "./Peek";
 import Wire from "./Wire";
+import Holders from "./Holders";
 import type { LedgerKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
@@ -47,6 +48,8 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [peek, setPeek] = useState<LedgerKey | null>(null);
   const [pins, setPins] = useState<PinItem[]>([]);
   const [cause, setCause] = useState<string>();
+  const [holder, setHolder] = useState<string | null>(null);
+  void holder; // the Room panel reads it from Task 13; drop this line then
   void pins; // the rail reads it from Task 12; drop this line then
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
@@ -171,6 +174,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
             </div>
           </>
         )}
+          <Holders holders={game.holders} warnings={game.warnings} onPick={setHolder} />
         </section>
         <aside className="col railcol" aria-label="The rail">
           <div className="railbody">
