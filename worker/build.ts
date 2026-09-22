@@ -246,7 +246,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           factions: f.factions.map((x) => ({ id: x.id, name: x.name, short: x.short, color: x.color })),
           problems: f.problems.slice(0, 3),
         };
-      }, { retries: { limit: 1, delay: "5 seconds" } }));
+      }, { ...RETRY, retries: { limit: 1, delay: "5 seconds", backoff: "exponential" } }));
       merge(await stage("assign", (e) => assign(e, ctx)));
       merge(await gen("names", (e) => names(e, ctx)));
       merge(await gen("personas", (e) => personasStep(e, ctx),
