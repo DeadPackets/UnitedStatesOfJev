@@ -511,15 +511,22 @@ test("the test reads each holder in its own Jev call, and an early test names it
   }
 });
 
-test("stopping here writes an ending and banks the score", async () => {
-  stubModels(0.9);
-  const { game, post } = seatedGame(41);
-  game.stage = "won";
-  game.result = { ending: "reelected", score: 120 };
-  game.terms.push({ term: 1, passed: 1, kept: 0, broken: 0, mandate: 0.6, points: 120 });
-  const r = await post("stop", {});
-  expect(r.status).toBe(200);
-  expect(r.body.stage).toBe("over");
-  expect(r.body.result.ending).toBe("stopped");
-  expect(r.body.ending.title).toBe("Out");
+test("stopping here writes an ending and banks the score, and continue opens the next term", async () => {
+  for (const action of ["stop", "continue"]) {
+    stubModels(0.9);
+    const { game, post } = seatedGame(41);
+    game.stage = "won";
+    game.result = { ending: "reelected", score: 120 };
+    game.terms.push({ term: 1, passed: 1, kept: 0, broken: 0, mandate: 0.6, points: 120 });
+    const r = await post(action, {});
+    expect(r.status).toBe(200);
+    if (action === "stop") {
+      expect(r.body.stage).toBe("over");
+      expect(r.body.result.ending).toBe("stopped");
+      expect(r.body.ending.title).toBe("Out");
+    } else {
+      expect([r.body.term, r.body.turn, r.body.stage]).toEqual([2, 1, "session"]);
+      expect(r.body.result).toBeUndefined();
+    }
+  }
 });

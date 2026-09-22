@@ -62,9 +62,8 @@ while (g.stage === "session") {
     }
   }
 
-  // Offers to the likeliest holdouts while the count is short. The reserve is deliberate: an empty treasury
-  // plus a sour party is the impeachment rule, so a scripted player that spends to zero never reaches turn 20.
-  for (let n = 0; n < 2 && short() && g.ledgers.capital >= 30; n++) {
+  // Offers to the likeliest holdouts while the count is short. v4 has no impeachment rule, so no reserve is kept.
+  for (let n = 0; n < 2 && short() && g.ledgers.capital >= g.lobbyCosts.pork; n++) {
     const bill = g.bills.at(-1)!, whip = bill.whip ?? {};
     const target = g.members.filter((m) => (whip[m.id] ?? 0) < 0.5 && !bill.offers[m.id])
       .sort((a, b) => (whip[b.id] ?? 0) - (whip[a.id] ?? 0))[0];
