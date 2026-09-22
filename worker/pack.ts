@@ -95,7 +95,7 @@ export const PackSchema = z.object({
   tags: z.array(z.string()).min(16).max(24),
   deck: z.array(StoryletSchema).min(20),
   escalations: z.array(z.object({ key: z.enum(ESCALATION_KEYS), name: z.string(), headline: z.string() })).length(20)
-    .refine((a) => new Set(a).size === 20),
+    .refine((a) => new Set(a.map((e) => e.key)).size === 20),
   test: z.object({ name: z.string(), win: z.string(), lose: z.string(), reveal: z.enum(["regions", "seats", "both"]) }),
   endings: z.object({ reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string() }),
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
