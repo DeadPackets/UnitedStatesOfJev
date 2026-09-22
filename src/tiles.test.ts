@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { shortNames, squarify } from "./Tiles";
+import { floorWeights, shortNames, squarify } from "./Tiles";
 
 const items = [
   { id: "a", weight: 0.4 }, { id: "b", weight: 0.25 }, { id: "c", weight: 0.15 },
@@ -35,6 +35,21 @@ test("one tile takes the whole box", () => {
 test("every tile keeps a readable aspect", () => {
   const out = squarify(items, { x: 0, y: 0, w: 100, h: 62 });
   for (const r of out) expect(Math.max(r.w / r.h, r.h / r.w)).toBeLessThan(4);
+});
+
+// The campaign map is tapped, so a 2% region has to be a target: 44 px on its short side, in its own slot.
+test("a floored map holds a 44px target in every tile, phone and desktop", () => {
+  const skewed = [0.42, 0.18, 0.11, ...Array(17).fill(0.29 / 17)];
+  for (const [w, h] of [[760, 471], [358, 448]]) {
+    const lay = floorWeights(skewed, w * h);
+    const out = squarify(lay.map((weight, i) => ({ weight, i })), { x: 0, y: 0, w, h });
+    for (const r of out) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test("the floor only lifts the tiles that need it", () => {
+  const even = Array(8).fill(0.125);
+  expect(floorWeights(even, 760 * 471)).toEqual(even);
 });
 
 test("two regions that start alike keep different shorts", () => {

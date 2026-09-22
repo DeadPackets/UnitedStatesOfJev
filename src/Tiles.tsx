@@ -39,6 +39,22 @@ export function squarify<T extends { weight: number }>(items: T[], box: Box): Ti
   return out;
 }
 
+/** A tappable tile is a target first: 44 px square, with room for the aspect squarify may hand it. */
+const TARGET = 44 * 44 * 2;
+
+/**
+ * Layout weights for a map you can tap. A share too small to hold a target is lifted to one and the
+ * rest give up the difference; the printed weight stays the true one. Past the point where the box
+ * cannot hold one target per region, every tile is the same size, which is the best the box allows.
+ */
+// ponytail: an area floor, not a side floor. squarify's leftover row can still hand a 24-region tail
+// a 36 px short side on a 330 px phone; a side floor means changing squarify, which the reveal shares.
+export function floorWeights(weights: number[], boxArea: number, min = TARGET): number[] {
+  const total = weights.reduce((a, b) => a + b, 0) || 1;
+  const floor = min / (boxArea || 1);
+  return weights.map((w) => Math.max(w / total, floor));
+}
+
 /** The map: one tile per region, area by weight. It paints what it is given and owns no clock. */
 export default function Tiles({ items, state = {}, hit, selected = [], onPick, foot, label }: {
   items: TileDatum[]; state?: Record<string, TileState>; hit?: string;
@@ -54,19 +70,22 @@ export default function Tiles({ items, state = {}, hit, selected = [], onPick, f
     return () => ro.disconnect();
   }, []);
   const hu = (100 * box.h) / (box.w || 1);
-  const rects = squarify([...items].sort((a, b) => b.weight - a.weight), { x: 0, y: 0, w: 100, h: hu });
+  // Only a map you can tap trades area for targets; the reveal keeps every region's true share.
+  const lay = onPick ? floorWeights(items.map((d) => d.weight), box.w * box.h) : items.map((d) => d.weight);
+  const rects = squarify(items.map((t, i) => ({ t, weight: lay[i] })).sort((a, b) => b.weight - a.weight),
+    { x: 0, y: 0, w: 100, h: hu });
   return (
     <div className="tiles" ref={stage} aria-label={label}>
-      {rects.map((r) => {
+      {rects.map(({ d: { t }, ...r }) => {
         const px = (r.w / 100) * box.w, py = (r.h / hu) * box.h, tiny = px < 100 || py < 46;
-        const cls = ["tile", tiny ? "tiny" : "", state[r.d.id] ?? "", hit === r.d.id ? "hit" : "", selected.includes(r.d.id) ? "on" : ""].filter(Boolean).join(" ");
+        const cls = ["tile", tiny ? "tiny" : "", state[t.id] ?? "", hit === t.id ? "hit" : "", selected.includes(t.id) ? "on" : ""].filter(Boolean).join(" ");
         const Tag = onPick ? "button" : "div";
         return (
-          <Tag key={r.d.id} className={cls} onClick={onPick ? () => onPick(r.d.id) : undefined}
-            aria-pressed={onPick ? selected.includes(r.d.id) : undefined}
+          <Tag key={t.id} className={cls} onClick={onPick ? () => onPick(t.id) : undefined}
+            aria-pressed={onPick ? selected.includes(t.id) : undefined}
             style={{ left: `${r.x}%`, top: `${(r.y / hu) * 100}%`, width: `${r.w}%`, height: `${(r.h / hu) * 100}%` }}>
-            <span className="nm">{tiny ? r.d.short : r.d.name}</span>
-            <span className="wt num">{foot ? foot(r.d) : `${(r.d.weight * 100).toFixed(1)}%`}</span>
+            <span className="nm">{tiny ? t.short : t.name}</span>
+            <span className="wt num">{foot ? foot(t) : `${(t.weight * 100).toFixed(1)}%`}</span>
           </Tag>
         );
       })}

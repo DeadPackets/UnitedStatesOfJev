@@ -329,7 +329,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
 .tile.hit { animation: hit 420ms var(--ease-expo); }
 @keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
-button.tile { cursor: pointer; min-height: 44px; }
+/* a tappable tile's size comes from its floored layout weight, never from a min that overflows its slot */
+button.tile { cursor: pointer; }
 @media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
 /* the 50% mark writes its label below the bar, so the map keeps clear of it */
 .whipbar + .tiles { margin-top: 16px; }
@@ -368,7 +369,6 @@ button.tile { cursor: pointer; min-height: 44px; }
 .campaign .tile.lost { background-image: repeating-linear-gradient(45deg, var(--tone) 0 2px, transparent 2px 8px); outline: 2px solid var(--ink-2); outline-offset: -2px; }
 .campaign .tile.lost .nm, .campaign .tile.lost .wt { background: none; }
 .campaign .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
-.campaign button.tile { min-width: 44px; }
 .campaign .drafts { display: grid; gap: 8px; }
 .campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state), transform var(--t-fast) var(--ease-out); }
 .campaign .drafts .opt2:active { transform: scale(0.96); }
