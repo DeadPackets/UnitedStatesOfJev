@@ -51,11 +51,6 @@ export const nouls = (answers: Answers, prefix: string): Record<string, number> 
 export const scores = (answers: Answers, prefix: string): Record<string, number> =>
   Object.fromEntries(Object.entries(answers).filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k.slice(prefix.length), v.score ?? 0]));
 
-export const gateQuestion = (pack: Pack): Record<string, Question> => ({
-  gate: { type: "noul", instructions: `Is \`text\` a proposal for a ${pack.vocabulary.bill} that ${pack.vocabulary.chamber} could vote on?`,
-    criteria: { true: "It proposes, changes, funds, bans, or repeals something the government does.", false: "It is a greeting, a question, gibberish, or unrelated text." } },
-});
-
 export type MatchCandidate = { id: string; title: string; era: string; place: string; description: string };
 
 // Candidates sit in the question, not the state, per §2: Jev sees at most 21 options and the prompt, under 3k tokens.

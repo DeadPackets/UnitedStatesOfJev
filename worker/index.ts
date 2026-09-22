@@ -132,7 +132,6 @@ app.get("/api/scenarios/:id", async (c) => {
 });
 
 app.get("/api/games/:id", (c) => forward(c, c.req.param("id"), "state"));
-app.post("/api/games/:id/bills", (c) => forwardBody(c, "bills"));
 app.post("/api/games/:id/bills/:b/:action/:i?", (c) => {
   const { b, action, i } = c.req.param();
   return forwardBody(c, `bills/${b}/${action}${i !== undefined ? "/" + i : ""}`);

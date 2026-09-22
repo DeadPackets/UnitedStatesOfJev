@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, withdraw, WITHDRAW_COST } from "./acts";
+import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -125,4 +125,24 @@ test("an authored promise from the act's own words starts its window", () => {
   commit(pack, g, priceTag(pack, g, quote({ promises: [{ tag: "new-quay", label: "A new quay by winter", window: 6 }] })));
   // Stage A stores the window as an absolute turn: turn 1 plus the 6 the ruler gave themselves.
   expect(g.promises["new-quay"]).toMatchObject({ label: "A new quay by winter", window: 7, authored: true, state: "pending" });
+});
+
+test("a law tag puts a bill on the floor with the act's own tags", () => {
+  const g = game();
+  commit(pack, g, priceTag(pack, g, quote({ verb: "law", keeps: ["tariffs"], tags: ["tariffs"] })));
+  expect(g.bills).toHaveLength(1);
+  expect(g.bills[0].id).toBe(g.turn);
+  expect(g.bills[0].tags).toEqual(["tariffs"]);
+  expect(g.bills[0].title).toBe("Raise the harbour levy");
+  expect(g.phase).toBe("whip");
+  expect(g.holders.council.resistance).toBe(0);   // a law is the chamber's own door, so no bypass rise
+});
+
+test("the band is the 95% spread of the yes count, not a point", () => {
+  const sure = whipBand({ a: 1, b: 1, c: 1, d: 0 });
+  expect(sure).toEqual([3, 3]);
+  const [lo, hi] = whipBand(Object.fromEntries(Array.from({ length: 60 }, (_, i) => [`m${i}`, 0.5])));
+  expect(lo).toBeCloseTo(30 - 1.96 * Math.sqrt(15), 0);
+  expect(hi).toBeCloseTo(30 + 1.96 * Math.sqrt(15), 0);
+  expect(lo).toBeGreaterThanOrEqual(0);
 });

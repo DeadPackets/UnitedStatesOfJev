@@ -73,8 +73,10 @@ test("a drafted bill already carries the bar it has to clear", () => {
   const game: Game = newGame("g-need", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
   game.bills.push({ id: game.turn, title: "A bill", summary: "", text: "", tags: [], offers: {} });
   expect(view(pack, { game, prose: {} }).bills[0].needed).toBe(pack.chamber.threshold);
-  game.escalations.push("supermajority_era");
-  expect(view(pack, { game, prose: {} }).bills[0].needed).toBe(pack.chamber.supermajority);
+  game.bills[0].whip = Object.fromEntries(game.members.map((m) => [m.id, 0.5]));
+  const row = view(pack, { game, prose: {} }).bills[0];
+  expect(row.band![0]).toBeLessThanOrEqual(row.expected!);
+  expect(row.band![1]).toBeGreaterThanOrEqual(row.expected!);
 });
 
 test("create() picks the start by faction id, not array position, when starts are shuffled", () => {
@@ -144,6 +146,7 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
 });
 
 let refuse = false;
+let lawTag = false;
 
 // Every model call goes out through one fetch: `systemone` is Jev, `chat/completions` is Luna, keyed by schema name.
 const canned = (name: string, user: string): unknown => {
@@ -153,7 +156,7 @@ const canned = (name: string, user: string): unknown => {
           power: true, era: false, refusal: "This age cannot lift anything over the harbour.", credibility: 0.6,
           cost: { authority: 0, treasury: 0, chest: 0 }, revenue: [], serves: [], hits: [], keeps: [],
           targets: null, tags: [], regions: [], promises: [], sunset: null, template: null }
-      : { verb: "decree", title: "Raise the harbour levy", reading: "You raise the levy on the wharf.",
+      : { verb: lawTag ? "law" : "decree", title: "Raise the harbour levy", reading: "You raise the levy on the wharf.",
           power: true, era: true, refusal: null, credibility: 0.9,
           cost: { authority: 0, treasury: 0, chest: 0 },
           revenue: [{ ledger: "treasury", id: null, delta: 6 }],
@@ -520,4 +523,20 @@ test("price then commit moves the ledgers once, and a second commit has nothing 
   expect(r.body.acts).toHaveLength(1);
   expect(game.ledgers.authority).toBe(before - 3);
   expect((await post("acts", { turn: 1 })).status).toBe(409);
+});
+
+test("committing a law tables it, counts the whip once and prints the band", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(62);
+  lawTag = true;
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
+  const r = await post("acts", { turn: 1 });
+  lawTag = false;
+  expect(r.status).toBe(200);
+  expect(r.body.bills).toHaveLength(1);
+  expect(r.body.bills[0].needed).toBe(pack.chamber.supermajority);   // the stub answers the filibuster at 0.9
+  expect(r.body.bills[0].band[0]).toBeLessThanOrEqual(r.body.bills[0].expected);
+  expect(r.body.bills[0].band[1]).toBeGreaterThanOrEqual(r.body.bills[0].expected);
+  expect(game.calls).toBe(2);                       // one for the price call, one for the whip count
+  expect((await post("bills", { turn: 1, text: "anything at all here" })).status).toBe(404);
 });

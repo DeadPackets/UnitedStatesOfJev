@@ -60,7 +60,9 @@ export const api = {
   seat: (scenario: string, faction: string, promises: number[], seed?: number) => call<GameView>("/games", { scenario, faction, promises, seed }),
   share: (code: string) => call<GameView>("/games", { code }),
   load: (id: string) => call<GameView>(`/games/${id}`),
-  draft: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/bills`, { turn: g.turn, text }),
+  price: (g: GameView, text: string, verb?: string, memberId?: string) =>
+    call<GameView>(`/games/${g.id}/acts/price`, { turn: g.turn, text, verb, memberId }),
+  act: (g: GameView) => call<GameView>(`/games/${g.id}/acts`, { turn: g.turn }),
   whip: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/whip`, { turn: g.turn }),
   lobby: (g: GameView, memberId: string, action: LobbyAction) => call<GameView>(`/games/${g.id}/bills/${g.turn}/lobby`, { turn: g.turn, memberId, action }),
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),

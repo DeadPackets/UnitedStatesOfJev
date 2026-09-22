@@ -1,5 +1,5 @@
 import {
-  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, easeResistance, enact, holdersOf, keepPromise, pay,
+  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, holdersOf, keepPromise, pay,
   pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
   type Game, type PriceTag, type Quote, type WireLine,
 } from "./engine";
@@ -89,6 +89,10 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   }
   for (const t of tag.keeps) keepPromise(pack, game, t);
   for (const p of tag.promises) authorPromise(game, p.tag, p.label, game.turn + p.window);
+  if (tag.verb === "law") {
+    game.bills.push({ id: game.turn, text: tag.reading, title: tag.title, summary: tag.reading, tags: tag.tags, offers: {} });
+    game.phase = "whip";
+  }
   game.acts.push({
     term: game.term, turn: game.turn, verb: tag.verb, title: tag.title,
     reading: tag.reading, credibility: tag.credibility, charge: tag.charge,
@@ -109,4 +113,13 @@ export function withdraw(pack: Pack, game: Game, id: string): WireLine[] {
   repeal(game, id);
   pushWire(game, wire);
   return wire;
+}
+
+// The floor is a sum of independent draws, so its spread is the square root of the sum of p(1-p).
+export function whipBand(whip: Record<string, number>): [number, number] {
+  const ps = Object.values(whip);
+  const yes = ps.reduce((a, b) => a + b, 0);
+  const sd = Math.sqrt(ps.reduce((a, p) => a + p * (1 - p), 0));
+  const r = (x: number) => Math.round(clamp(x, 0, ps.length) * 10) / 10;
+  return [r(yes - 1.96 * sd), r(yes + 1.96 * sd)];
 }

@@ -15,7 +15,7 @@ import {
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
-import { available, commit, priceTag, withdraw, WITHDRAW_COST } from "./acts";
+import { available, commit, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -148,12 +148,12 @@ export class GameDO extends DurableObject<Env> {
 
   private async bill(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
     if (game.stage !== "session") throw new Reject(409, game.stage === "midterm" ? `The ${pack.vocabulary.midterm} comes first.` : "The term is over.");
-    const action = parts.length === 1 ? "draft" : parts[2];
-    // The path segment is the bill's id, which is the turn it was drafted on, not its index.
-    const bill = parts[1] !== undefined ? game.bills.find((b) => b.id === Number(parts[1])) : undefined;
-    if (action !== "draft" && (!bill || bill.id !== game.turn)) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
+    // A bare /bills path had one job, the draft, and the composer took it. It is not a route any more.
+    if (parts[1] === undefined) throw new Reject(404, "Unknown action");
+    const action = parts[2];
+    const bill = game.bills.find((b) => b.id === Number(parts[1]));
+    if (!bill || bill.id !== game.turn) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
     switch (action) {
-      case "draft": await this.draft(game, pack, String(body.text ?? "")); return {};
       case "whip":
         if (bill!.whip) throw new Reject(409, "Already counted.");
         Object.assign(bill!, await this.count(game, pack, bill!));
@@ -177,11 +177,17 @@ export class GameDO extends DurableObject<Env> {
     }
   }
 
-  private doAct(game: Game, pack: Pack): Extra {
+  private async doAct(game: Game, pack: Pack): Promise<Extra> {
     const tag = game.tag;
     if (!tag) throw new Reject(409, "Nothing is priced.");
+    if (tag.verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
+    if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);
+    if (tag.verb === "law") {
+      const bill = game.bills.at(-1)!;
+      Object.assign(bill, await this.count(game, pack, bill));
+    }
     return {};
   }
 
@@ -215,10 +221,6 @@ export class GameDO extends DurableObject<Env> {
     game.refusal = null;
     game.tag = priceTag(pack, game, q);
     return {};
-  }
-
-  private async draft(_game: Game, _pack: Pack, _raw: string) {
-    throw new Reject(410, "Use the act composer.");
   }
 
   private async count(game: Game, pack: Pack, bill: Bill, draft: BillDraft = bill): Promise<WhipCount> {
@@ -496,7 +498,7 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
       // The bar a bill has to clear is known the moment it is drafted, escalations and all.
       if (!cur.whip) return { ...cur, needed: threshold(pack, game, cur) };
       const whip = effectiveWhip(game, cur);
-      return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
+      return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur), band: whipBand(whip) };
     }),
     citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
