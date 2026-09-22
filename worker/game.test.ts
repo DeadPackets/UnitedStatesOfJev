@@ -3,7 +3,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 // only workerd resolves either module.
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
-const { view, pickStart, GameDO } = await import("./game");
+const { view, pickStart, GameDO, seededSample } = await import("./game");
 import { encodeCode, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -226,6 +226,43 @@ test("one post a turn, 240 characters, and the view carries the reactions", asyn
   expect(typeof p.won).toBe("boolean");
   expect((await post("post", { turn: 1, text: "Twice." })).status).toBe(409);
   expect((await post("post", { turn: 1, text: "x".repeat(241) })).status).toBe(400);
+});
+
+test("a rival post that never lands is a loss, not a free win, and skips the agree call", async () => {
+  let agreeCalled = false;
+  globalThis.fetch = (async (_url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.questions) {
+      if (Object.keys(body.questions).some((k) => k.startsWith("agree_"))) agreeCalled = true;
+      const answers = Object.fromEntries(Object.entries(body.questions as Record<string, any>).map(([k, q]) =>
+        [k, q.type === "choice"
+          ? { probabilities: Object.fromEntries(Object.keys(q.criteria).map((o, i) => [o, i === 0 ? 0.7 : 0.1])) }
+          : { noul: 0.9, score: 0.5 }]));
+      return Response.json({ answers, usage: { input_tokens: 1 } });
+    }
+    const name = body.response_format?.json_schema?.name;
+    if (!name) return Response.json({});
+    if (name === "replies") return Response.json({ choices: [{ message: { content: JSON.stringify({ replies: [], rival: "" }) } }] });
+    return Response.json({ choices: [{ message: { content: JSON.stringify(canned(name, body.messages[1].content)) } }] });
+  }) as unknown as typeof fetch;
+
+  const { post } = seatedGame(21);
+  const ok = await post("post", { turn: 1, text: "Tolls come down at the harbour." });
+  expect(ok.status).toBe(200);
+  const p = ok.body.posts.at(-1)!;
+  expect(p.rival).toBe("");
+  expect(p.won).toBe(false);
+  expect(agreeCalled).toBe(false);
+});
+
+test("seededSample draws a different jury each turn", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 5 });
+  const game: Game = newGame("g-sample", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  game.turn = 3;
+  const three = seededSample(game, pack.citizens, 50).map((c) => c.id);
+  game.turn = 4;
+  const four = seededSample(game, pack.citizens, 50).map((c) => c.id);
+  expect(three).not.toEqual(four);
 });
 
 test("a campaign turn needs a draft, a lever it can pay for, and four of them reach the test", async () => {

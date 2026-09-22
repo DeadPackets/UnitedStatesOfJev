@@ -300,7 +300,8 @@ export class GameDO extends DurableObject<Env> {
     const duel = said.rival
       ? choices((await jev(this.env, agreeState(pack, text, said.rival), agreeQuestions(pack, sample))).answers, "agree_")
       : {};
-    applyPost(pack, game, game.turn, text, reactions, said, duel as Record<string, "government" | "rival">);
+    const post = applyPost(pack, game, game.turn, text, reactions, said, duel as Record<string, "government" | "rival">);
+    if (!said.rival) post.won = false;
   }
 
   private async drafts(game: Game, pack: Pack) {
@@ -369,8 +370,8 @@ export class GameDO extends DurableObject<Env> {
   }
 }
 
-const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
-  const r = rng(game.seed ^ 0xfeed);
+export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
+  const r = rng(game.seed ^ 0xfeed ^ game.turn);
   return [...xs].sort(() => r() - 0.5).slice(0, n);
 };
 
