@@ -2,11 +2,18 @@ import { useEffect, useRef, type ReactNode } from "react";
 import type { GamePack, ViewEvent } from "./api";
 import { Meter } from "./Ledger";
 
-/** Every close runs through the dialog itself, so the browser hands focus back to whatever opened it. */
-export const closeDialog = (e: { currentTarget: HTMLElement }) => e.currentTarget.closest("dialog")?.close();
-
 /** The sheet keeps its exit on screen for one transition, then the caller unmounts it. */
 export const UNMOUNT = 200;
+
+/**
+ * Close through the dialog, so the browser hands focus back to whatever opened it, and unmount
+ * once the exit has run. Chrome does not fire `close` for a scripted close(), so the unmount is
+ * scheduled here rather than from the event.
+ */
+export const dismiss = (el: HTMLElement | null, onClose: () => void) => {
+  el?.closest("dialog")?.close();
+  setTimeout(onClose, UNMOUNT);
+};
 
 function Poster({ label, children, block, onClose }: { label: string; children: ReactNode; block: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -16,7 +23,7 @@ function Poster({ label, children, block, onClose }: { label: string; children: 
     <dialog ref={ref} className="poster" aria-label={label}
       onCancel={(e) => { if (block) e.preventDefault(); }}
       onClose={() => setTimeout(onClose, UNMOUNT)}
-      onClick={(e) => { if (!block && e.target === ref.current) ref.current.close(); }}
+      onClick={(e) => { if (!block && e.target === ref.current) dismiss(ref.current, onClose); }}
     >{children}</dialog>
   );
 }
@@ -53,7 +60,7 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
             ))}
           </div>
           <p className="lede">{event.outcome ?? stances[event.stance!]}</p>
-          <button ref={done} className="btn" onClick={closeDialog}>Close the card</button>
+          <button ref={done} className="btn" onClick={(e) => dismiss(e.currentTarget, onClose)}>Close the card</button>
         </>
       )}
     </Poster>
@@ -68,7 +75,7 @@ export function Announce({ pack, keys, onClose }: { pack: GamePack; keys: string
     <Poster label={items[0]!.name} block={false} onClose={onClose}>
       <div className="kicker">{pack.title}</div>
       {items.map((e) => <div key={e!.key}><h2>{e!.name}</h2><p>{e!.headline}</p></div>)}
-      <button className="btn" onClick={closeDialog}>Close the notice</button>
+      <button className="btn" onClick={(e) => dismiss(e.currentTarget, onClose)}>Close the notice</button>
     </Poster>
   );
 }

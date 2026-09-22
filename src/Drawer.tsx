@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { animate, useReducedMotion } from "motion/react";
 import type { GamePack, ViewBill, ViewMember } from "./api";
 import { art, initials as letters } from "./theme";
-import { UNMOUNT, closeDialog } from "./Card";
+import { UNMOUNT, dismiss } from "./Card";
 
 const TENURE = { long: "veteran", mid: "second term", new: "first term" } as const;
 export type LobbyKind = keyof GamePack["lobby"];
@@ -44,7 +44,7 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
   // An accepted offer takes the lobby buttons away, so focus moves to the one action left.
   useEffect(() => { if (!canLobby) done.current?.focus(); }, [canLobby]);
   return (
-    <dialog ref={ref} className="drawer" aria-label={member.name} onClose={() => setTimeout(onClose, UNMOUNT)} onClick={(e) => { if (e.target === ref.current) ref.current.close(); }}>
+    <dialog ref={ref} className="drawer" aria-label={member.name} onClose={() => setTimeout(onClose, UNMOUNT)} onClick={(e) => { if (e.target === ref.current) dismiss(ref.current, onClose); }}>
       <div className="plate" aria-hidden="true">
         <span>{letters(member.name)}</span>
         <img src={art(pack.id, `members/${member.id}-plate.png`)} alt="" loading="eager"
@@ -83,7 +83,7 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
           ))}
         </div>
       ) : null}
-      <button ref={done} className="btn ghost" onClick={closeDialog}>Close the file</button>
+      <button ref={done} className="btn ghost" onClick={(e) => dismiss(e.currentTarget, onClose)}>Close the file</button>
     </dialog>
   );
 }
