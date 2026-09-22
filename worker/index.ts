@@ -1,7 +1,10 @@
 import { Hono, type Context } from "hono";
 import { decodeCode, hash, scenarioTag } from "./engine";
 import type { Env } from "./jev";
-import { dayKey, dropAttempt, failScenario, getDaily, getPlay, getScenario, newScenario, takeAttempt } from "./db";
+import {
+  ARCHIVE_LIMIT, dailyMeta, dayKey, dropAttempt, failScenario, getDaily, getPlay, getScenario, listDailies, newScenario, playCount,
+  STREAK_LOOKBACK, streakOf, takeAttempt,
+} from "./db";
 import { identity } from "./identity";
 import { packView } from "./pack";
 import { match } from "./match";
@@ -158,6 +161,30 @@ app.get("/api/scenarios/:id", async (c) => {
     ...(row.error ? { error: plainError(row.error) } : {}),
   });
 });
+
+// The body is Stage C's `Daily` type, field for field. A day with nothing ready is a 503, not a blank card.
+app.get("/api/daily", async (c) => {
+  if (!c.env.DAILY_SECRET) return c.json({ error: "The daily is not set up yet." }, 503);
+  const day = dayKey();
+  const [row, who] = await Promise.all([dailyMeta(c.env, day), identity(c.env.DAILY_SECRET, c.req.raw)]);
+  const head = who.header ? { "set-cookie": who.header } : undefined;
+  if (!row?.scenario || row.status !== "ready") {
+    return c.json({ error: "Today's term is still being written. Try again in a few minutes." }, 503, head);
+  }
+  const [play, plays, streak] = await Promise.all([
+    getPlay(c.env, who.id, day), playCount(c.env, day), streakOf(c.env, who.id, day, STREAK_LOOKBACK),
+  ]);
+  return c.json({
+    day, scenario: row.scenario, title: row.title ?? day, era: row.era ?? "", place: row.place ?? "",
+    played: !!play, streak, plays,
+    ...(play?.grid ? { grid: JSON.parse(play.grid) } : {}),
+  }, 200, head);
+});
+
+// Replaying an archived daily is ordinary free play: it takes the scenario route and never touches daily_plays.
+app.get("/api/daily/archive", async (c) => c.json(
+  (await listDailies(c.env, ARCHIVE_LIMIT)).map((d) => ({ day: d.day, scenario: d.scenario, title: d.title, era: d.era, place: d.place })),
+));
 
 app.get("/api/games/:id", (c) => forward(c, c.req.param("id"), "state"));
 app.post("/api/games/:id/bills/:b/:action/:i?", (c) => {
