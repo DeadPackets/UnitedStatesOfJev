@@ -206,7 +206,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
                 {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
                 <span className="small muted">Tap a {v.seat} to make an offer.</span>
               </> : null}
-              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); }}>
+              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); if (game.stage === "session") act(() => api.endTurn(game)); }}>
                 {game.stage === "session" ? `Next ${v.bill}` : "Continue"}
               </button> : null}
             </div>

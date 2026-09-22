@@ -69,6 +69,7 @@ export const api = {
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),
   adopt: (g: GameView, i: number) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend/${i}`, { turn: g.turn }),
   vote: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/vote`, { turn: g.turn }),
+  endTurn: (g: GameView) => call<GameView>(`/games/${g.id}/turn/end`, { turn: g.turn }),
   midterm: (g: GameView) => call<GameView>(`/games/${g.id}/midterm`, { turn: g.turn }),
   post: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/post`, { turn: g.turn, text }),
   drafts: (g: GameView) => call<GameView>(`/games/${g.id}/campaign/drafts`, {}),
