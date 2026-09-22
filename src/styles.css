@@ -316,6 +316,11 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .unpin { min-height: 44px; justify-self: start; font: 600 10px/1 var(--sans); letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
 .unpin:hover { color: var(--ink); }
+.causes { list-style: none; margin: 0; padding: 0; }
+.causes li { display: flex; gap: var(--s2); align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--tone); font-size: 12.5px; }
+.causes li b { font: 800 16px/1 var(--display); min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.rowbtn { display: flex; gap: var(--s2); align-items: baseline; width: 100%; min-height: 44px; text-align: left; }
+.rowbtn[aria-current="true"] { box-shadow: inset 2px 0 0 var(--ink); padding-left: 6px; }
 .floorcol .prompt { font: 700 28px/1 var(--display); color: var(--ink-2); text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
 .topbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); }
 .topbar h1 { font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase; }

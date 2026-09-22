@@ -18,6 +18,7 @@ import Compose from "./Compose";
 import Tag from "./PriceTag";
 import { settleVerb, unreadTabs, type LedgerKey, type VerbKey } from "./rules";
 import Rail, { type Tab } from "./Rail";
+import { Country, Room, RecordTab } from "./Panels";
 
 type Vocab = GameView["pack"]["vocabulary"];
 
@@ -56,7 +57,6 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [verb, setVerb] = useState<VerbKey | null>(null);
   const [picked, setPicked] = useState(false);
   useEffect(() => { if (!picked) setVerb(settleVerb(text, game.instruments)); }, [text, picked, game.instruments]);
-  void holder; // the Room panel reads it from Task 13; drop this line then
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
@@ -252,13 +252,17 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
             </div>
           </>
         )}
-          <Holders holders={game.holders} warnings={game.warnings} onPick={setHolder} />
+          <Holders holders={game.holders} warnings={game.warnings} onPick={(id) => { setHolder(id); setTab("room"); setSeen((s) => ({ ...s, room: game.turn })); }} />
         </section>
         <aside className="col railcol" aria-label="The rail">
           <Rail label={{ feed: v.feed, country: "Country", room: "Room", record: "Record", pinned: "Pinned" }}
             tab={tab} onTab={(t) => { setTab(t); setSeen((s) => ({ ...s, [t]: game.turn })); }}
             unread={unreadTabs(game, seen)} pins={pins} onUnpin={(k) => setPins((xs) => xs.filter((x) => x.key !== k))}>
             {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : null}
+            {tab === "country" ? <Country game={game} /> : null}
+            {tab === "room" ? <Room game={game} selected={holder} onPick={setHolder}
+              onPin={(p) => setPins((xs) => (xs.some((x) => x.key === p.key) ? xs : [...xs, p]))} /> : null}
+            {tab === "record" ? <RecordTab game={game} /> : null}
           </Rail>
         </aside>
       </div>
