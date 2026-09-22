@@ -145,8 +145,11 @@ written to D1 after every step for the build screen.
 | facts | Luna | a facts sheet from the sources: people with dates and `alive_on_start_date`, bodies with sizes, groupings with leaders, dated events. The frame may only name people on the sheet | 8 s |
 | frame | Luna | title, era, place, description, vocabulary, theme, chamber, factions, regions, blocs, patrons, tags, problems, promises, starts, test, endings, lobby, escalations, `start_date` | 20 s |
 | validate | none | reference check on every id and tag; every faction leader alive on `start_date` per the sheet; no leader name in a member seat; at least 3 factions when the chamber is over 30 seats; dated events inside the term window. Violations go back to Luna as a list with the previous output, one retry | 0 s, 20 s on retry |
-| members | Luna | `chamber.size` members, 25 per call in parallel | 15 s |
-| citizens | Luna | 250 citizens, 50 per call in parallel | 15 s |
+| assign | none | code fixes every identity field before any parallel call: each member's seat, region and faction from the pack's shares, temperament and years from fixed distributions; each citizen's region, bloc and age band from weights | 0 s |
+| names | Luna | one call: `chamber.size` member names and 250 citizen names for the era; code dedupes and tops up collisions with one small call. One call, so uniqueness is a set check, not model memory | 6 s |
+| members | Luna | 25 assigned rows per call in parallel (name, seat, region, faction, temperament, years given); Luna writes bio, core issues, tell, patrons | 15 s |
+| citizens | Luna | 50 assigned rows per call in parallel; Luna writes job, town, worldview, issues | 15 s |
+| dedupe | none | exact-duplicate tells or bios across calls regenerate that row only. v1 measured 33 duplicate names in 200 from per-state calls without this | 0 s |
 | deck | Luna | 20 generic themed plus 5 to 8 dated storylets | 20 s |
 | repair | Astra | only when validation still fails after the retry: rerun frame with the violation list and the rule "never mention the game, its design, or that anything is fictional". Measured 2026-09-22: self-review by Luna adds disclaimers and hedged leaders, so there is no review step on the happy path | 0 s, 100 s when it runs |
 | art | muse-image | masthead and one crest per faction, in parallel with members and deck; dithered, R2 | 10 s |
