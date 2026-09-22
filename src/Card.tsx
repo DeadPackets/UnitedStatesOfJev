@@ -3,28 +3,39 @@ import type { GamePack, ViewEvent } from "./api";
 import { Meter } from "./Ledger";
 
 /** The sheet keeps its exit on screen for one transition, then the caller unmounts it. */
-export const UNMOUNT = 200;
+const UNMOUNT = 200;
 
 /**
- * Close through the dialog, so the browser hands focus back to whatever opened it, and unmount
- * once the exit has run. Chrome does not fire `close` for a scripted close(), so the unmount is
- * scheduled here rather than from the event.
+ * A modal sheet: it shows on mount, and every way out of it goes through the dialog's own close,
+ * so the browser hands focus back to the opener. The unmount is driven off the open attribute
+ * rather than the `close` event, because the attribute is the one signal every path has to
+ * produce, and the guard makes it fire once per sheet however it was closed.
  */
-export const dismiss = (el: HTMLElement | null, onClose: () => void) => {
-  el?.closest("dialog")?.close();
-  setTimeout(onClose, UNMOUNT);
-};
-
-function Poster({ label, children, block, onClose }: { label: string; children: ReactNode; block: boolean; onClose: () => void }) {
+export function useSheet(onClose: () => void) {
   const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
+  const timer = useRef(0);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (!d.open) d.showModal();
+    const watch = new MutationObserver(() => {
+      if (d.open || timer.current) return;
+      timer.current = setTimeout(onClose, UNMOUNT) as unknown as number;
+    });
+    watch.observe(d, { attributeFilter: ["open"] });
+    return () => { watch.disconnect(); clearTimeout(timer.current); };
+  }, []); // eslint-disable-line
+  return { ref, dismiss: () => ref.current?.close() };
+}
+
+function Poster({ label, children, block, onClose }: { label: string; children: (dismiss: () => void) => ReactNode; block: boolean; onClose: () => void }) {
+  const { ref, dismiss } = useSheet(onClose);
   // A card that is still open has to be answered, so Escape and a backdrop click do nothing until a stance is taken.
   return (
     <dialog ref={ref} className="poster" aria-label={label}
       onCancel={(e) => { if (block) e.preventDefault(); }}
-      onClose={() => setTimeout(onClose, UNMOUNT)}
-      onClick={(e) => { if (!block && e.target === ref.current) dismiss(ref.current, onClose); }}
-    >{children}</dialog>
+      onClick={(e) => { if (!block && e.target === ref.current) dismiss(); }}
+    >{children(dismiss)}</dialog>
   );
 }
 
@@ -42,7 +53,7 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
   const stances = event.card?.stances ?? event.stances;
   const title = event.card?.title ?? "The floor has news.";
   return (
-    <Poster label={title} block={!answered} onClose={onClose}>
+    <Poster label={title} block={!answered} onClose={onClose}>{(dismiss) => (<>
       <div className="kicker">{pack.vocabulary.turn} {turn}</div>
       <h2>{title}</h2>
       {event.card ? <p>{event.card.body}</p> : null}
@@ -60,10 +71,10 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
             ))}
           </div>
           <p className="lede">{event.outcome ?? stances[event.stance!]}</p>
-          <button ref={done} className="btn" onClick={(e) => dismiss(e.currentTarget, onClose)}>Close the card</button>
+          <button ref={done} className="btn" onClick={dismiss}>Close the card</button>
         </>
       )}
-    </Poster>
+    </>)}</Poster>
   );
 }
 
@@ -72,10 +83,10 @@ export function Announce({ pack, keys, onClose }: { pack: GamePack; keys: string
   const items = keys.map((k) => pack.escalations.find((e) => e.key === k)).filter((e) => !!e);
   if (!items.length) return null;
   return (
-    <Poster label={items[0]!.name} block={false} onClose={onClose}>
+    <Poster label={items[0]!.name} block={false} onClose={onClose}>{(dismiss) => (<>
       <div className="kicker">{pack.title}</div>
       {items.map((e) => <div key={e!.key}><h2>{e!.name}</h2><p>{e!.headline}</p></div>)}
-      <button className="btn" onClick={(e) => dismiss(e.currentTarget, onClose)}>Close the notice</button>
-    </Poster>
+      <button className="btn" onClick={dismiss}>Close the notice</button>
+    </>)}</Poster>
   );
 }

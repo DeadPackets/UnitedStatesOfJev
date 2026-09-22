@@ -30,7 +30,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const [dismissed, setDismissed] = useState(-1);
   const [tab, setTab] = useState<(typeof TABS)[number]>("turn");
   const [text, setText] = useState("");
-  const [pick, setPick] = useState<string | null>(null);
+  // `n` counts openings, so re-picking the same seat during a sheet's exit still mounts a fresh dialog.
+  const [pick, setPick] = useState<{ id: string; n: number } | null>(null);
   const [muted, setMuted] = useState(sound.muted);
   const [rolling, setRolling] = useState(false);
   const [pulse, setPulse] = useState<string>();
@@ -53,7 +54,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const shownYes = rollYes ?? yes;
   const crossed = voted && !rolling && bill!.passed;
   const margin = Math.abs(yes - need);
-  const sel = pick ? game.members.find((m) => m.id === pick) : undefined;
+  const sel = pick ? game.members.find((m) => m.id === pick.id) : undefined;
   const amendments = bill?.amendments;
   const event = game.events.at(-1);
   const openCard = event && event.stance === undefined ? game.events.length - 1 : -1;
@@ -124,7 +125,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
         <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
           whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
           hot={step?.id === "lobby" && weakest ? [weakest.id] : undefined}
-          onPick={(id) => { if (!rolling) setPick(id); }} />
+          onPick={(id) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }} />
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>
@@ -236,7 +237,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
-      {sel ? <MemberDrawer pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
+      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
       {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
         onStance={stance} onClose={() => setAnswered(null)} /> : null}
