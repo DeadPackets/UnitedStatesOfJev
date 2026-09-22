@@ -4,6 +4,7 @@ import {
   applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, LAW_LOST, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
 } from "./engine";
+import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, weightOf } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -673,4 +674,29 @@ test("spec section 4's sources pay: a kept promise, and the chest capped per ver
   expect(h.ledgers.chest).toBe(CHEST_CAP);
   applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((m) => [m.id, back(m)])) }));
   expect(h.ledgers.chest).toBe(CHEST_CAP * 2);         // it is a cap a verdict, not a cap a term
+});
+
+test("a new game opens one holder state per holder in the constitution", () => {
+  const g = game();
+  expect(Object.keys(g.holders).sort()).toEqual(["council", "guard", "league", "street"]);
+  expect(g.holders.council.weight).toBe(0.4);
+  expect(g.holders.guard.weight).toBe(0);
+  expect(g.holders.street.resistance).toBe(0);
+  expect(g.holders.street.line).toBe(70);
+  expect(g.holders.guard.response).toBe("coup");
+  expect(weightOf(pack, "street")).toBe(0.6);
+  expect(holdersOf({ ...pack, constitution: undefined }).length).toBe(0);
+});
+
+test("a bypass raises resistance, a favour lowers it and the nearest to its line is named", () => {
+  const g = game();
+  const up = raiseResistance(pack, g, ["council", "guard"], 12, "ruled by edict");
+  expect(g.holders.council.resistance).toBe(12);
+  expect(up[0].cause).toBe("ruled by edict");
+  expect(up[0]).toEqual({ kind: "resistance", id: "council", delta: 12, cause: "ruled by edict" });   // no ledger
+  easeResistance(pack, g, ["council"], 10, "a petition granted");
+  expect(g.holders.council.resistance).toBe(2);
+  expect(nearestLine(g)).toBe("guard");   // 12 of 55 against 2 of 60 and 0 of 70
+  raiseResistance(pack, g, ["council"], 999, "everything at once");
+  expect(g.holders.council.resistance).toBe(100);
 });

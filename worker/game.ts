@@ -399,6 +399,7 @@ export function migrate(game: Game): void {
   }
   game.posts ??= [];
   game.revolt ??= null;
+  game.holders ??= {};
 }
 
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {

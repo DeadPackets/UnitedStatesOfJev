@@ -1,4 +1,4 @@
-import type { LedgerV4, Pack, Member as PackMember, Price, Storylet } from "./pack";
+import type { Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -34,6 +34,10 @@ export interface TestResult {
   seats: { id: string; p: number; yes: boolean }[];              // loyalty ascending, the walk
   regions: { id: string; weight: number; p: number; yes: boolean }[];   // region weight descending, the map
 }
+export interface HolderState {
+  id: string; stance: number; resistance: number; line: number;
+  response: HolderResponse; weight: number; warnedAt: number | null;
+}
 export interface TermRecord { term: number; passed: number; kept: number; broken: number; mandate: number; points: number }
 export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
@@ -42,6 +46,7 @@ export interface Game {
   ledgers: { treasury: number; authority: number; chest: number; loyalty: number; popularity: Record<string, number> };
   patrons: Record<string, number>;   // -2..2
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
+  holders: Record<string, HolderState>;
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
   director: { intensity: number; lastCrisis: number; seen: string[] };
@@ -98,6 +103,11 @@ export function pay(_pack: Pack, game: Game, price: Price, cause: string): WireL
 }
 
 export const TURNS_PER_TERM = 20;
+export const RESIST_BYPASS = 12;   // TUNE, C2: an act a holder could have stopped
+export const RESIST_HIT = 8;       // TUNE, C2: an act that costs a holder something
+export const RESIST_SERVE = 10;    // TUNE, C2: a favour or a service
+export const RESIST_DECAY = 1;     // TUNE, C2: a turn, toward 0
+export const RESIST_CARRY = 0.5;   // TUNE, R21: what a new term inherits
 export const LOBBY_COSTS = { pork: 10, favor: 15, threat: 20 } as const;
 export type LobbyAction = keyof typeof LOBBY_COSTS;
 export const SITUATIONS = [
@@ -161,6 +171,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     },
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
+    holders: seedHolders(pack),
     promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
@@ -171,6 +182,41 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
   for (const m of shuffled.slice(0, Math.max(1, Math.round(pack.chamber.size * 0.15)))) m.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)];
   game.marks.midterm = shuffled.slice(0, Math.round(pack.chamber.size / 3)).map((m) => m.seat);
   return game;
+}
+
+export const holdersOf = (pack: Pack): Holder[] => pack.constitution?.holders ?? [];
+export const weightOf = (pack: Pack, id: string): number =>
+  pack.constitution?.retention.weights.find((w) => w.id === id)?.value ?? 0;
+
+export function seedHolders(pack: Pack): Record<string, HolderState> {
+  return Object.fromEntries(holdersOf(pack).map((h) => [h.id, {
+    id: h.id, stance: h.stance, resistance: 0, line: h.line, response: h.response,
+    weight: weightOf(pack, h.id), warnedAt: null,
+  }]));
+}
+
+// _pack is unread today; Stage B's price tag names the holder from it.
+const moveResistance = (_pack: Pack, game: Game, ids: string[], d: number, cause: string): WireLine[] => {
+  const out: WireLine[] = [];
+  for (const id of ids) {
+    const h = game.holders[id];
+    if (!h) continue;
+    const before = h.resistance;
+    h.resistance = clamp(round1(h.resistance + d), 0, 100);
+    if (h.resistance !== before) out.push({ kind: "resistance", id, delta: h.resistance - before, cause });
+  }
+  return out;
+};
+export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
+  moveResistance(pack, game, ids, Math.abs(amount), cause);
+export const easeResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
+  moveResistance(pack, game, ids, -Math.abs(amount), cause);
+
+// The plate the Desk marks: the holder closest to its own line, measured as a share of it.
+export function nearestLine(game: Game): string | null {
+  const rows = Object.values(game.holders).filter((h) => h.line > 0);
+  if (!rows.length) return null;
+  return rows.sort((a, b) => b.resistance / b.line - a.resistance / a.line)[0].id;
 }
 
 const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>

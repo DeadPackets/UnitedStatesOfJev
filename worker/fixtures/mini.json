@@ -1539,5 +1539,35 @@
         "value": "harbor-council-mini/crest-tidebound.png"
       }
     ]
+  },
+  "constitution": {
+    "ruler": { "role": "Consul", "faction": "harborites" },
+    "holders": [
+      { "id": "council", "name": "the Harbor Council", "where": "home", "members": "seats", "stance": 0.5, "line": 60, "response": "early_test", "levers": ["law", "favour"], "persona": { "name": "Clerk Vessa", "role": "clerk of the council", "bio": "Keeps the roll and the grudges.", "tell": "Taps the roll twice before a vote." } },
+      { "id": "guard", "name": "the Harbor Guard", "where": "home", "members": "none", "stance": 0.5, "line": 55, "response": "coup", "levers": ["force", "spend"], "persona": { "name": "Captain Orin", "role": "captain of the guard", "bio": "Paid late for three seasons.", "tell": "Counts coins while he talks." } },
+      { "id": "street", "name": "the harbour crowd", "where": "home", "members": "citizens", "stance": 0.5, "line": 70, "response": "riot", "levers": ["spend", "proclaim"], "persona": { "name": "Mira of the Quay", "role": "fish seller", "bio": "Sells at the north quay every dawn.", "tell": "Answers a question with a price." } },
+      { "id": "league", "name": "the Grain League", "where": "abroad", "members": "none", "stance": 0.5, "line": 50, "response": "embargo", "levers": ["spend", "favour"], "wants": ["tariffs", "shipping-rights"], "redLines": ["piracy"], "gives": { "ledger": "treasury", "amount": 4, "per": "turn" }, "responses": ["Holds the grain ships outside the mole."], "persona": { "name": "Factor Halden", "role": "league factor", "bio": "Writes every price down twice.", "tell": "Never sits with his back to a door." } }
+    ],
+    "instruments": {
+      "decree": { "name": "an edict", "consent": "none", "price": { "authority": 3 }, "available": true },
+      "law": { "name": "a decree of the council", "consent": "chamber", "price": { "authority": 1 }, "available": true },
+      "appoint": { "name": "a warrant", "consent": "none", "price": { "authority": 2 }, "available": true },
+      "spend": { "name": "a disbursement", "consent": "none", "price": {}, "available": true },
+      "proclaim": { "name": "a notice", "consent": "none", "price": { "chest": 2 }, "available": true },
+      "favour": { "name": "a petition granted", "consent": "none", "price": { "authority": 2 }, "available": true },
+      "force": { "name": "the watch turned out", "consent": "army", "price": { "authority": 4 }, "available": true }
+    },
+    "retention": { "name": "the reckoning", "weights": [{ "id": "council", "value": 0.4 }, { "id": "street", "value": 0.6 }], "bar": { "start": 0.5, "step": 0.03, "cap": 0.7 } },
+    "halfTerm": { "holder": "council", "name": "the halfway tide" },
+    "ledgers": {
+      "treasury": { "name": "the harbour purse", "line": 0 }, "authority": { "name": "influence", "line": 0 },
+      "chest": { "name": "the war chest", "line": 0 }, "loyalty": { "name": "league mood", "line": 20 },
+      "popularity": { "name": "standing", "line": 30 }
+    },
+    "briefing": {
+      "situation": "The harbour's trade routes are in dispute and the grain ships are late.",
+      "room": "The council votes, the guard is paid late and the crowd watches the price of grain.",
+      "you": "You hold the chair for twenty tides and the council decides whether you keep it."
+    }
   }
 }
