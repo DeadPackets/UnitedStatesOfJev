@@ -1,4 +1,4 @@
-import { forwardRef, memo, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { forwardRef, memo, useEffect, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { Member } from "../worker/pack";
 import type { GamePack } from "./api";
 import { BOX, minGap, points } from "./layouts";
@@ -58,6 +58,10 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
   const hotSet = useMemo(() => new Set(hot ?? []), [hot]);
   const vocab = pack.vocabulary;
 
+  // A floor that leaves mid-roll takes its clock with it: the ticks and the gavel are already gone.
+  const raf = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+
   useImperativeHandle(ref, () => ({
     roll(result, onCount, onDone, needed) {
       const ids = Object.keys(result).sort(() => Math.random() - 0.5);
@@ -72,9 +76,9 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
           const target = Math.floor(ids.length * t * t);   // ease-in: the count accelerates like a real roll call
           while (shown < target) show();
         }
-        if (shown < ids.length) requestAnimationFrame(tick); else onDone();
+        if (shown < ids.length) raf.current = requestAnimationFrame(tick); else onDone();
       };
-      requestAnimationFrame(tick);
+      raf.current = requestAnimationFrame(tick);
     },
   }), []);
 
