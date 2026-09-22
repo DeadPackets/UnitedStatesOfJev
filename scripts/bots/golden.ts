@@ -17,7 +17,8 @@ const probs = (answer: unknown): number[] => {
     else if (Array.isArray(v)) v.forEach(walk);
     else if (v && typeof v === "object") Object.values(v).forEach(walk);
   };
-  walk(answer);
+  // Only Jev's answers are distributions; usage.cost is a number in [0, 1] too and is not one.
+  walk((answer as { answers?: unknown } | null)?.answers);
   return out;
 };
 
@@ -39,7 +40,8 @@ if (mode === "export") {
 const key = process.env.OPENROUTER_API_KEY ?? (await readFile(".dev.vars", "utf8")).match(/OPENROUTER_API_KEY=(.*)/)?.[1]?.trim();
 if (!key) { console.error("FAIL: set OPENROUTER_API_KEY or put it in .dev.vars"); process.exit(1); }
 
-const rows: Row[] = (await readFile(file, "utf8")).trim().split("\n").filter(Boolean).map((l) => JSON.parse(l));
+// A Luna answer is prose with no distribution to compare, so replaying it would spend money and measure nothing.
+const rows: Row[] = (await readFile(file, "utf8")).trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((r: Row) => r.kind === "jev");
 if (rows.length > GOLDEN_N) {
   console.error(`FAIL: ${rows.length} prompts in ${file}, over the cap of ${GOLDEN_N}. Split the file and replay one part.`);
   process.exit(1);
@@ -51,8 +53,7 @@ let failed = 0;
 for (const row of rows) {
   let body: unknown;
   try { body = JSON.parse(row.request); } catch { failed++; continue; }
-  const path = row.kind === "jev" ? "systemone" : "chat/completions";
-  const r = await fetch(`https://openrouter.ai/api/v1/${path}`, {
+  const r = await fetch("https://openrouter.ai/api/v1/systemone", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),

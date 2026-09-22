@@ -25,6 +25,5 @@ test("a golden row is written only when the flag is on, and is stored whole", as
 
 test("a recorder failure never fails the call it was watching", async () => {
   const env = { GOLDEN: "1", DB: { prepare: () => { throw new Error("no table"); } } } as never;
-  await recordGolden(env, "luna", {}, {});   // resolves
-  expect(true).toBe(true);
+  expect(await recordGolden(env, "luna", {}, {})).toBeUndefined();
 });

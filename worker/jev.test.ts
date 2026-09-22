@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { agreeQuestions, choices, meter, REACTIONS, reactQuestions, voteQuestions } from "./jev";
+import { agreeQuestions, choices, jev, meter, REACTIONS, reactQuestions, voteQuestions } from "./jev";
 import { newGame, encodeCode, scenarioTag } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -60,15 +60,17 @@ test("a holder is read with its own numbers, and only its own", () => {
   expect(holderStance(pack, guard, { [`stance_${guard.id}`]: { noul: 0.7 } })).toBeCloseTo(0.7, 5);
 });
 
-test("the meter counts one request's Jev tokens, its cost and its largest single call", () => {
-  meter.reset();
-  expect([meter.tokens, meter.cost, meter.calls, meter.worst]).toEqual([0, 0, 0, 0]);
-  meter.tokens += 1200; meter.cost += 0.004; meter.calls++; meter.worst = Math.max(meter.worst, 1200);
-  meter.tokens += 800; meter.calls++; meter.worst = Math.max(meter.worst, 800);
-  expect(meter.tokens).toBe(2000);
-  expect(meter.cost).toBeCloseTo(0.004, 5);
-  expect(meter.calls).toBe(2);
-  expect(meter.worst).toBe(1200);
-  meter.reset();
-  expect([meter.tokens, meter.cost, meter.calls, meter.worst]).toEqual([0, 0, 0, 0]);
+test("the meter counts one request's Jev tokens, its cost and its largest single call", async () => {
+  const real = globalThis.fetch;
+  const usage = [{ input_tokens: 1200, cost: 0.004 }, { input_tokens: 800 }];
+  globalThis.fetch = (async () => Response.json({ answers: {}, usage: usage.shift() })) as unknown as typeof fetch;
+  try {
+    meter.reset();
+    await jev({} as never, {}, {});
+    await jev({} as never, {}, {});
+    expect([meter.tokens, meter.calls, meter.worst]).toEqual([2000, 2, 1200]);
+    expect(meter.cost).toBeCloseTo(0.004, 5);
+    meter.reset();
+    expect([meter.tokens, meter.cost, meter.calls, meter.worst]).toEqual([0, 0, 0, 0]);
+  } finally { globalThis.fetch = real; }
 });

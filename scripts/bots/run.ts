@@ -131,9 +131,9 @@ for (const policy of chosen) {
         const from = turns.length;
         g = await runTerm(bot, policy, g, turns, seed, run);
         terms++;
-        // The meter's own cost is the truth; TERM_USD is only the estimate the plan was budgeted with.
+        // The meter sees Jev only, not Luna or the portraits, so a term never counts for less than its measured whole.
         const measured = turns.slice(from).reduce((a, t) => a + t.jev.cost, 0);
-        spent += measured > 0 ? measured : TERM_USD;
+        spent += Math.max(measured, TERM_USD);
         if (terms === 1) term1Won = (g.test as never as { won?: boolean } | undefined)?.won ?? null;
         if (spent > BUDGET_USD) throw new Error("budget");
         if (g.stage !== "won" || terms >= maxTerms) break;

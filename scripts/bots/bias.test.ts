@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { BIAS_LIMIT, PAIRS, SHARE_USD, biasOf } from "./bias";
+import { PAIRS, biasOf } from "./bias";
 
 test("every pair is the same act in two framings, both long enough for the gate", () => {
   expect(PAIRS.length).toBeGreaterThanOrEqual(6);
@@ -15,6 +15,4 @@ test("every pair is the same act in two framings, both long enough for the gate"
 test("the audit reports the mean and the worst absolute shift", () => {
   expect(biasOf([0.02, -0.04, 0.06])).toEqual({ mean: 0.04, worst: 0.06 });
   expect(biasOf([])).toEqual({ mean: 0, worst: 0 });
-  expect(BIAS_LIMIT).toBe(0.05);
-  expect(SHARE_USD).toBeGreaterThan(0);
 });

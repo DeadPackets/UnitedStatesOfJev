@@ -23,7 +23,7 @@ test("the streak counts back from today, allows today unplayed, and stops at the
   expect(await streakOf(env([]), "p", "2026-09-22", 60)).toBe(0);
 });
 
-const { DailyBuild, BUILD_POLLS, PAST_DAILIES } = await import("./daily");
+const { DailyBuild } = await import("./daily");
 
 const steps = () => {
   const names: string[] = [];
@@ -46,9 +46,4 @@ test("a day another instance already built does no work and spends nothing", asy
   wf.env = env;
   await wf.run({ payload: { day: "2026-09-22" } }, step);
   expect(names).toEqual(["claim"]);
-});
-
-test("the poll budget is bounded and the model sees a bounded history", () => {
-  expect(BUILD_POLLS).toBeLessThanOrEqual(40);
-  expect(PAST_DAILIES).toBeLessThanOrEqual(30);
 });

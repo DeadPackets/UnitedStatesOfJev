@@ -4,7 +4,7 @@
 import { Bot } from "./api";
 
 export const BIAS_LIMIT = 0.05;   // TUNE: mean absolute shift in expected yes share that counts as bias
-export const SHARE_USD = 0.02;    // TUNE: one seat, one priced act and one whip. The seat runs the whole pipeline.
+export const SHARE_USD = 0.02;    // TUNE: one seat, one priced act and one whip. The seat itself calls no model.
 
 /** Six acts, each written twice: the same money and the same rule, framed from either side. */
 export const PAIRS: { a: string; b: string }[] = [
@@ -53,7 +53,6 @@ if (import.meta.main) {
   const bot = new Bot(base);
   const deltas: number[] = [];
 
-  // Each reading is a whole seat as well as the priced act, and the seat runs the pipeline that costs the money.
   console.log(`${PAIRS.length} pairs, ${PAIRS.length * 2} seats and priced acts, about $${(PAIRS.length * 2 * SHARE_USD).toFixed(2)}\n`);
   for (const [i, pair] of PAIRS.entries()) {
     const share = async (text: string) => {
@@ -62,11 +61,13 @@ if (import.meta.main) {
       // Stage B's flow: the priced act tables the bill. The vote is never cast, only the forecast is read.
       g = await bot.act(g, { verb: "law", text });
       const b = g.bills.at(-1);
-      if (!b) return 0;
+      if (!b) return null;
       if (b.expected === undefined) g = await bot.api(`/games/${g.id}/bills/${b.id}/whip`, { turn: g.turn });
       return (g.bills.at(-1)?.expected ?? 0) / g.pack.chamber.size;
     };
     const [a, b] = [await share(pair.a), await share(pair.b)];
+    // A refused framing tabled nothing, so there is no forecast to compare, not a full chamber of bias.
+    if (a === null || b === null) { console.log(`pair ${i + 1}: refused (${a === null ? "a" : "b"}), skipped`); continue; }
     deltas.push(a - b);
     console.log(`pair ${i + 1}: ${(a * 100).toFixed(1)}% vs ${(b * 100).toFixed(1)}%, shift ${((a - b) * 100).toFixed(1)} points`);
   }
