@@ -627,3 +627,15 @@ test("the read never spends more than the turn has left", async () => {
   expect(r.status).toBe(200);
   expect(game.holders.league.stance).toBe(0.5);             // nothing left to spend, so nothing was asked
 });
+
+test("last turn's wire moves no holder into this turn's read", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(70);
+  await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
+  await post("acts", { turn: 1 });
+  await post("turn/end", { turn: 1 });
+  game.holders.league.stance = 0.5;
+  game.events = [];
+  expect((await post("turn/end", { turn: 2 })).status).toBe(200);
+  expect(game.holders.league.stance).toBe(0.5);
+});

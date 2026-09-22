@@ -370,7 +370,9 @@ export class GameDO extends DurableObject<Env> {
 
   // §8: one call per holder, each with that holder's own numbers, and only the ones this turn moved.
   private async readHolders(game: Game, pack: Pack) {
-    const moved = new Set(game.wire.filter((w) => w.kind === "resistance" && w.id).map((w) => w.id!));
+    // The wire still holds last turn's tick until this turn's first push.
+    const wire = game.wireTurn === game.turn ? game.wire : [];
+    const moved = new Set(wire.filter((w) => w.kind === "resistance" && w.id).map((w) => w.id!));
     const rows = holdersOf(pack).filter((h) => moved.has(h.id)).slice(0, callsLeft(game));
     if (!rows.length) return;
     spendCalls(game, rows.length);
