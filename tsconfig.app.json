@@ -16,6 +16,6 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": ["src", "worker/engine.ts", "worker/states.ts"],
+  "include": ["src", "worker/engine.ts"],
   "exclude": ["src/**/*.test.ts"]
 }

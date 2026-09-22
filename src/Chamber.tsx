@@ -1,166 +1,225 @@
 import { useEffect, useRef, useState } from "react";
-import { useReducedMotion, animate } from "motion/react";
-import { expectedYes, passThreshold, nationalApproval, type Bill, type BillDraft, type Senator, type LobbyAction } from "../worker/engine";
-import { api, type GameView } from "./api";
+import { useReducedMotion } from "motion/react";
+import { api, type GameView, type ViewBill } from "./api";
 import type { Act } from "./App";
-import Hemicycle, { type RollHandle } from "./Hemicycle";
-import Drawer from "./Drawer";
-import Map from "./Map";
-import Tour, { TOUR_BILL, type TourStep } from "./Tour";
+import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
+import { MemberDrawer, type LobbyKind } from "./Drawer";
+import Ledger, { Num } from "./Ledger";
+import Card, { Announce } from "./Card";
+import Tour, { type TourStep } from "./Tour";
+import { Ornament } from "./theme";
 import { sound } from "./sound";
 
-function Num({ value, decimals = 0, className, instant = false }: { value: number; decimals?: number; className?: string; instant?: boolean }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const shown = useRef(value); // what is on screen, so a tick interrupted mid-flight resumes from there
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
-    if (reduced || instant || Math.abs(shown.current - value) < 0.05) { write(value); return; }
-    const c = animate(shown.current, value, { duration: 0.6, ease: [0.22, 1, 0.36, 1], onUpdate: write, onComplete: () => write(value) });
-    return () => c.stop();
-  }, [value, decimals, reduced, instant]);
-  return <span ref={ref} className={`num ${className ?? ""}`}>{value.toFixed(decimals)}</span>;
-}
+type Amendment = NonNullable<ViewBill["amendments"]>[number] & { expected: number };
+type Vocab = GameView["pack"]["vocabulary"];
 
-function Headline({ bill }: { bill: Bill }) {
-  return <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}><div className="kicker">Wire</div><h3>{bill.headline!.title}</h3><p className="muted small" style={{ margin: "6px 0 0" }}>{bill.headline!.lede}</p></div>;
-}
-
-const TOUR_STEPS: Record<string, TourStep> = {
-  write: { id: "write", anchor: "billpad", title: "1 of 3 · Write a bill", text: "This one is prefilled. Send it, or write your own. Luna turns it into a bill; Jev reads it to every senator." },
-  count: { id: "count", anchor: "whip", title: "2 of 3 · Count the votes", text: "One call, 100 senators, a third of a second. Then tap the dim seat on your side to twist an arm." },
-  lobby: { id: "lobby", anchor: "seat", title: "2 of 3 · Lobby", text: "That is the weakest senator on your side. Tap the seat, promise a project, watch the odds move." },
-  vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: "The count is a forecast, not a promise. Every senator rolls their own dice." },
-};
-type Amendment = BillDraft & { expected: number };
+const TOUR = (v: Vocab): Record<string, TourStep> => ({
+  write: { id: "write", anchor: "billpad", title: `1 of 3 · Write a ${v.bill}`, text: `Say what it does in a sentence or two. The clerk writes it up, and every ${v.member} reads it.` },
+  count: { id: "count", anchor: "whip", title: `2 of 3 · ${v.whip}`, text: `One call asks all of them how they will vote. Then tap a faint ${v.seat} on your own side.` },
+  lobby: { id: "lobby", anchor: "seat", title: `2 of 3 · ${v.lobby}`, text: `That is the softest ${v.seat} on your side. Tap it, make an offer, watch the number move.` },
+  vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: `The count is a forecast, not a promise. Every ${v.member} rolls their own dice.` },
+});
 
 export default function Chamber({ game, act, busy, onQuit }: { game: GameView; act: Act; busy: boolean; onQuit: () => void }) {
   const reduced = useReducedMotion();
+  const pack = game.pack;
+  const v = pack.vocabulary;
+  const size = pack.chamber.size;
+
   const [dismissed, setDismissed] = useState(-1);
-  const last = game.bills[game.turn - 1];
-  // After a vote the turn advances; keep showing the voted bill until "Next bill".
-  const bill = game.bills[game.turn] ?? (last?.votes && dismissed !== game.turn ? last : undefined);
-  const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
-  const [text, setText] = useState(tour ? TOUR_BILL : "");
-  const [pick, setPick] = useState<Senator | null>(null);
-  const [showMap, setShowMap] = useState(false);
+  const [text, setText] = useState("");
+  const [pick, setPick] = useState<string | null>(null);
   const [muted, setMuted] = useState(sound.muted);
   const [rolling, setRolling] = useState(false);
   const [pulse, setPulse] = useState<string>();
   const [rollYes, setRollYes] = useState<number | null>(null);
-  const hemi = useRef<RollHandle>(null);
+  const [before, setBefore] = useState<number | null>(null);
   const [live, setLive] = useState("");
-  const sel = pick ? game.seated.find((s) => s.id === pick.id) : undefined;
+  const [answered, setAnswered] = useState<string | null>(null);
+  const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(-2) : []));
+  const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
+  const floor = useRef<RollHandle>(null);
+
+  // The last bill stays on the desk after its vote until "Next" clears it.
+  const latest = game.bills.at(-1);
+  const bill = latest && (latest.id === game.turn || (latest.votes && dismissed !== latest.id)) ? latest : undefined;
   const whipped = !!bill?.whip;
   const voted = !!bill?.votes;
-  const exp = whipped ? expectedYes(bill.whip!) : 0;
-  const yes = voted ? Object.values(bill.votes!).filter(Boolean).length : 0;
-  const need = bill ? passThreshold(bill) : 51;
-  const amendments = bill?.amendments as Amendment[] | undefined;
-  const agenda = game.settings.mode === "agenda";
-  const offers = bill ? Object.keys(bill.offers).length : 0;
+  const exp = bill?.expected ?? 0;
+  const need = bill?.needed ?? bill?.threshold ?? pack.chamber.threshold;
+  const yes = bill?.yes ?? 0;
   const shownYes = rollYes ?? yes;
-  const crossed = voted && !rolling && bill.passed;
+  const crossed = voted && !rolling && bill!.passed;
+  const margin = Math.abs(yes - need);
+  const sel = pick ? game.members.find((m) => m.id === pick) : undefined;
+  const amendments = bill?.amendments as Amendment[] | undefined;
+  const event = game.events.at(-1);
+  const openCard = event && event.stance === undefined ? game.events.length - 1 : -1;
+  const card = event && (event.stance === undefined || answered === event.id) ? event : undefined;
 
-  // Beat 4: roll call. Reveal votes one by one in random order, accelerating; ticks rise with the yes count.
-  const rolledFor = useRef<number>(bill?.votes ? bill.id : -1);
+  // Roll call: reveal votes one by one, accelerating, and walk the last five when the count is close.
+  const rolledFor = useRef(voted ? bill!.id : -1);
   useEffect(() => {
-    if (!voted || rolledFor.current === bill.id) return;
+    if (!voted || !bill || rolledFor.current === bill.id) return;
     rolledFor.current = bill.id;
-    const done = () => { bill.passed ? sound.play("gavel") : sound.play("thud"); setLive(`Vote: ${yes} yes, ${100 - yes} no. ${bill.passed ? "Passed" : "Failed"}, ${need} needed.`); };
-    if (reduced || !hemi.current) { done(); return; }
+    const done = () => {
+      sound.play(bill.passed ? "gavel" : "thud");
+      setLive(`${yes} yes, ${size - yes} no. ${bill.passed ? v.pass : v.fail}, ${need} needed.`);
+    };
+    if (reduced || !floor.current) { done(); return; }
     setRolling(true); setRollYes(0);
     let lastTick = 0;
-    hemi.current.roll(bill.votes!, (n) => { setRollYes(n); if (n !== lastTick) { lastTick = n; sound.play("tick", { pitch: n }); } }, () => { setRolling(false); setRollYes(null); done(); });
+    floor.current.roll(bill.votes!, (n) => { setRollYes(n); if (n !== lastTick) { lastTick = n; sound.play("tick", { pitch: n }); } },
+      () => { setRolling(false); setRollYes(null); done(); }, need);
   }, [voted, bill?.id]); // eslint-disable-line
 
   useEffect(() => { if (bill?.headline && voted && !rolling) sound.play("slide"); }, [bill?.headline, rolling]); // eslint-disable-line
-  useEffect(() => { if (bill && !whipped) { sound.play("chime"); setLive(`Bill drafted: ${bill.title}.`); } }, [bill?.id, whipped]); // eslint-disable-line
-  useEffect(() => { if (whipped && !voted) setLive(`Whip count: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
+  useEffect(() => { if (bill && !whipped) { sound.play("chime"); setLive(`${v.bill}: ${bill.title}.`); } }, [bill?.id, whipped]); // eslint-disable-line
+  useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
-  const weakest = whipped && !voted ? game.seated.filter((s) => s.party === game.settings.party).sort((a, b) => bill.whip![a.id] - bill.whip![b.id])[0] : undefined;
-  const step: TourStep | null = !tour ? null : !bill ? TOUR_STEPS.write : !whipped ? TOUR_STEPS.count : !voted && offers === 0 && game.settings.lobby ? TOUR_STEPS.lobby : !voted ? TOUR_STEPS.vote : null;
+  const weakest = whipped && !voted
+    ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
+    : undefined;
+  const steps = TOUR(v);
+  const step: TourStep | null = !tour ? null
+    : !bill ? steps.write
+    : !whipped ? steps.count
+    : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
+    : !voted ? steps.vote : null;
   const endTour = () => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
   const wasVoted = useRef(voted);
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
   const draft = async () => { if (await act(() => api.draft(game, text))) { setText(""); setDismissed(-1); } };
-  const [before, setBefore] = useState<number | null>(null);
-  // Keep the drawer open after a lobby so the player watches the percentage move; the seat pulses behind it.
-  const lobby = async (a: LobbyAction) => { if (!sel || !bill?.whip) return; const was = bill.whip[sel.id]; if (await act(() => api.lobby(game, sel.id, a))) { sound.play("click"); setBefore(was); setPulse(sel.id); setTimeout(() => setPulse(undefined), 700); } };
-  const headline = bill?.headline ? bill : last?.headline ? last : null;
+  // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
+  const lobby = async (k: LobbyKind) => {
+    if (!sel || !bill?.whip) return;
+    const was = bill.whip[sel.id];
+    if (await act(() => api.lobby(game, sel.id, k))) {
+      sound.play("click"); setBefore(was); setPulse(sel.id); setTimeout(() => setPulse(undefined), 700);
+    }
+  };
+  const stance = async (i: number) => {
+    if (openCard < 0 || !event) return;
+    setAnswered(event.id);
+    if (!await act(() => api.resolve(game, openCard, i))) setAnswered(null);
+  };
 
   return (
     <main className="chamber press" onPointerDown={sound.unlock}>
       <header className="topbar">
-        <h1>Congress <span>of Jev</span></h1>
-        <nav aria-label="Game">
-          <span className="num" style={{ padding: "0 6px" }}>Turn {(bill?.id ?? game.turn) + 1}{game.billsPerTerm ? ` of ${game.billsPerTerm}` : ""}</span>
-          <button className="link" aria-pressed={showMap} onClick={() => setShowMap((v) => !v)}>{showMap ? "Chamber" : "Map"}</button>
+        <h1>{pack.title}</h1>
+        <nav aria-label={v.turn}>
+          <Ornament kind={pack.theme.ornament} />
+          <span className="num" style={{ padding: "0 8px" }}>{v.turn} {game.turn} of {game.turnsPerTerm}</span>
+          {game.stage === "midterm" ? <span className="chip red">{v.midterm}</span> : null}
           <button className="link" aria-pressed={!muted} onClick={() => { sound.muted = !muted; setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button>
-          <button className="link" onClick={onQuit}>Quit</button>
+          <button className="link" onClick={onQuit}>Leave the seat</button>
         </nav>
       </header>
 
-      <section className="stage" aria-label="Chamber floor">
-        {showMap ? <div className="rise"><Map approval={game.approval} /></div>
-          : <Hemicycle ref={hemi} seated={game.seated} bill={bill} party={game.settings.party} onPick={(s) => { if (!rolling) setPick(s); }} selected={sel?.id} rolling={rolling} pulse={pulse} hot={step?.id === "lobby" ? weakest?.id : undefined} />}
-        {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{agenda ? "The Senate is seated. Send the next bill." : "The Senate is seated. Write a bill."}</p> : (
+      <section className="stage" aria-label={v.chamber}>
+        <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
+          whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
+          hot={step?.id === "lobby" && weakest ? [weakest.id] : undefined}
+          onPick={(id) => { if (!rolling) setPick(id); }} />
+        {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>
-              {voted ? <Num value={shownYes} instant={rolling} className={`n ${!rolling && !bill.passed ? "fail" : ""}`} /> : whipped ? <Num value={exp} decimals={1} className="n" /> : <span className="n muted">—</span>}
-              <span className="muted">{voted ? (rolling ? `roll call · ${need} needed` : bill.passed ? (bill.struck ? "passed, struck down by the Court" : "passed") : "failed") : whipped ? `expected yes · ${need} needed` : "run the whip count"}</span>
+              {voted ? <Num value={shownYes} instant={rolling} className={`n ${!rolling && !bill.passed ? "fail" : ""}`} />
+                : whipped ? <Num value={exp} decimals={1} className="n" />
+                : <span className="n num muted">—</span>}
+              <span className="muted">{voted ? (rolling ? `${need} needed` : bill.passed ? (bill.struck ? `${v.pass}, struck down` : v.pass) : v.fail)
+                : whipped ? `expected yes · ${need} needed` : v.whip}</span>
             </div>
-            <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={voted ? shownYes : exp} aria-label="Yes votes">
-              <div className={`fill ${voted && !rolling && !bill.passed ? "fail" : ""}`} style={{ width: `${voted ? shownYes : exp}%` }} />
-              <div className="tick" style={{ left: "51%" }}><span>51</span></div>
-              <div className={`tick ${need === 60 ? "hot" : ""}`} style={{ left: "60%", opacity: need === 60 ? 1 : 0.35 }}><span>60</span></div>
+            <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={size} aria-valuenow={voted ? shownYes : exp} aria-label="Yes votes">
+              <div className={`fill ${voted && !rolling && !bill.passed ? "fail" : ""}`} style={{ width: `${((voted ? shownYes : exp) / size) * 100}%` }} />
+              <div className="tick" style={{ left: `${(need / size) * 100}%` }}><span className="num">{need}</span></div>
+              {pack.chamber.supermajority !== need ? (
+                <div className="tick" style={{ left: `${(pack.chamber.supermajority / size) * 100}%`, opacity: 0.35 }}>
+                  <span className="num">{pack.chamber.supermajority}</span>
+                </div>
+              ) : null}
             </div>
           </>
         )}
       </section>
 
-      <aside className="rail" aria-label="Desk">
-        <div className="ledger panel">
-          <div><div className="k">Capital</div><div className="v"><Num value={game.capital} /></div></div>
-          <div><div className="k">Approval</div><div className="v"><Num value={Math.round(nationalApproval(game))} />%</div></div>
-          <div><div className="k">Passed</div><div className="v num">{game.bills.filter((b) => b.passed).length}</div></div>
-        </div>
+      <aside className="rail" aria-label="The desk">
+        <Ledger game={game} />
 
         {!bill ? (
           <div key="pad" className="billpad panel rise" data-tour="billpad">
-            <label className="kicker" htmlFor="bill" style={{ display: "block", marginBottom: 8 }}>{agenda ? "Next on the agenda" : "Propose a bill"}</label>
-            {agenda ? <p className="tell" style={{ margin: 0 }}>Bill {game.turn + 1} of your agenda goes to the parliamentarian.</p>
-              : <textarea id="bill" value={text} onChange={(e) => setText(e.target.value)} placeholder="Every worker gets four weeks of paid leave, paid for by a 2% tax on…" maxLength={1200} rows={4} />}
-            <div className="actions"><button className={`btn ${busy ? "busy" : ""}`} disabled={busy || (!agenda && text.trim().length < 12)} onClick={draft}>{busy ? "Drafting" : "Send to the floor"}</button></div>
+            <label className="kicker" htmlFor="bill" style={{ display: "block", marginBottom: 8 }}>Propose a {v.bill}</label>
+            <textarea id="bill" value={text} onChange={(e) => setText(e.target.value)}
+              placeholder={`Say what your ${v.bill} does, and who pays for it.`} maxLength={1200} rows={4} />
+            <div className="actions">
+              <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || text.trim().length < 12} onClick={draft}>
+                {busy ? "Drafting" : `Send the ${v.bill}`}
+              </button>
+            </div>
           </div>
         ) : (
           <div key={`bill-${bill.id}-${bill.title}`} className="billcard panel rise">
-            <div className="kicker num">Bill {bill.id + 1}</div>
+            <div className="kicker num">{v.bill} {bill.id}</div>
             <h2>{bill.title}</h2>
             <p className="muted" style={{ margin: 0 }}>{bill.summary}</p>
             <div className="tags">{bill.tags.map((t, i) => <span key={t} className="chip faint rise" style={{ animationDelay: `${120 + i * 40}ms` }}>{t}</span>)}</div>
-            {voted && !rolling ? <div style={{ marginTop: 12 }}><span className={`stampsm stampin ${bill.passed ? "pass" : "fail"}`}>{bill.passed ? "Passed" : "Failed"} {yes}–{100 - yes}</span></div> : null}
+            {voted && !rolling ? (
+              <div style={{ marginTop: 12 }}>
+                <span className={`stampsm stampin shake ${bill.passed ? "pass" : "fail"}`} style={{ "--sh": `${margin >= 10 ? 6 : margin >= 4 ? 4 : 2}px` } as any}>
+                  {bill.passed ? v.pass : v.fail} {yes}–{size - yes}
+                </span>
+              </div>
+            ) : null}
             <div className="actions">
-              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : "Whip count"}</button> : null}
+              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
               {whipped && !voted ? <>
                 <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
-                {game.settings.amend && !bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend</button> : null}
-                {game.settings.lobby ? <span className="small muted">Tap a seat to lobby.</span> : null}
+                {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
+                <span className="small muted">Tap a {v.seat} to make an offer.</span>
               </> : null}
-              {voted && !rolling ? <button className="btn" disabled={busy} onClick={() => setDismissed(game.turn)}>Next bill</button> : null}
+              {voted && !rolling ? <button className="btn" disabled={busy} onClick={() => setDismissed(bill.id)}>Next {v.bill}</button> : null}
             </div>
-            {amendments && amendments.length > 0 && !voted ? <div className="amend"><div className="kicker">Pick an amendment</div>
-              {amendments.map((a, i) => <button key={i} className="opt2" disabled={busy} onClick={() => act(() => api.adopt(game, i))}><b>{a.title}</b><span className="small muted">{a.summary}</span><span className="small num">expected yes {a.expected.toFixed(1)}</span></button>)}</div> : null}
+            {amendments?.length && !voted ? (
+              <div className="amend"><div className="kicker">Adopt an amendment</div>
+                {amendments.map((a, i) => (
+                  <button key={i} className="opt2" disabled={busy} onClick={() => act(() => api.adopt(game, i))}>
+                    <b>{a.title}</b><span className="small muted">{a.summary}</span>
+                    <span className="small num">expected yes {a.expected.toFixed(1)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         )}
 
-        {headline && !rolling ? <Headline bill={headline} /> : null}
+        {bill?.headline && !rolling ? (
+          <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
+            <div className="kicker">{v.feed}</div>
+            <h3>{bill.headline.title}</h3>
+            <p className="muted small" style={{ margin: "6px 0 0" }}>{bill.headline.lede}</p>
+          </div>
+        ) : null}
+
+        {/* the two quotes slide in after the stamp has landed */}
+        {voted && !rolling && bill!.quotes?.length ? (
+          <div key={`said-${bill!.id}`} className="quotes">
+            {bill!.quotes.slice(0, 2).map((q, i) => (
+              <blockquote key={q.name} className="pull rise" style={{ animationDelay: `${640 + i * 180}ms` }}>
+                {q.text}<cite>{q.name}</cite>
+              </blockquote>
+            ))}
+          </div>
+        ) : null}
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
-      {sel ? <Drawer s={sel} game={game} bill={bill} busy={busy} before={before} onClose={() => { setPick(null); setBefore(null); }} onLobby={lobby} /> : null}
+      {sel ? <MemberDrawer pack={pack} member={sel} capital={game.ledgers.capital} bill={bill} before={before} busy={busy}
+        onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
+      {card && !rolling ? <Card pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
+        onStance={stance} onClose={() => setAnswered(null)} /> : null}
+      {notice.length ? <Announce pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
       <Tour step={step} onSkip={endTour} />
     </main>
   );

@@ -143,3 +143,5 @@ export function packView(pack: Pack) {
   const { citizens, ...rest } = pack;
   return { ...rest, members: rest.members.map(({ bio, tell, ...m }) => m) };
 }
+
+export type PackView = ReturnType<typeof packView>;

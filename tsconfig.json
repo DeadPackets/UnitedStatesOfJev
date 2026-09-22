@@ -1,5 +1,4 @@
 {
   "files": [],
-  // The v1 front end in src/ reads the v1 engine, which Task 8 replaced. Restore this reference with the v3 front end.
-  "references": [{ "path": "./tsconfig.worker.json" }]
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.worker.json" }]
 }

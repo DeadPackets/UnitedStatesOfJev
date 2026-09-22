@@ -6,6 +6,7 @@ import Build from "./Build";
 import Seat from "./Seat";
 import Chamber from "./Chamber";
 import Over from "./Over";
+import { applyTheme } from "./theme";
 import "./styles.css";
 
 export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
@@ -68,6 +69,9 @@ export default function App() {
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
   }, [open]);
+
+  // A game loaded from storage or a share code never passed through Seat, so the theme lands here.
+  useEffect(() => { if (game) applyTheme(game.pack.theme); }, [game?.pack.id]); // eslint-disable-line
 
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3600); return () => clearTimeout(t); }, [toast]);
 

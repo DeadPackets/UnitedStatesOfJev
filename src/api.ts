@@ -1,10 +1,11 @@
-import type { Bill, Game, LobbyAction, Member } from "../worker/engine";
-import type { Citizen, Pack } from "../worker/pack";
+import type { Bill, Event, Game, LobbyAction, Member } from "../worker/engine";
+import type { Citizen, Pack, PackView } from "../worker/pack";
 
-/** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. No screen reads either. */
-export type PackView = Omit<Pack, "citizens"> & { members: Omit<Pack["members"][number], "bio" | "tell">[] };
+/** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
+export type { PackView };
 export type ViewBill = Bill & { expected?: number; needed?: number };
 export type ViewMember = Omit<Member, "bio" | "tell">;
+export type ViewEvent = Event;
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
 export type GameView = Omit<Game, "pack" | "director" | "members" | "bills"> & {
   scenario: string;
@@ -18,6 +19,8 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills"> & {
   ending?: { title: string; body: string };
   deltas?: Record<string, number>;   // per-region approval move from the last citizen call, one frame only
 };
+/** The pack as the game screens see it: the deck never leaves the Worker. */
+export type GamePack = GameView["pack"];
 export type Offer = { id: string; title: string; era: string; place: string; description: string; p: number };
 export type MatchResult = { build?: true; load?: string; offer?: Offer[] };
 export type Fragment = { kind: string } & Record<string, unknown>;
