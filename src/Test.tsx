@@ -25,7 +25,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
   const [done, setDone] = useState(false);
   const [tilesDone, setTilesDone] = useState(false);
   const [share, setShare] = useState(0);
-  const key = `usoj:test:${game.id}`;
+  const key = `usoj:test:${game.id}:${game.terms.length}`;
   const [replay] = useState(() => { try { return localStorage.getItem(key) === "1"; } catch { return false; } });
   const [skipped, setSkipped] = useState(false);
 
