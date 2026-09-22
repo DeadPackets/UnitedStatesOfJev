@@ -1,16 +1,20 @@
 import { DurableObject } from "cloudflare:workers";
 import {
-  applyCitizens, applyLobby, applyVote, continueTerm, director, effectiveWhip, encodeCode, endTerm, expectedYes,
-  LOBBY_COSTS, newGame, record, resolveEvent, runTest, scenarioTag, threshold, TURNS_PER_TERM,
-  type Bill, type BillDraft, type Game, type LobbyAction, type Member,
+  applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm, director,
+  effectiveWhip, encodeCode, endTerm, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalApproval,
+  newGame, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
+  threshold, TURNS_PER_TERM,
+  type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
 } from "./engine";
 import {
-  citizenQuestions, citizenState, eventQuestions, gateQuestion, jev, memberQuestion, nouls, scores,
-  testQuestions, testState, UpstreamError, whipQuestions, whipState, type Env,
+  agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, gateQuestion, jev,
+  memberQuestion, nouls, reactQuestions, reactState, scores, testQuestions, testState, UpstreamError, voteQuestions,
+  voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, type Pack } from "./pack";
-import { amendBill, cardText, ending, narrate, outcome, parseBill, quotes } from "./luna";
+import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
+import { chunk, portraitSheet, SHEET } from "./build";
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -18,6 +22,24 @@ class Reject extends Error { constructor(public status: number, message: string)
 export function pickStart(pack: Pack, f: number) {
   const faction = pack.factions[f];
   return faction && pack.starts.find((s) => s.faction === faction.id);
+}
+
+export type CampaignBody = { message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
+
+// Two levers, nothing else: up to two regions at 0, 5 or 10 from the chest, or one seat favor from capital.
+function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
+  if (raw?.kind === "favor") {
+    const m = game.members.find((x) => x.id === raw.memberId);
+    if (!m) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
+    return { kind: "favor", memberId: m.id };
+  }
+  const rows = (raw?.kind === "spend" ? raw.regions ?? [] : []).slice(0, 3);
+  if (rows.length > 2) throw new Reject(400, "Two regions at most.");
+  for (const r of rows) {
+    if (!pack.regions.some((x) => x.id === r.id)) throw new Reject(400, "No such region.");
+    if (!(SPEND_STEPS as readonly number[]).includes(r.amount)) throw new Reject(400, "Spend 0, 5 or 10.");
+  }
+  return { kind: "spend", regions: rows };
 }
 
 type Prose = { ending?: { title: string; body: string } };
@@ -53,6 +75,11 @@ export class GameDO extends DurableObject<Env> {
         switch (parts[0]) {
           case "bills": extra = await this.bill(game, pack, parts, body); break;
           case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+          case "midterm": await this.midterm(game, pack); break;
+          case "post": await this.post(game, pack, String(body.text ?? "")); break;
+          case "campaign":
+            parts[1] === "drafts" ? await this.drafts(game, pack) : await this.campaign(game, pack, body as CampaignBody);
+            break;
           case "test": await this.term(s, pack); break;
           case "continue":
             if (game.stage !== "won") throw new Reject(409, "The term is not won.");
@@ -106,6 +133,7 @@ export class GameDO extends DurableObject<Env> {
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
     const saved = row ? JSON.parse(row.v as string) as Saved : null;
     if (!saved?.game) throw new Reject(404, "No such game.");
+    saved.game.posts ??= [];   // a game saved before Stage B has no feed
     return (this.saved = saved);
   }
 
@@ -126,7 +154,7 @@ export class GameDO extends DurableObject<Env> {
   /* ---------- the floor ---------- */
 
   private async bill(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
-    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "The term is over. Run the test.");
+    if (game.stage !== "session") throw new Reject(409, game.stage === "midterm" ? `The ${pack.vocabulary.midterm} comes first.` : "The term is over.");
     const action = parts.length === 1 ? "draft" : parts[2];
     // The path segment is the bill's id, which is the turn it was drafted on, not its index.
     const bill = parts[1] !== undefined ? game.bills.find((b) => b.id === Number(parts[1])) : undefined;
@@ -176,9 +204,8 @@ export class GameDO extends DurableObject<Env> {
     const m = game.members.find((x) => x.id === memberId);
     if (!m || !(action in LOBBY_COSTS)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
     if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
-    // 1.5 is the costly_favors multiplier. Gating on the worst case stops applyLobby's clamp at 0 from ever
-    // handing out a free offer.
-    if (game.ledgers.capital < LOBBY_COSTS[action] * 1.5) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    // Gating on the priced cost stops applyLobby's clamp at 0 from ever handing out a free offer.
+    if (game.ledgers.capital < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
     const whip = bill.whip;
     const { offer } = applyLobby(pack, game, bill, m, action);
     const r = await jev(this.env, whipState(pack, game, bill), { [m.id]: memberQuestion(pack, m, offer) });
@@ -237,9 +264,71 @@ export class GameDO extends DurableObject<Env> {
       const storylet = pack.deck.find((s) => s.id === event.id);
       if (storylet) event.card = await cardText(this.env, pack, storylet, record(pack, game)).catch(() => undefined);
     }
-    // The midterm draw is Stage B, so the stage goes straight back to the session.
-    if (game.stage === "midterm") game.stage = "session";
     return { deltas };
+  }
+
+  private async midterm(game: Game, pack: Pack) {
+    if (game.stage !== "midterm") throw new Reject(409, `The ${pack.vocabulary.midterm} is not due.`);
+    const r = await jev(this.env, voteState(pack, game, []), voteQuestions(pack, game, pack.citizens, {}, {}));
+    const draw = runMidterm(pack, game, nouls(r.answers, "vote_"));
+    const slots = replacements(pack, game, draw);
+    const personas = await newMembers(this.env, pack, slots).catch(() => []);
+    applyMidterm(pack, game, draw, personas);
+    const fresh = game.members.filter((m) => slots.some((s) => s.id === m.id));
+    // Portraits never gate play: initials stand in until the sheets land (v3 spec §5).
+    for (const group of chunk(fresh, SHEET)) this.ctx.waitUntil(portraitSheet(this.env, pack.id, pack, group));
+    const head = await halfTerm(this.env, pack, {
+      ...record(pack, game),
+      seats_lost: draw.lostOwn, seats_changed: draw.lost.length, seats_up: draw.up.length,
+      [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
+    }).catch(() => undefined);
+    if (head && game.midterm) game.midterm.headline = head;
+  }
+
+  private async post(game: Game, pack: Pack, raw: string) {
+    if (game.stage !== "session") throw new Reject(409, "Not now.");
+    const text = raw.trim();
+    if (!text.length || text.length > 240) throw new Reject(400, "240 characters at most.");
+    if (game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
+    const sample = seededSample(game, pack.citizens, 50);
+    const r = await jev(this.env, reactState(pack, game, text), reactQuestions(pack, pack.citizens));
+    const reactions = choices(r.answers, "react_") as Record<string, Reaction>;
+    const loudest = [...pack.citizens]
+      .filter((c) => reactions[c.id] === "share" || reactions[c.id] === "boo")
+      .sort((a, b) => b.weight - a.weight).slice(0, 3)
+      .map((c) => ({ name: c.name, town: c.town, worldview: c.worldview, reaction: reactions[c.id] }));
+    const said = await replies(this.env, pack, text, loudest, record(pack, game)).catch(() => ({ replies: [], rival: "" }));
+    const duel = said.rival
+      ? choices((await jev(this.env, agreeState(pack, text, said.rival), agreeQuestions(pack, sample))).answers, "agree_")
+      : {};
+    const post = applyPost(pack, game, game.turn, text, reactions, said, duel as Record<string, "government" | "rival">);
+    if (!said.rival) post.won = false;
+  }
+
+  private async drafts(game: Game, pack: Pack) {
+    if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
+    const c = game.campaign!;
+    if (c.drafts.length === 3) return;
+    c.drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
+      .catch(() => ["Keep the course.", "The work is not finished.", "The other side would undo it."]);
+  }
+
+  private async campaign(game: Game, pack: Pack, body: CampaignBody) {
+    if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
+    const c = game.campaign!;
+    const message = String(body.message ?? "").trim().slice(0, 200);
+    if (!message) throw new Reject(400, "Pick a message.");
+    const lever = readLever(pack, game, body.lever);
+    const cost = leverCost(game, lever);
+    if (cost.chest > game.ledgers.chest) throw new Reject(402, "Not enough in the chest.");
+    if (cost.capital > game.ledgers.capital) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    const spend: Record<string, number> = {};
+    if (lever.kind === "spend") for (const r of lever.regions) spend[r.id] = r.amount;
+    const rivalAmount = RIVAL_SPEND * (game.stageB.rival_surge ?? 1);
+    const rivalSpend = Object.fromEntries(c.rival.map((id) => [id, rivalAmount]));
+    const r = await jev(this.env, voteState(pack, game, [...c.messages, message]),
+      voteQuestions(pack, game, pack.citizens, spend, rivalSpend));
+    applyCampaign(pack, game, message, lever, nouls(r.answers, "vote_"));
   }
 
   private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
@@ -282,6 +371,19 @@ export class GameDO extends DurableObject<Env> {
   }
 }
 
+export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
+  const r = rng(game.seed ^ 0xfeed ^ game.turn);
+  return [...xs].sort(() => r() - 0.5).slice(0, n);
+};
+
+// What each lever is worth, priced here so the campaign screen never reads the engine.
+const gains = (pack: Pack, game: Game) => ({
+  favor: leverGain(pack, { kind: "favor", memberId: "" }),
+  favorCost: lobbyCost(game, "favor"),
+  spend: Object.fromEntries(pack.regions.map((r) =>
+    [r.id, SPEND_STEPS.map((amount) => leverGain(pack, { kind: "spend", regions: [{ id: r.id, amount }] }))])),
+});
+
 // Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
 export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const { director: _hidden, members, bills, ...rest } = game;
@@ -299,6 +401,7 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
       return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),
     citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
+    campaign: game.campaign && { ...game.campaign, gains: gains(pack, game) },
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
     seatTitle: start?.seat_title ?? "the government",
     turnsPerTerm: TURNS_PER_TERM,

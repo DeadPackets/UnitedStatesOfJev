@@ -6,12 +6,18 @@ import type { GameView } from "../src/api";
 const [base = "http://127.0.0.1:8799", scenario = "v3nj3k", faction = "caesarians", picks = "0,5,7"] = process.argv.slice(2);
 const promises = picks.split(",").map(Number);
 
-// Three texts, cycled: works, institutions, supply. Broad enough that a minority government can win a count,
-// and between them they carry the three default pledges (grain supply, governors, public works).
+// Three texts, cycled: works, institutions, supply. No era and no place, so the gate takes them in any polity.
 const TEXTS = [
-  "Repair the roads and the aqueducts of the city and the Italian towns, and publish the accounts of the works each month.",
-  "Set new rules for the governors of the provinces: fixed terms, published accounts, and a court that hears claims of extortion.",
-  "Fund the supply of grain for the coming year out of the treasury and fix the port dues at the harbour.",
+  "Repair the roads, the water supply and the public buildings, and publish the accounts of the works each month.",
+  "Set new rules for the officials who govern: fixed terms, published accounts, and a court that hears claims of extortion.",
+  "Fund the supply of food and fuel for the coming year out of the treasury, and fix the duties charged on what is brought in.",
+];
+
+// One post a turn, cycled. Each is inside the 240 characters the Feed takes.
+const POSTS = [
+  "The roads, the water and the public buildings get fixed this year, and the accounts of every work go up in public each month. Read them. Then tell me what else is broken.",
+  "An official who robs the public will answer for it in a court, with a fixed term and published books. The people who fear that rule are telling you who they are.",
+  "Food and fuel for the coming year are paid for out of the treasury, and the duties are fixed. No family here eats worse because a merchant found a new price.",
 ];
 
 const ms = (t: number) => `${((performance.now() - t) / 1000).toFixed(1)}s`;
@@ -39,7 +45,7 @@ console.log(`${g.pack.chamber.size} ${V.member}s, ${V.bill} needs ${g.pack.chamb
 const crises: string[] = [];
 const timings: number[] = [];
 
-while (g.stage === "session" || g.stage === "midterm") {
+while (g.stage === "session") {
   const turn = g.turn, t0 = performance.now();
   g = await api(`/games/${g.id}/bills`, { turn, text: TEXTS[(turn - 1) % TEXTS.length] });
   g = await api(`/games/${g.id}/bills/${turn}/whip`, { turn });
@@ -66,8 +72,14 @@ while (g.stage === "session" || g.stage === "midterm") {
     g = await api(`/games/${g.id}/bills/${turn}/lobby`, { turn, memberId: target.id, action: "pork" });
   }
 
+  g = await api(`/games/${g.id}/post`, { turn, text: POSTS[(turn - 1) % POSTS.length] });
+  const p = g.posts.at(-1)!;
+  console.log(`     ${V.post}: ${p.likes} like ${p.boos} boo ${p.shares} share ${p.ignores} ignore` +
+    ` | duel ${p.agree.mine}/${p.agree.rival} -> ${p.won ? "won" : "lost"} | "${p.rival.slice(0, 80)}"`);
+
   g = await api(`/games/${g.id}/bills/${turn}/vote`, { turn });
   const voted = g.bills.find((b) => b.id === turn)!;
+
   const L = g.ledgers;
   const approval = g.pack.regions.reduce((a, r) => a + r.weight * (L.approval[r.id] ?? 50), 0) / g.pack.regions.reduce((a, r) => a + r.weight, 0);
   console.log(
@@ -89,10 +101,35 @@ while (g.stage === "session" || g.stage === "midterm") {
   timings.push(performance.now() - t0);
   console.log(`     ${V.turn} ${turn} in ${ms(t0)}`);
   if (turn === g.turn) { console.error(`FAIL: ${V.turn} ${turn} did not advance`); process.exit(1); }
+
+  if (g.stage === "midterm") {
+    const m0 = performance.now();
+    g = await api(`/games/${g.id}/midterm`, { turn: g.turn });
+    const m = g.midterm!;
+    console.log(`   ${V.midterm}: ${m.up.length} up, ${m.lost.length} lost (${m.lostOwn} own side)${m.wipeout ? " (wipeout)" : ""} in ${ms(m0)} | ${m.headline?.title ?? "(no headline)"}`);
+    console.log(`     new: ${g.members.filter((x) => x.id.startsWith(`r${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
+  }
 }
 
 console.log(`\nturns 1..${timings.length} in ${ms(started)}; slowest ${(Math.max(...timings) / 1000).toFixed(1)}s, median ${(timings.sort((a, b) => a - b)[timings.length >> 1] / 1000).toFixed(1)}s`);
 console.log(`crises drawn (${crises.length}):\n  ${crises.join("\n  ") || "none"}`);
+
+while (g.stage === "campaign") {
+  const t0 = performance.now();
+  if (!g.campaign!.drafts.length) g = await api(`/games/${g.id}/campaign/drafts`, {});
+  const c = g.campaign!;
+  // Alternate: money on the weakest region the rival is also working, then a favor to the softest own seat.
+  const own = g.members.filter((m) => m.faction === g.faction).sort((a, b) => a.loyalty - b.loyalty)[0];
+  const lever = c.turns.length % 2 === 1 && own && g.ledgers.capital >= 25
+    ? { kind: "favor", memberId: own.id }
+    : { kind: "spend", regions: g.ledgers.chest >= 5 ? [{ id: c.rival[0] ?? g.pack.regions[0].id, amount: 5 }] : [] };
+  g = await api(`/games/${g.id}/campaign`, { message: c.drafts[0], lever });
+  const t = g.campaign!.turns.at(-1)!;
+  console.log(`${V.campaign} ${t.n}/4 "${t.message}"`);
+  console.log(`     lever ${t.lever.kind} cost ${t.cost.chest}/${t.cost.capital}` +
+    ` | public ${(t.public * 100).toFixed(1)}% band ${(t.band[0] * 100).toFixed(1)}-${(t.band[1] * 100).toFixed(1)}` +
+    ` | rival in ${t.rival.join(", ")} | ${ms(t0)}`);
+}
 
 if (g.stage === "test") {
   const t0 = performance.now();
@@ -107,4 +144,4 @@ console.log(`\nending ${g.result?.ending} score ${g.result?.score}`);
 if (term) console.log(`term ${term.term}: passed ${term.passed} kept ${term.kept} broken ${term.broken} mandate ${term.mandate.toFixed(3)} points ${term.points}`);
 if (g.ending) console.log(`"${g.ending.title}" — ${g.ending.body}`);
 console.log(`\n${calls} requests, ${ms(started)} total`);
-if (performance.now() - started > 360_000) { console.error("FAIL: over 6 minutes"); process.exit(1); }
+if (performance.now() - started > 480_000) { console.error("FAIL: over 8 minutes"); process.exit(1); }

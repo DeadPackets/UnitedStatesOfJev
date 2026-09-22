@@ -269,15 +269,6 @@ textarea, input, select { font: inherit; color: inherit; }
 .verdict .lede { color: var(--ink); }
 .verdict .lede.fail { color: var(--red); }
 
-/* the test: the region walk. A lost region keeps its bar, hatched, so the weight still reads */
-.regionwalk { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.regionwalk li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: baseline; opacity: 0.3; transition: opacity var(--t-state) var(--ease-out); }
-.regionwalk li.yes, .regionwalk li.no { opacity: 1; }
-.regionwalk .k { font-size: 13px; font-weight: 600; }
-.regionwalk .bar { grid-column: 1 / -1; height: 8px; background: var(--tone); position: relative; overflow: hidden; }
-.regionwalk .bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); transition: width 420ms var(--ease-expo); }
-.regionwalk li.no .bar i { background: repeating-linear-gradient(45deg, var(--ink-2) 0 2px, transparent 2px 7px); box-shadow: inset 0 0 0 1px var(--ink-2); }
-
 .coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; }
 .coach .kicker { color: var(--bg); opacity: 0.7; }
 .coach .link { color: var(--bg); opacity: 0.75; min-height: 36px; padding: 0; }
@@ -305,3 +296,81 @@ textarea, input, select { font: inherit; color: inherit; }
   @keyframes wipefade { 0%, 100% { opacity: 0; } 35%, 65% { opacity: 1; } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* the test and the campaign: the map as weighted tiles. Won is ink, lost keeps its area under a hairline hatch */
+.tiles { position: relative; width: 100%; aspect-ratio: 100/62; border: 1px solid var(--ink); background: var(--paper); }
+.tile { position: absolute; border: 1px solid var(--ink); background: var(--paper); overflow: hidden;
+  padding: 5px 6px; text-align: left; color: var(--ink); font: inherit; cursor: default;
+  transition: background-color var(--t-state) var(--ease-expo), color var(--t-state) var(--ease-expo), border-color var(--t-state); }
+.tile .nm { font: 700 13px/1.05 var(--display); letter-spacing: 0.05em; text-transform: uppercase; display: block; }
+.tile .wt { font-size: 10px; color: var(--ink-2); display: block; margin-top: 2px; }
+.tile.tiny { display: grid; place-items: center; padding: 0; }
+.tile.tiny .nm { font-size: 11px; }
+.tile.tiny .wt { display: none; }
+.tile.lost { background-image: repeating-linear-gradient(45deg, var(--ink-2) 0 1px, transparent 1px 7px); }
+.tile.lost .nm, .tile.lost .wt { background: var(--paper); width: fit-content; padding-right: 4px; }
+.tile.won { background-color: var(--ink); color: var(--paper); background-image: none; }
+.tile.won .wt { color: var(--tone); }
+.tile.flash { background-color: var(--accent) !important; background-image: none !important; border-color: var(--accent); color: var(--paper); }
+.tile.flash .wt { color: var(--paper); }
+.tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
+.tile.hit { animation: hit 420ms var(--ease-expo); }
+@keyframes hit { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+button.tile { cursor: pointer; min-height: 44px; }
+@media (max-width: 560px) { .tiles { aspect-ratio: 100/125; } }
+/* the 50% mark writes its label below the bar, so the map keeps clear of it */
+.whipbar + .tiles { margin-top: 16px; }
+
+/* midterm night: the government count under the floor, the size of the verdict it is */
+.midtermnight .stage p.num { font: 900 clamp(28px, 6vw, 48px)/1 var(--display); margin: 8px 0 0; text-align: center; }
+.midtermnight .verdict h2 { font-size: 28px; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.01em; }
+
+/* the rail's two tabs, and the feed under the second */
+.tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { min-height: 44px; padding: 0 10px; color: var(--ink-2); font: 600 12px/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase;
+  transition: color var(--t-fast), box-shadow var(--t-fast); }
+.tabs button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+.railpanel, .feed { display: grid; gap: 18px; align-content: start; }
+.feed textarea { width: 100%; resize: vertical; border: 1.5px solid var(--ink); background: var(--bg); padding: 10px 12px; outline: none; }
+.feed textarea::placeholder { color: var(--ink-2); }
+.feed textarea:disabled { border-color: var(--tone); color: var(--ink-2); }
+.feed .lede { font-size: 19px; line-height: 1.3; }
+.feedline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 14px 0 0; }
+.reacts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.react { display: inline-flex; align-items: baseline; gap: 4px; }
+.react i { font-style: normal; color: var(--ink-2); }
+/* the rival answers on hatched stock, so the player never reads it as their own */
+.rivalpost { margin-top: 12px; padding: 10px 12px; border: 1.5px solid var(--ink);
+  background-image: repeating-linear-gradient(45deg, var(--ink-2) 0 1px, transparent 1px 7px); }
+.rivalpost .kicker, .rivalpost p { background: var(--paper); width: fit-content; padding-right: 4px; }
+
+/* the campaign: the forecast band over the map, the two levers side by side in the rail */
+.campaign .forecast { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.campaign .forecast .n { font: 800 clamp(44px, 7vw, 72px)/1 var(--display); letter-spacing: -0.02em; }
+.campaign .band { margin-bottom: 22px; }
+.campaign .band .seg { position: absolute; top: 0; bottom: 0; background: var(--ink-2); opacity: 0.45; transition: left 700ms var(--ease-expo), width 700ms var(--ease-expo); }
+.campaign .band .pt { position: absolute; top: -7px; width: 3px; height: 24px; background: var(--ink); transform: translateX(-1px); transition: left 700ms var(--ease-expo); }
+.campaign .band .tick { background: var(--ink-2); }
+/* the rival's two regions keep their area readable: a hatch inside a ruled edge, not a fill */
+.campaign .tile.lost { background-image: repeating-linear-gradient(45deg, var(--tone) 0 2px, transparent 2px 8px); outline: 2px solid var(--ink-2); outline-offset: -2px; }
+.campaign .tile.lost .nm, .campaign .tile.lost .wt { background: none; }
+.campaign .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
+.campaign button.tile { min-width: 44px; }
+.campaign .drafts { display: grid; gap: 8px; }
+.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state); }
+.campaign .drafts .opt2:hover { border-color: var(--ink); }
+.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
+.campaign .levers { display: grid; gap: 10px; }
+.campaign .tworadio { gap: 8px; }
+.campaign .opt[aria-checked="true"] { background: var(--ink); color: var(--bg); }
+.campaign .row.step { flex-wrap: nowrap; gap: 6px; }
+.campaign .row.step span { flex: 1 1 auto; min-width: 0; }
+.campaign .row.step .opt { padding: 0 14px; }
+.campaign .seats { max-height: 320px; overflow: auto; }
+.campaign .seats .fcard { justify-content: space-between; align-items: center; }
+.campaign .seats .fcard .t { flex: 1 1 auto; text-align: left; }
+.campaign .gains { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid var(--tone); padding-top: 10px; }
+.campaign .gains > div { opacity: 0.45; transition: opacity var(--t-state); }
+.campaign .gains > div.on { opacity: 1; }
+.campaign .gains b { font: 800 30px/1 var(--display); display: block; }
+.campaign .levers .btn { width: 100%; margin-top: 4px; }

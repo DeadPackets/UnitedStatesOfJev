@@ -43,13 +43,14 @@ export interface Game {
   patrons: Record<string, number>;   // -2..2
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
-  members: Member[]; bills: Bill[]; events: Event[];
+  members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
   director: { intensity: number; lastCrisis: number; seen: string[] };
   streak: number; bestStreak: number;
   escalations: EscalationKey[]; stageB: Partial<Record<EscalationKey, number>>;
   marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
   lastApprove: Record<string, number>;   // previous citizen mean per region, the 0.05 gate
   economy?: string; terms: TermRecord[]; test?: TestResult;
+  midterm?: Midterm; campaign?: Campaign;
   result?: { ending: Ending; score: number };
 }
 
@@ -118,7 +119,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
     promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyOf(start, m, start.faction), mood: 0 })),
-    bills: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
+    bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
     lastApprove: {}, terms: [],
   };
@@ -128,8 +129,9 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
   return game;
 }
 
-const loyaltyOf = (start: Pack["starts"][number], m: PackMember, own: string) =>
-  m.faction === own ? 100 : (start.hostile ?? []).includes(m.faction) ? 25 : start.coalition.includes(m.faction) ? 70 : 0;
+const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>
+  faction === own ? 100 : (start.hostile ?? []).includes(faction) ? 25 : start.coalition.includes(faction) ? 70 : 0;
+const loyaltyOf = (start: Pack["starts"][number], m: PackMember, own: string) => loyaltyFor(start, m.faction, own);
 
 export function nationalApproval(pack: Pack, game: Game): number {
   let w = 0, sum = 0;
@@ -177,15 +179,15 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
   recession: { start: (pack, game) => { game.economy = "recession"; for (const p of pack.patrons.slice(0, 2)) game.patrons[p.id] = -1; } },
   scandal_season: { start: (_pack, game) => { for (const m of seeded(game, 0x5ca2, game.members, 4)) m.situation = INVESTIGATION; } },
   short_fuse: { dirLo: 20, dirHi: 60 },
-  split_chamber: { stageB: 8 },          // stage B
+  split_chamber: { stageB: 8 },          // runMidterm
   costly_favors: { lobbyCost: 1.5 },
   fickle_base: { promiseTurns: [8, 16] },
   empty_chest: { chest: 0.5 },
   hostile_court: { struckAt: 0.5 },
-  rival_surge: { stageB: 2 },            // stage B
-  apathy: { stageB: 0.8 },               // stage B
+  rival_surge: { stageB: 2 },            // rivalTargets spend
+  apathy: { stageB: 0.8 },               // runTest turnout
   defections: { whip: (game, m) => (m.faction === game.faction ? -0.05 : 0) },
-  loud_opposition: { stageB: 1.5 },      // stage B
+  loud_opposition: { stageB: 1.5 },      // applyPost
   crisis_fatigue: { noRelief: true },
   leaks: { leak: 0.3 },
   war_footing: {
@@ -282,7 +284,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     game.stage = "over"; game.phase = "over";
     game.terms.push(termPoints(game, 0));   // a term cut short still scores its bills and promises
     game.result = { ending: end, score: score(game) };
-  } else if (game.turn > TURNS_PER_TERM) { game.stage = "test"; game.phase = "over"; }
+  } else if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; game.phase = "over"; startCampaign(pack, game); }
   else { game.phase = "draft"; if (voted === 10) game.stage = "midterm"; }
 }
 
@@ -306,8 +308,10 @@ function checkPromises(pack: Pack, game: Game) {
 
 export const FAVOR_OWED = "Took a favor from the government and has not repaid it.";
 
+export const lobbyCost = (game: Game, action: LobbyAction) => Math.round(LOBBY_COSTS[action] * (first(game, "lobbyCost") ?? 1));
+
 export function applyLobby(pack: Pack, game: Game, bill: Bill, member: Member, action: LobbyAction): { cost: number; offer: string; leak: boolean } {
-  const cost = Math.round(LOBBY_COSTS[action] * (first(game, "lobbyCost") ?? 1));
+  const cost = lobbyCost(game, action);
   game.ledgers.capital = clamp(game.ledgers.capital - cost, 0, 200);
   const offer = pack.lobby[action].text;
   bill.offers[member.id] = offer;
@@ -346,6 +350,262 @@ export function applyCitizens(pack: Pack, game: Game, approve: Record<string, nu
   }
   for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(mean(xs));
   return deltas;
+}
+
+/* ---------- the feed ---------- */
+
+export type Reaction = "like" | "boo" | "share" | "ignore";
+export interface Post {
+  turn: number; text: string;
+  likes: number; boos: number; shares: number; ignores: number;
+  regions: Record<string, number>;                 // approval delta applied, per region
+  hot: string[];                                   // regions where shares led
+  replies: { name: string; text: string }[];
+  rival: string;
+  agree: { mine: number; rival: number };
+  won: boolean;
+}
+
+export const feedMemory = (region: string, text: string) => `Constituents in ${region} are loud about "${text}".`;
+
+// v2 §12 counts one region's own citizens, so the denominator is that region's sample, not the 250.
+export function applyPost(pack: Pack, game: Game, turn: number, text: string,
+  reactions: Record<string, Reaction>, said: { replies: { name: string; text: string }[]; rival: string },
+  agree: Record<string, "government" | "rival">): Post {
+  const loud = game.stageB.loud_opposition ?? 1;
+  const tally = { like: 0, boo: 0, share: 0, ignore: 0 };
+  const per = new Map(pack.regions.map((r) => [r.id, { like: 0, boo: 0, share: 0, ignore: 0, n: 0 }]));
+  for (const c of pack.citizens) {
+    const r = reactions[c.id];
+    if (!r) continue;
+    tally[r] += 1;
+    const g = per.get(c.region);
+    if (g) { g[r] += 1; g.n += 1; }
+  }
+  const regions: Record<string, number> = {}, hot: string[] = [];
+  for (const r of pack.regions) {
+    const g = per.get(r.id)!;
+    if (!g.n) continue;
+    const d = round1(clamp(((g.like + 2 * g.share - 2 * g.boo * loud) / g.n) * 2, -6, 6));
+    regions[r.id] = d;
+    if (d !== 0) bump(game, r.id, d);
+    if (g.share > g.like && g.share > g.boo) {
+      hot.push(r.id);
+      const line = feedMemory(r.name, text.slice(0, 60));
+      for (const m of game.members) if (m.region === r.id) m.memory = [...m.memory, line].slice(-5);
+    }
+  }
+  const votes = Object.values(agree);
+  const mine = votes.filter((v) => v === "government").length;
+  const post: Post = {
+    turn, text, likes: tally.like, boos: tally.boo, shares: tally.share, ignores: tally.ignore,
+    regions, hot, replies: said.replies.slice(0, 3), rival: said.rival,
+    agree: { mine, rival: votes.length - mine }, won: mine >= votes.length - mine,
+  };
+  game.posts.push(post);
+  return post;
+}
+
+/* ---------- the midterm ---------- */
+
+export interface MidtermDraw {
+  up: { seat: string; memberId: string; faction: string; p: number }[];
+  forced: string[];                                // seat ids split_chamber took before any draw
+  lost: { seat: string; memberId: string; from: string; to: string }[];
+  lostOwn: number;
+  wipeout: boolean;
+}
+export interface Replacement {
+  id: string; seat: string; region: string; faction: string;
+  temperament: (typeof TEMPERAMENTS)[number]; years: "new" | "mid" | "long";
+  flags: Member["flags"]; patrons: string[];
+}
+export interface Persona { id: string; name: string; bio: string; tell: string; core_issues: string[] }
+export interface Midterm { up: string[]; lost: MidtermDraw["lost"]; lostOwn: number; wipeout: boolean; headline?: { title: string; lede: string } }
+
+const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+// A partner is on the government's side only where neither start calls the other hostile.
+const ownSide = (pack: Pack, game: Game, faction: string) => {
+  if (faction === game.faction) return true;
+  const start = pack.starts.find((s) => s.faction === game.faction);
+  const theirs = pack.starts.find((s) => s.faction === faction);
+  return (start?.coalition ?? []).includes(faction) && !(start?.hostile ?? []).includes(faction)
+    && !(theirs?.hostile ?? []).includes(game.faction);
+};
+
+export const midtermUp = (game: Game): Member[] =>
+  game.members.filter((m) => (game.marks.midterm ?? []).includes(m.seat));
+
+export function regionIntent(pack: Pack, intent: Record<string, number>): Record<string, number> {
+  const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
+  for (const c of pack.citizens) {
+    const g = per.get(c.region);
+    if (g && intent[c.id] !== undefined) { g.w += c.weight; g.s += c.weight * intent[c.id]; }
+  }
+  return Object.fromEntries(pack.regions.map((r) => { const g = per.get(r.id)!; return [r.id, g.w ? g.s / g.w : 0.5]; }));
+}
+
+// v2 §7: half the seat's fate is the region's approval, half is its citizens' intent. The odds flip for a
+// seat the government does not hold.
+export function holdP(pack: Pack, game: Game, m: Member, byRegion: Record<string, number>): number {
+  const base = 0.5 * sigmoid(((game.ledgers.approval[m.region] ?? 50) - 50) / 8) + 0.5 * (byRegion[m.region] ?? 0.5);
+  return clamp(ownSide(pack, game, m.faction) ? base : 1 - base, 0, 1);
+}
+
+const seatShareOf = (game: Game, faction: string) => game.members.filter((m) => m.faction === faction).length;
+
+// The seat goes to the faction the region leans to most, the loser excluded: code picks it, not a model.
+// A forced seat must leave the government: only a faction outside ownSide can take it, largest caucus first.
+const winnerOf = (pack: Pack, game: Game, region: string, loser: string, excludeOwnSide: boolean): string | undefined => {
+  const pool = [...pack.factions].filter((f) => f.id !== loser && (!excludeOwnSide || !ownSide(pack, game, f.id)));
+  if (!pool.length) return undefined;
+  return excludeOwnSide
+    ? pool.sort((a, b) => seatShareOf(game, b.id) - seatShareOf(game, a.id))[0].id
+    : pool.sort((a, b) => leanOf(pack, region, b.id) - leanOf(pack, region, a.id))[0].id;
+};
+
+export function runMidterm(pack: Pack, game: Game, intent: Record<string, number>): MidtermDraw {
+  const byRegion = regionIntent(pack, intent);
+  const cls = midtermUp(game);
+  const up = cls.map((m) => ({ seat: m.seat, memberId: m.id, faction: m.faction, p: Math.round(holdP(pack, game, m, byRegion) * 100) / 100 }));
+  const n = game.stageB.split_chamber ?? 0;
+  const forcedTo = new Map<string, string>();
+  for (const m of seeded(game, 0x5b1e, cls.filter((m) => ownSide(pack, game, m.faction)), n)) {
+    const to = winnerOf(pack, game, m.region, m.faction, true);
+    if (to) forcedTo.set(m.seat, to);
+  }
+  const lost: MidtermDraw["lost"] = [];
+  for (const m of cls) {
+    const forced = forcedTo.get(m.seat);
+    if (forced) { lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: forced }); continue; }
+    const held = roll() < holdP(pack, game, m, byRegion);
+    if (!held) lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: winnerOf(pack, game, m.region, m.faction, false)! });
+  }
+  const lostOwn = lost.filter((l) => ownSide(pack, game, l.from) && !ownSide(pack, game, l.to)).length;
+  return { up, forced: [...forcedTo.keys()], lost, lostOwn, wipeout: lostOwn * 5 >= cls.length * 2 && cls.length > 0 };
+}
+
+// Identity is code's: the seat, the region, the winning faction, a cycled temperament, the seat's own flags.
+export function replacements(_pack: Pack, game: Game, draw: MidtermDraw): Replacement[] {
+  return draw.lost.map((l, i) => {
+    const old = game.members.find((m) => m.seat === l.seat)!;
+    return {
+      id: `r${game.term}-${l.seat}`, seat: l.seat, region: old.region, faction: l.to,
+      temperament: TEMPERAMENTS[(hash(l.seat) + i) % TEMPERAMENTS.length],
+      years: "new" as const, flags: old.flags, patrons: [],
+    };
+  });
+}
+
+export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas: Persona[]): void {
+  const start = pack.starts.find((s) => s.faction === game.faction) ?? pack.starts[0];
+  const by = new Map(personas.map((p) => [p.id, p]));
+  for (const slot of replacements(pack, game, draw)) {
+    const p = by.get(slot.id);
+    const i = game.members.findIndex((m) => m.seat === slot.seat);
+    if (i < 0) continue;
+    const core = (p?.core_issues ?? []).filter((t) => pack.tags.includes(t));
+    game.members[i] = {
+      id: slot.id, seat: slot.seat, region: slot.region, faction: slot.faction,
+      name: p?.name ?? slot.id, bio: p?.bio ?? "", tell: p?.tell ?? "",
+      core_issues: core.length ? core : [pack.tags[0]], temperament: slot.temperament,
+      patrons: slot.patrons, years: slot.years, flags: slot.flags, portrait: `members/${slot.id}.png`,
+      memory: [], loyalty: loyaltyFor(start, slot.faction, game.faction), mood: 0,
+    };
+  }
+  game.midterm = { up: draw.up.map((u) => u.seat), lost: draw.lost, lostOwn: draw.lostOwn, wipeout: draw.wipeout };
+  if (draw.wipeout) {
+    game.stage = "over"; game.phase = "over";
+    game.terms.push(termPoints(game, 0));
+    game.result = { ending: "lame_duck", score: score(game) };
+  } else {
+    game.stage = "session";
+  }
+}
+
+/* ---------- the campaign ---------- */
+
+export const CAMPAIGN_TURNS = 4;
+export const SPEND_STEPS = [0, 5, 10] as const;
+export const RIVAL_SPEND = 5;                      // per targeted region per campaign turn
+export const SPEND_LIFT: Record<number, number> = { 0: 0, 5: 0.02, 10: 0.04 };
+export const FAVOR_LIFT = 0.3;                     // modelled confidence lift on one seat
+
+export type Lever = { kind: "spend"; regions: { id: string; amount: number }[] } | { kind: "favor"; memberId: string };
+export interface CampaignTurn {
+  n: number; message: string; lever: Lever; cost: { chest: number; capital: number };
+  intent: Record<string, number>; public: number; band: [number, number]; regions: { id: string; p: number }[]; rival: string[];
+}
+export interface Campaign { drafts: string[]; messages: string[]; turns: CampaignTurn[]; rival: string[]; intent: Record<string, number> }
+
+export function startCampaign(pack: Pack, game: Game): void {
+  const intent = Object.fromEntries(pack.regions.map((r) => [r.id, clamp((game.ledgers.approval[r.id] ?? 50) / 100, 0, 1)]));
+  game.campaign = { drafts: [], messages: [], turns: [], rival: rivalTargets(pack, game, intent), intent };
+}
+
+// The rival goes where the government is weakest but not yet lost: two regions, its own money, every turn.
+export function rivalTargets(pack: Pack, _game: Game, byRegion: Record<string, number>): string[] {
+  const live = pack.regions.filter((r) => (byRegion[r.id] ?? 0.5) >= 0.35);
+  const pool = live.length >= 2 ? live : pack.regions;
+  return [...pool].sort((a, b) => (byRegion[a.id] ?? 0.5) - (byRegion[b.id] ?? 0.5)).slice(0, 2).map((r) => r.id);
+}
+
+export function leverCost(game: Game, lever: Lever): { chest: number; capital: number } {
+  return lever.kind === "spend"
+    ? { chest: lever.regions.reduce((a, r) => a + r.amount, 0), capital: 0 }
+    : { chest: 0, capital: lobbyCost(game, "favor") };
+}
+
+// What the UI shows: alpha x the public move, or (1 - alpha) x the chamber move. Code's estimate, not Jev's.
+export function leverGain(pack: Pack, lever: Lever): number {
+  const a = pack.chamber.alpha;
+  if (lever.kind === "spend") {
+    return a * lever.regions.reduce((s, r) => s + (pack.regions.find((x) => x.id === r.id)?.weight ?? 0) * (SPEND_LIFT[r.amount] ?? 0), 0);
+  }
+  return (1 - a) * (FAVOR_LIFT / pack.chamber.size);
+}
+
+// A band, not a point: the standard error of the *measured intent*, not of a single Bernoulli draw per region.
+// Each region's own sample size (its citizen count) shrinks its contribution to the error.
+export function forecast(pack: Pack, byRegion: Record<string, number>): { public: number; band: [number, number]; regions: { id: string; p: number }[] } {
+  const w = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
+  const pub = pack.regions.reduce((a, r) => a + r.weight * (byRegion[r.id] ?? 0.5), 0) / w;
+  const n = new Map<string, number>();
+  for (const c of pack.citizens) n.set(c.region, (n.get(c.region) ?? 0) + 1);
+  const varr = pack.regions.reduce((a, r) => {
+    const p = byRegion[r.id] ?? 0.5;
+    return a + (r.weight / w) ** 2 * p * (1 - p) / (n.get(r.id) || 1);
+  }, 0);
+  const se = Math.sqrt(varr);
+  const regions = pack.regions.map((r) => ({ id: r.id, p: sigmoid(((byRegion[r.id] ?? 0.5) - 0.5) * 12) }));
+  return { public: pub, band: [clamp(pub - 1.96 * se, 0, 1), clamp(pub + 1.96 * se, 0, 1)], regions };
+}
+
+export function applyCampaign(pack: Pack, game: Game, message: string, lever: Lever, intent: Record<string, number>): CampaignTurn {
+  const c = game.campaign!;
+  const cost = leverCost(game, lever);
+  game.ledgers.chest = round1(clamp(game.ledgers.chest - cost.chest, 0, 9999));
+  game.ledgers.capital = clamp(game.ledgers.capital - cost.capital, 0, 200);
+  if (lever.kind === "favor") {
+    const m = game.members.find((x) => x.id === lever.memberId);
+    if (m) {
+      m.loyalty = clamp(m.loyalty + 10, 0, 100);
+      m.mood = clamp(round1(m.mood + 0.1), -1, 1);
+      m.memory = [...m.memory, "The government promised them support before the vote at the end of the term."].slice(-5);
+    }
+  }
+  const byRegion = regionIntent(pack, intent);
+  // Jev already prices rival_spend_here in the vote intent (multiplied by rival_surge); don't drag it again here.
+  const rival = rivalTargets(pack, game, byRegion);
+  const f = forecast(pack, byRegion);
+  c.messages.push(message);
+  c.intent = byRegion;
+  c.rival = rival;
+  const turn: CampaignTurn = { n: c.turns.length + 1, message, lever, cost, intent: byRegion, public: Math.round(f.public * 1000) / 1000, band: f.band, regions: f.regions, rival };
+  c.turns.push(turn);
+  c.drafts = [];
+  if (c.turns.length >= CAMPAIGN_TURNS) { game.stage = "test"; game.phase = "over"; }
+  return turn;
 }
 
 /* ---------- the Director ---------- */
@@ -477,12 +737,23 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
 
 export interface TestAnswers { loyalty: Record<string, number>; intent: Record<string, number> }
 
+// The pack names no base bloc, so the player's base is the groups that approve of them most at term end.
+export const baseBlocs = (game: Game, n = 2): string[] =>
+  Object.entries(game.blocs).sort((a, b) => b[1] - a[1]).slice(0, n).map(([id]) => id);
+
 // Both halves are always drawn, one draw per seat and per region, so the tally is the drawn count, not the
 // mean. pack.test.reveal only decides which half the UI walks.
 export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResult {
   const seats = game.members.map((m) => ({ id: m.id, p: clamp(answers.loyalty[m.id] ?? 0, 0, 1) })).sort((a, b) => a.p - b.p);
   const per = new Map(pack.regions.map((r) => [r.id, { w: 0, s: 0 }]));
-  for (const c of pack.citizens) { const g = per.get(c.region); if (g) { g.w += c.weight; g.s += c.weight * (answers.intent[c.id] ?? 0); } }
+  const apathy = game.stageB.apathy;
+  const thin = new Set(apathy ? baseBlocs(game) : []);
+  for (const c of pack.citizens) {
+    const g = per.get(c.region);
+    if (!g) continue;
+    const w = c.weight * (thin.has(c.bloc) ? apathy! : 1);
+    g.w += w; g.s += w * (answers.intent[c.id] ?? 0);
+  }
   const regions = pack.regions
     .map((r) => { const g = per.get(r.id)!; return { id: r.id, weight: r.weight, p: g.w ? clamp(g.s / g.w, 0, 1) : 0.5 }; })
     .sort((a, b) => b.weight - a.weight);
@@ -530,9 +801,9 @@ export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
 // Members, memory, ledgers and director.seen carry over; two more escalations stack.
 export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
-  game.bills = []; game.events = []; game.streak = 0; game.bestStreak = 0;
+  game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
   game.director.intensity = 0; game.director.lastCrisis = -1;
-  game.test = undefined; game.result = undefined;
+  game.test = undefined; game.campaign = undefined; game.midterm = undefined; game.result = undefined;
   for (const p of Object.values(game.promises)) { p.passed = 0; p.state = "pending"; }
   const add = remainingEscalations(pack, game).slice(0, 2);
   game.escalations.push(...add);

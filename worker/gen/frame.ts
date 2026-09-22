@@ -54,10 +54,13 @@ export type Frame = z.infer<typeof FrameSchema>;
 
 const SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
 
+// One Jev call asks a question per member plus 250 citizens; 72 seats keeps that call under the 64k answer cap.
+export const MAX_CHAMBER = 72;
+
 // Same formula as the prompt's chamber-size rule, enforced in code: the facts sheet's largest body (the chamber
 // itself, not a sub-committee) beats Luna's guess when both are known.
 export function clampChamberSize(realSize: number): number {
-  return Math.min(100, Math.max(24, Math.round(realSize / 8)));
+  return Math.min(MAX_CHAMBER, Math.max(24, Math.round(realSize / 8)));
 }
 
 function realChamberSize(facts: GenCtx["facts"]): number | null {
@@ -85,7 +88,8 @@ function clampChamber(f: Frame, size: number): Frame {
 export function settle(f: Frame, facts: GenCtx["facts"], expectStart?: string | null): { frame: Frame; violations: string[] } {
   const violations = check(f, facts, expectStart);
   const real = realChamberSize(facts);
-  return { frame: real != null ? clampChamber(f, clampChamberSize(real)) : f, violations };
+  const size = real != null ? clampChamberSize(real) : Math.min(MAX_CHAMBER, f.chamber.size);
+  return { frame: clampChamber(f, size), violations };
 }
 
 export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {

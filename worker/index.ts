@@ -126,6 +126,13 @@ app.post("/api/games/:id/events/:i", async (c) => {
   if (body === null) return c.json(badJson, 400);
   return forward(c, c.req.param("id"), `events/${c.req.param("i")}`, body);
 });
+for (const action of ["midterm", "post", "campaign", "campaign/drafts"]) {
+  app.post(`/api/games/:id/${action}`, async (c) => {
+    const body = await c.req.json().catch(() => null);
+    if (body === null) return c.json(badJson, 400);
+    return forward(c, c.req.param("id"), action, body);
+  });
+}
 // test, continue and stop take no turn: the term is already over when they are legal.
 for (const action of ["test", "continue", "stop"]) {
   app.post(`/api/games/:id/${action}`, (c) => forward(c, c.req.param("id"), action, {}));

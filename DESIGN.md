@@ -80,3 +80,86 @@ Same plate halftone treatment as the member plate (`worker/art.ts`): one crest p
 ## Vocabulary rule
 
 Every pack ships its own `vocabulary` (seat, chamber, member, bill, turn, whip, lobby, promise...). Pack words print bare — as labels, buttons, kickers — never spliced into an English sentence frame: "bring men to the vote" reads correctly as a button label but breaks as "Run the bring men to the vote". Plain nouns (`bill`, `seat`, `member`, `turn`, `test`, `promise`) are safe inside a sentence; anything that can be a whole phrase in some pack (`whip`, `lobby`) is not.
+
+## v3 Stage B: the feed, the night, the canvass, the reveal
+
+Four screens were added to the term, each on the same duotone rules above. None of them is a new visual language:
+a post is a broadsheet notice, the midterm is the floor counting itself, the canvass is a map with one lever, and
+the reveal is the map again with the count running.
+
+### The Feed
+
+The rail's panel is a two-button `tablist`: the turn's desk, and the feed under the pack's own word for it. The
+post box takes 240 characters and shuts once this turn has a post or the bill has voted. A post prints the four
+reactions as ink marks (`✓ ✕ ↗ ○`, tabular numbers, 60 ms apart), the three replies as pull quotes with a name and
+a region, the rival's answer in a hatched box, and the duel as a stamp in the pack's `pass` or `fail` word.
+
+The approval move is per region, from that region's own citizens, never the national 250:
+
+```
+d = clamp(((like + 2·share − 2·boo·loud) / n) · 2, −6, 6)
+```
+
+`loud` is the `loud_opposition` escalation, so a boo counts double under it. A region where shares beat both likes
+and boos is `hot`: it writes one memory line into every member seated there, which the next whip count reads.
+Measured: Jev's argmax never picks `share`, so `hot` has never fired in a live term (`docs/experiments.md`).
+
+### Midterm night
+
+A third of the seats (`round(size / 3)`, seeded into `game.marks.midterm` at `newGame`) are up at turn 11. The
+screen posts once on mount and then walks the class one seat per beat, `min(700 ms, 40 s / class)`, so a 60-seat
+chamber runs 14 s and a 25-seat chamber 5.6 s.
+
+| Beat | What the floor does |
+|---|---|
+| held | the seat takes an ink disc, the way a yes vote does |
+| lost | the coin and the initials change to the winning faction, and the ring marks it |
+| all done | the marks lift, the bar rests at the new count, the half-term headline rises in the rail |
+
+Each seat holds on `0.5·sigmoid((region approval − 50) / 8) + 0.5·(region intent)`, flipped for a seat the
+government does not hold, drawn once against `crypto` randomness — not the game's seed, so the night is never
+replayable. The winner is the faction the region leans to most, the loser excluded; under `split_chamber` the
+winner must come from outside the government's own side, largest caucus first. Replacements are written by Luna
+in the same call and live on the game, never on the pack, so a pack is never edited by a run. Losing 40% of the
+class from your own side ends the term as a lame duck.
+
+### The canvass
+
+Four closing turns, each one message of three and then one lever, priced against the two ledgers and shown in
+points of the mandate so the two can be read against each other:
+
+| Lever | Cost | Gain shown |
+|---|---|---|
+| up to two regions at 0, 5 or 10 | the chest | `α · Σ weight · SPEND_LIFT[amount]` |
+| a favour to one seat | `lobbyCost(game, "favor")` of capital | `(1 − α) · FAVOR_LIFT / chamber size` |
+
+`α` is the pack's own `chamber.alpha`, printed under the two figures as "α 0.65 public to 0.35 chamber", because
+it is the exchange rate between the two halves of the test. The rival works two regions each turn, hatched on the
+map and tagged; `rival_surge` doubles what the rival spends there. The forecast above the map is a band, not a
+point: ±1.96 standard errors of the measured intent, with each region's own citizen count shrinking its share of
+the error. The band is drawn as a grey segment, the point as a 2 px rule, over the same 50% tick the whip bar uses.
+
+### The treemap and its choreography
+
+Regions are a weighted treemap (`squarify`, `src/Tiles.tsx`), not a map: any polity has regions with weights, and
+no polity has an outline we can draw. Tiles are laid largest first in a unit box matched to the real aspect, so
+the biggest region is the biggest rectangle and a 2% region is still visible.
+
+| Piece | Clock | Step |
+|---|---|---|
+| a region declares | `TileReveal`'s own interval | `clamp(40 s / regions, 400, 1400)` ms, wiping in from the top by `clip-path` |
+| an upset | one `setTimeout` | 420 ms in `--accent`, the beat the forecast was contradicted |
+| the seat floor | Test.tsx's rAF, unchanged | starts on `onDone`, so `reveal: "both"` runs the two in sequence over 40 s |
+
+A won region is inked, a lost one hatched, and the header numeral counts up to the final share as the tiles land.
+The whole reveal is skippable on a replay only: the first time, the count is the point. The canvass reuses the
+same component with `onPick`, so the map you spent money on is the map that declares.
+
+### Where the four Stage B escalations bite
+
+| Key | Bites in |
+|---|---|
+| `loud_opposition` | the Feed's approval formula: a boo counts `loud` times |
+| `split_chamber` | midterm night: a forced seat must leave the government's own side |
+| `rival_surge` | the canvass: the rival's money in its two regions, and so the forecast |
+| `apathy` | the test: the weight of your own two strongest blocs is thinned |

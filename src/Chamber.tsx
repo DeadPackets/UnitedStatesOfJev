@@ -5,6 +5,7 @@ import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
 import Ledger, { Num } from "./Ledger";
+import Feed, { FeedLine } from "./Feed";
 import Card, { Announce } from "./Card";
 import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
@@ -12,6 +13,7 @@ import { sound } from "./sound";
 
 type Amendment = NonNullable<ViewBill["amendments"]>[number] & { expected: number };
 type Vocab = GameView["pack"]["vocabulary"];
+const TABS = ["turn", "feed"] as const;
 
 const TOUR = (v: Vocab): Record<string, TourStep> => ({
   write: { id: "write", anchor: "billpad", title: `1 of 3 · Write a ${v.bill}`, text: `Say what it does in a sentence or two. The clerk writes it up, and every ${v.member} reads it.` },
@@ -27,6 +29,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const size = pack.chamber.size;
 
   const [dismissed, setDismissed] = useState(-1);
+  const [tab, setTab] = useState<(typeof TABS)[number]>("turn");
   const [text, setText] = useState("");
   const [pick, setPick] = useState<string | null>(null);
   const [muted, setMuted] = useState(sound.muted);
@@ -81,7 +84,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
     ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
     : undefined;
   const steps = TOUR(v);
-  const step: TourStep | null = !tour ? null
+  const step: TourStep | null = !tour || tab !== "turn" ? null
     : !bill ? steps.write
     : !whipped ? steps.count
     : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
@@ -146,6 +149,21 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       </section>
 
       <aside className="rail" aria-label="The desk">
+        <div className="tabs" role="tablist" aria-label="Desk views">
+          {TABS.map((t) => (
+            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`}
+              tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
+              onKeyDown={(e) => {
+                const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+                if (!d) return;
+                const next = TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length];
+                setTab(next); document.getElementById(`tab-${next}`)?.focus();
+              }}>{t === "turn" ? v.turn : v.feed}</button>
+          ))}
+        </div>
+
+        <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
+        {tab === "feed" ? <Feed game={game} act={act} busy={busy} /> : <>
         <Ledger game={game} />
 
         {!bill ? (
@@ -194,6 +212,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
           </div>
         )}
 
+        <FeedLine game={game} />
+
         {bill?.headline && !rolling ? (
           <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
             <div className="kicker">{v.feed}</div>
@@ -212,6 +232,8 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
             ))}
           </div>
         ) : null}
+        </>}
+        </div>
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>

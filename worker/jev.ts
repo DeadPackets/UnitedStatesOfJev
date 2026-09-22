@@ -182,3 +182,51 @@ export function eventQuestions(pack: Pack, scored: Storylet["scored"]): Record<s
     criteria: ["Indifferent or supportive", "Opposed", "Outraged"] };
   return qs;
 }
+
+export const choices = (answers: Answers, prefix: string): Record<string, string> =>
+  Object.fromEntries(Object.entries(answers)
+    .filter(([k, v]) => k.startsWith(prefix) && v.probabilities)
+    .map(([k, v]) => [k.slice(prefix.length), Object.entries(v.probabilities!).sort((a, b) => b[1] - a[1])[0][0]]));
+
+export function reactQuestions(pack: Pack, citizens: Citizen[]): Record<string, Question> {
+  const qs: Record<string, Question> = {};
+  for (const c of citizens) qs[`react_${c.id}`] = {
+    type: "choice",
+    instructions: { citizen: citizenPersona(pack, c), question: "How does this person react to `post` from the government?" },
+    options: ["like", "boo", "share", "ignore"],
+  };
+  return qs;
+}
+export const reactState = (pack: Pack, game: Game, text: string) => ({ post: text, record: record(pack, game) });
+
+export function agreeQuestions(pack: Pack, citizens: Citizen[]): Record<string, Question> {
+  const qs: Record<string, Question> = {};
+  for (const c of citizens) qs[`agree_${c.id}`] = {
+    type: "choice",
+    instructions: { citizen: citizenPersona(pack, c), question: "Which of the two posts in `duel` does this person agree with?" },
+    options: ["government", "rival"],
+  };
+  return qs;
+}
+export const agreeState = (_pack: Pack, mine: string, rival: string) => ({ duel: { government: mine, rival } });
+
+// The money in this person's own region sits in their question; the messages and the record sit in the state.
+export function voteQuestions(pack: Pack, game: Game, citizens: Citizen[],
+  spend: Record<string, number>, rivalSpend: Record<string, number>): Record<string, Question> {
+  const title = pack.starts.find((s) => s.faction === game.faction)?.seat_title ?? "the government";
+  const qs: Record<string, Question> = {};
+  for (const c of citizens) qs[`vote_${c.id}`] = {
+    type: "noul",
+    instructions: {
+      citizen: citizenPersona(pack, c), spend_here: spend[c.region] ?? 0, rival_spend_here: rivalSpend[c.region] ?? 0,
+      question: `Would this person vote to keep the ${title} in power?`,
+    },
+    criteria: {
+      true: `The record and the messages in \`campaign\` are good enough to keep the ${title}.`,
+      false: `The record and the messages in \`campaign\` are not good enough, or the rival has made the better case.`,
+    },
+  };
+  return qs;
+}
+export const voteState = (pack: Pack, game: Game, messages: string[]) =>
+  ({ campaign: { [pack.vocabulary.test]: pack.test.name, messages }, record: record(pack, game) });

@@ -107,3 +107,47 @@ export async function ending(env: Env, pack: Pack, kind: keyof Pack["endings"], 
     JSON.stringify(state), 200);
   return { title: clip(d.title, 90), body: clip(d.body, 600) };
 }
+
+const RepliesSchema = z.object({ replies: z.array(z.object({ name: z.string(), text: z.string() })), rival: z.string() });
+const MessagesSchema = z.object({ messages: z.array(z.string()) });
+const PersonaSchema = (pack: Pack) => z.object({ rows: z.array(z.object({
+  id: z.string(), name: z.string(), bio: z.string(), tell: z.string(),
+  core_issues: z.array(z.enum(pack.tags as [string, ...string[]])).min(1).max(3),
+})) });
+
+export async function replies(env: Env, pack: Pack, text: string,
+  loudest: { name: string; town: string; worldview: string; reaction: string }[], state: unknown) {
+  const d = await luna(env, RepliesSchema, "replies",
+    `You write what people said back to the government's ${pack.vocabulary.post}. One reply per person given, at most 25 words each, in their own voice, copy the name as given. Then write the rival's answer post, at most 240 characters, sharper than the government's.${world(pack)}`,
+    JSON.stringify({ post: text, people: loudest, record: state }), 240);
+  return { replies: d.replies.slice(0, 3).map((r) => ({ name: clip(r.name, 60), text: clip(r.text, 220) })), rival: clip(d.rival, 240) };
+}
+
+export async function messages(env: Env, pack: Pack, state: unknown): Promise<string[]> {
+  const d = await luna(env, MessagesSchema, "messages",
+    `You write the three lines the government could run on this ${pack.vocabulary.turn} of the race, from the record given. Each at most 20 words, each a different argument: one on what was kept, one on the biggest fight, one on what the other side would do.${world(pack)}`,
+    JSON.stringify(state), 160);
+  const out = d.messages.slice(0, 3).map((m) => clip(m, 160));
+  while (out.length < 3) out.push(out[0] ?? "");
+  return out;
+}
+
+export async function halfTerm(env: Env, pack: Pack, state: unknown) {
+  const d = await luna(env, HeadlineSchema, "halfterm",
+    `You write for ${pack.vocabulary.feed} the morning after the seats changed hands. The government lost seats_lost of the seats_changed seats that changed hands. One headline, at most 12 words, and a two-sentence lede on where the government stands at the half of its term.${world(pack)}`,
+    JSON.stringify(state), 220);
+  return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
+}
+
+// Only the flipped seats. Identity is already fixed by code: the model writes prose and a name.
+export async function newMembers(env: Env, pack: Pack, slots: { id: string; seat: string; region: string; faction: string; temperament: string; years: string }[]) {
+  if (!slots.length) return [];
+  const name = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
+  const d = await luna(env, PersonaSchema(pack), "newmembers",
+    `You write the people who just won these seats. Each row has its region, faction, temperament and years: never change them. Write name, bio (at most 40 words), tell (one visible habit, at most 18 words) and 1 to 3 core_issues from the tags. Names are invented, plausible for the period and place, never a real person. Every row is a different person.`,
+    JSON.stringify({
+      tags: pack.tags,
+      rows: slots.map((s) => ({ id: s.id, region: name(s.region, pack.regions), faction: name(s.faction, pack.factions), temperament: s.temperament, years: s.years })),
+    }), Math.min(4000, 400 + slots.length * 160));
+  return d.rows.slice(0, slots.length).map((r) => ({ id: r.id, name: clip(r.name, 60), bio: clip(r.bio, 400), tell: clip(r.tell, 200), core_issues: r.core_issues }));
+}

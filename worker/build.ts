@@ -27,9 +27,10 @@ const NO_TEXT = "no text, no captions, no labels, no borders, no watermark";
 const RETRY = { retries: { limit: 2, delay: "5 seconds", backoff: "exponential" }, timeout: "4 minutes" } as const;
 // A generation step already retries inside luna() and post(); a third layer multiplies the paid calls.
 const GEN_RETRY = { ...RETRY, retries: { ...RETRY.retries, limit: 1 } } as const;
-const PAGES = 6, PEOPLE = 12, PARTIES = 12, SHEET = 16;
+const PAGES = 6, PEOPLE = 12, PARTIES = 12;
+export const SHEET = 16;
 
-const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 const nonNull = <T>(a: (T | null)[]): T[] => a.filter((x): x is T => x !== null);
 const rgb = (hex: string): Rgb => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
 const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);
@@ -167,28 +168,32 @@ const sheetPrompt = (pack: Pack, group: Member[]) =>
   `4x4 grid of 16 different ${pack.era} ${pack.vocabulary.member}, passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall. ` +
   `Faces in reading order: ${group.map((m) => `${AGE[m.years]} and ${m.temperament}`).join("; ")}. ${NO_TEXT}`;
 
-async function portraitsStep(env: Env, id: string, pack: Pack) {
+// One sheet of at most 16 faces. The GameDO reuses it for the members a midterm puts in the chamber.
+export async function portraitSheet(env: Env, scenario: string, pack: Pack, group: Member[]): Promise<boolean> {
   const ink = rgb(pack.theme.ink), paper = rgb(pack.theme.paper);
+  try {
+    const prompt = sheetPrompt(pack, group);
+    let cut = cells(await muse(env, prompt, "1:1"));
+    if (!alignment(cut).ok) cut = cells(await muse(env, prompt, "1:1"));
+    await Promise.all(group.map(async (m, i) => {
+      const cell = cut[i];
+      if (!cell) return;
+      await put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell));
+      await put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper));
+    }));
+    return true;
+  } catch (e) {
+    console.warn(`portraits ${scenario}`, plain(e));
+    return false;
+  }
+}
+
+async function portraitsStep(env: Env, id: string, pack: Pack) {
   // The sheets run at once but share one pack row, so the D1 read-modify-writes are chained.
   let writes: Promise<unknown> = Promise.resolve();
-  const flip = (sheet: string, status: "done" | "failed") => { writes = writes.then(() => markPortrait(env, id, sheet, status)); };
   await Promise.all(chunk(pack.members, SHEET).map(async (group, gi) => {
-    const sheet = `sheet-${gi + 1}`;
-    try {
-      const prompt = sheetPrompt(pack, group);
-      let cut = cells(await muse(env, prompt, "1:1"));
-      if (!alignment(cut).ok) cut = cells(await muse(env, prompt, "1:1"));
-      await Promise.all(group.map(async (m, i) => {
-        const cell = cut[i];
-        if (!cell) return;
-        await put(env, `scenarios/${id}/members/${m.id}.png`, face(cell));
-        await put(env, `scenarios/${id}/members/${m.id}-plate.png`, plate(cell, ink, paper));
-      }));
-      flip(sheet, "done");
-    } catch (e) {
-      console.warn(`portraits ${id} ${sheet}`, plain(e));
-      flip(sheet, "failed");
-    }
+    const ok = await portraitSheet(env, id, pack, group);
+    writes = writes.then(() => markPortrait(env, id, `sheet-${gi + 1}`, ok ? "done" : "failed"));
   }));
   await writes;
 }
