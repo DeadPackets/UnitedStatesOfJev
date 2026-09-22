@@ -97,7 +97,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
     return (
       // keyed by position, not member: a reorder would move DOM nodes and restart the gather animation
       <g key={i} ref={(el) => { if (el) groups.current.set(m.id, el); else groups.current.delete(m.id); }}
-        className="seatg" role="button" tabIndex={0} aria-label={label}
+        className="seatg" role={onPick === NOOP ? "img" : "button"} tabIndex={0} aria-label={label}
         style={{ "--i": i, "--dx": `${300 - s.x}px`, "--dy": `${170 - s.y}px`, "--r": `${r}px` } as any}
         data-vote={cast === undefined ? undefined : cast ? "yes" : "no"}
         data-tour={hotSet.has(m.id) ? "seat" : undefined}
