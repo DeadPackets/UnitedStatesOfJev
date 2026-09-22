@@ -15,10 +15,14 @@ const worst = (row: number[], short: number) => {
 export function squarify<T extends { weight: number }>(items: T[], box: Box): Tile<T>[] {
   const out: Tile<T>[] = [];
   const total = items.reduce((s, d) => s + d.weight, 0) || 1;
-  const vals = items.map((d) => (d.weight * (box.w * box.h)) / total);
+  // `worst` divides by the smallest value in the row, so a region Luna weighted 0 would size every
+  // tile NaN. A millionth of the box is below a pixel and keeps the arithmetic finite.
+  const vals = items.map((d) => (Math.max(d.weight, total * 1e-6) * (box.w * box.h)) / total);
   let { x, y, w, h } = box, i = 0;
   while (i < vals.length) {
     const short = Math.min(w, h);
+    // A share this small leaves nothing of the box to cut: the rest take no room rather than NaN of it.
+    if (!(short > 0)) { for (; i < vals.length; i++) out.push({ d: items[i], x, y, w: 0, h: 0 }); break; }
     const row = [vals[i]];
     let j = i + 1;
     while (j < vals.length && worst(row.concat(vals[j]), short) <= worst(row, short)) row.push(vals[j++]);
@@ -114,6 +118,8 @@ export function shortNames(names: string[]): string[] {
       const cand = (short + name[k]).toUpperCase();
       if (!used.has(cand)) { short = cand; break; }
     }
+    // Two names too short to grow apart ("Rom" beside "Rome") are numbered instead.
+    if (used.has(short)) { let k = 2; while (used.has(`${short}${k}`)) k++; short = `${short}${k}`; }
     used.add(short);
     return short;
   });

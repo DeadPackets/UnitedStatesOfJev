@@ -69,3 +69,14 @@ test("the floor only lifts the tiles that need it", () => {
 test("two regions that start alike keep different shorts", () => {
   expect(shortNames(["Harbor City", "Harbor Hills", "Northreach"])).toEqual(["HAR", "HARB", "NOR"]);
 });
+
+test("names too short to grow apart are numbered", () => {
+  expect(shortNames(["Rome", "Rom", "Rom"])).toEqual(["ROM", "ROM2", "ROM3"]);
+});
+
+// Luna may hand the reveal a region weighted 0; the row aspect divides by the smallest value in it.
+test("a zero-weight region leaves every tile finite", () => {
+  const out = squarify([{ id: "a", weight: 0.6 }, { id: "b", weight: 0.4 }, { id: "z", weight: 0 }], { x: 0, y: 0, w: 100, h: 62 });
+  expect(out).toHaveLength(3);
+  for (const r of out) for (const n of [r.x, r.y, r.w, r.h]) expect(Number.isFinite(n)).toBe(true);
+});
