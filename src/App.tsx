@@ -17,6 +17,13 @@ export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
 type Screen = "write" | "match" | "build" | "seat";
 
 const SCENARIO = /^\/s\/([a-z0-9]+)$/i;
+// Blocked storage is a browser setting, not a broken game: every read is a miss and every write is dropped.
+const store = {
+  get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* the run stays in memory */ } },
+  remove: (k: string) => { try { localStorage.removeItem(k); } catch { /* nothing to forget */ } },
+};
+
 const go = (path: string, replace = false) => {
   if (location.pathname !== path) history[replace ? "replaceState" : "pushState"](null, "", path);
 };
@@ -28,13 +35,13 @@ export default function App() {
   const [scenario, setScenario] = useState<string | null>(null);
   const [pack, setPack] = useState<PackView | null>(null);
   const [game, setGame] = useState<GameView | null>(null);
-  const [booting, setBooting] = useState(() => !!localStorage.getItem("usoj:game") || SCENARIO.test(location.pathname));
+  const [booting, setBooting] = useState(() => !!store.get("usoj:game") || SCENARIO.test(location.pathname));
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   // Both keys outlive the tab: a reload between the night and the end of the term must not replay it.
-  const [revealed, setRevealed] = useState<string | null>(() => localStorage.getItem("usoj:revealed"));
-  const [counted, setCounted] = useState<string | null>(() => localStorage.getItem("usoj:counted"));
-  const [rolled, setRolled] = useState<string | null>(() => localStorage.getItem("usoj:rolled"));
+  const [revealed, setRevealed] = useState<string | null>(() => store.get("usoj:revealed"));
+  const [counted, setCounted] = useState<string | null>(() => store.get("usoj:counted"));
+  const [rolled, setRolled] = useState<string | null>(() => store.get("usoj:rolled"));
 
   const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "The connection dropped. Try again.");
 
@@ -65,11 +72,11 @@ export default function App() {
   useEffect(() => {
     const m = SCENARIO.exec(location.pathname);
     if (m) { open(m[1], false); return; }
-    const id = localStorage.getItem("usoj:game");
+    const id = store.get("usoj:game");
     if (!id) return;
     // Only a game the server says is gone drops the pointer: a flat tyre on the way back is not a lost run.
     api.load(id).then(setGame)
-      .catch((e) => { if (e instanceof ApiError && e.status === 404) localStorage.removeItem("usoj:game"); else fail(e); })
+      .catch((e) => { if (e instanceof ApiError && e.status === 404) store.remove("usoj:game"); else fail(e); })
       .finally(() => setBooting(false));
   }, [open]);
 
@@ -90,7 +97,7 @@ export default function App() {
 
   const act: Act = async (fn) => {
     setBusy(true);
-    try { const g = await fn(); setGame(g); localStorage.setItem("usoj:game", g.id); return true; }
+    try { const g = await fn(); setGame(g); store.set("usoj:game", g.id); return true; }
     catch (e) {
       fail(e);
       // A 409 means the screen is arguing with a game that has already moved: take the server's word for it.
@@ -120,7 +127,7 @@ export default function App() {
   };
 
   const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("write"); go("/"); }, []);
-  const quit = () => { localStorage.removeItem("usoj:game"); setGame(null); restart(); };
+  const quit = () => { store.remove("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
 
   // The test POST lands the run on `won` or `over`, so the reveal holds the screen until it has played.
@@ -134,7 +141,7 @@ export default function App() {
   const lastBill = game?.bills.at(-1);
   const rollKey = game && lastBill?.votes ? `${game.id}#${lastBill.id}` : null;
   const showRoll = !!game && !!rollKey && rolled !== rollKey && game.stage !== "session";
-  const onRolled = () => { if (!rollKey) return; setRolled(rollKey); localStorage.setItem("usoj:rolled", rollKey); };
+  const onRolled = () => { if (!rollKey) return; setRolled(rollKey); store.set("usoj:rolled", rollKey); };
 
   return (
     <>
@@ -142,8 +149,8 @@ export default function App() {
       {booting ? null
         : game ? (
             showRoll ? <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />
-            : showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); localStorage.setItem("usoj:revealed", testKey!); }} />
-            : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); localStorage.setItem("usoj:counted", midtermKey!); }} />
+            : showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); store.set("usoj:revealed", testKey!); }} />
+            : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); store.set("usoj:counted", midtermKey!); }} />
             : game.stage === "campaign" ? <Campaign game={game} act={act} busy={busy} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
