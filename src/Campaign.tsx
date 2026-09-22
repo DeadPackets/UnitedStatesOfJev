@@ -142,7 +142,7 @@ export default function Campaign({ game, act, busy }: Props) {
                   <span>{regionName.get(id)}</span>
                   {SPEND_STEPS.map((a) => (
                     <button key={a} className="opt" aria-pressed={amount === a}
-                      onClick={() => setSpend((s) => ({ ...s, [id]: a }))}>{a}</button>
+                      onClick={() => setSpend((s) => { const next = { ...s, [id]: a }; if (!a) delete next[id]; return next; })}>{a}</button>
                   ))}
                 </div>
               ))}
