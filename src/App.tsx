@@ -29,8 +29,9 @@ export default function App() {
   const [booting, setBooting] = useState(() => !!localStorage.getItem("usoj:game") || SCENARIO.test(location.pathname));
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState<string | null>(null);
-  const [counted, setCounted] = useState<string | null>(null);
+  // Both keys outlive the tab: a reload between the night and the end of the term must not replay it.
+  const [revealed, setRevealed] = useState<string | null>(() => localStorage.getItem("usoj:revealed"));
+  const [counted, setCounted] = useState<string | null>(() => localStorage.getItem("usoj:counted"));
 
   const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "Network hiccup. Try again.");
 
@@ -116,8 +117,8 @@ export default function App() {
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
       {booting ? null
         : game ? (
-            showTest ? <Test game={game} act={act} busy={busy} onDone={() => setRevealed(testKey)} />
-            : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => setCounted(midtermKey)} />
+            showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); localStorage.setItem("usoj:revealed", testKey!); }} />
+            : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); localStorage.setItem("usoj:counted", midtermKey!); }} />
             : game.stage === "campaign" ? <Campaign game={game} act={act} busy={busy} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
