@@ -271,7 +271,9 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
         return built;
       });
     } catch (e) {
-      await step.do("failed", RETRY, () => failScenario(env, id, plain(e)));
+      // Only the sentences the build writes on purpose are for the player; everything else is a log line.
+      const why = e instanceof NonRetryableError ? plain(e) : "The build failed. Try another prompt.";
+      await step.do("failed", RETRY, () => failScenario(env, id, why));
       throw e;
     }
 

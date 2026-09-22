@@ -1,7 +1,7 @@
 import { Hono, type Context } from "hono";
 import { decodeCode, scenarioTag } from "./engine";
 import type { Env } from "./jev";
-import { getScenario, newScenario } from "./db";
+import { failScenario, getScenario, newScenario } from "./db";
 import { packView } from "./pack";
 import { match } from "./match";
 export { GameDO } from "./game";
@@ -48,25 +48,26 @@ app.use("/api/*", async (c, next) => {
   await next();
 });
 
-// The share code carries a 6-char hash of the scenario id, not the id itself.
+// The share code carries a 6-char hash of the scenario id, not the id itself, so two ids can share a tag.
 // ponytail: scans the ready ids and hashes each; add an indexed tag column if the archive outgrows one page.
-async function scenarioFromTag(env: Env, tag: string): Promise<string | null> {
+async function scenariosFromTag(env: Env, tag: string): Promise<string[]> {
   const { results } = await env.DB.prepare("SELECT id FROM scenarios WHERE status = 'ready'").all<{ id: string }>();
-  return results.find((r) => scenarioTag(r.id) === tag)?.id ?? null;
+  return results.filter((r) => scenarioTag(r.id) === tag).map((r) => r.id);
 }
 
 app.get("/api/health", (c) => forward(c, "health", "health"));
 
 type Seat = { scenario?: string; faction?: string | number; promises?: number[]; seed?: number; code?: string };
 app.post("/api/games", async (c) => {
-  const body = await c.req.json<Seat>().catch(() => ({} as Seat));
+  const body = (await c.req.json<Seat>().catch(() => null)) ?? ({} as Seat);
   let seat: Seat;
   if (body.code) {
     let code;
     try { code = decodeCode(body.code); } catch (e) { return c.json({ error: (e as Error).message }, 400); }
-    const scenario = await scenarioFromTag(c.env, code.scenario);
-    if (!scenario) return c.json({ error: "That code names a scenario this archive does not have." }, 404);
-    seat = { scenario, faction: code.faction, promises: code.promises, seed: code.seed };
+    const found = await scenariosFromTag(c.env, code.scenario);
+    if (found.length === 0) return c.json({ error: "That code names a scenario this archive does not have." }, 404);
+    if (found.length > 1) return c.json({ error: "That code names more than one scenario. Load it from the archive." }, 409);
+    seat = { scenario: found[0], faction: code.faction, promises: code.promises, seed: code.seed };
   } else {
     if (typeof body.scenario !== "string") return c.json({ error: "Name a scenario." }, 400);
     seat = { scenario: body.scenario, faction: body.faction, promises: body.promises, seed: body.seed };
@@ -99,8 +100,14 @@ app.post("/api/scenarios", async (c) => {
   if (claim === "spaced") return c.json({ error: "One build every 10 minutes. Load a scenario in the meantime." }, 429);
   if (claim === "capped") return c.json({ error: "Today's builds are used up. Try again tomorrow." }, 429);
   const id = scenarioId();
-  await newScenario(c.env, id, prompt);
-  await c.env.BUILD.create({ id, params: { id, prompt } });
+  try {
+    await newScenario(c.env, id, prompt);
+    await c.env.BUILD.create({ id, params: { id, prompt } });
+  } catch (e) {
+    console.error("build start", e);
+    await failScenario(c.env, id, "The build failed. Try another prompt.").catch(() => {});
+    return c.json({ error: "The build could not start. Try again in a minute." }, 503);
+  }
   return c.json({ id }, 202);
 });
 
