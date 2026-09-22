@@ -80,15 +80,18 @@ export default function App() {
       .finally(() => setBooting(false));
   }, [open]);
 
+  const playing = !!game;
   useEffect(() => {
     const pop = () => {
+      // A running game owns the screen: Back and Forward must not re-fetch a scenario under it.
+      if (playing) return;
       const m = SCENARIO.exec(location.pathname);
       if (m) open(m[1], false);
       else { setScreen("write"); setPack(null); setScenario(null); }
     };
     addEventListener("popstate", pop);
     return () => removeEventListener("popstate", pop);
-  }, [open]);
+  }, [open, playing]);
 
   // A game loaded from storage or a share code never passed through Seat, so the theme lands here.
   useEffect(() => { if (game) applyTheme(game.pack.theme); }, [game?.pack.id]); // eslint-disable-line
