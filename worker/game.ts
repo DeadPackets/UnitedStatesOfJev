@@ -421,6 +421,20 @@ export function migrate(game: Game): void {
   game.inForce ??= [];
   game.wire ??= [];
   game.pending ??= null;
+  game.tag ??= null;
+  game.refusal ??= null;
+  game.acts ??= [];
+  game.rival ??= null;
+  game.calls ??= 0;
+  game.swing ??= 0;
+  game.quiet ??= 0;
+  game.drift ??= {};
+  game.media ??= 0;
+  game.trust ??= 1;
+  game.emergency ??= null;
+  game.extra ??= [];
+  game.wireTurn ??= game.turn;
+  game.director.swan ??= null;
   for (const p of Object.values(game.promises)) {
     p.window ??= PROMISE_WINDOW;
     p.share ??= PROMISE_SHARE;

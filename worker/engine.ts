@@ -43,6 +43,40 @@ export interface HolderState {
 }
 export interface Warning { holder: string; response: HolderResponse; at: number; fires: number; number: number }
 export interface TermRecord { term: number; passed: number; kept: number; broken: number; mandate: number; points: number }
+export type ActTemplate = "bloc_drift" | "state_media" | "emergency_powers";
+
+// Exactly what Luna returns for one typed act. Code never trusts a number here without a range check.
+export interface Quote {
+  verb: Verb; title: string; reading: string;
+  power: boolean; era: boolean; refusal: string | null; credibility: number;
+  cost: { authority: number; treasury: number; chest: number };
+  revenue: { ledger: LedgerV4; id: string | null; delta: number }[];
+  serves: string[]; hits: string[]; keeps: string[]; targets: string[] | null;
+  tags: string[];        // the pack's own topic tags, which the law verb puts on the bill
+  regions: string[];     // the regions the act touches, which spend and force read
+  promises: { tag: string; label: string; window: number }[];
+  sunset: number | null; template: ActTemplate | null;
+}
+
+// R10's price tag: what the desk prints before the player commits, and what commit applies.
+export interface PriceTag {
+  verb: Verb; title: string; reading: string; credibility: number;
+  quoted: Price;          // what Luna asked for on top of the instrument's standing price
+  charge: Price;          // what code will take, discount already applied
+  discounted: boolean;
+  revenue: { ledger: LedgerV4; id?: string | null; delta: number }[];
+  serves: string[]; hits: string[]; keeps: string[];
+  targets: string[] | null; tags: string[]; regions: string[];
+  member: string | null;   // the seat a favour is aimed at; code picks it from the body, never Luna
+  promises: { tag: string; label: string; window: number }[];
+  sunset: number | null; template: ActTemplate | null;
+  stances: { id: string; name: string; stance: number; resistance: number; line: number }[];
+}
+export interface Refusal { line: string; test: "power" | "era"; cost: number }
+export interface Act {
+  term: number; turn: number; verb: Verb; title: string; reading: string; credibility: number; charge: Price;
+}
+export interface RivalMove { turn: number; name: string; backer: string; region: string | null; line: string }
 export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
   term: number; turn: number; stage: "session" | "midterm" | "campaign" | "test" | "won" | "over";
@@ -56,7 +90,7 @@ export interface Game {
   earlyTest?: string;   // the holder that called it; the test route reads it instead of the term test
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken"; window: number; share: number; authored: boolean }>;
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
-  director: { intensity: number; lastCrisis: number; seen: string[] };
+  director: { intensity: number; lastCrisis: number; seen: string[]; swan: string | null };
   streak: number; bestStreak: number;
   escalations: EscalationKey[]; stageB: Partial<Record<EscalationKey, number>>;
   marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
@@ -64,6 +98,19 @@ export interface Game {
   revolt: number | null;   // the turn loyalty fell under its line; the faction votes as opposition for it
   wire: WireLine[];   // this turn's lines
   pending: string | null;
+  tag: PriceTag | null;
+  refusal: Refusal | null;
+  acts: Act[];
+  rival: RivalMove | null;
+  calls: number;              // C5: Jev calls spent this turn
+  swing: number;              // §8: popularity points this turn that came from a Jev answer
+  quiet: number;              // consecutive turns with no ledger line on the wire at all
+  drift: Record<string, number>;   // R19 bloc drift, added on top of every Jev bloc read
+  media: number;              // R19 state media, 0..1
+  trust: number;              // the Feed's trust in the government, 1 down to 0
+  emergency: number | null;   // the turn emergency powers lapse
+  extra: Storylet[];          // R20: two fresh cards per extra term
+  wireTurn: number;           // the turn game.wire belongs to, so a new turn starts a clean wire
   economy?: string; terms: TermRecord[]; test?: TestResult;
   midterm?: Midterm; campaign?: Campaign;
   result?: { ending: Ending; score: number };
@@ -120,6 +167,26 @@ export const RESIST_HIT = 8;       // TUNE, C2: an act that costs a holder somet
 export const RESIST_SERVE = 10;    // TUNE, C2: a favour or a service
 export const RESIST_DECAY = 1;     // TUNE, C2: a turn, toward 0
 export const RESIST_CARRY = 0.5;   // TUNE, R21: what a new term inherits
+
+export const JEV_CALLS = 6;       // TUNE, C5: the seventh act waits for the next turn
+export const REFUSAL_COST = 1;    // TUNE, R8
+export const CRED_LO = 0.6;       // spec §7
+export const CRED_HI = 1.0;       // spec §7
+
+export const callsLeft = (game: Game) => Math.max(0, JEV_CALLS - game.calls);
+// True when the budget had room and the calls were taken; false means the caller must not call Jev.
+export function spendCalls(game: Game, n = 1): boolean {
+  if (game.calls + n > JEV_CALLS) return false;
+  game.calls += n;
+  return true;
+}
+
+// The wire is one turn's lines. Acts write to it during the turn and the boundary closes it, so the
+// first write of a new turn is what clears the last one.
+export function pushWire(game: Game, lines: WireLine[]): void {
+  if (game.wireTurn !== game.turn) { game.wire = []; game.wireTurn = game.turn; }
+  game.wire = [...game.wire, ...lines];
+}
 export const WARN_TURNS = 2;   // TUNE, R4
 export const RIOT_HIT = 8;         // TUNE, popularity in every region
 export const LEVY_HIT = 10;        // TUNE, treasury
@@ -197,9 +264,11 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
       window: PROMISE_WINDOW, share: PROMISE_SHARE, authored: false,
     }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
-    bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
+    bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [], swan: null },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
     lastApprove: {}, terms: [], revolt: null, wire: [], pending: null,
+    tag: null, refusal: null, acts: [], rival: null,
+    calls: 0, swing: 0, quiet: 0, drift: {}, media: 0, trust: 1, emergency: null, extra: [], wireTurn: 1,
   };
   // §6: a start that needs more than HANDICAP_SHORTFALL seats it does not hold opens with less authority.
   if (shortfall(pack, start.faction) > HANDICAP_SHORTFALL) {
@@ -583,6 +652,8 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   for (const e of on(game)) e.turn?.(pack, game);
 
   const voted = game.turn;
+  pushWire(game, wire);
+  game.calls = 0; game.swing = 0; game.tag = null; game.refusal = null;
   game.turn += 1;
   if (game.result) { game.stage = "over"; game.phase = "over"; }
   else if (game.stage === "test") game.phase = "over";
@@ -591,9 +662,8 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   // After the stage moves, so no card is drawn onto the campaign, where nothing can answer it.
   const event = director(game, pack);
 
-  game.wire = wire;
   game.pending = pendingItem(pack, game, warnings, event);
-  return { wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
+  return { wire: game.wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
 }
 
 // The one more turn hook: the next thing that will happen, printed at the boundary.
@@ -1162,6 +1232,8 @@ export function continueTerm(pack: Pack, game: Game): void {
   game.director.intensity = 0; game.director.lastCrisis = -1;
   game.test = undefined; game.campaign = undefined; game.midterm = undefined; game.result = undefined;
   game.earlyTest = undefined; game.warnings = []; game.wire = []; game.pending = null; game.revolt = null;
+  game.calls = 0; game.swing = 0; game.quiet = 0; game.tag = null; game.refusal = null;
+  game.rival = null; game.acts = []; game.emergency = null;
   game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
   for (const h of Object.values(game.holders)) { h.resistance = round1(h.resistance * RESIST_CARRY); h.warnedAt = null; }
   for (const [tag, p] of Object.entries(game.promises)) {

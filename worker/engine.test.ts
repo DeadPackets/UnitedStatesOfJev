@@ -947,3 +947,43 @@ test("the record is bounded, and drops its softest lines first", () => {
   expect(tiny.term).toBe(3);
   expect(tiny.headlines).toBeUndefined();
 });
+
+import { callsLeft, JEV_CALLS, spendCalls } from "./engine";
+
+test("a new game opens the act state empty and the call budget full", () => {
+  const g = game();
+  expect(g.tag).toBeNull();
+  expect(g.refusal).toBeNull();
+  expect(g.acts).toEqual([]);
+  expect(g.rival).toBeNull();
+  expect(g.calls).toBe(0);
+  expect(g.extra).toEqual([]);
+  expect(g.emergency).toBeNull();
+  expect(g.media).toBe(0);
+  expect(g.trust).toBe(1);
+  expect(callsLeft(g)).toBe(JEV_CALLS);
+});
+
+test("the sixth Jev call of a turn lands and the seventh waits for the boundary", () => {
+  const g = game();
+  for (let i = 0; i < JEV_CALLS; i++) expect(spendCalls(g)).toBe(true);
+  expect(spendCalls(g)).toBe(false);
+  expect(callsLeft(g)).toBe(0);
+  endTurn(pack, g);
+  expect(g.calls).toBe(0);
+  expect(callsLeft(g)).toBe(JEV_CALLS);
+});
+
+test("the boundary clears the price tag, the refusal and the turn's swing", () => {
+  const g = game();
+  g.tag = { verb: "decree", title: "A levy", reading: "Raise the levy.", credibility: 1,
+    quoted: { authority: 0, treasury: 0, chest: 0 }, charge: { authority: 3, treasury: 0, chest: 0 },
+    discounted: false, revenue: [], serves: [], hits: [], keeps: [], targets: null, tags: [], regions: [],
+    member: null, promises: [], sunset: null, template: null, stances: [] };
+  g.refusal = { line: "The chair cannot do that.", test: "power", cost: 1 };
+  g.swing = 9;
+  endTurn(pack, g);
+  expect(g.tag).toBeNull();
+  expect(g.refusal).toBeNull();
+  expect(g.swing).toBe(0);
+});
