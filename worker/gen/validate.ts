@@ -1,3 +1,4 @@
+import type { Constitution } from "../pack";
 import type { Frame } from "./frame";
 import type { Facts } from "./facts";
 import { UNIT, days, ymd, turnOf, type Calendar, type Unit } from "./calendar-math";
@@ -103,3 +104,35 @@ const calendarHasAnchor = (start: string, facts: Facts) => {
   const s = ymd(start)!;
   return facts.dated_events.some((ev) => { const x = ymd(ev.date); return !!x && days(x) >= days(s) && days(x) - days(s) <= 366; });
 };
+
+// Spec §3. settleConstitution renormalises the weights to 1; every other rule is one a model must redo.
+export function constitution(c: Constitution, chamberExists: boolean): string[] {
+  const e: string[] = [];
+  const ids = new Set(c.holders.map((h) => h.id));
+  if (ids.size !== c.holders.length) e.push("duplicate holder id");
+  const home = c.holders.filter((h) => h.where === "home").length;
+  if (home < 2 || home > 6) e.push(`${home} holders at home; 2 to 6 are needed`);
+  const abroad = c.holders.length - home;
+  if (abroad < 1 || abroad > 4) e.push(`${abroad} holders abroad; 1 to 3 plus the international community are needed`);
+  if (!c.holders.some((h) => h.response === "coup" || h.response === "early_test")) {
+    e.push("no holder can remove the ruler: one needs the coup or early_test response");
+  }
+  // Nobody voting means every mandate is 0 for ever, so an empty or zero-total weight list is a hard stop.
+  if (c.retention.weights.length < 2) {
+    e.push("fewer than two holders vote in the retention test: give at least two a weight between 0.15 and 0.6");
+  }
+  if (c.retention.weights.reduce((a, w) => a + w.value, 0) <= 0) {
+    e.push("the retention weights total 0: give the holders that vote a weight between 0.15 and 0.6");
+  }
+  for (const w of c.retention.weights) {
+    if (w.value < 0.15 || w.value > 0.6) e.push(`holder ${w.id} has weight ${w.value}: every counted weight is between 0.15 and 0.6, and they sum to 1`);
+    const h = c.holders.find((x) => x.id === w.id);
+    if (h && !h.levers.length) e.push(`counted holder ${w.id} has no lever: name at least one instrument that moves it`);
+  }
+  if (!c.holders.some((h) => h.id === c.halfTerm.holder)) e.push(`halfTerm names ${c.halfTerm.holder}, which is not a holder`);
+  if (!chamberExists && Object.values(c.instruments).some((i) => i.consent === "chamber" || i.consent === "chamber_supermajority")) {
+    e.push("an instrument needs the chamber's consent but this polity has no chamber");
+  }
+  if (c.retention.bar.step < 0) e.push("the bar's step is negative; the bar may not fall");
+  return e;
+}

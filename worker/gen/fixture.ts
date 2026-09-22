@@ -1,4 +1,4 @@
-import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS } from "../pack";
+import { ConstitutionSchema, ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS, VERBS, type Constitution } from "../pack";
 import type { Facts } from "./facts";
 import type { Frame } from "./frame";
 
@@ -53,5 +53,31 @@ export const mkFacts = (over: Partial<Facts> = {}): Facts => ({
   groupings: [],
   dated_events: [{ date: "1921-06-14", title: "The harbor strike" }],
   anchor: 0,
+  ...over,
+});
+
+const holder = (id: string, over: Record<string, unknown> = {}) => ({
+  id, name: id, where: "home", line: 60, response: "riot",
+  persona: { name: `${id} figure`, role: "spokesman", bio: "Keeps the books.", tell: "Reads the roll twice." }, ...over,
+});
+
+export const mkConstitution = (over: Record<string, unknown> = {}): Constitution => ConstitutionSchema.parse({
+  ruler: { role: "Consul", faction: "harborites" },
+  holders: [
+    holder("council", { response: "early_test", members: "seats", levers: ["law", "favour"] }),
+    holder("guard", { response: "coup", members: "none", levers: ["force", "spend"], line: 55 }),
+    holder("street", { response: "riot", members: "citizens", levers: ["spend", "proclaim"], line: 70 }),
+    holder("league", { where: "abroad", response: "embargo", levers: ["spend", "favour"], line: 50,
+      gives: { ledger: "treasury", amount: 4, per: "turn" }, wants: ["tariffs"], redLines: ["piracy"] }),
+  ],
+  instruments: Object.fromEntries(VERBS.map((v) => [v, { name: v, consent: "none", price: { authority: 3 }, available: true }])),
+  retention: { name: "the reckoning", weights: [{ id: "council", value: 0.4 }, { id: "street", value: 0.6 }] },
+  halfTerm: { holder: "council", name: "the halfway tide" },
+  ledgers: {
+    treasury: { name: "the harbour purse", line: 0 }, authority: { name: "influence", line: 0 },
+    chest: { name: "the war chest", line: 0 }, loyalty: { name: "league mood", line: 20 },
+    popularity: { name: "standing", line: 30 },
+  },
+  briefing: { situation: "The harbour is in dispute.", room: "Three bodies can stop you.", you: "You hold the chair." },
   ...over,
 });

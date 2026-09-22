@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { mkFacts, mkFrame } from "./fixture";
+import { mkConstitution, mkFacts, mkFrame } from "./fixture";
 import { pickCalendar } from "./calendar";
-import { days, fromDays, frame as check, members, turnOf, ymd } from "./validate";
+import { constitution as checkConstitution, days, fromDays, frame as check, members, turnOf, ymd } from "./validate";
+import { settleConstitution } from "./constitution";
 
 const has = (v: string[], needle: string) => v.some((x) => x.includes(needle));
 
@@ -109,4 +110,48 @@ describe("calendar", () => {
     expect(pickCalendar(mkFacts({ dated_events: [], anchor: 0 }))).toBeNull();
     expect(pickCalendar(null)).toBeNull();
   });
+});
+
+const CONSTITUTION = mkConstitution();
+const parse = (over: Record<string, unknown> = {}) => mkConstitution(over);
+
+test("weights are renormalised to 1, and a weight outside the band is reported, not clamped", () => {
+  const c = parse({ retention: { ...CONSTITUTION.retention, weights: [{ id: "council", value: 0.9 }, { id: "street", value: 0.05 }] } });
+  const { constitution: fixed, violations } = settleConstitution(c, true);
+  const values = fixed.retention.weights.map((w) => w.value);
+  // 0.9 and 0.05 total 0.95: 0.9 / 0.95 = 0.947..., 0.05 / 0.95 = 0.052..., and they sum to 1.
+  expect(values[0]).toBeCloseTo(0.9 / 0.95, 5);
+  expect(values[1]).toBeCloseTo(0.05 / 0.95, 5);
+  expect(values.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 5);
+  // Clamping to 0.15..0.6 and renormalising cannot satisfy both rules with two holders, so the band is a
+  // violation the model redoes, not arithmetic code can fix.
+  expect(violations.join(" ")).toContain("0.15");
+  expect(settleConstitution(parse(), true).violations).toEqual([]);
+});
+
+test("a retention nobody votes in is rejected", () => {
+  const none = parse({ retention: { ...CONSTITUTION.retention, weights: [] } });
+  expect(checkConstitution(settleConstitution(none, true).constitution, true).join(" ")).toContain("two holders");
+  const zero = parse({ retention: { ...CONSTITUTION.retention, weights: [{ id: "council", value: 0 }, { id: "street", value: 0 }] } });
+  const settled = settleConstitution(zero, true);
+  expect(settled.constitution.retention.weights).toEqual([]);
+  expect(settled.violations.join(" ")).toContain("two holders");
+});
+
+test("a weight naming no holder is dropped, not reported", () => {
+  const c = parse({ retention: { ...CONSTITUTION.retention, weights: [{ id: "ghost", value: 0.5 }, { id: "street", value: 0.5 }] } });
+  const { constitution: fixed } = settleConstitution(c, true);
+  expect(fixed.retention.weights.map((w) => w.id)).toEqual(["street"]);
+});
+
+test("the rules code cannot fix come back as violations", () => {
+  const noStop = parse({ holders: CONSTITUTION.holders.map((h) => ({ ...h, response: "riot" })) });
+  expect(checkConstitution(noStop, true).join(" ")).toContain("coup");
+  const noChamber = parse({ instruments: { ...CONSTITUTION.instruments, law: { name: "law", consent: "chamber", price: { authority: 1 }, available: true } } });
+  expect(checkConstitution(noChamber, false).join(" ")).toContain("chamber");
+  const noLever = parse({ holders: CONSTITUTION.holders.map((h) => (h.id === "street" ? { ...h, levers: [] } : h)) });
+  expect(checkConstitution(noLever, true).join(" ")).toContain("street");
+  const badHalf = parse({ halfTerm: { holder: "ghost", name: "x" } });
+  expect(checkConstitution(badHalf, true).join(" ")).toContain("ghost");
+  expect(checkConstitution(parse(), true)).toEqual([]);
 });
