@@ -1,4 +1,4 @@
-import { TEMPERAMENTS } from "../engine";
+import { TEMPERAMENTS, hash } from "../engine";
 import type { Env } from "../jev";
 import { scaleSeats, type Citizen, type Member } from "../pack";
 import type { Frame } from "./frame";
@@ -15,7 +15,6 @@ const FLAG_HINTS: [SeatFlag, RegExp][] = [
 ];
 const AGE_BANDS: [number, number][] = [[18, 29], [30, 44], [45, 59], [60, 74], [75, 88]];
 
-const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 function rng(seed: number) { let s = seed >>> 0; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 2 ** 32); }
 function shuffle<T>(a: readonly T[], rnd: () => number): T[] {
   const out = [...a];

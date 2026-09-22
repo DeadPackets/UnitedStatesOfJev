@@ -15,7 +15,7 @@ import { dedupe } from "./gen/dedupe";
 import { deck } from "./gen/deck";
 import { calendarStep } from "./gen/calendar";
 import { NeedsRepair, matchName, realNames } from "./gen/validate";
-import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./gen/prompts";
+import { CONTENT_RULE, FRAME_RULES, HISTORIAN, chunk, sourceBlock, type GenCtx } from "./gen/prompts";
 
 export type BuildParams = { id: string; prompt: string };
 
@@ -30,7 +30,6 @@ const GEN_RETRY = { ...RETRY, retries: { ...RETRY.retries, limit: 1 } } as const
 const PAGES = 6, PEOPLE = 12, PARTIES = 12;
 export const SHEET = 16;
 
-export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 const nonNull = <T>(a: (T | null)[]): T[] => a.filter((x): x is T => x !== null);
 const rgb = (hex: string): Rgb => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
 const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);

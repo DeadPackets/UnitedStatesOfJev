@@ -2,7 +2,7 @@ import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
 import type { Citizen, Member } from "../pack";
-import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
+import { CONTENT_RULE, HISTORIAN, chunk, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, matchName, members as checkMembers, realNames } from "./validate";
 
 const NamesSchema = z.object({ members: z.array(z.string()), citizens: z.array(z.string()) });
@@ -18,8 +18,6 @@ const CitizenProse = z.object({ rows: z.array(z.object({
 })) });
 
 type Prose = { id: string; name?: string; bio: string; core_issues: string[]; tell: string; patrons: string[] };
-
-const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 // ---- names: one call for members, citizens in parallel chunks of 80; no call sees another's picks, so
 // uniqueness (within and across the two lists) stays a code-side set check, plus one sequential top-up ----

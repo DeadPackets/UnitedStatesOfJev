@@ -14,7 +14,8 @@ import {
 import { getScenario } from "./db";
 import { packView, type Pack } from "./pack";
 import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
-import { chunk, portraitSheet, SHEET } from "./build";
+import { portraitSheet, SHEET } from "./build";
+import { chunk } from "./gen/prompts";
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 

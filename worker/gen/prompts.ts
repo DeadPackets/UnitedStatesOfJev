@@ -1,5 +1,4 @@
 import { FONT_PAIRS, ESCALATION_KEYS, type Citizen, type Member, type Storylet } from "../pack";
-import type { Env } from "../jev";
 import type { Sources } from "../sources";
 import type { Facts } from "./facts";
 import type { Frame } from "./frame";
@@ -10,7 +9,7 @@ export type GenCtx = {
   sources: Sources; facts: Facts; frame: Frame; calendar: Calendar | null;
   members: Member[]; citizens: Citizen[]; deck: Storylet[];
 };
-export type Step = (env: Env, ctx: GenCtx) => Promise<Partial<GenCtx>>;
+export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 export const HISTORIAN = `You are a parliamentarian and historian. You write a "polity pack" for a legislative strategy game: the player holds the top governing seat of a legislature for a term of 20 turns, passes bills, whips members, answers crises, and faces a test of confidence at the end.`;
 

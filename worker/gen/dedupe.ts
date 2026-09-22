@@ -1,10 +1,9 @@
 import { jev, type Env, type Question } from "../jev";
 import type { Citizen, Member } from "../pack";
 import * as personas from "./personas";
-import type { GenCtx } from "./prompts";
+import { chunk, type GenCtx } from "./prompts";
 
 const BATCH = 50;
-const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 const key = (a: string, b: string) => [a, b].sort().join("+");
 const rank = (s: string) => s.replace(/(\d+)/, (d) => d.padStart(6, "0"));
 
