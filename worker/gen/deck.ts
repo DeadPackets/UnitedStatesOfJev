@@ -31,7 +31,7 @@ const SYSTEM = `${HISTORIAN}
 You write the crisis deck for one term. Two kinds of card.
 Generic cards: one per template, all 20, in the order given. The template fixes what the card does mechanically. You write title_hint (at most 8 words, the situation in the period's own terms), stances (exactly the number the template asks for, each at most 6 words, a real choice with a cost either way) and memory (one line a member would remember about the ruler afterwards, or null).
 Dated cards: 5 to 8 real events of the period that fall inside the term. Each has date (YYYY-MM-DD; BC years negative, e.g. -0044-03-15), exogenous true when it happens whatever the ledgers say, false when it needs conditions, and then needs. needs use {ledger, id, op, value}; results use {ledger, id, delta, set, chance}; ledgers are approval, capital, party, chest, bloc, patron, streak, turn, plus seat for results; id is a bloc or patron id from the pack, otherwise null; unused fields are null. Keep deltas between -15 and 15.
-Black swans: 3 to 6 things that could have happened in this period and would have changed everything, each rare, each bounded and each with a real decision. No date and no conditions. Two or three stances, each with a cost. Keep results between -15 and 15.
+Black swans: 3 to 6 things that could have happened in this period and would have changed everything. Each is rare and bounded, with a real decision. No date and no conditions. Two or three stances, each with a cost. Keep results between -15 and 15.
 ${CONTENT_RULE}`;
 
 // Templates address blocs and patrons by slot; the pack's own ids are filled in here.
@@ -73,7 +73,7 @@ export async function deck(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   const swans: Storylet[] = d.swans.map((s, i) => ({
     id: `swan-${String(i + 1).padStart(2, "0")}`, kind: "swan" as const, weight: 1,
     title_hint: s.title_hint, stances: s.stances, scored: s.scored,
-    needs: resolve([], ctx), results: resolve(s.results, ctx), memory: s.memory,
+    needs: [], results: resolve(s.results, ctx), memory: s.memory,
   }));
 
   return { deck: [...generic, ...dated, ...swans] };
