@@ -159,6 +159,62 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
           <Compose game={game} act={act} busy={busy} verb={verb} text={text}
             onVerb={(v) => { setPicked(true); setVerb(v); }} onText={setText} />
           <Tag game={game} act={act} busy={busy} onDone={() => { setText(""); setPicked(false); }} />
+          {bill ? (
+            <section className="tabled" aria-label={`${v.bill} ${bill.id}`}>
+              <div key={`bill-${bill.id}-${bill.title}`} className="billcard panel rise">
+                <div className="kicker num">{v.bill} {bill.id}</div>
+                <h2>{bill.title}</h2>
+                <p className="muted" style={{ margin: 0 }}>{bill.summary}</p>
+                <div className="tags">{bill.tags.map((t, i) => <span key={t} className="chip faint rise" style={{ animationDelay: `${120 + i * 40}ms` }}>{t}</span>)}</div>
+                {voted && !rolling ? (
+                  <div style={{ marginTop: 12 }}>
+                    <span className={`stampsm stampin shake ${bill.passed ? "pass" : "fail"}`} style={{ "--sh": `${margin >= 10 ? 6 : margin >= 4 ? 4 : 2}px` } as any}>
+                      {bill.passed ? v.pass : v.fail} {yes}–{size - yes}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="actions">
+                  {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
+                  {whipped && !voted ? <>
+                    <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
+                    {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
+                    <span className="small muted">Tap a {v.seat} to make an offer.</span>
+                  </> : null}
+                  {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); if (game.stage === "session") act(() => api.endTurn(game)); }}>
+                    {game.stage === "session" ? `Next ${v.bill}` : "Continue"}
+                  </button> : null}
+                </div>
+                {amendments?.length && !voted ? (
+                  <div className="amend"><div className="kicker">Adopt an amendment</div>
+                    {amendments.map((a, i) => (
+                      <button key={i} className="opt2" disabled={busy} onClick={() => act(() => api.adopt(game, i))}>
+                        <b>{a.title}</b><span className="small muted">{a.summary}</span>
+                        <span className="small num">expected yes {a.expected.toFixed(1)}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <FeedLine game={game} bill={bill} />
+              {bill?.headline && !rolling ? (
+                <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
+                  <div className="kicker">{v.feed}</div>
+                  <h3>{bill.headline.title}</h3>
+                  <p className="muted small" style={{ margin: "6px 0 0" }}>{bill.headline.lede}</p>
+                </div>
+              ) : null}
+              {/* the two quotes slide in after the stamp has landed */}
+              {voted && !rolling && bill!.quotes?.length ? (
+                <div key={`said-${bill!.id}`} className="quotes">
+                  {bill!.quotes.slice(0, 2).map((q, i) => (
+                    <blockquote key={q.name} className="pull rise" style={{ animationDelay: `${640 + i * 180}ms` }}>
+                      {q.text}<cite>{q.name}</cite>
+                    </blockquote>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
           <div className="endturn panel">
             {game.pending ? <p className="small"><span className="kicker">Next</span> {game.pending}</p> : null}
             <button className={`btn ghost ${busy ? "busy" : ""}`} data-tour="end"
@@ -215,66 +271,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         </div>
 
         <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
-        {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : <>
-
-        {bill ? (
-          <div key={`bill-${bill.id}-${bill.title}`} className="billcard panel rise">
-            <div className="kicker num">{v.bill} {bill.id}</div>
-            <h2>{bill.title}</h2>
-            <p className="muted" style={{ margin: 0 }}>{bill.summary}</p>
-            <div className="tags">{bill.tags.map((t, i) => <span key={t} className="chip faint rise" style={{ animationDelay: `${120 + i * 40}ms` }}>{t}</span>)}</div>
-            {voted && !rolling ? (
-              <div style={{ marginTop: 12 }}>
-                <span className={`stampsm stampin shake ${bill.passed ? "pass" : "fail"}`} style={{ "--sh": `${margin >= 10 ? 6 : margin >= 4 ? 4 : 2}px` } as any}>
-                  {bill.passed ? v.pass : v.fail} {yes}–{size - yes}
-                </span>
-              </div>
-            ) : null}
-            <div className="actions">
-              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
-              {whipped && !voted ? <>
-                <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
-                {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
-                <span className="small muted">Tap a {v.seat} to make an offer.</span>
-              </> : null}
-              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); if (game.stage === "session") act(() => api.endTurn(game)); }}>
-                {game.stage === "session" ? `Next ${v.bill}` : "Continue"}
-              </button> : null}
-            </div>
-            {amendments?.length && !voted ? (
-              <div className="amend"><div className="kicker">Adopt an amendment</div>
-                {amendments.map((a, i) => (
-                  <button key={i} className="opt2" disabled={busy} onClick={() => act(() => api.adopt(game, i))}>
-                    <b>{a.title}</b><span className="small muted">{a.summary}</span>
-                    <span className="small num">expected yes {a.expected.toFixed(1)}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <FeedLine game={game} bill={bill} />
-
-        {bill?.headline && !rolling ? (
-          <div key={bill.id} className="headline panel rise" style={{ animationDelay: "120ms" }}>
-            <div className="kicker">{v.feed}</div>
-            <h3>{bill.headline.title}</h3>
-            <p className="muted small" style={{ margin: "6px 0 0" }}>{bill.headline.lede}</p>
-          </div>
-        ) : null}
-
-        {/* the two quotes slide in after the stamp has landed */}
-        {voted && !rolling && bill!.quotes?.length ? (
-          <div key={`said-${bill!.id}`} className="quotes">
-            {bill!.quotes.slice(0, 2).map((q, i) => (
-              <blockquote key={q.name} className="pull rise" style={{ animationDelay: `${640 + i * 180}ms` }}>
-                {q.text}<cite>{q.name}</cite>
-              </blockquote>
-            ))}
-          </div>
-        ) : null}
-        </>}
+        {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : null}
         </div>
           </div>
         </aside>

@@ -276,6 +276,9 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .endturn { margin-top: auto; display: grid; gap: 6px; }
 .endturn .btn { width: 100%; }
 .endturn .kicker { display: inline; margin-right: 6px; }
+.tabled { display: grid; gap: var(--s3); border-top: 2px solid var(--ink); padding-top: var(--s3); flex: none; }
+.tabled h2 { font-size: 28px; margin: 4px 0 6px; }
+.tabled .actions { margin-top: var(--s2); }
 .floorbox { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; }
 .holders { display: grid; gap: var(--s2); flex: none; }
 .holderrow { display: grid; gap: 4px; }
