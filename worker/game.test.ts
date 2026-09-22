@@ -294,22 +294,26 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
   expect(d.campaign.drafts.length).toBe(3);
   expect(d.campaign.gains.spend[pack.regions[0].id].length).toBe(3);
   const three = [0, 1, 2].map((i) => ({ id: pack.regions[i % pack.regions.length].id, amount: 10 }));
-  expect((await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
-  expect((await post("campaign", { message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
+  expect((await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
+  expect((await post("campaign", { n: 0, message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
+  // The campaign does not move game.turn, so the turn index is what a repeated POST is caught by.
+  expect((await post("campaign", { n: 1, message: d.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
 
   // The favor is the one lever that spends capital, so it is priced before it is charged.
   const own = game.members.find((m) => m.faction === game.faction)!;
   const capital = game.ledgers.capital;
-  let g = (await post("campaign", { message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
+  let g = (await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
   expect(g.campaign.turns[0].lever.kind).toBe("favor");
   expect(g.ledgers.capital).toBeLessThan(capital);
   g = (await post("campaign/drafts", {})).body;
   game.ledgers.capital = 0;
-  expect((await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
+  expect((await post("campaign", { n: 1, message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
+  // A replayed turn is refused, and the one it replays is still there to play.
+  expect((await post("campaign", { n: 0, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
 
   for (let i = 1; i < 4; i++) {
     if (!g.campaign.drafts.length) g = (await post("campaign/drafts", {})).body;
-    g = (await post("campaign", { message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
+    g = (await post("campaign", { n: g.campaign.turns.length, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
   }
   expect(g.campaign.turns.length).toBe(4);
   expect(g.stage).toBe("test");

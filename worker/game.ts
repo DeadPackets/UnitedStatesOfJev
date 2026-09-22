@@ -25,7 +25,7 @@ export function pickStart(pack: Pack, f: number) {
   return faction && pack.starts.find((s) => s.faction === faction.id);
 }
 
-export type CampaignBody = { message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
+export type CampaignBody = { n?: number; message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
 
 // Two levers, nothing else: up to two regions at 0, 5 or 10 from the chest, or one seat favor from capital.
 function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
@@ -323,6 +323,8 @@ export class GameDO extends DurableObject<Env> {
   private async campaign(game: Game, pack: Pack, body: CampaignBody) {
     if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
     const c = game.campaign!;
+    // game.turn does not move during the campaign, so the campaign turn index is this stage's stale-turn guard.
+    if (Number(body.n) !== c.turns.length) throw new Reject(409, "Stale turn. Reload the game.");
     const message = String(body.message ?? "").trim().slice(0, 200);
     if (!message) throw new Reject(400, "Pick a message.");
     const lever = readLever(pack, game, body.lever);
