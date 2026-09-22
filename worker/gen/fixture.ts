@@ -52,5 +52,6 @@ export const mkFacts = (over: Partial<Facts> = {}): Facts => ({
   bodies: [{ name: "The Council", size: 100, how_chosen: "elected" }],
   groupings: [],
   dated_events: [{ date: "1921-06-14", title: "The harbor strike" }],
+  anchor: 0,
   ...over,
 });

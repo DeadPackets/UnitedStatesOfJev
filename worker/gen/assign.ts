@@ -47,19 +47,20 @@ export function assignMembers(frame: Frame): Member[] {
   const seats = scaleSeats(Object.fromEntries(frame.factions.map((f) => [f.id, f.seats])), size);
   const factionSlots = roundRobin(seats);
   const regions = regionSlots(frame, size);
-  const temperaments = shuffle(TEMPERAMENTS, rnd);
+  const temperaments = shuffle(Array.from({ length: size }, (_, i) => TEMPERAMENTS[i % TEMPERAMENTS.length]), rnd);
   const byId = new Map(frame.factions.map((f) => [f.id, f]));
   const hintOf = (id: string) => { const f = byId.get(id)!; return FLAG_HINTS.find(([, re]) => re.test(`${f.name} ${f.short} ${f.ideology}`))?.[0]; };
   const veto = frame.chamber.veto?.flag ?? null;
-  const vetoByHint = veto !== null && frame.factions.some((f) => hintOf(f.id) === veto);
+  // A veto class holds 1 seat in 10, spread over the factions by shuffling the positions before taking every tenth.
+  const vetoSeats = new Set(veto ? shuffle(Array.from({ length: size }, (_, i) => i), rnd).filter((_, k) => k % 10 === 0) : []);
 
   return factionSlots.map((faction, i) => {
     const hint = hintOf(faction);
     const flags: SeatFlag[] = hint ? [hint] : [];
-    if (veto && !vetoByHint && i % 10 === 0) flags.push(veto);
+    if (veto && vetoSeats.has(i) && !flags.includes(veto)) flags.push(veto);
     return {
       id: `m${i + 1}`, seat: `seat-${String(i + 1).padStart(2, "0")}`, region: regions[i], faction,
-      name: "", bio: "", core_issues: [], temperament: temperaments[i % temperaments.length], tell: "",
+      name: "", bio: "", core_issues: [], temperament: temperaments[i], tell: "",
       patrons: [], years: i % 10 < 3 ? "new" : i % 10 < 7 ? "mid" : "long", flags,
       portrait: `members/m${i + 1}.png`,
     } satisfies Member;

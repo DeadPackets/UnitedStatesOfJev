@@ -37,10 +37,14 @@ function resolve<T extends { id?: string | null }>(rows: readonly T[], ctx: GenC
   return rows.map((r) => (r.id && slots[r.id] ? { ...r, id: slots[r.id] } : { ...r }));
 }
 
+const pad = (s: string[], n: number) => Array.from({ length: n }, (_, i) => s[Math.min(i, s.length - 1)]);
+
 export async function deck(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
+  const cal = ctx.calendar;
+  if (!cal) throw new Error("deck needs a calendar");
   const d = await luna(env, DeckSchema, "deck", SYSTEM,
     JSON.stringify({
-      ...frameBrief(ctx), turn_unit: ctx.calendar.unit, term: `${ctx.calendar.start_date} plus 20 ${ctx.calendar.unit}s`,
+      ...frameBrief(ctx), turn_unit: cal.unit, term: `${cal.start_date} plus 20 ${cal.unit}s`,
       templates: TEMPLATES.map((t) => ({ template: t.id, about: t.note, stances: t.stances })),
     }), 9000);
 
@@ -49,14 +53,14 @@ export async function deck(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
     const g = byTemplate.get(t.id);
     return {
       id: `gen-${String(i + 1).padStart(2, "0")}`, kind: "generic" as const, weight: 1,
-      title_hint: g?.title_hint ?? t.note, stances: g?.stances?.slice(0, t.stances) ?? ["Act", "Wait", "Refuse"].slice(0, t.stances),
+      title_hint: g?.title_hint ?? t.note, stances: pad(g?.stances ?? ["Act", "Wait", "Refuse"], t.stances),
       scored: t.scored, needs: resolve(t.needs, ctx), results: resolve(t.results, ctx), memory: g?.memory ?? null,
     };
   });
 
   const dated: Storylet[] = d.dated.map((s, i) => ({
     id: `dat-${String(i + 1).padStart(2, "0")}`, kind: "dated" as const, date: s.date,
-    turn: turnOf(s.date, ctx.calendar.start_date, ctx.calendar.unit), exogenous: s.exogenous, weight: 1,
+    turn: turnOf(s.date, cal.start_date, cal.unit), exogenous: s.exogenous, weight: 1,
     title_hint: s.title_hint, stances: s.stances, scored: s.scored,
     needs: resolve(s.needs, ctx), results: resolve(s.results, ctx), memory: s.memory,
   })).filter((s) => s.turn !== null && s.turn >= 1 && s.turn <= 20);

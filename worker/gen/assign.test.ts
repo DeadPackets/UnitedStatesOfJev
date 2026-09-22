@@ -26,6 +26,15 @@ describe("assign", () => {
     }
   });
 
+  test("temperaments spread inside every faction", () => {
+    const f = mkFrame();
+    const members = assignMembers(f);
+    for (const x of f.factions) {
+      const mine = members.filter((m) => m.faction === x.id);
+      if (mine.length >= 10) expect(new Set(mine.map((m) => m.temperament)).size).toBeGreaterThanOrEqual(4);
+    }
+  });
+
   test("identity fields are fixed before any model call", () => {
     const f = mkFrame();
     const members = assignMembers(f);

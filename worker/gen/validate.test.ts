@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mkFacts, mkFrame } from "./fixture";
-import { calendar, days, fromDays, frame as check, members, ymd } from "./validate";
+import { pickCalendar } from "./calendar";
+import { days, fromDays, frame as check, members, turnOf, ymd } from "./validate";
 
 const has = (v: string[], needle: string) => v.some((x) => x.includes(needle));
 
@@ -70,27 +71,26 @@ describe("signed dates", () => {
 });
 
 describe("calendar", () => {
+  const cal = (anchor: string, others: string[] = []) => {
+    const dates = [...others, anchor];
+    return pickCalendar(mkFacts({ dated_events: dates.map((d, i) => ({ date: d, title: `e${i}` })), anchor: dates.length - 1 }));
+  };
+
   test("the Ides land on turn 16", () => {
-    const cal = calendar("-0044-02-22", ["-0045-01-01", "-0044-03-15"], []);
-    expect(cal.turnOf("-0044-03-15")).toBe(16);
-    expect(cal.turnOf(cal.start_date)).toBe(1);
+    const c = cal("-0044-03-15", ["-0044-02-22", "-0044-03-01"])!;
+    expect(turnOf("-0044-03-15", c.start_date, c.unit)).toBe(16);
+    expect(turnOf(c.start_date, c.start_date, c.unit)).toBe(1);
   });
 
-  test("the Egypt anchor lands on turn 16 with a month unit", () => {
-    const cal = calendar("2012-06-30", ["2012-12-15"], []);
-    expect(cal.unit).toBe("month");
-    expect(cal.turnOf("2012-12-15")).toBe(16);
+  test("the Egypt anchor lands on turn 16, and the unit keeps the most events in the term", () => {
+    const c = cal("2012-12-15", ["2012-06-30", "2012-08-12", "2012-11-22"])!;
+    expect(turnOf("2012-12-15", c.start_date, c.unit)).toBe(16);
+    expect(c.unit).toBe("month");
   });
 
-  test("no dates gives a week unit and turn 1 for the start", () => {
-    const cal = calendar("2012-06-30", [], []);
-    expect(cal.unit).toBe("week");
-    expect(cal.start_date).toBe("2012-06-30");
-    expect(cal.turnOf("2012-06-30")).toBe(1);
-  });
-
-  test("a deck date is the anchor when the sheet has none in the window", () => {
-    const cal = calendar("2012-06-30", ["1999-01-01"], ["2012-09-01"]);
-    expect(cal.turnOf("2012-09-01")).toBe(16);
+  test("no anchor gives no calendar", () => {
+    expect(pickCalendar(mkFacts({ anchor: -1 }))).toBeNull();
+    expect(pickCalendar(mkFacts({ dated_events: [], anchor: 0 }))).toBeNull();
+    expect(pickCalendar(null)).toBeNull();
   });
 });

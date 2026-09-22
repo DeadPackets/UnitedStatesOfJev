@@ -3,7 +3,7 @@ import { luna } from "../luna";
 import type { Env } from "../jev";
 import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS } from "../pack";
 import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./prompts";
-import { NeedsRepair, calendar, frame as check } from "./validate";
+import { NeedsRepair, frame as check } from "./validate";
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const id = z.string().regex(/^[a-z0-9_-]+$/);
@@ -55,15 +55,19 @@ export type Frame = z.infer<typeof FrameSchema>;
 const SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
 
 export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
-  const user = sourceBlock(ctx, ctx.facts);
+  // The calendar step has already fixed the term from the sheet's anchor, so the model is told the start date
+  // rather than asked for one. Only a scenario with no dated anchor leaves the choice to the model.
+  const cal = ctx.calendar;
+  const user = [sourceBlock(ctx, ctx.facts),
+    cal ? `The term begins on ${cal.start_date} and one turn is one ${cal.unit}. Use exactly that start_date.` : ""]
+    .filter(Boolean).join("\n\n");
   let f = await luna(env, FrameSchema, "frame", SYSTEM, user, 9000);
-  let violations = check(f, ctx.facts);
+  let violations = check(f, ctx.facts, cal?.start_date);
   if (violations.length) {
     const retry = `${user}\n\nAn earlier attempt returned this pack:\n${JSON.stringify(f)}\n\nValidation found these violations:\n- ${violations.join("\n- ")}\n\nReturn the corrected full pack. Keep everything else the same.`;
     f = await luna(env, FrameSchema, "frame", SYSTEM, retry, 9000);
-    violations = check(f, ctx.facts);
+    violations = check(f, ctx.facts, cal?.start_date);
     if (violations.length) throw new NeedsRepair(violations, JSON.stringify(f));
   }
-  const cal = calendar(f.start_date, ctx.facts.dated_events.map((e) => e.date), []);
-  return { frame: { ...f, start_date: cal.start_date }, calendar: { start_date: cal.start_date, unit: cal.unit } };
+  return { frame: f, calendar: cal ?? { start_date: f.start_date, unit: "week" } };
 }

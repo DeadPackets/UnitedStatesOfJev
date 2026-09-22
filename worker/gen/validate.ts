@@ -11,8 +11,8 @@ export class NeedsRepair extends Error {
 
 export type Unit = "day" | "week" | "month" | "season";
 export type Calendar = { start_date: string; unit: Unit };
-const UNIT: Record<Unit, number> = { day: 1, week: 7, month: 30.4375, season: 91.3125 };
-const UNITS = Object.keys(UNIT) as Unit[];
+export const UNIT: Record<Unit, number> = { day: 1, week: 7, month: 30.4375, season: 91.3125 };
+export const UNITS = Object.keys(UNIT) as Unit[];
 
 const DATE = /^(-?\d{1,6})-(\d{1,2})-(\d{1,2})$/;
 export function ymd(s: string | null | undefined): [number, number, number] | null {
@@ -47,36 +47,30 @@ export function turnOf(date: string | null | undefined, start: string, unit: Uni
   return a && b ? Math.floor((days(a) - days(b)) / UNIT[unit]) + 1 : null;
 }
 
-// Anchor: the latest fully dated sheet event within a year after the model's start_date, else the latest deck
-// date, else none. The unit is scored against the model's start_date; start_date is then moved so the anchor
-// lands on turn 16 whatever the model proposed.
-export function calendar(start_date: string, sheetEvents: string[], deckDates: string[]) {
-  const make = (s: string, unit: Unit) => ({ start_date: s, unit, turnOf: (d: string | null | undefined) => turnOf(d, s, unit) });
-  const s = ymd(start_date);
-  const near = s ? sheetEvents.filter((d) => { const x = ymd(d); return !!x && days(x) >= days(s) && days(x) - days(s) <= 366; }) : [];
-  const pool = near.length ? near : deckDates.filter((d) => !!ymd(d));
-  if (!s || !pool.length) return make(start_date, "week");
-  const anchor = pool.reduce((a, b) => (days(ymd(b)!) > days(ymd(a)!) ? b : a));
-  const opts = UNITS.map((u) => ({ u, t: turnOf(anchor, start_date, u)! })).filter((o) => o.t <= 20).sort((a, b) => Math.abs(a.t - 17) - Math.abs(b.t - 17));
-  const unit = opts[0]?.u ?? "season";
-  return make(fromDays(days(ymd(anchor)!) - Math.ceil(15 * UNIT[unit])), unit);
-}
-
-const last = (n: string) => n.toLowerCase().trim().split(/\s+/).pop() ?? "";
+const norm = (n: string) => n.toLowerCase().trim();
+const last = (n: string) => norm(n).split(/\s+/).pop() ?? "";
 const words = (s: string) => s.trim().split(/\s+/).length;
 
-// Faction leaders must be alive on the start date and are never seated; members are checked after the persona
-// calls, so this one is separate.
-export function members(frame: Frame, roster: { id: string; name: string }[]): string[] {
-  const e: string[] = [];
-  for (const f of frame.factions) for (const m of roster) {
-    if (m.name === f.leader || last(m.name) === last(f.leader)) e.push(`leader "${f.leader}" appears as member ${m.id} "${m.name}"; members are fictional`);
-  }
-  return e;
+// Every real person of the period: the frame's leaders and everyone the facts sheet names.
+export const realNames = (frame: Frame, facts?: Facts | null): string[] =>
+  [...frame.factions.map((f) => f.leader), ...(facts?.people ?? []).map((p) => p.name)].filter((n) => n && n.trim());
+
+export const matchName = (name: string, real: string[]): string | null =>
+  (name?.trim() ? real.find((r) => norm(r) === norm(name) || last(r) === last(name)) ?? null : null);
+
+// Members are invented, so none of them may carry a real name of the period. Run after the persona calls.
+export function members(frame: Frame, roster: { id: string; name: string }[], facts?: Facts | null): string[] {
+  const real = realNames(frame, facts);
+  return roster.flatMap((m) => {
+    const hit = matchName(m.name, real);
+    return hit ? [`member ${m.id} "${m.name}" carries the real name "${hit}"; members are invented`] : [];
+  });
 }
 
-export function frame(f: Frame, facts: Facts): string[] {
+export function frame(f: Frame, sheet?: Facts | null, expectStart?: string | null): string[] {
+  const facts: Facts = sheet ?? { people: [], bodies: [], groupings: [], dated_events: [], anchor: -1 };
   const e: string[] = [];
+  if (expectStart && f.start_date !== expectStart) e.push(`start_date must be ${expectStart}`);
   const fids = new Set(f.factions.map((x) => x.id)), tags = new Set(f.tags);
   const pids = new Set(f.patrons.map((p) => p.id)), rids = new Set(f.regions.map((r) => r.id));
   const bids = new Set(f.blocs.map((b) => b.id));

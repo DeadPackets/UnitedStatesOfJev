@@ -3,14 +3,21 @@ import { luna } from "../luna";
 import type { Env } from "../jev";
 import type { Citizen, Member } from "../pack";
 import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
+import { NeedsRepair, matchName, members as checkMembers, realNames } from "./validate";
 
 const NamesSchema = z.object({ members: z.array(z.string()), citizens: z.array(z.string()) });
 const MemberProse = z.object({ rows: z.array(z.object({
   id: z.string(), bio: z.string(), core_issues: z.array(z.string()).min(1).max(3), tell: z.string(), patrons: z.array(z.string()).max(2),
 })) });
+// A row rewritten because it read as someone else also needs a new name; the first pass keeps the name from names().
+const MemberRewrite = z.object({ rows: z.array(z.object({
+  id: z.string(), name: z.string(), bio: z.string(), core_issues: z.array(z.string()).min(1).max(3), tell: z.string(), patrons: z.array(z.string()).max(2),
+})) });
 const CitizenProse = z.object({ rows: z.array(z.object({
   id: z.string(), job: z.string(), town: z.string(), worldview: z.string(), issues: z.array(z.string()).length(2),
 })) });
+
+type Prose = { id: string; name?: string; bio: string; core_issues: string[]; tell: string; patrons: string[] };
 
 const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
@@ -36,12 +43,6 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   if (pool.length < needM + needC) {
     const short = needM + needC - pool.length;
     add(await ask(Math.min(short, needM), Math.max(0, short - needM), pool).then((r) => [...r.members, ...r.citizens]));
-  }
-  // Last resort, no third call: recombine a given name with another surname from the pool.
-  for (let i = 0; pool.length < needM + needC; i++) {
-    const a = pool[i % pool.length].split(/\s+/), b = pool[(i * 7 + 3) % pool.length].split(/\s+/);
-    add([[a[0], ...b.slice(1)].join(" ") || `${a[0]} ${i}`]);
-    if (i > (needM + needC) * 4) break;
   }
   return {
     members: ctx.members.map((m, i) => ({ ...m, name: pool[i] ?? m.id })),
@@ -70,24 +71,28 @@ Every row is a different person.
 ${CONTENT_RULE}`;
 
 export async function members(env: Env, ctx: GenCtx, rows: Member[], opts?: { must_differ_from?: string[] }): Promise<Member[]> {
+  const rewrite = !!opts?.must_differ_from?.length;
   const tags = new Set(ctx.frame.tags), pids = new Set(ctx.frame.patrons.map((p) => p.id));
   const brief = frameBrief(ctx);
   const out = new Map<string, Member>();
   await Promise.all(chunk(rows, 25).map(async (part) => {
-    const r = await luna(env, MemberProse, "members", MEMBER_SYSTEM,
-      JSON.stringify({ ...brief, ...(opts?.must_differ_from?.length ? { must_differ_from: opts.must_differ_from } : {}),
+    const r = await luna(env, rewrite ? MemberRewrite : MemberProse, "members", rewrite ? MEMBER_SYSTEM + REWRITE_RULE : MEMBER_SYSTEM,
+      JSON.stringify({ ...brief, ...(rewrite ? { must_differ_from: opts!.must_differ_from } : {}),
         rows: part.map((m) => ({ id: m.id, name: m.name, faction: m.faction, region: m.region, temperament: m.temperament, years: m.years, flags: m.flags })) }),
       Math.min(9000, 600 + part.length * 160));
-    const by = new Map(r.rows.map((x) => [x.id, x]));
+    const by = new Map<string, Prose>(r.rows.map((x) => [x.id, x as Prose]));
     for (const m of part) {
       const p = by.get(m.id);
       if (!p) { out.set(m.id, m); continue; }
       const core = p.core_issues.filter((t) => tags.has(t));
-      out.set(m.id, { ...m, bio: p.bio, tell: p.tell, core_issues: core.length ? core : [ctx.frame.tags[0]], patrons: p.patrons.filter((x) => pids.has(x)) });
+      out.set(m.id, { ...m, ...(p.name ? { name: p.name } : {}), bio: p.bio, tell: p.tell, core_issues: core.length ? core : [ctx.frame.tags[0]], patrons: p.patrons.filter((x) => pids.has(x)) });
     }
   }));
   return rows.map((m) => out.get(m.id) ?? m);
 }
+
+const REWRITE_RULE = `
+This row read as one of the people under must_differ_from. Give it a different invented name, plausible for the period and never the name of a real person, and a life that no reader would confuse with theirs.`;
 
 export async function citizens(env: Env, ctx: GenCtx, rows: Citizen[], opts?: { must_differ_from?: string[] }): Promise<Citizen[]> {
   const tags = ctx.frame.tags, known = new Set(tags);
@@ -111,5 +116,18 @@ export async function citizens(env: Env, ctx: GenCtx, rows: Citizen[], opts?: { 
   return rows.map((c) => out.get(c.id) ?? c);
 }
 
-export const membersStep = async (env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> => ({ members: await members(env, ctx, ctx.members) });
+// A member carrying a real name of the period gets one rewrite; a second hit is a repair case.
+export async function membersStep(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
+  let roster = await members(env, ctx, ctx.members);
+  const real = realNames(ctx.frame, ctx.facts);
+  const clashes = roster.filter((m) => matchName(m.name, real));
+  if (clashes.length) {
+    const fixed = await Promise.all(clashes.map((m) => members(env, { ...ctx, members: roster }, [m], { must_differ_from: [matchName(m.name, real)!] })));
+    const by = new Map(fixed.flat().map((m) => [m.id, m]));
+    roster = roster.map((m) => by.get(m.id) ?? m);
+    const left = checkMembers(ctx.frame, roster, ctx.facts);
+    if (left.length) throw new NeedsRepair(left, JSON.stringify(roster.filter((m) => matchName(m.name, real))));
+  }
+  return { members: roster };
+}
 export const citizensStep = async (env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> => ({ citizens: await citizens(env, ctx, ctx.citizens) });

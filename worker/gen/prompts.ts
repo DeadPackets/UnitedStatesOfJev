@@ -7,7 +7,7 @@ import type { Calendar } from "./validate";
 
 export type GenCtx = {
   prompt: string; lang: string; fiction: boolean;
-  sources: Sources; facts: Facts; frame: Frame; calendar: Calendar;
+  sources: Sources; facts: Facts; frame: Frame; calendar: Calendar | null;
   members: Member[]; citizens: Citizen[]; deck: Storylet[];
 };
 export type Step = (env: Env, ctx: GenCtx) => Promise<Partial<GenCtx>>;
