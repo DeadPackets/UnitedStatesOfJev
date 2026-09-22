@@ -34,7 +34,7 @@ Every one is `POST /api/games/:id/...`, guarded by the same stale-turn check and
 
 ## The daily
 
-One scenario and one seed a day, for everyone. A cron at 03:07 UTC starts the `daily` Workflow: Luna
+One scenario and one seed a day, for everyone. A cron at 03:07 UTC starts the `daily` Workflow for tomorrow: Luna
 reads the last 30 dailies and proposes a scenario that repeats none of them, the ordinary build
 pipeline runs it, and the `dailies` row is published when the scenario turns ready.
 
@@ -78,7 +78,7 @@ and the loop is in `docs/balance.md`.
 | `GAME` | Durable Object `GameDO` | one per game, unchanged shape plus `scenarioId` |
 | `BUILDS` | Durable Object `BuildsDO` | daily build counter |
 | `RL` | ratelimit `RL` | 40 req/min on `/api/*`, `/api/*/art/*` exempt |
-| `DAILY` | Workflow | `daily`, the cron-started build of today's term |
+| `DAILY` | Workflow | `daily`, the cron-started build of tomorrow's term |
 | `DAILY_SECRET` | secret | signs the `usoj_id` cookie |
 | cron | trigger | `7 3 * * *`, one run a day |
 

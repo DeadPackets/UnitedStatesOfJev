@@ -10,8 +10,8 @@ The loop that turns the measurement bots into tuned numbers. One pass is `MAX_TE
 1. **Start the worker.** `bunx wrangler dev --config ./wrangler.bots.jsonc --port 8799`
    Check: `curl -s localhost:8799/api/health` prints `{"ok":true}`.
 2. **Run the term-1 spread.** `bun scripts/bots/run.ts --scenario <id> --seeds <N> --terms 1 --out docs/bots/<date>-spread`
-   `N` is `MAX_TERMS / 6` rounded down, because six policies play every seed; the runner refuses anything
-   larger before it spends. Check: `docs/bots/<date>-spread/runs.json` has `6 x N` rows.
+   `N` is `(MAX_TERMS - 48) / 6` rounded down, 33, because six policies play every seed and step 4 takes
+   up to 48 more terms from the same budget; the runner refuses anything larger than one cap before it spends. Check: `docs/bots/<date>-spread/runs.json` has `6 x N` rows.
 3. **Read the report.** `bun scripts/bots/report.ts docs/bots/<date>-spread`
    Check: six rows print and the exit code says pass or fail.
 4. **Run the own-failure terms separately.**
@@ -50,7 +50,8 @@ whenever that constant moves.
 | Golden set replay | up to 300 recorded prompts | 0 |
 
 `scripts/bots/run.ts` refuses a plan over `MAX_TERMS` or `BUDGET_USD` before it spends anything, and stops
-mid-pass when the running total of the meter's own cost passes the budget. `scripts/bots/golden.ts replay`
+mid-pass when the running total passes the budget. Each term counts at its metered cost or `TERM_USD`,
+whichever is higher, because the meter sees Jev and not Luna. `scripts/bots/golden.ts replay`
 refuses a file longer than `GOLDEN_N`.
 
 ## After a model or a prompt change

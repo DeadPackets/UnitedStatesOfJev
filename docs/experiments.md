@@ -325,16 +325,18 @@ reads, so it is not comparable and is not used anywhere after this.
 ## Stage D measurement budget
 
 Terms per check, priced at the `TERM_USD` of $0.10 measured in "One v4 term, measured". Each cost is that
-figure times the terms in the row, and `N` is `MAX_TERMS / 6` rounded down: 250 / 6 gives 41.
+figure times the terms in the row, and `N` is `(MAX_TERMS - 48) / 6` rounded down: 202 / 6 gives 33, so the
+spread and the own-failure runs fit one budget together.
 
 | Check | Terms | Cost |
 |---|---|---|
-| Term-1 win rates, six policies, N seeds | 6N = 246 | 246 x $0.10 = $24.60 |
+| Term-1 win rates, six policies, N seeds | 6N = 198 | 198 x $0.10 = $19.80 |
 | Own failure, four styles continued while winning, capped at three terms | up to 48 | 48 x $0.10 = $4.80 |
 | Forecast calibration, variance share, flippability | 0, from the same logs | $0.00 |
 | Bias audit, six pairs | 0 | 12 seats and priced acts, 12 x $0.02 (`SHARE_USD`) = $0.24 |
 | Golden set replay, up to 300 prompts | 0 | one call a prompt |
 
 Caps in code: `MAX_TERMS` and `BUDGET_USD` in `scripts/bots/run.ts`, checked before the first request and
-again after every finished term, against the meter's own cost rather than the estimate. The caps hold per
-runner call, and the spread and the own-failure runs are two calls, so one full loop can spend $29.40.
+again after every finished term, where a term counts at its metered Jev cost or `TERM_USD`, whichever is
+higher. The caps hold per runner call; the spread and the own-failure runs are two calls and together
+spend at most $24.60.
