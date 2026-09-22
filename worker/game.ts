@@ -153,6 +153,11 @@ export class GameDO extends DurableObject<Env> {
     const action = parts[2];
     const bill = game.bills.find((b) => b.id === Number(parts[1]));
     if (!bill || bill.id !== game.turn) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
+    // C5: the budget is charged before the guards, because a route that cannot pay must not move anything.
+    // whip is 0: a bill tabled by POST /acts is already counted and paid for in that call.
+    const CALLS: Record<string, number> = { lobby: 1, amend: 3, vote: 1 };
+    const owed = CALLS[action ?? ""] ?? 0;
+    if (owed && !spendCalls(game, owed)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     switch (action) {
       case "whip":
         if (bill!.whip) throw new Reject(409, "Already counted.");
@@ -350,6 +355,7 @@ export class GameDO extends DurableObject<Env> {
     if (!event) throw new Reject(404, "No such card.");
     if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
     if (!(Number.isInteger(stance) && stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
+    if (!spendCalls(game, 2)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     const storylet = pack.deck.find((s) => s.id === event.id);
     const taken = event.stances[stance];
     const state = { event: event.card ?? { title: storylet?.title_hint ?? event.id }, stance: taken, record: record(pack, game) };

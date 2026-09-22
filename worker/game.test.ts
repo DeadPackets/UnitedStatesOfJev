@@ -639,3 +639,24 @@ test("last turn's wire moves no holder into this turn's read", async () => {
   expect((await post("turn/end", { turn: 2 })).status).toBe(200);
   expect(game.holders.league.stance).toBe(0.5);
 });
+
+test("the clerks stop at six calls a turn, whichever route asks", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(70);
+  game.bills.push({
+    id: 1, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {},
+    whip: Object.fromEntries(game.members.map((m) => [m.id, 0.5])),
+  } as never);
+  game.phase = "whip";
+  game.calls = 6;                                    // JEV_CALLS, the whole turn spent
+  for (const path of ["bills/1/lobby", "bills/1/amend", "bills/1/vote"]) {
+    const r = await post(path, { turn: 1, memberId: game.members[0].id, action: "pork" });
+    expect(r.status).toBe(409);
+    expect(r.body.error).toContain("The clerks have done all they can");
+  }
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(409);
+
+  game.calls = 0;
+  expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
+  expect(game.calls).toBe(1);
+});
