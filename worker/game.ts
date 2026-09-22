@@ -71,6 +71,9 @@ export class GameDO extends DurableObject<Env> {
       if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
       if (this.busy) throw new Reject(409, "one move at a time");
       this.busy = true;
+      // Engine mutations run before the Jev awaits, so an upstream failure would leave the cached game
+      // half-applied and the next save would persist it. Roll back to the state the request started from.
+      const before = structuredClone(s);
       let extra: Extra = {};
       try {
         switch (parts[0]) {
@@ -94,6 +97,9 @@ export class GameDO extends DurableObject<Env> {
         }
         await this.epilogue(s, pack);
         this.save(s);
+      } catch (e) {
+        if (!(e instanceof Reject)) this.saved = before;
+        throw e;
       } finally {
         this.busy = false;
       }

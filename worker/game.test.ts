@@ -316,3 +316,26 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
   expect(g.campaign.turns[0].band[0]).toBeLessThan(g.campaign.turns[0].public);
   expect((await post("campaign/drafts", {})).status).toBe(409);
 });
+
+test("a Jev failure mid-vote leaves the stored game exactly as the request found it", async () => {
+  stubModels(0.9);
+  const { do_, post } = seatedGame(31);
+  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  expect((await post(`bills/1/whip`, { turn: 1 })).status).toBe(200);
+  const before = structuredClone(do_.saved);
+
+  // applyVote has already moved the turn, the ledgers and the members when the citizen call goes out.
+  const ok = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.questions && Object.keys(body.questions).some((k) => k.startsWith("c-"))) {
+      return new Response("upstream is down", { status: 503 });
+    }
+    return ok(url as never, init);
+  }) as unknown as typeof fetch;
+
+  const r = await post("bills/1/vote", { turn: 1 });
+  expect(r.status).toBe(503);
+  expect(do_.saved).toEqual(before);
+  expect(do_.saved.game.turn).toBe(1);
+});
