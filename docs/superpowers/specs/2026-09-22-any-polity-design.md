@@ -195,8 +195,8 @@ Presentation, all CSS, nothing baked into the image:
 Portraits never gate play. A coin shows the member's initials in the faction color until its face lands, then the face fades in; the client polls `art.portraits` every 5 s while any sheet is pending and stops when all are done or failed. A failed sheet is retried once, then left as initials.
 
 Alignment check per sheet: the crop's 16 cells are sampled at the expected eye row; if
-more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the build
-falls back to qwen-image-3. Files go to R2 under
+more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the sheet
+ships as it is (coins are dithered, alignment is cosmetic). Files go to R2 under
 `scenarios/<id>/{members/<memberId>.png, members/<memberId>-plate.png, masthead.png,
 crests/<factionId>.png}`, served through the Worker with immutable cache headers.
 
