@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { post, type Env } from "./jev";
-import type { Bill, BillDraft, Member } from "./engine";
+import type { Bill, BillDraft, Event, Member } from "./engine";
 import type { Pack, Storylet } from "./pack";
 
 const HeadlineSchema = z.object({ title: z.string(), lede: z.string() });
 const CardSchema = z.object({ title: z.string(), body: z.string(), stances: z.array(z.string()).min(1).max(3) });
 const EndingSchema = z.object({ title: z.string(), body: z.string() });
+const QuotesSchema = z.object({ quotes: z.array(z.object({ name: z.string(), text: z.string() })) });
+const OutcomeSchema = z.object({ line: z.string() });
 
 // Condensed from Wikipedia's "Signs of AI writing" so Luna's prose reads as written by a person.
 const STYLE = ` Writing rules, strict: plain words, short sentences, concrete nouns and numbers. Use is/are/has, not "serves as", "stands as", "represents", "boasts". No em dashes. No groups of three for effect. No "not just X, but Y". Never use: crucial, pivotal, key, vital, landscape, tapestry, testament, underscore, highlight, showcase, delve, foster, enhance, robust, vibrant, seamless, comprehensive, ensure, Additionally, Moreover. No -ing tails that add fake depth ("reflecting", "ensuring", "highlighting"). No hedging, no upbeat closers, no praise. Straight quotes only. Sound like a tired newsroom, not a press release.`;
@@ -65,6 +67,31 @@ export async function narrate(env: Env, pack: Pack, bill: Bill, defectors: Membe
       notable_defectors: defectors.map((m) => `${m.name} (${m.faction}, ${m.region})`), group_opposition_0_to_2: bill.blocs ?? {},
     }), 160);
   return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
+}
+
+// The speakers are the seats whose vote least matched their whip count, so the quote explains the surprise.
+export async function quotes(env: Env, pack: Pack, bill: Bill, speakers: Member[]): Promise<{ name: string; text: string }[]> {
+  if (!speakers.length) return [];
+  const name = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
+  const d = await luna(env, QuotesSchema, "quotes",
+    `You are the clerk taking down what ${pack.vocabulary.member}s said right after the vote. One sentence for each speaker given, at most 25 words, in their own voice, no stage directions. Copy the name as given.${world(pack)}`,
+    JSON.stringify({
+      [pack.vocabulary.bill]: { title: bill.title, summary: bill.summary },
+      outcome: bill.passed ? pack.vocabulary.pass : pack.vocabulary.fail, yes: bill.yes, needed: bill.threshold,
+      speakers: speakers.map((m) => ({
+        name: m.name, faction: name(m.faction, pack.factions), region: name(m.region, pack.regions),
+        voted: bill.votes?.[m.id] ? "yes" : "no", was_expected_to_vote_yes: Math.round((bill.whip?.[m.id] ?? 0) * 100) + "%",
+        core_issues: m.core_issues, temperament: m.temperament, tell: m.tell,
+      })),
+    }), 200);
+  return d.quotes.slice(0, speakers.length).map((q) => ({ name: clip(q.name, 60), text: clip(q.text, 220) }));
+}
+
+export async function outcome(env: Env, pack: Pack, event: Event, stance: string, state: unknown): Promise<string> {
+  const d = await luna(env, OutcomeSchema, "outcome",
+    `You write ${pack.vocabulary.feed}'s one-line note on how the government handled this. At most 30 words, one sentence, says what the choice cost or won.${world(pack)}`,
+    JSON.stringify({ event: event.card ?? { title: event.id }, stance_taken: stance, record: state }), 140);
+  return clip(d.line, 220);
 }
 
 export async function cardText(env: Env, pack: Pack, storylet: Storylet, state: unknown): Promise<{ title: string; body: string; stances: string[] }> {

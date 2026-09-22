@@ -1,42 +1,75 @@
-// @ts-nocheck -- v1 caller of the pack-driven engine; Task 9 rewrites this file.
 import { DurableObject } from "cloudflare:workers";
-import roster from "./roster.json";
-import agendas from "./agendas.json";
-import { applyVote, expectedYes, newGame, passThreshold, LOBBY, BILLS_PER_TERM, type Bill, type BillDraft, type Game, type LobbyAction, type RosterSenator } from "./engine";
-import { jev, whipQuestions, whipState, gateQuestion, senatorQuestion, UpstreamError, type Env } from "./jev";
-import { parseBill, amendBill, narrate } from "./luna";
+import {
+  applyCitizens, applyLobby, applyVote, continueTerm, director, effectiveWhip, encodeCode, endTerm, expectedYes,
+  LOBBY_COSTS, newGame, record, resolveEvent, runTest, scenarioTag, threshold, TURNS_PER_TERM,
+  type Bill, type BillDraft, type Game, type LobbyAction, type Member,
+} from "./engine";
+import {
+  citizenQuestions, citizenState, eventQuestions, gateQuestion, jev, memberQuestion, nouls, scores,
+  testQuestions, testState, UpstreamError, whipQuestions, whipState, type Env,
+} from "./jev";
+import { getScenario } from "./db";
+import { packView, type Pack } from "./pack";
+import { amendBill, cardText, ending, narrate, outcome, parseBill, quotes } from "./luna";
+import { UNIT, UNITS, days, fromDays, turnOf, ymd, type Calendar } from "./gen/validate";
 
-const MAX_TURNS = 200;
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
+type Prose = { ending?: { title: string; body: string } };
+type Saved = { game: Game; prose: Prose };
+type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
+type Amendment = BillDraft & { expected: number; count: WhipCount };
+// Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
+type Extra = { deltas?: Record<string, number> };
+
+// The pack drops the build's calendar, but its dated cards keep both date and turn. Recover the pair that
+// reproduces every one of them, so a dated card still lands on the turn the deck step gave it.
+export function calendarOf(pack: Pack): Calendar {
+  const dated = pack.deck.filter((s) => ymd(s.date) && s.turn != null);
+  const head = dated[0];
+  if (head) {
+    for (const unit of UNITS) for (const off of [0, -1, 1]) {
+      const start_date = fromDays(days(ymd(head.date)!) - Math.round((head.turn! - 1) * UNIT[unit]) + off);
+      if (dated.every((s) => turnOf(s.date, start_date, unit) === s.turn)) return { start_date, unit };
+    }
+  }
+  return { start_date: "", unit: "week" };   // no fit: turnOf returns null and the engine reads the stored turn
+}
+
 export class GameDO extends DurableObject<Env> {
-  private game?: Game;
+  private saved?: Saved;
+  private pack?: Pack;
 
   async fetch(req: Request): Promise<Response> {
-    const url = new URL(req.url);
-    const parts = url.pathname.split("/").filter(Boolean);
+    const parts = new URL(req.url).pathname.split("/").filter(Boolean);
     try {
       if (parts[0] === "health") return Response.json({ ok: true });
-      const body = req.method === "POST" ? await req.json().catch(() => ({})) as any : {};
-      if (parts[0] === "new") return Response.json(view(await this.create(body.id, body.code)));
-      const game = await this.load();
-      if (req.method === "GET") return Response.json(view(game));
-      if (game.phase === "over" || game.turn >= MAX_TURNS) throw new Reject(409, "This term is over.");
-      if (body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
-      // parts: ["bills"] | ["bills", b, action, i?]
-      const action = parts[0] === "bills" && parts.length === 1 ? "draft" : parts[2];
-      const bill = parts[1] !== undefined ? game.bills[Number(parts[1])] : undefined;
-      if (action !== "draft" && (!bill || bill.id !== game.turn)) throw new Reject(409, "Not the current bill.");
-      switch (action) {
-        case "draft": await this.draft(game, String(body.text ?? "")); break;
-        case "whip": { if (bill!.whip) throw new Reject(409, "Already counted."); Object.assign(bill!, await this.whip(game, bill!)); break; }
-        case "lobby": await this.lobby(game, bill!, body.senatorId, body.action); break;
-        case "amend": parts[3] !== undefined ? this.adopt(bill!, Number(parts[3])) : await this.amend(game, bill!); break;
-        case "vote": await this.vote(game, bill!); break;
+      const body = req.method === "POST" ? (await req.json().catch(() => ({}))) as Record<string, unknown> : {};
+      if (parts[0] === "new") return this.reply(await this.create(body));
+      const s = await this.load();
+      const pack = await this.loadPack(s.game.pack);
+      if (req.method === "GET") return this.reply(s, pack);
+      const { game } = s;
+      if (game.result && game.stage !== "won") throw new Reject(409, "This run is over.");
+      if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
+      let extra: Extra = {};
+      switch (parts[0]) {
+        case "bills": extra = await this.bill(game, pack, parts, body); break;
+        case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+        case "test": await this.term(s, pack); break;
+        case "continue":
+          if (game.stage !== "won") throw new Reject(409, "The term is not won.");
+          continueTerm(pack, game); s.prose = {};
+          break;
+        case "stop":
+          if (game.stage !== "won") throw new Reject(409, "There is nothing to stop.");
+          game.stage = "over";
+          break;
         default: throw new Reject(404, "Unknown action");
       }
-      await this.save(game);
-      return Response.json(view(game));
+      await this.epilogue(s, pack);
+      this.save(s);
+      return this.reply(s, pack, extra);
     } catch (e) {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError) return Response.json({ error: "The chamber is in recess. Try again." }, { status: 503 });
@@ -44,89 +77,220 @@ export class GameDO extends DurableObject<Env> {
     }
   }
 
-  private async create(id: string, code: string): Promise<Game> {
-    const game = newGame(id, code, roster as RosterSenator[]);
-    await this.save(game);
-    return game;
-  }
-  private async load(): Promise<Game> {
-    if (this.game) return this.game;
-    const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
-    if (!row) throw new Reject(404, "No such game.");
-    return (this.game = JSON.parse(row.v as string));
-  }
-  private async save(game: Game) {
-    this.game = game;
-    this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); INSERT OR REPLACE INTO game(k, v) VALUES ('game', ?)", JSON.stringify(game));
+  private async reply(s: Saved, pack?: Pack, extra: Extra = {}) {
+    return Response.json(view(pack ?? await this.loadPack(s.game.pack), s, extra));
   }
 
-  private async draft(game: Game, text: string) {
-    if (game.phase !== "draft") throw new Reject(409, "A bill is already on the floor.");
-    let draft: BillDraft;
-    if (game.settings.mode === "agenda") {
-      const a = agendas[game.settings.agenda % agendas.length].bills[game.turn];
-      draft = { title: a.title, summary: a.summary, tags: a.tags }; text = a.text;
-    } else {
-      text = text.trim().slice(0, 1200);
-      if (text.length < 12) throw new Reject(400, "Write a little more.");
-      const gate = await jev(this.env, { text }, gateQuestion());
-      if ((gate.answers.gate.noul ?? 0) < 0.3) throw new Reject(422, "That is not a bill. Propose a law, a program, or a policy.");
-      draft = await parseBill(this.env, text);
+  /* ---------- storage ---------- */
+
+  private async create(body: Record<string, unknown>): Promise<Saved> {
+    const id = String(body.id ?? "");
+    const pack = await this.loadPack(String(body.scenario ?? ""));
+    const f = typeof body.faction === "number" ? body.faction : pack.factions.findIndex((x) => x.id === body.faction);
+    const start = pack.starts[f];
+    if (!start) throw new Reject(400, "No such faction in this scenario.");
+    const raw = Array.isArray(body.promises) ? body.promises.map(Number) : [];
+    const promises = raw.filter((p) => Number.isInteger(p) && p >= 0 && p < pack.promises.length);
+    if (promises.length !== 3 || new Set(promises).size !== 3) throw new Reject(400, `Pick three different ${pack.vocabulary.promise}s.`);
+    const seed = Number.isInteger(body.seed) ? Number(body.seed) & 0x7fffffff : crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
+    const code = encodeCode({ scenario: scenarioTag(pack.id), faction: f, promises: promises as [number, number, number], seed });
+    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), calendarOf(pack));
+    const s: Saved = { game, prose: {} };
+    this.save(s);
+    return s;
+  }
+
+  private async load(): Promise<Saved> {
+    if (this.saved) return this.saved;
+    const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
+    if (!row) throw new Reject(404, "No such game.");
+    return (this.saved = JSON.parse(row.v as string) as Saved);
+  }
+
+  private save(s: Saved) {
+    this.saved = s;
+    this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); INSERT OR REPLACE INTO game(k, v) VALUES ('game', ?)", JSON.stringify(s));
+  }
+
+  // One D1 read per DO lifetime: the pack is 400 KB of the same JSON on every request of a term.
+  private async loadPack(id: string): Promise<Pack> {
+    if (this.pack) return this.pack;
+    const row = await getScenario(this.env, id);
+    if (!row) throw new Reject(404, "No such scenario.");
+    if (!row.pack) throw new Reject(409, row.status === "ready" ? "That scenario is broken." : "That scenario is still building.");
+    return (this.pack = row.pack);
+  }
+
+  /* ---------- the floor ---------- */
+
+  private async bill(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "The term is over. Run the test.");
+    const action = parts.length === 1 ? "draft" : parts[2];
+    // The path segment is the bill's id, which is the turn it was drafted on, not its index.
+    const bill = parts[1] !== undefined ? game.bills.find((b) => b.id === Number(parts[1])) : undefined;
+    if (action !== "draft" && (!bill || bill.id !== game.turn)) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
+    switch (action) {
+      case "draft": await this.draft(game, pack, String(body.text ?? "")); return {};
+      case "whip":
+        if (bill!.whip) throw new Reject(409, "Already counted.");
+        Object.assign(bill!, await this.count(game, pack, bill!));
+        return {};
+      case "lobby": await this.lobby(game, pack, bill!, String(body.memberId ?? ""), body.action as LobbyAction); return {};
+      case "amend":
+        parts[3] !== undefined ? this.adopt(bill!, Number(parts[3])) : await this.amend(game, pack, bill!);
+        return {};
+      case "vote": return this.vote(game, pack, bill!);
+      default: throw new Reject(404, "Unknown action");
     }
+  }
+
+  private async draft(game: Game, pack: Pack, raw: string) {
+    if (game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
+    const text = raw.trim().slice(0, 1200);
+    if (text.length < 12) throw new Reject(400, "Write a little more.");
+    const gate = await jev(this.env, { text }, gateQuestion(pack));
+    if ((gate.answers.gate.noul ?? 0) < 0.3) throw new Reject(422, `That is not a ${pack.vocabulary.bill}. Propose a law, a program, or a policy.`);
+    const draft = await parseBill(this.env, pack, text);
     game.bills.push({ id: game.turn, text, ...draft, offers: {} });
     game.phase = "whip";
   }
 
-  private async whip(game: Game, bill: Bill, draft: BillDraft = bill) {
-    const r = await jev(this.env, whipState(game, { ...bill, ...draft }), whipQuestions(game.seated));
-    const whip = Object.fromEntries(game.seated.map((s) => [s.id, r.answers[s.id].noul ?? 0]));
-    const blocs = Object.fromEntries(Object.entries(r.answers).filter(([k]) => k.startsWith("bloc_")).map(([k, v]) => [k.slice(5), v.score ?? 0]));
-    return { whip, blocs, filibuster: r.answers.filibuster.noul ?? 0, constitutional: r.answers.constitutional.noul ?? 0 };
+  private async count(game: Game, pack: Pack, bill: Bill, draft: BillDraft = bill): Promise<WhipCount> {
+    const r = await jev(this.env, whipState(pack, game, { ...bill, ...draft }), whipQuestions(pack, game.members));
+    return {
+      whip: Object.fromEntries(game.members.map((m) => [m.id, r.answers[m.id]?.noul ?? 0])),
+      blocs: scores(r.answers, "bloc_"), patrons: scores(r.answers, "patron_"), vetoes: nouls(r.answers, "veto_"),
+      filibuster: r.answers.filibuster?.noul ?? 0, constitutional: r.answers.constitutional?.noul ?? 0,
+    };
   }
 
-  private async lobby(game: Game, bill: Bill, senatorId: string, action: LobbyAction) {
-    if (!game.settings.lobby) throw new Reject(403, "Lobbying is off for this game.");
-    if (!bill.whip) throw new Reject(409, "Run the whip count first.");
-    const s = game.seated.find((x) => x.id === senatorId);
-    const act = LOBBY[action];
-    if (!s || !act) throw new Reject(400, "Bad senator or action.");
-    if (bill.offers[s.id]) throw new Reject(409, "Already lobbied this senator on this bill.");
-    if (game.capital < act.cost) throw new Reject(402, "Not enough political capital.");
-    const offer = act.text(s);
-    const r = await jev(this.env, whipState(game, bill), { [s.id]: senatorQuestion(s, offer) });
-    bill.whip[s.id] = r.answers[s.id].noul ?? bill.whip[s.id];
-    bill.offers[s.id] = offer;
-    game.capital -= act.cost;
+  private async lobby(game: Game, pack: Pack, bill: Bill, memberId: string, action: LobbyAction) {
+    if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
+    const m = game.members.find((x) => x.id === memberId);
+    if (!m || !(action in LOBBY_COSTS)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
+    if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
+    // 1.5 is the costly_favors multiplier. Gating on the worst case stops applyLobby's clamp at 0 from ever
+    // handing out a free offer.
+    if (game.ledgers.capital < LOBBY_COSTS[action] * 1.5) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    const whip = bill.whip;
+    const { offer } = applyLobby(pack, game, bill, m, action);
+    const r = await jev(this.env, whipState(pack, game, bill), { [m.id]: memberQuestion(pack, m, offer) });
+    whip[m.id] = r.answers[m.id]?.noul ?? whip[m.id];
   }
 
-  private async amend(game: Game, bill: Bill) {
-    if (!game.settings.amend) throw new Reject(403, "Amendments are off for this game.");
-    if (!bill.whip) throw new Reject(409, "Run the whip count first.");
-    if (bill.amendments) throw new Reject(409, "Already amended once.");
-    const opponents = game.seated.filter((s) => bill.whip![s.id] < 0.5).sort((a, b) => bill.whip![b.id] - bill.whip![a.id]).slice(0, 5);
-    const loudest = Object.entries(bill.blocs ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "business";
-    const drafts = await amendBill(this.env, bill, opponents, loudest);
-    const counts = await Promise.all(drafts.map((d) => this.whip(game, bill, d)));
-    bill.amendments = drafts.map((d, i) => ({ ...d, expected: expectedYes(counts[i].whip), whip: counts[i] }) as any);
+  private async amend(game: Game, pack: Pack, bill: Bill) {
+    if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
+    if (bill.amendments?.length) throw new Reject(409, "Already amended once.");
+    const whip = bill.whip;
+    const opponents = game.members.filter((m) => (whip[m.id] ?? 0) < 0.5).sort((a, b) => (whip[b.id] ?? 0) - (whip[a.id] ?? 0)).slice(0, 5);
+    const loudest = Object.entries(bill.blocs ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] ?? pack.blocs[0].id;
+    const drafts = await amendBill(this.env, pack, bill, opponents, pack.blocs.find((b) => b.id === loudest)?.name ?? loudest);
+    const counts = await Promise.all(drafts.map((d) => this.count(game, pack, bill, d)));
+    const amendments: Amendment[] = drafts.map((d, i) => ({
+      ...d, count: counts[i], expected: Math.round(expectedYes(effectiveWhip(game, { ...bill, ...d, ...counts[i] })) * 10) / 10,
+    }));
+    bill.amendments = amendments;
   }
 
   private adopt(bill: Bill, i: number) {
-    const a = bill.amendments?.[i] as any;
+    const a = bill.amendments?.[i] as Amendment | undefined;
     if (!a) throw new Reject(400, "No such amendment.");
-    Object.assign(bill, { title: a.title, summary: a.summary, tags: a.tags, ...a.whip, offers: {}, amendments: [] });
+    Object.assign(bill, { title: a.title, summary: a.summary, tags: a.tags, ...a.count, offers: {}, acts: {}, amendments: [] });
   }
 
-  private async vote(game: Game, bill: Bill) {
-    if (!bill.whip) throw new Reject(409, "Run the whip count first.");
-    applyVote(game, bill);
-    const yes = Object.values(bill.votes!).filter(Boolean).length;
-    const defectors = game.seated.filter((s) => s.party === game.settings.party && !bill.votes![s.id]).sort((a, b) => bill.whip![b.id] - bill.whip![a.id]).slice(0, 3);
-    try { bill.headline = await narrate(this.env, bill, yes, passThreshold(bill), defectors, bill.blocs ?? {}); } catch { /* headline is optional */ }
+  private async vote(game: Game, pack: Pack, bill: Bill): Promise<Extra> {
+    if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
+    const before = effectiveWhip(game, bill);
+    applyVote(pack, game, bill);
+    const votes = bill.votes!;
+    const gap = (m: Member) => Math.abs((votes[m.id] ? 1 : 0) - (before[m.id] ?? 0));
+    const speakers = [...game.members].sort((a, b) => gap(b) - gap(a)).slice(0, 2);
+    const defectors = game.members.filter((m) => m.faction === game.faction && !votes[m.id])
+      .sort((a, b) => (bill.whip![b.id] ?? 0) - (bill.whip![a.id] ?? 0)).slice(0, 3);
+    const verdict = {
+      [pack.vocabulary.bill]: bill.title, summary: bill.summary,
+      outcome: bill.passed ? pack.vocabulary.pass : pack.vocabulary.fail,
+      yes: bill.yes, needed: bill.threshold, struck_down: bill.struck,
+    };
+    // Headline, quotes and the 250 citizens are one beat: nothing reads another's result.
+    const [headline, said, citizens] = await Promise.all([
+      narrate(this.env, pack, bill, defectors).catch(() => undefined),
+      quotes(this.env, pack, bill, speakers).catch(() => []),
+      jev(this.env, citizenState(pack, game, verdict), citizenQuestions(pack, pack.citizens, "vote")),
+    ]);
+    if (headline) bill.headline = headline;
+    if (said.length) bill.quotes = said;
+    const deltas = applyCitizens(pack, game, nouls(citizens.answers, ""));
+
+    const event = director(game, pack);
+    if (event) {
+      const storylet = pack.deck.find((s) => s.id === event.id);
+      if (storylet) event.card = await cardText(this.env, pack, storylet, record(pack, game)).catch(() => undefined);
+    }
+    // The midterm draw is Stage B, so the stage goes straight back to the session.
+    if (game.stage === "midterm") game.stage = "session";
+    return { deltas };
+  }
+
+  private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
+    const event = game.events[i];
+    if (!event) throw new Reject(404, "No such card.");
+    if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
+    if (!(stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
+    const storylet = pack.deck.find((s) => s.id === event.id);
+    const taken = event.stances[stance];
+    const state = { event: event.card ?? { title: storylet?.title_hint ?? event.id }, stance: taken, record: record(pack, game) };
+    const questions = storylet ? eventQuestions(pack, storylet.scored) : {};
+    let scored: Record<string, number> | undefined;
+    if (Object.keys(questions).length) {
+      const r = await jev(this.env, state, questions);
+      scored = { ...scores(r.answers, "bloc_"), ...scores(r.answers, "patron_") };
+    }
+    resolveEvent(pack, game, event, stance, scored);
+    const [line, citizens] = await Promise.all([
+      outcome(this.env, pack, event, taken, record(pack, game)).catch(() => undefined),
+      jev(this.env, citizenState(pack, game, { ...state.event, stance_taken: taken }), citizenQuestions(pack, pack.citizens, "crisis")),
+    ]);
+    if (line) event.outcome = line;
+    return { deltas: applyCitizens(pack, game, nouls(citizens.answers, "")) };
+  }
+
+  private async term(s: Saved, pack: Pack) {
+    const { game } = s;
+    if (game.stage !== "test") throw new Reject(409, `The ${pack.vocabulary.test} is not due yet.`);
+    const r = await jev(this.env, testState(pack, game), testQuestions(pack, game));
+    const result = runTest(pack, game, { loyalty: nouls(r.answers, "loyalty_"), intent: nouls(r.answers, "intent_") });
+    endTerm(pack, game, result);
+  }
+
+  // Luna's last page, written once: after the test, and after a term impeachment or a lame duck cuts short.
+  private async epilogue(s: Saved, pack: Pack) {
+    const { game } = s;
+    if (!game.result || s.prose.ending) return;
+    const state = { ...record(pack, game), mandate: game.test ? Math.round(game.test.mandate * 100) : null, score: game.result.score, terms: game.terms };
+    s.prose.ending = await ending(this.env, pack, game.result.ending, state).catch(() => undefined);
   }
 }
 
-// Old bills lose their per-senator maps on the wire; the client only needs the current one.
-function view(game: Game) {
-  const bills = game.bills.map((b) => (b.id >= game.turn - 1 ? b : { ...b, whip: undefined, votes: undefined }));
-  return { ...game, bills, billsPerTerm: BILLS_PER_TERM[game.settings.mode] === Infinity ? null : BILLS_PER_TERM[game.settings.mode] };
+// Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
+export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
+  const { director: _hidden, members, bills, ...rest } = game;
+  const { deck: _weights, ...pv } = packView(pack);
+  const start = pack.starts.find((x) => x.faction === game.faction);
+  return {
+    ...rest, ...extra,
+    scenario: game.pack, pack: pv,
+    members: members.map(({ bio, tell, ...m }) => m),
+    bills: bills.map((b) => {
+      if (b.id < game.turn - 1) return { ...b, whip: undefined, votes: undefined, quotes: undefined };
+      if (!b.whip || b.votes) return b;
+      const whip = effectiveWhip(game, b);
+      return { ...b, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, b) };
+    }),
+    citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
+    coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
+    seatTitle: start?.seat_title ?? "the government",
+    turnsPerTerm: TURNS_PER_TERM,
+    ending: prose.ending,
+  };
 }
