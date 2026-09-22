@@ -75,3 +75,21 @@ Frame step of the polity pack (spec §3), three scenarios, Wikipedia and Wikidat
 Germany seat shares within ±2 of the 736-seat proportions and Wikidata P465 colors exact for all three. Reference errors are ids or tags that pass the schema but point nowhere; a cross-check after parse with the violation list fed back on retry covers all of Luna's. Astra narrates caveats into game text ("its 40 seats are a design allocation") and needs a prompt rule. Grok writes best and slowest, 10k+ reasoning tokens per call.
 
 Wikidata QIDs that carry P465 for 2021: SPD Q49768, CDU Q49762, CSU Q49763, Greens Q49766, FDP Q13124, AfD Q6721203, Linke Q49764, SSW Q161545. `prop=extracts` returns lead sections only; seat tables need `action=parse` on the results section.
+
+## Accuracy levers for Luna, 2026-09-22
+
+Ablation on Rome 44 BC (two runs each) and Egypt 2012 (one run), Luna only, fixed checklists frozen before the runs. Full tables in `docs/ablation-2026-09-22.md`. Spend $0.23.
+
+| Condition | Factual errors, mean | Reference errors | Seconds | Cost |
+|---|---|---|---|---|
+| C0 baseline, lead sections only | 3.0 | 9 | 28 | $0.005 |
+| L1 model dates, code maps turns | 3.0 | 34 | 25 | $0.006 |
+| L2 facts sheet before the frame | 2.3 | 6 | 36 | $0.009 |
+| L3 validators with one retry | 3.3 | 5 | 46 | $0.012 |
+| L4 Wikidata birth, death, colors | 1.7 | 3 | 31 | $0.006 |
+| L5 Luna self-review and repair | 3.3 | 3 | 58 | $0.016 |
+| ALL | 1.7 | 7 | 76 | $0.022 |
+
+Findings: L4 removed every dead leader (Pompey, Crassus) and was the only single lever that produced Wikidata party colors for Egypt, for $0.0006. L2 removed dead leaders too and made Egypt name Morsi in the start. L5 made things worse: 32 to 52 claims per review, mostly seat counts the sources cannot confirm, and the repair hedged into disclaimers (11 in one ALL run) and duplicated leaders. L1's calendar chosen by the model put the Ides on turn 6 or 15; code must set the calendar. L3's "leader appears in sources" check rejected two real Egyptian leaders the lead sections never name. Wikidata label search needs a disambiguation guard: it returned a Lepidus who died in 152 BC and a 1996-born Octavian, which Luna ignored.
+
+Decision: fetch full sections, not leads; L4 plus L2 in the pipeline; L3 reduced to alive-on-start-date, seated-leader, and reference checks; code sets the calendar from the facts sheet's dated events so the last one lands near turn 18; no self-review; Astra only when the validators still fail after one retry. Expected cost per build about $0.01 for the frame path.

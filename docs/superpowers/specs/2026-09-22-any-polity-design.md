@@ -141,17 +141,21 @@ written to D1 after every step for the build screen.
 | Step | Model | Output | Time |
 |---|---|---|---|
 | plan | Luna | `{ fiction, lang, lookups: string[] (≤ 10 Wikipedia titles, any edition), wikidata: string[] (entity labels) }` | 3 s |
-| fetch | none | Wikipedia `prop=extracts&explaintext` for each title, 1.2k tokens each; Wikidata SPARQL for parties (P465 color, seats), heads of government (P6), election results. Fiction skips | 5 s |
-| frame | Luna | title, era, place, description, vocabulary, theme, chamber, factions, regions, blocs, patrons, tags, problems, promises, starts, test, endings, lobby, escalations | 20 s |
+| fetch | none | Wikipedia lead plus the 2 to 3 most relevant sections per title via `action=parse`, 6k chars per section; Wikidata birth (P569), death (P570) for every named person, P465 colors and seat counts for parties, with a guard that the hit is a human or party of the right era. Fiction skips | 6 s |
+| facts | Luna | a facts sheet from the sources: people with dates and `alive_on_start_date`, bodies with sizes, groupings with leaders, dated events. The frame may only name people on the sheet | 8 s |
+| frame | Luna | title, era, place, description, vocabulary, theme, chamber, factions, regions, blocs, patrons, tags, problems, promises, starts, test, endings, lobby, escalations, `start_date` | 20 s |
+| validate | none | reference check on every id and tag; every faction leader alive on `start_date` per the sheet; no leader name in a member seat; at least 3 factions when the chamber is over 30 seats; dated events inside the term window. Violations go back to Luna as a list with the previous output, one retry | 0 s, 20 s on retry |
 | members | Luna | `chamber.size` members, 25 per call in parallel | 15 s |
 | citizens | Luna | 250 citizens, 50 per call in parallel | 15 s |
 | deck | Luna | 20 generic themed plus 5 to 8 dated storylets | 20 s |
-| review | Astra | `{ errors: { path, wrong, right, source }[] }` on names, dates, seat shares, colors, leaders. Under 4 errors: patch and continue. 4 or more: rerun frame and deck with Astra | 15 s |
+| repair | Astra | only when validation still fails after the retry: rerun frame with the violation list and the rule "never mention the game, its design, or that anything is fictional". Measured 2026-09-22: self-review by Luna adds disclaimers and hedged leaders, so there is no review step on the happy path | 0 s, 100 s when it runs |
 | art | muse-image | masthead and one crest per faction, in parallel with members and deck; dithered, R2 | 10 s |
 | index | Workers AI | embed `title + era + place + description + prompt`, upsert to Vectorize, mark ready | 2 s |
 | portraits | muse-image | after ready, never blocking: all contact sheets fired at once (size ÷ 16 calls), crop, dither, R2; the pack's `art.portraits` flips to done per sheet | 20 s, in the background |
 
-Cost per build: Luna path about $0.10, Astra fallback about $2.50, art about $0.15. The
+Calendar: code sets it. `turn_unit` is chosen so the sheet's last dated event lands on turn 16 to 18 (day, week, month or season, whichever fits), and every dated storylet carries a date that code maps to a turn. Measured: a model-chosen calendar put the Ides on turn 6 or 15.
+
+Cost per build: Luna path about $0.10 with a $0.01 frame path, Astra repair adds about $0.30 when it runs, art about $0.05 at build plus $0.03 of portraits in the background. The
 content rule sits in every generation prompt: no depiction, planning or reward of
 atrocities in bills, storylets, headlines or quotes; when a prompt seats the player in a
 regime defined by them, the generator keeps the period and seats the player in the nearest
