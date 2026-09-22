@@ -205,7 +205,11 @@ async function playTo(post: (p: string, b: unknown) => Promise<{ status: number 
       if (r.status !== 200) throw new Error(`midterm on turn ${turn}: ${r.status}`);
       continue;
     }
-    for (const path of ["bills", `bills/${turn}/whip`, `bills/${turn}/vote`]) {
+    if (game.phase === "draft") {
+      game.bills.push({ id: turn, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {} });
+      game.phase = "whip";
+    }
+    for (const path of [`bills/${turn}/whip`, `bills/${turn}/vote`]) {
       const r = await post(path, { turn, text: "Raise the harbor levy on the wharf and publish the accounts each month." });
       if (r.status !== 200) throw new Error(`${path} on turn ${turn}: ${r.status}`);
     }
@@ -396,8 +400,9 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
 
 test("a Jev failure mid-vote leaves the stored game exactly as the request found it", async () => {
   stubModels(0.9);
-  const { do_, post } = seatedGame(31);
-  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  const { do_, game, post } = seatedGame(31);
+  game.bills.push({ id: 1, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {} });
+  game.phase = "whip";
   expect((await post(`bills/1/whip`, { turn: 1 })).status).toBe(200);
   const before = structuredClone(do_.saved);
 
@@ -455,7 +460,8 @@ test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeErro
 
   game.stage = "session";
   const own = game.members[0];
-  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  game.bills.push({ id: 1, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {} });
+  game.phase = "whip";
   expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
   const authority = game.ledgers.authority;
   expect((await post("bills/1/lobby", { turn: 1, memberId: own.id, action: "toString" })).status).toBe(400);
@@ -472,7 +478,8 @@ test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeErro
 test("End turn moves the clock, draws the card and prints the wire", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(21);
-  expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
+  game.bills.push({ id: 1, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {} });
+  game.phase = "whip";
   expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
   expect(game.turn).toBe(1);

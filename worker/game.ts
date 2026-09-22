@@ -7,13 +7,13 @@ import {
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
-  agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, gateQuestion, HOLDER_SAMPLE, holderQuestions,
+  agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, HOLDER_SAMPLE, holderQuestions,
   holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
-import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
+import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, quotes, replies } from "./luna";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -189,20 +189,8 @@ export class GameDO extends DurableObject<Env> {
     }
   }
 
-  private async draft(game: Game, pack: Pack, raw: string) {
-    if (game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
-    const text = raw.trim().slice(0, 1200);
-    if (text.length < 12) throw new Reject(400, "Write a little more.");
-    const gate = await jev(this.env, { text }, gateQuestion(pack));
-    let noul = gate.answers.gate?.noul;
-    if (noul === undefined) { console.warn("gate: missing answer for gate.noul"); noul = 0.5; }
-    if (noul < 0.3) throw new Reject(422, `That is not a ${pack.vocabulary.bill}. Propose a law, a program, or a policy.`);
-    const draft = await parseBill(this.env, pack, text).catch((e) => {
-      if (e instanceof UpstreamError) throw e;
-      throw new Reject(503, "The narrator did not answer. Try again.");
-    });
-    game.bills.push({ id: game.turn, text, ...draft, offers: {} });
-    game.phase = "whip";
+  private async draft(_game: Game, _pack: Pack, _raw: string) {
+    throw new Reject(410, "Use the act composer.");
   }
 
   private async count(game: Game, pack: Pack, bill: Bill, draft: BillDraft = bill): Promise<WhipCount> {
