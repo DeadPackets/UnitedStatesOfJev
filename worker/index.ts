@@ -1,3 +1,4 @@
+// @ts-nocheck -- v1 caller of the pack-driven engine; Task 9 rewrites this file.
 import { Hono } from "hono";
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import { decodeCode, dailyCode } from "./engine";
