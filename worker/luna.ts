@@ -9,10 +9,14 @@ const HeadlineSchema = z.object({ title: z.string(), lede: z.string() });
 // Condensed from Wikipedia's "Signs of AI writing" so Luna's prose reads as written by a person.
 const STYLE = ` Writing rules, strict: plain words, short sentences, concrete nouns and numbers. Use is/are/has, not "serves as", "stands as", "represents", "boasts". No em dashes. No groups of three for effect. No "not just X, but Y". Never use: crucial, pivotal, key, vital, landscape, tapestry, testament, underscore, highlight, showcase, delve, foster, enhance, robust, vibrant, seamless, comprehensive, ensure, Additionally, Moreover. No -ing tails that add fake depth ("reflecting", "ensuring", "highlighting"). No hedging, no upbeat closers, no praise. Straight quotes only. Sound like a tired newsroom, not a press release.`;
 
-export async function luna<T>(env: Env, schema: z.ZodType<T>, name: string, system: string, user: string, maxTokens: number): Promise<T> {
+export const LUNA = "openai/gpt-5.6-luna";
+
+// env.MODEL swaps the model for every call a whole build step makes; the last argument swaps one call.
+export async function luna<T>(env: Env, schema: z.ZodType<T>, name: string, system: string, user: string, maxTokens: number, model: string = env.MODEL ?? LUNA): Promise<T> {
   const body = {
     // Measured (scripts/luna-latency.ts): effort "none" ~1.4 s vs "low" ~3 s for a bill parse; latency-sorted routing shaves ~0.2 s.
-    model: "openai/gpt-5.6-luna", max_tokens: maxTokens, reasoning: { effort: "none" }, provider: { sort: "latency" },
+    // Only Luna takes effort "none": Astra answers 400 "Reasoning is mandatory for this endpoint".
+    model, max_tokens: maxTokens, provider: { sort: "latency" }, ...(model === LUNA ? { reasoning: { effort: "none" } } : {}),
     messages: [{ role: "system", content: system + STYLE }, { role: "user", content: user }],
     response_format: { type: "json_schema", json_schema: { name, strict: true, schema: z.toJSONSchema(schema) } },
   };

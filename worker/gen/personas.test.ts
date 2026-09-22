@@ -30,15 +30,16 @@ describe("membersStep", () => {
   test("a member carrying a real name is rewritten once", async () => {
     rename = "Ossin Venn";
     seen.length = 0;
-    const { members } = await membersStep({} as never, ctx(["Bella Blue", "Tiberius Grey", "Kira Vance"]));
+    const { members } = await membersStep({} as never, ctx(["Bella Blue", "Cato Grey", "Kira Vance"]));
     expect(members!.map((m) => m.name)).toEqual(["Ossin Venn", "Ossin Venn", "Kira Vance"]);
     expect(seen.length).toBe(3);
     expect(seen.slice(1).map((r) => r.must_differ_from)).toEqual([["Bella Blue"], ["Cato Grey"]]);
   });
 
+  // "Tiberius Grey" shares a surname with the real "Cato Grey": that alone is not a clash.
   test("a clean roster makes one call and no rewrite", async () => {
     seen.length = 0;
-    const { members } = await membersStep({} as never, ctx(["Kira Vance", "Ossin Venn"]));
+    const { members } = await membersStep({} as never, ctx(["Kira Vance", "Tiberius Grey"]));
     expect(seen.length).toBe(1);
     expect(members!.every((m) => m.bio.length > 0)).toBe(true);
   });

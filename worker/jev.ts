@@ -3,7 +3,9 @@ import { STATES } from "./states";
 
 export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
-  DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow; BUILDS: DurableObjectNamespace; DAILY_BUILD_CAP: string;
+  DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow;
+  BUILDS: DurableObjectNamespace<import("./db").BuildsDO>; DAILY_BUILD_CAP: string;
+  MODEL?: string;
 };
 export class UpstreamError extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -15,6 +17,9 @@ export async function post(env: Env, path: string, body: unknown): Promise<any> 
       method: "POST",
       headers: { Authorization: `Bearer ${env.OPENROUTER_API_KEY}`, "Content-Type": "application/json", "HTTP-Referer": "https://unitedstatesofjev.deadpackets.pw", "X-Title": "United States of Jev" },
       body: JSON.stringify(body),
+      // Measured 2026-09-22: a frame call stalled for 30 minutes with no answer and no error. 120 s is well
+      // over the slowest measured call (72 s), and the retry below picks up another provider.
+      signal: AbortSignal.timeout(120_000),
       });
     } catch (e) {
       if (attempt < 2) { await new Promise((res) => setTimeout(res, 300)); continue; }

@@ -6,6 +6,7 @@ import { CONTENT_RULE, HISTORIAN, type GenCtx } from "./prompts";
 const PlanSchema = z.object({
   fiction: z.boolean(),
   lang: z.string(),
+  year: z.number(),
   lookups: z.array(z.string()).max(10),
   people: z.array(z.string()).max(20),
   parties: z.array(z.string()).max(12),
@@ -17,6 +18,7 @@ const SYSTEM = `${HISTORIAN}
 You are planning the research for one scenario. Name the sources to read before anything is written.
 - fiction: true only when the scenario is invented and no real polity matches it.
 - lang: the BCP 47 code of the language the pack should be written in, taken from the language of the scenario text.
+- year: the start year the scenario implies, negative for BC.
 - lookups: at most 10 Wikipedia article titles, exact, in the edition named by lang. The polity, the election or event, the governing body, and the main groupings. Empty when fiction is true.
 - people: the named people of the period whose birth and death dates matter, at most 20. Empty when fiction is true.
 - parties: the groupings whose colors and seat counts matter, at most 12. Empty when fiction is true.

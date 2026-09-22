@@ -99,7 +99,8 @@ export const PackSchema = z.object({
   test: z.object({ name: z.string(), win: z.string(), lose: z.string(), reveal: z.enum(["regions", "seats", "both"]) }),
   endings: z.object({ reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string() }),
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
-  art: z.object({ masthead: z.string(), crests: z.array(IdStr) }),
+  // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
+  art: z.object({ masthead: z.string(), crests: z.array(IdStr), portraits: z.array(IdStr).default([]) }),
 }).refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
   .refine((p) => p.starts.length === p.factions.length, "one start per faction");
 

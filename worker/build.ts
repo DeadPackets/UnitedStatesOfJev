@@ -1,0 +1,264 @@
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
+import { NonRetryableError } from "cloudflare:workflows";
+import { UpstreamError, type Env } from "./jev";
+import { luna } from "./luna";
+import { alignment, cells, crest, face, masthead as mastheadPlate, muse, plate, type Rgb } from "./art";
+import { failScenario, markPortrait, putMeta, putPack, putStatus } from "./db";
+import { PackSchema, type Member, type Pack } from "./pack";
+import { fetchWikipedia, lookupParty, lookupPerson } from "./sources";
+import { plan, type Plan } from "./gen/plan";
+import { facts } from "./gen/facts";
+import { FrameSchema, frame } from "./gen/frame";
+import { assign } from "./gen/assign";
+import { membersStep, citizensStep, names } from "./gen/personas";
+import { dedupe } from "./gen/dedupe";
+import { deck } from "./gen/deck";
+import { calendarStep } from "./gen/calendar";
+import { NeedsRepair, matchName, realNames } from "./gen/validate";
+import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./gen/prompts";
+
+export type BuildParams = { id: string; prompt: string };
+
+const ASTRA = "openai/gpt-6-astra";
+const GROK = "x-ai/grok-4.7";
+// A live sheet printed name captions under each bust without the last four clauses.
+const NO_TEXT = "no text, no captions, no labels, no borders, no watermark";
+// timeout: an OpenRouter call can stall with no answer; without it the step, and the build, hang forever.
+const RETRY = { retries: { limit: 2, delay: "5 seconds", backoff: "exponential" }, timeout: "4 minutes" } as const;
+const PAGES = 6, PEOPLE = 12, PARTIES = 12, SHEET = 16;
+
+const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+const nonNull = <T>(a: (T | null)[]): T[] => a.filter((x): x is T => x !== null);
+const rgb = (hex: string): Rgb => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
+const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);
+
+// ---- refusals: one retry of the whole step on Grok, then the build fails with a plain message ----
+
+const REFUSAL = /cannot|refuse|policy/i;
+const refused = (e: unknown) =>
+  e instanceof UpstreamError && e.status >= 400 && e.status < 500 &&
+  (e.status === 400 || e.status === 403 || REFUSAL.test(e.message));
+
+async function onRefusal<T>(env: Env, fn: (env: Env) => Promise<T>): Promise<T> {
+  try {
+    return await fn(env);
+  } catch (e) {
+    if (!refused(e)) throw e;
+    try {
+      return await fn({ ...env, MODEL: GROK });
+    } catch {
+      throw new NonRetryableError("The models would not write this scenario. Try a different prompt.");
+    }
+  }
+}
+
+// ---- fetch: the one step Task 4 left to the Workflow ----
+
+const signedYear = (y: number) => `${y < 0 ? "-" : ""}${String(Math.abs(y)).padStart(4, "0")}-01-01`;
+
+async function fetchStep(p: Plan): Promise<Partial<GenCtx>> {
+  const edition = (p.lang || "en").split("-")[0];
+  const start = signedYear(p.year);
+  const [wikipedia, people, parties] = await Promise.all([
+    Promise.all(p.lookups.slice(0, PAGES).map((t) => fetchWikipedia(edition, t, p.keywords).catch(() => null))),
+    Promise.all(p.people.slice(0, PEOPLE).map((l) => lookupPerson(l, start).catch(() => null))),
+    Promise.all(p.parties.slice(0, PARTIES).map((l) => lookupParty(l).catch(() => null))),
+  ]);
+  return { sources: { wikipedia: nonNull(wikipedia), people: nonNull(people), parties: nonNull(parties) } };
+}
+
+// ---- frame: the Luna path first, Astra only when validation still fails ----
+
+const FRAME_SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
+
+async function frameStep(env: Env, id: string, ctx: GenCtx): Promise<Partial<GenCtx>> {
+  let out: Partial<GenCtx>;
+  try {
+    out = await onRefusal(env, (e) => frame(e, ctx));
+  } catch (err) {
+    if (!(err instanceof NeedsRepair)) throw err;
+    console.warn(`frame repair ${id}`, err.violations.join("; "));
+    const user = [
+      sourceBlock(ctx, ctx.facts),
+      `An earlier attempt returned this pack:\n${err.last}`,
+      `Validation found these violations:\n- ${err.violations.join("\n- ")}`,
+      "Return the corrected full pack. Keep everything else the same. Never mention the game, its design, or that anything is fictional.",
+    ].join("\n\n");
+    const f = await luna(env, FrameSchema, "frame", FRAME_SYSTEM, user, 9000, ASTRA);
+    const cal = ctx.calendar ?? { start_date: f.start_date, unit: "week" as const };
+    out = { frame: { ...f, start_date: cal.start_date }, calendar: cal };
+  }
+  const f = out.frame!;
+  await putMeta(env, id, { lang: ctx.lang, title: f.title, era: f.era, place: f.place, description: f.description });
+  return out;
+}
+
+// ---- personas ----
+
+// membersStep rejects a member carrying a real name of the period. Swapping in a surname the roster already
+// holds clears most clashes for free, which beats paying for a rewrite round on a 60-seat chamber.
+function renameClashes(members: Member[], real: string[]): Member[] {
+  const surnames = [...new Set(members.map((m) => m.name.trim().split(/\s+/).pop() ?? "").filter(Boolean))];
+  return members.map((m) => {
+    if (!matchName(m.name, real)) return m;
+    const parts = m.name.trim().split(/\s+/);
+    const name = surnames.map((s) => [...parts.slice(0, -1), s].join(" ")).find((n) => n && !matchName(n, real));
+    return name ? { ...m, name } : m;
+  });
+}
+
+async function personasStep(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
+  const real = realNames(ctx.frame, ctx.facts);
+  const both = async (c: GenCtx) => {
+    const [m, z] = await Promise.all([membersStep(env, c), citizensStep(env, c)]);
+    return { ...m, ...z };
+  };
+  try {
+    return await both({ ...ctx, members: renameClashes(ctx.members, real) });
+  } catch (e) {
+    if (!(e instanceof NeedsRepair)) throw e;
+    const fresh = { ...ctx, ...(await names(env, ctx)) };
+    try {
+      return await both({ ...fresh, members: renameClashes(fresh.members, real) });
+    } catch (e2) {
+      if (!(e2 instanceof NeedsRepair)) throw e2;
+      throw new NonRetryableError(`The roster kept naming real people of the period: ${e2.violations.slice(0, 2).join("; ")}`);
+    }
+  }
+}
+
+// ---- art: written to R2 inside the step, because Workflows cap a step result at 1 MiB ----
+
+const put = (env: Env, key: string, bytes: Uint8Array) =>
+  env.ART.put(key, bytes as unknown as ArrayBuffer, { httpMetadata: { contentType: "image/png" } }).then(() => key);
+
+async function artStep(env: Env, id: string, ctx: GenCtx): Promise<Pack["art"]> {
+  const t = ctx.frame.theme, ink = rgb(t.ink), paper = rgb(t.paper);
+  const ornament = t.ornament === "none" ? "plain" : `${t.ornament} ornament`;
+  const [head, ...crests] = await Promise.all([
+    muse(env, `wide ${ctx.frame.era} engraving of a landmark of ${ctx.frame.place}, ${NO_TEXT}`, "4:1")
+      .then((b) => put(env, `scenarios/${id}/masthead.png`, mastheadPlate(b, ink, paper))),
+    ...ctx.frame.factions.map((f) =>
+      muse(env, `${f.name} emblem, flat, centered, ${ornament}, ${NO_TEXT}`, "1:1")
+        .then((b) => put(env, `scenarios/${id}/crests/${f.id}.png`, crest(b, rgb(f.color), paper)))),
+  ]);
+  return { masthead: head, crests: ctx.frame.factions.map((f, i) => ({ id: f.id, value: crests[i] })), portraits: [] };
+}
+
+// ---- portraits: after ready, never blocking play ----
+
+const AGE: Record<Member["years"], string> = { new: "young", mid: "middle-aged", long: "old" };
+
+const sheetPrompt = (pack: Pack, group: Member[]) =>
+  `4x4 grid of 16 different ${pack.era} ${pack.vocabulary.member}, passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall. ` +
+  `Faces in reading order: ${group.map((m) => `${AGE[m.years]} and ${m.temperament}`).join("; ")}. ${NO_TEXT}`;
+
+async function portraitsStep(env: Env, id: string, pack: Pack) {
+  const ink = rgb(pack.theme.ink), paper = rgb(pack.theme.paper);
+  // The sheets run at once but share one pack row, so the D1 read-modify-writes are chained.
+  let writes: Promise<unknown> = Promise.resolve();
+  const flip = (sheet: string, status: "done" | "failed") => { writes = writes.then(() => markPortrait(env, id, sheet, status)); };
+  await Promise.all(chunk(pack.members, SHEET).map(async (group, gi) => {
+    const sheet = `sheet-${gi + 1}`;
+    try {
+      const prompt = sheetPrompt(pack, group);
+      let cut = cells(await muse(env, prompt, "1:1"));
+      if (!alignment(cut).ok) cut = cells(await muse(env, prompt, "1:1"));
+      await Promise.all(group.map(async (m, i) => {
+        const cell = cut[i];
+        if (!cell) return;
+        await put(env, `scenarios/${id}/members/${m.id}.png`, face(cell));
+        await put(env, `scenarios/${id}/members/${m.id}-plate.png`, plate(cell, ink, paper));
+      }));
+      flip(sheet, "done");
+    } catch (e) {
+      console.warn(`portraits ${id} ${sheet}`, plain(e));
+      flip(sheet, "failed");
+    }
+  }));
+  await writes;
+}
+
+// ---- index and assemble ----
+
+async function indexStep(env: Env, id: string, ctx: GenCtx) {
+  const f = ctx.frame;
+  const text = `${f.title} ${f.era} ${f.place} ${f.description} ${ctx.prompt}`;
+  const r = (await env.AI.run("@cf/baai/bge-m3", { text: [text] } as never)) as any;
+  const values: number[] | undefined = r?.data?.[0] ?? r?.response?.data?.[0];
+  if (!Array.isArray(values)) throw new Error("bge-m3 returned no vector");
+  await env.VEC.upsert([{ id, values, metadata: { title: f.title, era: f.era, place: f.place, description: f.description } }]);
+}
+
+function assemble(id: string, ctx: GenCtx, art: Pack["art"]): Pack {
+  const f = ctx.frame;
+  return PackSchema.parse({
+    ...f, v: 1, id, lang: ctx.lang, prompt: ctx.prompt, fiction: ctx.fiction,
+    sources: ctx.sources.wikipedia.map((p) => ({ title: p.title, url: p.url })),
+    starts: f.factions.map((x) => f.starts.find((s) => s.faction === x.id)),
+    members: ctx.members, citizens: ctx.citizens, deck: ctx.deck, art,
+  });
+}
+
+// ---- the Workflow ----
+
+export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
+  async run(event: WorkflowEvent<BuildParams>, step: WorkflowStep) {
+    const env = this.env;
+    const { id, prompt } = event.payload;
+    let ctx = { prompt, lang: "en", fiction: false, sources: { wikipedia: [], people: [], parties: [] } } as unknown as GenCtx;
+    const merge = (p: Partial<GenCtx>) => { ctx = { ...ctx, ...p }; };
+
+    // step.do types its result through Serializable<T>, which a generic T can never satisfy; every step here returns JSON.
+    const stage = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown): Promise<T> =>
+      step.do(name, RETRY, async () => {
+        await putStatus(env, id, name);
+        const r = await fn(env);
+        if (fragment) await putStatus(env, id, name, JSON.stringify(fragment(r)));
+        return r as never;
+      }) as Promise<T>;
+    const gen = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown) =>
+      stage(name, (e) => onRefusal(e, fn), fragment);
+
+    let pack: Pack;
+    try {
+      const p = await gen("plan", (e) => plan(e, ctx));
+      merge({ fiction: p.fiction, lang: p.lang });
+      merge(await stage("fetch", () => fetchStep(p)));
+      merge(await gen("facts", (e) => facts(e, ctx)));
+      merge(await stage("calendar", (e) => calendarStep(e, ctx)));
+      merge(await stage("frame", (e) => frameStep(e, id, ctx), (r) => {
+        const f = r.frame!;
+        return {
+          kind: "frame", title: f.title, era: f.era, place: f.place, description: f.description, vocabulary: f.vocabulary,
+          theme: { fonts: f.theme.fonts, ink: f.theme.ink, paper: f.theme.paper, accent: f.theme.accent },
+          factions: f.factions.map((x) => ({ id: x.id, name: x.name, short: x.short, color: x.color })),
+          problems: f.problems.slice(0, 3),
+        };
+      }));
+      merge(await stage("assign", (e) => assign(e, ctx)));
+      merge(await gen("names", (e) => names(e, ctx)));
+      merge(await gen("personas", (e) => personasStep(e, ctx),
+        (r) => ({ kind: "members", names: r.members!.slice(0, 8).map((m) => m.name) })));
+      merge(await gen("dedupe", (e) => dedupe(e, ctx)));
+      merge(await gen("deck", (e) => deck(e, ctx)));
+      const art = await stage("art", (e) => artStep(e, id, ctx), (r) => ({ kind: "art", masthead: r.masthead, crests: r.crests.length }));
+      await stage("index", (e) => indexStep(e, id, ctx));
+      // putPack writes status 'ready', so it is the last write of the build.
+      pack = await stage("assemble", async (e) => {
+        const built = assemble(id, ctx, art);
+        await putPack(e, id, built);
+        return built;
+      });
+    } catch (e) {
+      await step.do("failed", RETRY, () => failScenario(env, id, plain(e)));
+      throw e;
+    }
+
+    try {
+      await step.do("portraits", RETRY, () => portraitsStep(env, id, pack));
+    } catch (e) {
+      console.warn(`portraits ${id}`, plain(e));
+    }
+  }
+}

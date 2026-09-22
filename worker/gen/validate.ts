@@ -49,14 +49,16 @@ export function turnOf(date: string | null | undefined, start: string, unit: Uni
 
 const norm = (n: string) => n.toLowerCase().trim();
 const last = (n: string) => norm(n).split(/\s+/).pop() ?? "";
+const first = (n: string) => norm(n).split(/\s+/)[0] ?? "";
 const words = (s: string) => s.trim().split(/\s+/).length;
 
 // Every real person of the period: the frame's leaders and everyone the facts sheet names.
 export const realNames = (frame: Frame, facts?: Facts | null): string[] =>
   [...frame.factions.map((f) => f.leader), ...(facts?.people ?? []).map((p) => p.name)].filter((n) => n && n.trim());
 
+// Surname alone is not a clash: Roman cognomina repeat (Brutus, Casca), so it rejected every invented Roman.
 export const matchName = (name: string, real: string[]): string | null =>
-  (name?.trim() ? real.find((r) => norm(r) === norm(name) || last(r) === last(name)) ?? null : null);
+  (name?.trim() ? real.find((r) => norm(r) === norm(name) || (first(r) === first(name) && last(r) === last(name))) ?? null : null);
 
 // Members are invented, so none of them may carry a real name of the period. Run after the persona calls.
 export function members(frame: Frame, roster: { id: string; name: string }[], facts?: Facts | null): string[] {
