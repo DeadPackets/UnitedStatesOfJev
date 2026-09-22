@@ -30,7 +30,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
       </h1>
       {game.ending ? (
         <div style={{ "--i": 2 } as any}>
-          {r && game.ending.title.toLowerCase() !== pack.endings[r.ending].toLowerCase() ? <p className="lede" style={{ margin: "0 0 10px" }}>{game.ending.title}</p> : null}
+          {r && game.ending.title.toLowerCase() !== pack.endings[r.ending]?.toLowerCase() ? <p className="lede" style={{ margin: "0 0 10px" }}>{game.ending.title}</p> : null}
           <p style={{ margin: 0 }}>{game.ending.body}</p>
         </div>
       ) : null}

@@ -19,6 +19,11 @@ export const ESCALATION_KEYS = [
   "rival_surge", "apathy", "defections", "loud_opposition", "crisis_fatigue",
   "leaks", "war_footing", "famine", "succession_crisis", "foreign_meddling",
 ] as const;
+export const VERBS = ["decree", "law", "appoint", "spend", "proclaim", "favour", "force"] as const;
+export const HOLDER_RESPONSES = ["early_test", "coup", "strike", "refuse_levy", "riot", "excommunicate", "embargo", "none"] as const;
+export const CONSENTS = ["none", "chamber", "chamber_supermajority", "army"] as const;
+// A new list: pack.ts's LEDGERS is the storylet effect target enum and every stored deck depends on it.
+export const LEDGERS_V4 = ["treasury", "authority", "chest", "loyalty", "popularity"] as const;
 
 const SEAT_FLAGS = ["veto", "army", "clergy", "court", "crown"] as const;
 const YEARS = ["new", "mid", "long"] as const;
@@ -35,6 +40,50 @@ const FactionSchema = z.object({
 const RegionSchema = z.object({ id: z.string(), name: z.string(), weight: z.number(), lean: z.array(IdNum) });
 const BlocSchema = z.object({ id: z.string(), name: z.string(), description: z.string() });
 const PatronSchema = z.object({ id: z.string(), name: z.string(), wants: z.array(z.string()), hates: z.array(z.string()) });
+const PriceSchema = z.object({
+  authority: z.number().default(0), treasury: z.number().default(0), chest: z.number().default(0),
+});
+const InstrumentSchema = z.object({
+  name: z.string(), consent: z.enum(CONSENTS), price: PriceSchema, available: z.boolean(),
+});
+const HolderSchema = z.object({
+  id: z.string(), name: z.string(), where: z.enum(["home", "abroad"]),
+  persona: z.object({ name: z.string(), role: z.string(), bio: z.string(), tell: z.string() }),
+  members: z.enum(["seats", "citizens", "patrons", "blocs", "none"]).default("none"),
+  stance: z.number().min(0).max(1).default(0.5),
+  line: z.number().min(1).max(100),
+  response: z.enum(HOLDER_RESPONSES),
+  levers: z.array(z.enum(VERBS)).default([]),
+  wants: z.array(z.string()).default([]),
+  redLines: z.array(z.string()).default([]),
+  gives: z.object({ ledger: z.enum(["treasury", "chest"]), amount: z.number(), per: z.enum(["turn", "once"]) }).nullable().default(null),
+  responses: z.array(z.string()).default([]),
+});
+const LedgerNameSchema = z.object({ name: z.string(), line: z.number() });
+
+export const ConstitutionSchema = z.object({
+  ruler: z.object({ role: z.string(), faction: z.string() }),
+  holders: z.array(HolderSchema).min(3).max(10),
+  instruments: z.object({
+    decree: InstrumentSchema, law: InstrumentSchema, appoint: InstrumentSchema, spend: InstrumentSchema,
+    proclaim: InstrumentSchema, favour: InstrumentSchema, force: InstrumentSchema,
+  }),
+  retention: z.object({
+    name: z.string(),
+    weights: z.array(IdNum).default([]),
+    bar: z.object({
+      start: z.number().min(0).max(1).default(0.5),
+      step: z.number().min(0).max(0.2).default(0.03),
+      cap: z.number().min(0).max(1).default(0.7),
+    }).default({ start: 0.5, step: 0.03, cap: 0.7 }),
+  }),
+  halfTerm: z.object({ holder: z.string(), name: z.string() }),
+  ledgers: z.object({
+    treasury: LedgerNameSchema, authority: LedgerNameSchema, chest: LedgerNameSchema,
+    loyalty: LedgerNameSchema, popularity: LedgerNameSchema,
+  }),
+  briefing: z.object({ situation: z.string(), room: z.string(), you: z.string() }),
+});
 const MemberSchema = z.object({
   id: z.string(), seat: z.string(), region: z.string(), faction: z.string(), name: z.string(), bio: z.string(),
   core_issues: z.array(z.string()), temperament: z.enum(TEMPERAMENTS), tell: z.string(), patrons: z.array(z.string()),
@@ -58,7 +107,7 @@ const EffectSchema = z.object({
 // Signed ISO day: a BC year is negative and every part is zero-padded, e.g. -0044-03-15.
 export const DATE_RE = /^-?\d{1,6}-\d{2}-\d{2}$/;
 const StoryletSchema = z.object({
-  id: z.string(), kind: z.enum(["generic", "dated"]), turn: z.number().nullable().optional(),
+  id: z.string(), kind: z.enum(["generic", "dated", "swan", "foreign"]), turn: z.number().nullable().optional(),
   date: z.string().regex(DATE_RE).nullable().optional(),
   exogenous: z.boolean().nullable().optional(), needs: z.array(ConditionSchema).nullable().optional(),
   weight: z.number(), title_hint: z.string(), stances: z.array(z.string()),
@@ -100,10 +149,14 @@ export const PackSchema = z.object({
   escalations: z.array(z.object({ key: z.enum(ESCALATION_KEYS), name: z.string(), headline: z.string() })).length(20)
     .refine((a) => new Set(a.map((e) => e.key)).size === 20),
   test: z.object({ name: z.string(), win: z.string(), lose: z.string(), reveal: z.enum(["regions", "seats", "both"]) }),
-  endings: z.object({ reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string() }),
+  endings: z.object({
+    reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string(),
+    coup: z.string().nullable().optional(), stopped: z.string().nullable().optional(),
+  }),
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
   // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
   art: z.object({ masthead: z.string(), crests: z.array(IdStr), portraits: z.array(IdStr).default([]) }),
+  constitution: ConstitutionSchema.optional(),
 }).refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
   .refine((p) => p.starts.length === p.factions.length, "one start per faction")
   .refine((p) => p.starts.every((s, i) => s.faction === p.factions[i].id), "starts must follow factions order");
@@ -114,6 +167,14 @@ export type Citizen = z.infer<typeof CitizenSchema>;
 export type Faction = z.infer<typeof FactionSchema>;
 export type Region = z.infer<typeof RegionSchema>;
 export type Storylet = z.infer<typeof StoryletSchema>;
+export type Verb = (typeof VERBS)[number];
+export type HolderResponse = (typeof HOLDER_RESPONSES)[number];
+export type Consent = (typeof CONSENTS)[number];
+export type LedgerV4 = (typeof LEDGERS_V4)[number];
+export type Constitution = z.infer<typeof ConstitutionSchema>;
+export type Holder = z.infer<typeof HolderSchema>;
+export type Instrument = z.infer<typeof InstrumentSchema>;
+export type Price = z.infer<typeof PriceSchema>;
 
 // Largest remainder method, minimum one seat per faction that held any share.
 export function scaleSeats(shares: Record<string, number>, size: number): Record<string, number> {
@@ -143,7 +204,14 @@ export function scaleSeats(shares: Record<string, number>, size: number): Record
 // Client-facing view: drops citizens, the deck and member personas (bio, tell) so no spoilers leave the Worker.
 export function packView(pack: Pack) {
   const { citizens, deck, ...rest } = pack;
-  return { ...rest, members: rest.members.map(({ bio, tell, ...m }) => m) };
+  return {
+    ...rest,
+    members: rest.members.map(({ bio, tell, ...m }) => m),
+    constitution: rest.constitution && {
+      ...rest.constitution,
+      holders: rest.constitution.holders.map((h) => ({ ...h, persona: { name: h.persona.name, role: h.persona.role } })),
+    },
+  };
 }
 
 export type PackView = ReturnType<typeof packView>;

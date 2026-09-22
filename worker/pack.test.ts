@@ -55,3 +55,53 @@ test("packView strips citizens and member personas", () => {
   expect(json).not.toContain("\"tell\"");
   expect(json).not.toContain("worldview");
 });
+
+import { ConstitutionSchema, VERBS } from "./pack";
+
+const holder = (id: string, over: Record<string, unknown> = {}) => ({
+  id, name: id, where: "home", line: 60, response: "riot",
+  persona: { name: `${id} figure`, role: "spokesman", bio: "", tell: "" }, ...over,
+});
+const CONSTITUTION = {
+  ruler: { role: "Consul", faction: "harborites" },
+  holders: [
+    holder("council", { response: "early_test", members: "seats", levers: ["law", "favour"] }),
+    holder("guard", { response: "coup", members: "none", levers: ["force", "spend"] }),
+    holder("street", { response: "riot", members: "citizens", levers: ["spend", "proclaim"] }),
+    holder("league", { where: "abroad", response: "embargo", gives: { ledger: "treasury", amount: 4, per: "turn" }, wants: ["tariffs"], redLines: ["piracy"] }),
+  ],
+  instruments: Object.fromEntries(VERBS.map((v) => [v, { name: v, consent: "none", price: { authority: 3 }, available: true }])),
+  retention: { name: "the reckoning", weights: [{ id: "council", value: 0.4 }, { id: "street", value: 0.6 }] },
+  halfTerm: { holder: "council", name: "the halfway tide" },
+  ledgers: {
+    treasury: { name: "the chest of state", line: 0 }, authority: { name: "influence", line: 0 },
+    chest: { name: "the war chest", line: 0 }, loyalty: { name: "the league's mood", line: 20 },
+    popularity: { name: "standing", line: 30 },
+  },
+  briefing: { situation: "The harbour is in dispute.", room: "Three bodies can stop you.", you: "You hold the chair." },
+};
+
+test("the constitution parses, fills its defaults and needs all seven verbs", () => {
+  const c = ConstitutionSchema.parse(CONSTITUTION);
+  expect(c.retention.bar).toEqual({ start: 0.5, step: 0.03, cap: 0.7 });
+  expect(c.holders[0].stance).toBe(0.5);
+  expect(c.holders[3].gives).toEqual({ ledger: "treasury", amount: 4, per: "turn" });
+  const { force: _gone, ...six } = CONSTITUTION.instruments as Record<string, unknown>;
+  expect(() => ConstitutionSchema.parse({ ...CONSTITUTION, instruments: six })).toThrow();
+});
+
+test("a pack stored before the constitution existed still parses", () => {
+  // Task 10 gives mini.json a constitution of its own, so strip it: this test is about the field's absence.
+  const { constitution: _c, ...noC } = mini as Record<string, unknown>;
+  const parsed = PackSchema.parse({ ...noC, citizens: makeCitizens() });
+  expect(parsed.constitution).toBeUndefined();
+});
+
+test("a pack with a constitution parses and the view keeps holder prose in the worker", () => {
+  const parsed = PackSchema.parse({ ...mini, citizens: makeCitizens(), constitution: CONSTITUTION });
+  expect(parsed.constitution!.holders.length).toBe(4);
+  const json = JSON.stringify(packView(parsed));
+  expect(json).not.toContain("\"bio\"");
+  expect(json).not.toContain("\"tell\"");
+  expect(json).toContain("\"briefing\"");
+});
