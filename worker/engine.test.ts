@@ -452,6 +452,16 @@ test("split chamber takes the player's seats before any draw", () => {
   expect(draw.lost.every((l) => l.from === "harborites" && l.to !== "harborites")).toBe(true);
 });
 
+test("a forced seat never flips to a coalition partner still inside ownSide", () => {
+  // tidebound drops harborites from its own hostile list: it becomes a true, friendly coalition partner.
+  const friendly: Pack = { ...pack, starts: pack.starts.map((s) => (s.faction === "tidebound" ? { ...s, hostile: [] } : s)) };
+  const g = game();
+  g.stageB.split_chamber = 8;
+  const draw = runMidterm(friendly, g, midtermWorld(g, true));
+  expect(draw.forced.length).toBeGreaterThan(0);
+  expect(draw.lost.every((l) => l.to !== "harborites" && l.to !== "tidebound")).toBe(true);
+});
+
 test("the midterm swaps only the seats it lost, and the new members start empty", () => {
   const g = game();
   const draw = runMidterm(pack, g, midtermWorld(g, false));           // every seat falls
@@ -501,7 +511,7 @@ test("the two levers are weighted by the pack's alpha", () => {
   expect(leverGain(seats, favor)).toBeCloseTo(0.3 / pack.chamber.size, 6);
 });
 
-test("a campaign turn charges its lever and the rival doubles under a surge", () => {
+test("a campaign turn charges its lever and records the rival's targets", () => {
   const g = game();
   g.turn = 21;
   startCampaign(pack, g);
@@ -520,7 +530,7 @@ test("a campaign turn charges its lever and the rival doubles under a surge", ()
   g.stageB.rival_surge = 2;
   const surged = applyCampaign(pack, g, "m3", { kind: "spend", regions: [] }, allIntent(0.5));
   expect(surged.rival.length).toBe(2);
-  expect(surged.public).toBeLessThan(t.public);                      // the rival's money counts twice
+  expect(g.campaign!.rival).toEqual(surged.rival);                   // recorded, Jev prices the surge itself
   expect(rivalTargets(pack, g, surged.intent)).toEqual(surged.rival);
   expect(forecast(pack, surged.intent).public).toBeCloseTo(surged.public, 3);
   applyCampaign(pack, g, "m4", { kind: "spend", regions: [] }, allIntent(0.5));

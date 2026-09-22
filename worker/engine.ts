@@ -387,7 +387,8 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
     const g = per.get(r.id)!;
     if (!g.n) continue;
     const d = round1(clamp(((g.like + 2 * g.share - 2 * g.boo * loud) / g.n) * 2, -6, 6));
-    if (d !== 0) { regions[r.id] = d; bump(game, r.id, d); }
+    regions[r.id] = d;
+    if (d !== 0) bump(game, r.id, d);
     if (g.share > g.like && g.share > g.boo) {
       hot.push(r.id);
       const line = feedMemory(r.name, text.slice(0, 60));
@@ -450,22 +451,36 @@ export function holdP(pack: Pack, game: Game, m: Member, byRegion: Record<string
   return clamp(ownSide(pack, game, m.faction) ? base : 1 - base, 0, 1);
 }
 
+const seatShareOf = (game: Game, faction: string) => game.members.filter((m) => m.faction === faction).length;
+
 // The seat goes to the faction the region leans to most, the loser excluded: code picks it, not a model.
-const winnerOf = (pack: Pack, region: string, loser: string) =>
-  [...pack.factions].filter((f) => f.id !== loser).sort((a, b) => leanOf(pack, region, b.id) - leanOf(pack, region, a.id))[0]?.id ?? loser;
+// A forced seat must leave the government: only a faction outside ownSide can take it, largest caucus first.
+const winnerOf = (pack: Pack, game: Game, region: string, loser: string, excludeOwnSide: boolean): string | undefined => {
+  const pool = [...pack.factions].filter((f) => f.id !== loser && (!excludeOwnSide || !ownSide(pack, game, f.id)));
+  if (!pool.length) return undefined;
+  return excludeOwnSide
+    ? pool.sort((a, b) => seatShareOf(game, b.id) - seatShareOf(game, a.id))[0].id
+    : pool.sort((a, b) => leanOf(pack, region, b.id) - leanOf(pack, region, a.id))[0].id;
+};
 
 export function runMidterm(pack: Pack, game: Game, intent: Record<string, number>): MidtermDraw {
   const byRegion = regionIntent(pack, intent);
   const cls = midtermUp(game);
   const up = cls.map((m) => ({ seat: m.seat, memberId: m.id, faction: m.faction, p: Math.round(holdP(pack, game, m, byRegion) * 100) / 100 }));
   const n = game.stageB.split_chamber ?? 0;
-  const forced = new Set(seeded(game, 0x5b1e, cls.filter((m) => ownSide(pack, game, m.faction)), n).map((m) => m.seat));
+  const forcedTo = new Map<string, string>();
+  for (const m of seeded(game, 0x5b1e, cls.filter((m) => ownSide(pack, game, m.faction)), n)) {
+    const to = winnerOf(pack, game, m.region, m.faction, true);
+    if (to) forcedTo.set(m.seat, to);
+  }
   const lost: MidtermDraw["lost"] = [];
   for (const m of cls) {
-    const held = !forced.has(m.seat) && roll() < holdP(pack, game, m, byRegion);
-    if (!held) lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: winnerOf(pack, m.region, m.faction) });
+    const forced = forcedTo.get(m.seat);
+    if (forced) { lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: forced }); continue; }
+    const held = roll() < holdP(pack, game, m, byRegion);
+    if (!held) lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: winnerOf(pack, game, m.region, m.faction, false)! });
   }
-  return { up, forced: [...forced], lost, wipeout: lost.length * 3 >= cls.length && cls.length > 0 };
+  return { up, forced: [...forcedTo.keys()], lost, wipeout: lost.length * 3 >= cls.length && cls.length > 0 };
 }
 
 // Identity is code's: the seat, the region, the winning faction, a cycled temperament, the seat's own flags.
@@ -571,10 +586,8 @@ export function applyCampaign(pack: Pack, game: Game, message: string, lever: Le
     }
   }
   const byRegion = regionIntent(pack, intent);
+  // Jev already prices rival_spend_here in the vote intent (multiplied by rival_surge); don't drag it again here.
   const rival = rivalTargets(pack, game, byRegion);
-  // The rival's own money in every region it targets, twice as much under a surge.
-  const drag = (SPEND_LIFT[RIVAL_SPEND] ?? 0) * (game.stageB.rival_surge ?? 1);
-  for (const id of rival) byRegion[id] = clamp((byRegion[id] ?? 0.5) - drag, 0, 1);
   const f = forecast(pack, byRegion);
   c.messages.push(message);
   c.intent = byRegion;
