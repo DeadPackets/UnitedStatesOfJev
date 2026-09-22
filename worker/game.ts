@@ -418,7 +418,9 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
     bills: bills.map((b) => {
       const cur = b.id < game.turn ? { ...b, vetoes: undefined, offers: {} } : b;
       if (cur.id < game.turn - 1) return { ...cur, whip: undefined, votes: undefined, quotes: undefined };
-      if (!cur.whip || cur.votes) return cur;
+      if (cur.votes) return cur;
+      // The bar a bill has to clear is known the moment it is drafted, escalations and all.
+      if (!cur.whip) return { ...cur, needed: threshold(pack, game, cur) };
       const whip = effectiveWhip(game, cur);
       return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),
