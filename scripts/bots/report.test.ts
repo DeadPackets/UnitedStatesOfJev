@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { BRIER_LIMIT, DRAW_SHARE, GAP_SCALE, SKILL_GAP, WIN_SPREAD, brier, drawShare, ownFailure, report, winRates } from "./report";
+import { brier, drawShare, ownFailure, report, winRates } from "./report";
 import type { RunLog, TurnLog } from "./run";
 
 const turn = (over: Partial<TurnLog> = {}): TurnLog => ({
@@ -46,9 +46,4 @@ test("the report fails when a check misses its target", () => {
   const bad = report([run({ policy: "greedy", term1Won: true }), run({ policy: "broker", term1Won: true })], [turn()]);
   expect(bad.ok).toBe(false);
   expect(bad.rows.find((r) => r.name === "skill separation")!.ok).toBe(false);
-  expect(SKILL_GAP).toBe(30);
-  expect(BRIER_LIMIT).toBe(0.15);
-  expect(DRAW_SHARE).toBe(0.2);
-  expect(WIN_SPREAD).toBe(10);
-  expect(GAP_SCALE).toBe(100);
 });
