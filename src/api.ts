@@ -5,18 +5,20 @@ import type { Citizen, Pack, PackView, Verb } from "../worker/pack";
 export type { PackView };
 type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 export type ViewBill = Omit<Bill, "amendments"> & {
-  expected?: number; needed?: number;
+  expected?: number; needed?: number; band?: [number, number];
   amendments?: (BillDraft & { expected: number; count: WhipCount })[];
 };
 export type ViewMember = Omit<Member, "bio" | "tell">;
 export type ViewEvent = Event;
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
-export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders"> & {
+export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra" | "calls"> & {
   ledgers: Game["ledgers"] & { approval: Record<string, number>; capital: number; party: number };
   holders: HolderView[];
   instruments: Partial<Record<Verb, InstrumentView>>;
   bar: number;
   ruler: { role: string; faction: string };
+  calls: { spent: number; cap: number };
+  discount: number;
   shortfall: number;
   handicap: number;
   inForce: InForce[];
@@ -68,6 +70,7 @@ export const api = {
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),
   adopt: (g: GameView, i: number) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend/${i}`, { turn: g.turn }),
   vote: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/vote`, { turn: g.turn }),
+  withdraw: (g: GameView, id: string) => call<GameView>(`/games/${g.id}/acts/withdraw`, { turn: g.turn, id }),
   endTurn: (g: GameView) => call<GameView>(`/games/${g.id}/turn/end`, { turn: g.turn }),
   midterm: (g: GameView) => call<GameView>(`/games/${g.id}/midterm`, { turn: g.turn }),
   resolve: (g: GameView, i: number, stance: number) => call<GameView>(`/games/${g.id}/events/${i}`, { turn: g.turn, stance }),

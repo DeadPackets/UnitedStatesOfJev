@@ -583,3 +583,23 @@ test("another term comes with two cards the last term never saw", async () => {
   expect(r.body.term).toBe(2);
   expect(game.extra.filter((s) => s.id.startsWith("new-2-"))).toHaveLength(2);
 });
+
+test("the view carries the tag, the acts, the budget and the rival, and hides the Director", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 67 });
+  const game: Game = newGame("g-b-view", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  game.calls = 2;
+  game.turn = 18;
+  const v = view(pack, { game, prose: {} });
+  expect(v.tag).toBeNull();
+  expect(v.refusal).toBeNull();
+  expect(v.acts).toEqual([]);
+  expect(v.rival).toBeNull();
+  expect(v.calls).toEqual({ spent: 2, cap: 6 });
+  expect(v.discount).toBeCloseTo(0.75, 5);
+  expect(v.emergency).toBeNull();
+  expect(v.media).toBe(0);
+  expect(v.trust).toBe(1);
+  expect("extra" in v).toBe(false);          // the fresh cards are deck, and the deck stays in the worker
+  expect("director" in v).toBe(false);
+  expect(JSON.stringify(v)).not.toContain("swan");
+});

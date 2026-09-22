@@ -4,7 +4,7 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, REFUSAL_COST, spendCalls, type PriceTag,
+  pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -15,7 +15,7 @@ import {
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
-import { available, commit, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, commit, discountOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -485,7 +485,7 @@ const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, Instrument
 
 // Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
 export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
-  const { director: _hidden, members, bills, ...rest } = game;
+  const { director: _hidden, members, bills, extra: _deck, ...rest } = game;
   const pv = packView(pack);
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
@@ -517,6 +517,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
     seatTitle: start?.seat_title ?? "the government",
     turnsPerTerm: TURNS_PER_TERM,
+    calls: { spent: game.calls, cap: JEV_CALLS },
+    discount: discountOf(pack, game, Object.values(game.holders).filter((h) => h.weight > 0).map((h) => h.id)),
     ending: prose.ending,
   };
 }
