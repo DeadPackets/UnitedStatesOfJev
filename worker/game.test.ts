@@ -1,7 +1,7 @@
 import { test, expect, mock } from "bun:test";
 // game.ts pulls in `cloudflare:workers` for the Durable Object class, which only workerd resolves.
 mock.module("cloudflare:workers", () => ({ DurableObject: class {} }));
-const { view } = await import("./game");
+const { view, pickStart, GameDO } = await import("./game");
 import { encodeCode, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -27,4 +27,37 @@ test("the view strips personas, citizens and the deck", () => {
   expect("director" in v).toBe(false);
   expect(v.coalition).not.toContain("harborites");   // partners only, never the player's own faction
   expect(v.turnsPerTerm).toBe(20);
+});
+
+test("create() picks the start by faction id, not array position, when starts are shuffled", () => {
+  const shuffled: Pack = PackSchema.parse({ ...mini, citizens: citizens(), starts: [...mini.starts].reverse() });
+  expect(shuffled.starts[0].faction).toBe("tidebound");   // reversed: no longer lines up with factions[0]
+  const start = pickStart(shuffled, 0);                   // factions[0] is harborites
+  expect(start?.faction).toBe("harborites");
+  expect(pickStart(shuffled, 99)).toBeUndefined();
+});
+
+test("a second request while one is in flight gets 409 one move at a time", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 1 });
+  const game: Game = newGame("g-busy", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
+  const doInstance = new GameDO(ctx, {} as any);
+  (doInstance as any).ctx = ctx;
+  (doInstance as any).saved = { game, prose: {} };
+  (doInstance as any).pack = pack;
+  let entered!: () => void;
+  const enteredPromise = new Promise<void>((res) => { entered = res; });
+  let resolveSlow!: () => void;
+  (doInstance as any).term = () => { entered(); return new Promise<void>((res) => { resolveSlow = res; }); };
+
+  const req = () => new Request("https://do/test", { method: "POST", body: "{}", headers: { "content-type": "application/json" } });
+  const p1 = doInstance.fetch(req());
+  await enteredPromise;
+  const r2 = await doInstance.fetch(req());
+  expect(r2.status).toBe(409);
+  expect(await r2.json()).toEqual({ error: "one move at a time" });
+
+  resolveSlow();
+  const r1 = await p1;
+  expect(r1.status).toBe(200);
 });

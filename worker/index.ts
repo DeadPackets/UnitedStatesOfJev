@@ -94,12 +94,23 @@ app.get("/api/scenarios/:id", async (c) => {
 });
 
 app.get("/api/games/:id", (c) => forward(c, c.req.param("id"), "state"));
-app.post("/api/games/:id/bills", async (c) => forward(c, c.req.param("id"), "bills", await c.req.json()));
+const badJson = { error: "bad json" };
+app.post("/api/games/:id/bills", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  if (body === null) return c.json(badJson, 400);
+  return forward(c, c.req.param("id"), "bills", body);
+});
 app.post("/api/games/:id/bills/:b/:action/:i?", async (c) => {
   const { id, b, action, i } = c.req.param();
-  return forward(c, id, `bills/${b}/${action}${i !== undefined ? "/" + i : ""}`, await c.req.json());
+  const body = await c.req.json().catch(() => null);
+  if (body === null) return c.json(badJson, 400);
+  return forward(c, id, `bills/${b}/${action}${i !== undefined ? "/" + i : ""}`, body);
 });
-app.post("/api/games/:id/events/:i", async (c) => forward(c, c.req.param("id"), `events/${c.req.param("i")}`, await c.req.json()));
+app.post("/api/games/:id/events/:i", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  if (body === null) return c.json(badJson, 400);
+  return forward(c, c.req.param("id"), `events/${c.req.param("i")}`, body);
+});
 // test, continue and stop take no turn: the term is already over when they are legal.
 for (const action of ["test", "continue", "stop"]) {
   app.post(`/api/games/:id/${action}`, (c) => forward(c, c.req.param("id"), action, {}));

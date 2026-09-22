@@ -14,6 +14,12 @@ import { amendBill, cardText, ending, narrate, outcome, parseBill, quotes } from
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
+// Starts are matched by faction id, not array position: a pack may list `starts` out of order with `factions`.
+export function pickStart(pack: Pack, f: number) {
+  const faction = pack.factions[f];
+  return faction && pack.starts.find((s) => s.faction === faction.id);
+}
+
 type Prose = { ending?: { title: string; body: string } };
 type Saved = { game: Game; prose: Prose };
 type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
@@ -24,6 +30,9 @@ type Extra = { deltas?: Record<string, number> };
 export class GameDO extends DurableObject<Env> {
   private saved?: Saved;
   private pack?: Pack;
+  // One move at a time: several actions await Jev before their guard is checked, so a re-entrant
+  // request during that window would double-apply. This blocks any second request outright.
+  private busy = false;
 
   async fetch(req: Request): Promise<Response> {
     const parts = new URL(req.url).pathname.split("/").filter(Boolean);
@@ -37,28 +46,35 @@ export class GameDO extends DurableObject<Env> {
       const { game } = s;
       if (game.result && game.stage !== "won") throw new Reject(409, "This run is over.");
       if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
+      if (this.busy) throw new Reject(409, "one move at a time");
+      this.busy = true;
       let extra: Extra = {};
-      switch (parts[0]) {
-        case "bills": extra = await this.bill(game, pack, parts, body); break;
-        case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
-        case "test": await this.term(s, pack); break;
-        case "continue":
-          if (game.stage !== "won") throw new Reject(409, "The term is not won.");
-          continueTerm(pack, game); s.prose = {};
-          break;
-        case "stop":
-          if (game.stage !== "won") throw new Reject(409, "There is nothing to stop.");
-          game.stage = "over";
-          break;
-        default: throw new Reject(404, "Unknown action");
+      try {
+        switch (parts[0]) {
+          case "bills": extra = await this.bill(game, pack, parts, body); break;
+          case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+          case "test": await this.term(s, pack); break;
+          case "continue":
+            if (game.stage !== "won") throw new Reject(409, "The term is not won.");
+            continueTerm(pack, game); s.prose = {};
+            break;
+          case "stop":
+            if (game.stage !== "won") throw new Reject(409, "There is nothing to stop.");
+            game.stage = "over";
+            break;
+          default: throw new Reject(404, "Unknown action");
+        }
+        await this.epilogue(s, pack);
+        this.save(s);
+      } finally {
+        this.busy = false;
       }
-      await this.epilogue(s, pack);
-      this.save(s);
       return this.reply(s, pack, extra);
     } catch (e) {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError) return Response.json({ error: "The chamber is in recess. Try again." }, { status: 503 });
-      throw e;
+      console.error(e);
+      return Response.json({ error: e instanceof Error ? e.message : "Something went wrong." }, { status: 502 });
     }
   }
 
@@ -72,8 +88,8 @@ export class GameDO extends DurableObject<Env> {
     const id = String(body.id ?? "");
     const pack = await this.loadPack(String(body.scenario ?? ""));
     const f = typeof body.faction === "number" ? body.faction : pack.factions.findIndex((x) => x.id === body.faction);
-    const start = pack.starts[f];
-    if (!start) throw new Reject(400, "No such faction in this scenario.");
+    const start = pickStart(pack, f);
+    if (!start) throw new Reject(400, "No start for that faction.");
     const raw = Array.isArray(body.promises) ? body.promises.map(Number) : [];
     const promises = raw.filter((p) => Number.isInteger(p) && p >= 0 && p < pack.promises.length);
     if (promises.length !== 3 || new Set(promises).size !== 3) throw new Reject(400, `Pick three different ${pack.vocabulary.promise}s.`);
@@ -134,8 +150,13 @@ export class GameDO extends DurableObject<Env> {
     const text = raw.trim().slice(0, 1200);
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     const gate = await jev(this.env, { text }, gateQuestion(pack));
-    if ((gate.answers.gate.noul ?? 0) < 0.3) throw new Reject(422, `That is not a ${pack.vocabulary.bill}. Propose a law, a program, or a policy.`);
-    const draft = await parseBill(this.env, pack, text);
+    let noul = gate.answers.gate?.noul;
+    if (noul === undefined) { console.warn("gate: missing answer for gate.noul"); noul = 0.5; }
+    if (noul < 0.3) throw new Reject(422, `That is not a ${pack.vocabulary.bill}. Propose a law, a program, or a policy.`);
+    const draft = await parseBill(this.env, pack, text).catch((e) => {
+      if (e instanceof UpstreamError) throw e;
+      throw new Reject(503, "The narrator did not answer. Try again.");
+    });
     game.bills.push({ id: game.turn, text, ...draft, offers: {} });
     game.phase = "whip";
   }
@@ -169,7 +190,10 @@ export class GameDO extends DurableObject<Env> {
     const whip = bill.whip;
     const opponents = game.members.filter((m) => (whip[m.id] ?? 0) < 0.5).sort((a, b) => (whip[b.id] ?? 0) - (whip[a.id] ?? 0)).slice(0, 5);
     const loudest = Object.entries(bill.blocs ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] ?? pack.blocs[0].id;
-    const drafts = await amendBill(this.env, pack, bill, opponents, pack.blocs.find((b) => b.id === loudest)?.name ?? loudest);
+    const drafts = await amendBill(this.env, pack, bill, opponents, pack.blocs.find((b) => b.id === loudest)?.name ?? loudest).catch((e) => {
+      if (e instanceof UpstreamError) throw e;
+      throw new Reject(503, "The narrator did not answer. Try again.");
+    });
     const counts = await Promise.all(drafts.map((d) => this.count(game, pack, bill, d)));
     const amendments: Amendment[] = drafts.map((d, i) => ({
       ...d, count: counts[i], expected: Math.round(expectedYes(effectiveWhip(game, { ...bill, ...d, ...counts[i] })) * 10) / 10,
@@ -267,10 +291,11 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
     scenario: game.pack, pack: pv,
     members: members.map(({ bio, tell, ...m }) => m),
     bills: bills.map((b) => {
-      if (b.id < game.turn - 1) return { ...b, whip: undefined, votes: undefined, quotes: undefined };
-      if (!b.whip || b.votes) return b;
-      const whip = effectiveWhip(game, b);
-      return { ...b, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, b) };
+      const cur = b.id < game.turn ? { ...b, vetoes: undefined, offers: {} } : b;
+      if (cur.id < game.turn - 1) return { ...cur, whip: undefined, votes: undefined, quotes: undefined };
+      if (!cur.whip || cur.votes) return cur;
+      const whip = effectiveWhip(game, cur);
+      return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),
     citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),

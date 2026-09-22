@@ -7,6 +7,9 @@ export type MatchResult =
   | { build: true };
 
 const MIN_CANDIDATES = 3;
+// Measured 2026-09-22: bge-m3 scored Rome's own prompt 0.54 against its pack, below the old 0.6 floor.
+// Jev still decides above this floor, so lowering it only widens what reaches Jev, not what auto-loads.
+const COSINE_FLOOR = 0.45;
 // Below MIN_CANDIDATES the archive is too thin to trust "no close match" (today: 2 scenarios, always build).
 // A near-duplicate still deserves a load, so a top cosine this high consults Jev anyway.
 const NEAR_DUPLICATE = 0.92;
@@ -17,7 +20,7 @@ export async function match(env: Env, prompt: string): Promise<MatchResult> {
   if (!Array.isArray(values)) throw new Error("bge-m3 returned no vector");
 
   const q = await env.VEC.query(values, { topK: 20, returnMetadata: "all" });
-  const matches = q.matches.filter((m) => m.score >= 0.6).sort((a, b) => b.score - a.score);
+  const matches = q.matches.filter((m) => m.score >= COSINE_FLOOR).sort((a, b) => b.score - a.score);
   if (matches.length === 0) return { build: true };
 
   // Lazy import: db.ts pulls in `cloudflare:workers` for its Durable Object class, which only workerd
