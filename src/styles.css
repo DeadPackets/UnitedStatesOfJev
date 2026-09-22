@@ -189,6 +189,21 @@ textarea, input, select { font: inherit; color: inherit; }
 
 /* chamber */
 .chamber { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 12px 24px 96px; }
+/* the Desk: one page, 100dvh. Only the rail body and the desk column scroll (spec §9) */
+body:has(.desk) { height: 100dvh; overflow: hidden; }
+.desk { position: relative; height: 100dvh; max-width: 1400px; margin: 0 auto; padding: 0 20px var(--wire);
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
+.desk .mast { min-height: var(--head); padding: 7px 0; }
+.striprow { position: relative; }
+.main { display: grid; grid-template-columns: 330px minmax(0, 1fr) 320px; gap: var(--s5); padding-top: var(--s3); min-height: 0; }
+.col { min-height: 0; display: flex; flex-direction: column; }
+.deskcol, .floorcol { gap: var(--s2); }
+/* the composer, the price tag, a tabled law and End turn can outrun a 700 px window together */
+.deskcol { overflow: auto; scrollbar-width: thin; }
+.floorbox { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; }
+.desk .hemi { width: 100%; height: auto; max-height: 52vh; margin-inline: auto; }
+.railbody { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; padding-right: 2px; }
+.floorcol .prompt { font: 700 28px/1 var(--display); color: var(--ink-2); text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
 .topbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); }
 .topbar h1 { font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase; }
 .topbar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 2px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }

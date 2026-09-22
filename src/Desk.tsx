@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReduced } from "./motion";
-import { api, ApiError, type GameView } from "./api";
+import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
@@ -21,9 +21,9 @@ const TOUR = (v: Vocab): Record<string, TourStep> => ({
   vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: `The count is a forecast, not a promise. Every ${v.member} rolls their own dice.` },
 });
 
-type ChamberProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
+type DeskProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
 
-export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberProps) {
+export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const reduced = useReduced();
   const pack = game.pack;
   const v = pack.vocabulary;
@@ -31,7 +31,6 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
 
   const [dismissed, setDismissed] = useState(-1);
   const [tab, setTab] = useState<(typeof TABS)[number]>("turn");
-  const [text, setText] = useState("");
   // `n` counts openings, so re-picking the same seat during a sheet's exit still mounts a fresh dialog.
   const [pick, setPick] = useState<{ id: string; n: number } | null>(null);
   const [muted, setMuted] = useState(sound.muted);
@@ -98,9 +97,6 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
   const wasVoted = useRef(voted);
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
-  const draft = async () => {
-    if (await act(() => api.price(game, text, "law").then((v) => { if (v.refusal) throw new ApiError(409, v.refusal.line); return api.act(game); }))) { setText(""); setDismissed(-1); }
-  };
   // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
   const pulsing = useRef(0);
   useEffect(() => () => clearTimeout(pulsing.current), []);
@@ -120,9 +116,9 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
   };
 
   return (
-    <main className="chamber press" onPointerDown={sound.unlock}>
-      <header className="topbar">
-        <h1>{pack.title}</h1>
+    <main className="desk press" onPointerDown={sound.unlock}>
+      <header className="mast">
+        <b>{pack.title}</b>
         <nav aria-label={v.turn}>
           <Ornament kind={pack.theme.ornament} />
           <span className="num" style={{ padding: "0 8px" }}>{v.turn} {game.turn} of {game.turnsPerTerm}</span>
@@ -132,10 +128,16 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
         </nav>
       </header>
 
-      <section className="stage" aria-label={v.chamber}>
-        <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
-          whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
-          hot={hotSeat} onPick={pickSeat} />
+      <div className="striprow"><div className="strip" role="group" aria-label="The ledgers" /></div>
+
+      <div className="main">
+        <section className="col deskcol" aria-label="The desk">{/* the composer lands here in Task 9 */}</section>
+        <section className="col floorcol" aria-label={v.chamber}>
+          <div className="floorbox">
+            <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
+              whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
+              hot={hotSeat} onPick={pickSeat} />
+          </div>
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
             <div className={`count ${crossed ? "bounce" : ""}`}>
@@ -156,9 +158,9 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
             </div>
           </>
         )}
-      </section>
-
-      <aside className="rail" aria-label="The desk">
+        </section>
+        <aside className="col railcol" aria-label="The rail">
+          <div className="railbody">
         <div className="tabs" role="tablist" aria-label="Desk views">
           {TABS.map((t) => (
             <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={tab === t ? "railpanel" : undefined}
@@ -176,18 +178,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
         <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
         {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : <>
 
-        {!bill ? (
-          <div key="pad" className="billpad panel rise" data-tour="billpad">
-            <label className="kicker" htmlFor="bill" style={{ display: "block", marginBottom: 8 }}>Propose a {v.bill}</label>
-            <textarea id="bill" value={text} onChange={(e) => setText(e.target.value)}
-              placeholder={`Say what your ${v.bill} does, and who pays for it.`} maxLength={1200} rows={4} />
-            <div className="actions">
-              <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy || text.trim().length < 12} onClick={draft}>
-                {busy ? "Drafting" : `Send the ${v.bill}`}
-              </button>
-            </div>
-          </div>
-        ) : (
+        {bill ? (
           <div key={`bill-${bill.id}-${bill.title}`} className="billcard panel rise">
             <div className="kicker num">{v.bill} {bill.id}</div>
             <h2>{bill.title}</h2>
@@ -222,7 +213,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
               </div>
             ) : null}
           </div>
-        )}
+        ) : null}
 
         <FeedLine game={game} bill={bill} />
 
@@ -246,7 +237,9 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
         ) : null}
         </>}
         </div>
-      </aside>
+          </div>
+        </aside>
+      </div>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
       {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.authority}

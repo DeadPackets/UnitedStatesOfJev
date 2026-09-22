@@ -4,7 +4,7 @@ import Write from "./Write";
 import Match from "./Match";
 import Build from "./Build";
 import Seat from "./Seat";
-import Chamber from "./Chamber";
+import Desk from "./Desk";
 import Midterm from "./Midterm";
 import Test from "./Test";
 import Won from "./Won";
@@ -150,12 +150,12 @@ export default function App() {
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
       {booting ? null
         : game ? (
-            showRoll ? <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />
+            showRoll ? <Desk key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />
             : showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); store.set("usoj:revealed", testKey!); }} />
             : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); store.set("usoj:counted", midtermKey!); }} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
-            : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />)
+            : <Desk key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />)
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
