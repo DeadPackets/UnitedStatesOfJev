@@ -113,7 +113,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
         <ul className="causes" aria-label="The room, holder by holder">
           {rows.map((r, i) => (
             <li key={r.id} className={i < shown ? "rise" : "wait"}>
-              <b className="num">{i < shown ? (r.weight * r.stance * 100).toFixed(1) : "—"}</b>
+              <b className="num">{i < shown ? (r.weight * r.stance * 100).toFixed(1) : "·"}</b>
               <span>{r.name}, {r.counted ? `${r.weight.toFixed(2)} of the room` : "not counted"}{i < shown ? `, at ${Math.round(r.stance * 100)}` : ""}</span>
             </li>
           ))}

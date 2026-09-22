@@ -53,6 +53,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [pins, setPins] = useState<PinItem[]>([]);
   const [cause, setCause] = useState<string>();
   const [holder, setHolder] = useState<string | null>(null);
+  const [seat, setSeat] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [verb, setVerb] = useState<VerbKey | null>(null);
   const [picked, setPicked] = useState(false);
@@ -64,9 +65,10 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const floor = useRef<RollHandle>(null);
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === "Escape") setPeek(null); }; addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, []);
 
-  // The last bill stays on the desk after its vote until "Next" clears it.
+  // A bill lives on the desk for its own turn. Outside the session a voted one waits for "Continue", and
+  // never inside it: a stale "Next" there would end a second turn.
   const latest = game.bills.at(-1);
-  const bill = latest && (latest.id === game.turn || (latest.votes && dismissed !== latest.id)) ? latest : undefined;
+  const bill = latest && (latest.id === game.turn || (latest.votes && dismissed !== latest.id && game.stage !== "session")) ? latest : undefined;
   const whipped = !!bill?.whip;
   const voted = !!bill?.votes;
   const exp = bill?.expected ?? 0;
@@ -113,7 +115,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
   const steps = TOUR(game);
-  const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
+  const pickSeat = useCallback((id: string) => { if (!rolling) { setSeat(id); setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); } }, [rolling]);
   const step: TourStep | null = !tour ? null
     : !game.tag && !game.refusal && !text.trim() ? steps.write
     : game.tag || game.refusal ? steps.price
@@ -162,7 +164,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
 
       <div className="main">
         <section className="col deskcol" aria-label="The desk" data-open={sheet}>
-          <Compose game={game} act={act} busy={busy} verb={verb} text={text}
+          <Compose game={game} act={act} busy={busy} verb={verb} text={text} seat={seat}
             onVerb={(v) => { setPicked(true); setVerb(v); }} onText={setText} />
           <Tag game={game} act={act} busy={busy} onDone={() => { setText(""); setPicked(false); }} />
           {bill ? (
@@ -224,8 +226,8 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
           <div className="endturn panel">
             {game.pending ? <p className="small"><span className="kicker">Next</span> {game.pending}</p> : null}
             <button className={`btn ghost ${busy ? "busy" : ""}`} data-tour="end"
-              disabled={busy || cardOpen || game.stage !== "session"}
-              onClick={() => act(() => api.endTurn(game)).then((ok) => { if (ok) { setText(""); setPicked(false); } })}>
+              disabled={busy || rolling || cardOpen || game.stage !== "session"}
+              onClick={() => { onRolled(); act(() => api.endTurn(game)).then((ok) => { if (ok) { setText(""); setPicked(false); } }); }}>
               {busy ? "Ending" : `End the ${v.turn}`}
             </button>
             {game.tag ? <p className="small muted">What is priced on the desk is dropped, not committed.</p> : null}
@@ -243,7 +245,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
             <div className={`count ${crossed ? "bounce" : ""}`}>
               {voted ? <Num value={shownYes} instant={rolling} className={`n ${!rolling && !bill.passed ? "fail" : ""}`} />
                 : whipped ? <Num value={exp} decimals={1} className="n" />
-                : <span className="n num muted">—</span>}
+                : <span className="n num muted">·</span>}
               <span className="muted">{voted ? (rolling ? `${need} needed` : bill.passed ? (bill.struck ? `${v.pass}, struck down` : v.pass) : v.fail)
                 : whipped ? `expected yes · ${need} needed` : v.whip}</span>
             </div>

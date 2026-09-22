@@ -3,7 +3,7 @@ import {
   applyCitizens, applyLobby, authorPromise, applyMidterm, applyPost, applyVote, continueTerm,
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
-  holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
+  holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
   pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
@@ -240,6 +240,7 @@ export class GameDO extends DurableObject<Env> {
       throw new Reject(503, "The clerk did not answer. Try again.");
     });
     if (!available(pack, game, q.verb)) throw new Reject(400, "That instrument is not available.");
+    if (q.verb === "favour" && !seat) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
     // C5: charged once the answer is usable, so a 4xx or a 503 spends nothing; an uncommitted tag still spent it.
     spendCalls(game);
     if (!q.power || !q.era) {
@@ -537,7 +538,7 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
       .map((k) => [k, lobbyCost(game, k)])) as Record<LobbyAction, number>,
     holders: room(pack, game),
     instruments: instrumentRows(pack, game),
-    bar: bar(pack, game.term),
+    bar: testBar(pack, game),
     ruler: pack.constitution?.ruler ?? { role: start?.seat_title ?? "the government", faction: game.faction },
     // §6: the Seat screen prints these two; the difficulty label they feed is Stage C's.
     shortfall: shortfall(pack, game.faction),

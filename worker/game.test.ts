@@ -4,7 +4,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { view, pickStart, GameDO, seededSample, streetSample } = await import("./game");
-import { encodeCode, hash, newGame, scenarioTag, type Game } from "./engine";
+import { encodeCode, hash, newGame, scenarioTag, SURVIVAL_BAR, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -58,6 +58,13 @@ test("a pack with no constitution ships the v3 room of chamber and street", () =
   expect(Object.keys(v.instruments)).toEqual(["law", "proclaim"]);   // the two doors v3 had, so its screens still work
   expect(v.bar).toBeCloseTo(0.5, 5);
   expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
+});
+
+test("a survival start is shown the bar its test is judged on", () => {
+  const deep: Pack = { ...pack, chamber: { ...pack.chamber, threshold: 30 } };
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 57 });
+  const game: Game = newGame("g-deep", code, deep, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], deep.calendar);
+  expect(view(deep, { game, prose: {} }).bar).toBe(SURVIVAL_BAR);
 });
 
 test("the view prices every lobby offer, escalations included", () => {
@@ -561,6 +568,7 @@ test("a favour names a seat, and a body that names none is a 400", async () => {
   expect(r.status).toBe(200);
   expect(r.body.tag.member).toBe(m.id);
   expect((await post("acts/price", { turn: 1, text: "Give them the harbour board seat.", memberId: "nobody" })).status).toBe(400);
+  expect((await post("acts/price", { turn: 1, verb: "favour", text: "Give them the harbour board seat." })).status).toBe(400);
 });
 
 test("force is refused while the army will not carry it", async () => {

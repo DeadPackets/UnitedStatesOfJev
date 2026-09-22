@@ -1196,6 +1196,10 @@ export const SURVIVAL_BAR = 0.4;        // TUNE, §6: the survival path's own ba
 export const shortfall = (pack: Pack, faction: string): number =>
   pack.chamber.threshold - pack.members.filter((m) => m.faction === faction).length;
 
+// §6: a deep minority start wins by reaching the test at all, scored on its own bar.
+export const testBar = (pack: Pack, game: Game): number =>
+  shortfall(pack, game.faction) > SURVIVAL_SHORTFALL ? SURVIVAL_BAR : bar(pack, game.term);
+
 function result(pack: Pack, game: Game, rows: HolderRow[], theBar: number, early?: string): TestResult {
   const counted = rows.filter((r) => r.counted);
   const mandate = counted.reduce((a, r) => a + r.weight * r.stance, 0);
@@ -1229,9 +1233,7 @@ export function runTest(pack: Pack, game: Game, stances: Record<string, number>)
     const s = game.holders[h.id];
     if (s && stances[h.id] !== undefined) s.stance = clamp(stances[h.id], 0, 1);
   }
-  // §6: a deep minority start wins by reaching the test at all, scored on its own bar.
-  const theBar = shortfall(pack, game.faction) > SURVIVAL_SHORTFALL ? SURVIVAL_BAR : bar(pack, game.term);
-  return result(pack, game, rows, theBar);
+  return result(pack, game, rows, testBar(pack, game));
 }
 
 export const EARLY_WEIGHT = 0.3;   // TUNE: what an uncounted holder brings to the test it calls

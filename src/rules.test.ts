@@ -92,6 +92,7 @@ test("an empty box and an unpriced verb both fall back to what the pack allows",
 import { unreadTabs } from "./rules";
 
 const g = {
+  term: 1,
   turn: 7,
   posts: [{ turn: 6 }],
   inForce: [{ turn: 5, term: 1 }],
@@ -106,6 +107,9 @@ test("a tab is unread when its content moved after the player last opened it", (
 
 test("opening a tab clears its mark and nothing else", () => {
   expect(unreadTabs(g, { feed: 6, country: 7, room: 7, record: 5, pinned: 0 })).toEqual([]);
+  // a law from last term's later turn clears once the tab is opened this term
+  const next = { term: 2, turn: 3, posts: [], inForce: [{ turn: 18, term: 1 }], warnings: [], wire: [] } as never;
+  expect(unreadTabs(next, { record: 3 })).toEqual([]);
 });
 
 import { barAt, difficulty } from "./rules";

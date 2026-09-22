@@ -5,9 +5,9 @@ import { Icon } from "./icons";
 import { VERBS, type VerbKey } from "./rules";
 
 /** Seven fixed instruments, pack named and pack priced, greyed when this turn cannot afford them (R6). */
-export default function Compose({ game, act, busy, verb, onVerb, text, onText }: {
+export default function Compose({ game, act, busy, verb, onVerb, text, onText, seat = null }: {
   game: GameView; act: Act; busy: boolean;
-  verb: VerbKey | null; onVerb: (v: VerbKey) => void; text: string; onText: (s: string) => void;
+  verb: VerbKey | null; onVerb: (v: VerbKey) => void; text: string; onText: (s: string) => void; seat?: string | null;
 }) {
   const list = VERBS.filter((v) => game.instruments[v]);
   const open = list.filter((v) => game.instruments[v]!.affordable);
@@ -22,7 +22,9 @@ export default function Compose({ game, act, busy, verb, onVerb, text, onText }:
     onVerb(open[j]);
     document.getElementById(`verb-${open[j]}`)?.focus();
   };
-  const price = () => act(() => api.price(game, text.trim(), verb ?? undefined));
+  // a favour is priced by the seat it buys, so it goes to the last seat tapped on the floor
+  const member = verb === "favour" ? game.members.find((m) => m.id === seat) : undefined;
+  const price = () => act(() => api.price(game, text.trim(), verb ?? undefined, member?.id));
   return (
     <>
       <div className="verbs" role="tablist" aria-label="The seven instruments" data-tour="compose">
@@ -39,9 +41,10 @@ export default function Compose({ game, act, busy, verb, onVerb, text, onText }:
       <textarea id="actpad" className="billpad" value={text} maxLength={1200} rows={3} spellCheck={false}
         placeholder="Say what you are doing, and who pays for it." onChange={(e) => onText(e.target.value)} />
       <div className="actions">
-        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || !verb || text.trim().length < 12} onClick={price}>
+        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || !verb || !game.instruments[verb]?.affordable || (verb === "favour" && !member) || text.trim().length < 12} onClick={price}>
           {busy ? "Pricing" : "Price it"}
         </button>
+        {verb === "favour" ? <span className="small muted">{member ? `For ${member.name}.` : "Tap who it is for on the floor first."}</span> : null}
       </div>
     </>
   );

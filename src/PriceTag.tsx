@@ -68,7 +68,7 @@ export default function Tag({ game, act, busy, onDone }: {
         <span className="priced">Priced</span>
       </div>
       <div className="actions">
-        <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy} onClick={() => act(() => api.act(game)).then(onDone)}>
+        <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy} onClick={() => act(() => api.act(game)).then((ok) => { if (ok) onDone(); })}>
           {busy ? "Committing" : "Commit"}
         </button>
         <span className="small muted">Price something else to replace this, or end the {v.turn} to drop it.</span>

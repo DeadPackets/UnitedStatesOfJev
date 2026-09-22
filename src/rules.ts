@@ -66,7 +66,7 @@ export function settleVerb(text: string, instruments: Partial<Record<VerbKey, un
 }
 
 type UnreadGame = {
-  turn: number; posts: { turn: number }[]; inForce: { turn: number }[];
+  term: number; turn: number; posts: { turn: number }[]; inForce: { term: number; turn: number }[];
   warnings: { at: number }[]; wire: { kind: string; ledger?: string | null }[];
 };
 
@@ -77,7 +77,8 @@ export function unreadTabs(game: UnreadGame, seen: Record<string, number>): stri
     feed: last(game.posts.map((p) => p.turn)),
     country: game.wire.some((l) => l.kind === "ledger" && l.ledger === "popularity") ? game.turn : 0,
     room: last(game.warnings.map((w) => w.at)),
-    record: last(game.inForce.map((f) => f.turn)),
+    // the Desk remounts each term, so a law from last term's turn 18 must not outrank this term's turn 3
+    record: last(game.inForce.filter((f) => f.term === game.term).map((f) => f.turn)),
     pinned: 0,
   };
   return Object.keys(at).filter((k) => at[k] > (seen[k] ?? 0));
