@@ -322,6 +322,20 @@ export function movePopularity(pack: Pack, game: Game, ids: string[], delta: num
   });
 }
 
+export const JEV_SWING = 12;   // TUNE, §8: the popularity points one turn's model answers may move
+
+// Measured region-weighted, like the national number, so one heavy region cannot spend the whole budget.
+export function capSwing(pack: Pack, game: Game, deltas: Record<string, number>): Record<string, number> {
+  const w = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
+  const move = pack.regions.reduce((a, r) => a + r.weight * Math.abs(deltas[r.id] ?? 0), 0) / w;
+  if (!move) return deltas;
+  const room = Math.max(0, JEV_SWING - game.swing);
+  const k = move <= room ? 1 : room / move;
+  game.swing = round1(game.swing + move * k);
+  if (k === 1) return deltas;
+  return Object.fromEntries(Object.entries(deltas).map(([id, d]) => [id, round1(d * k)]));
+}
+
 export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
   moveResistance(pack, game, ids, Math.abs(amount), cause);
 export const easeResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
@@ -740,7 +754,7 @@ export function applyCitizens(pack: Pack, game: Game, approve: Record<string, nu
     if (g) { g.w += c.weight; g.s += c.weight * a; }
     bloc.get(c.bloc)?.push(a);
   }
-  const deltas: Record<string, number> = {};
+  const raw: Record<string, number> = {};
   for (const r of pack.regions) {
     const g = per.get(r.id)!;
     if (!g.w) continue;
@@ -748,10 +762,10 @@ export function applyCitizens(pack: Pack, game: Game, approve: Record<string, nu
     const prior = game.lastApprove[r.id];
     game.lastApprove[r.id] = m;
     if (prior !== undefined && Math.abs(m - prior) <= 0.05) continue;
-    const d = round1(clamp((m - 0.5) * 10, -6, 6));
-    deltas[r.id] = d;
-    bump(game, r.id, d);
+    raw[r.id] = round1(clamp((m - 0.5) * 10, -6, 6));
   }
+  const deltas = capSwing(pack, game, raw);
+  for (const [id, d] of Object.entries(deltas)) if (d) bump(game, id, d);
   for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(mean(xs));
   return deltas;
 }
@@ -792,20 +806,21 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
     const g = per.get(c.region);
     if (g) { g[r] += 1; g.n += 1; }
   }
-  const regions: Record<string, number> = {}, hot: string[] = [];
+  const raw: Record<string, number> = {}, hot: string[] = [];
   for (const r of pack.regions) {
     const g = per.get(r.id)!;
     if (!g.n) continue;
     const boos = (BOO_WEIGHT * g.boo * loud * (1 - game.media)) / g.n;
     const d = round1(clamp((((g.like + g.share) / g.n - boos - POST_BASELINE) * POST_GAIN) * game.trust, -6, 6));
-    regions[r.id] = d;
-    if (d !== 0) bump(game, r.id, d);
+    raw[r.id] = d;
     if (g.share > g.like && g.share > g.boo) {
       hot.push(r.id);
       const line = feedMemory(r.name, g.share > g.boo ? "passing it on" : "booing");
       for (const m of game.members) if (m.region === r.id) m.memory = [...m.memory, line].slice(-5);
     }
   }
+  const regions = capSwing(pack, game, raw);
+  for (const [id, d] of Object.entries(regions)) if (d) bump(game, id, d);
   const votes = Object.values(agree);
   const mine = votes.filter((v) => v === "government").length;
   const post: Post = {

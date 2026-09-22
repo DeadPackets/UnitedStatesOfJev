@@ -957,3 +957,28 @@ test("the boundary clears the price tag, the refusal and the turn's swing", () =
   expect(g.refusal).toBeNull();
   expect(g.swing).toBe(0);
 });
+
+import { capSwing, JEV_SWING } from "./engine";
+
+test("one turn's Jev answers can only move the country so far", () => {
+  const g = game();
+  const all = (d: number) => Object.fromEntries(REGIONS.map((r) => [r, d]));
+  const first = capSwing(pack, g, all(-8));
+  expect(first[REGIONS[0]]).toBe(-8);
+  expect(g.swing).toBeCloseTo(8, 1);
+  const second = capSwing(pack, g, all(-8));
+  expect(Math.abs(second[REGIONS[0]])).toBeCloseTo(4, 1);       // only 4 of the 12 was left
+  expect(g.swing).toBeCloseTo(JEV_SWING, 1);
+  const third = capSwing(pack, g, all(-8));
+  expect(third[REGIONS[0]]).toBeCloseTo(0, 5);   // round1(-8 * 0) is -0, and Object.is(-0, 0) is false
+  endTurn(pack, g);
+  expect(g.swing).toBe(0);
+});
+
+test("the citizens' read is capped like every other Jev answer", () => {
+  const g = game();
+  g.swing = JEV_SWING;
+  const before = { ...g.ledgers.popularity };
+  applyCitizens(pack, g, Object.fromEntries(pack.citizens.map((c) => [c.id, 0])));
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBeCloseTo(before[r], 5);
+});
