@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { available, CAMPAIGN_DISCOUNT, consentOf, discountOf, instrumentOf, priceTag } from "./acts";
+import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, withdraw, WITHDRAW_COST } from "./acts";
 import { CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -73,4 +73,56 @@ test("the tag prints each named holder's last stance", () => {
   const t = priceTag(pack, g, quote({ serves: ["council"], hits: ["league"] }));
   expect(t.stances.map((s) => s.id)).toEqual(["council", "league"]);
   expect(t.stances[1]).toEqual({ id: "league", name: "the Grain League", stance: 0.5, resistance: 30, line: 50 });
+});
+
+test("a decree is paid for, raises resistance where it hits and eases it where it serves", () => {
+  const g = game();
+  g.holders.council.resistance = 20;
+  const before = g.ledgers.authority;
+  const tag = priceTag(pack, g, quote({ serves: ["council"], hits: ["league", "street"] }));
+  const wire = commit(pack, g, tag);
+  expect(g.ledgers.authority).toBe(before - 3);
+  expect(g.holders.league.resistance).toBe(8);        // RESIST_HIT
+  expect(g.holders.street.resistance).toBe(8);
+  expect(g.holders.council.resistance).toBe(22);      // 20, eased 10 for the service, then 12 for the bypass
+  expect(g.holders.guard.resistance).toBe(0);         // it was neither served nor hit
+  expect(wire.some((w) => w.kind === "resistance")).toBe(true);
+  expect(g.acts.at(-1)).toMatchObject({ turn: 1, verb: "decree", title: "Raise the harbour levy", credibility: 1 });
+  expect(g.tag).toBeNull();
+});
+
+test("a decree that could have been a law raises the chamber's resistance on top", () => {
+  const g = game();
+  const tag = priceTag(pack, g, quote({ hits: [] }));
+  commit(pack, g, tag);
+  expect(g.holders.council.resistance).toBe(12);      // RESIST_BYPASS: the council could have made this
+});
+
+test("an act with a rate goes on the books and can be withdrawn for authority", () => {
+  const g = game();
+  const tag = priceTag(pack, g, quote({ revenue: [{ ledger: "treasury", id: null, delta: 6 }] }));
+  commit(pack, g, tag);
+  expect(g.inForce).toHaveLength(1);
+  expect(g.inForce[0].perTurn[0].delta).toBe(6);
+  expect(g.inForce[0].repealConsent).toBe("none");
+  const id = g.inForce[0].id;
+  const a = g.ledgers.authority;
+  withdraw(pack, g, id);
+  expect(g.inForce).toEqual([]);
+  expect(g.ledgers.authority).toBe(a - WITHDRAW_COST);
+});
+
+test("an act the ledgers cannot pay for is refused before anything moves", () => {
+  const g = game();
+  g.ledgers.authority = 1;
+  const tag = priceTag(pack, g, quote());
+  expect(() => commit(pack, g, tag)).toThrow("afford");
+  expect(g.ledgers.authority).toBe(1);
+});
+
+test("an authored promise from the act's own words starts its window", () => {
+  const g = game();
+  commit(pack, g, priceTag(pack, g, quote({ promises: [{ tag: "new-quay", label: "A new quay by winter", window: 6 }] })));
+  // Stage A stores the window as an absolute turn: turn 1 plus the 6 the ruler gave themselves.
+  expect(g.promises["new-quay"]).toMatchObject({ label: "A new quay by winter", window: 7, authored: true, state: "pending" });
 });

@@ -1,5 +1,9 @@
-import { belowLine, CAMPAIGN_FROM, holdersOf, weightOf, type Game, type PriceTag, type Quote } from "./engine";
-import type { Consent, Instrument, Pack, Price, Verb } from "./pack";
+import {
+  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, easeResistance, enact, holdersOf, keepPromise, pay,
+  pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
+  type Game, type PriceTag, type Quote, type WireLine,
+} from "./engine";
+import type { Consent, Holder, Instrument, Pack, Price, Verb } from "./pack";
 
 export const CAMPAIGN_DISCOUNT = 0.25;  // TUNE, C4
 
@@ -55,4 +59,54 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     serves: q.serves, hits: q.hits, keeps: q.keeps, targets: q.targets, tags: q.tags, regions: q.regions,
     member, promises: q.promises, sunset: q.sunset, template: q.template, stances,
   };
+}
+
+export const WITHDRAW_COST = 2;   // TUNE, R11: a decree can be taken back for authority
+
+const chamberHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h) => h.members === "seats") ?? null;
+
+// Spec §2: a hit holder gains resistance, a served one eases, and a decree bypasses the chamber on top.
+function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  const wire: WireLine[] = [];
+  wire.push(...raiseResistance(pack, game, tag.hits, RESIST_HIT, tag.title));
+  wire.push(...easeResistance(pack, game, tag.serves, RESIST_SERVE, tag.title));
+  if (tag.verb === "decree") {
+    const ch = chamberHolder(pack);
+    if (ch) wire.push(...raiseResistance(pack, game, [ch.id], RESIST_BYPASS, `${tag.title}, made without the chamber`));
+  }
+  return wire;
+}
+
+export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  if (!canAfford(pack, game, tag.charge)) throw new Error("The ledgers cannot afford that act.");
+  const wire = pay(pack, game, tag.charge, tag.title);
+  wire.push(...touch(pack, game, tag));
+  if (tag.revenue.length) {
+    enact(game, {
+      id: `act-${game.term}-${game.turn}-${game.acts.length}`, verb: tag.verb, title: tag.title,
+      perTurn: tag.revenue, repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
+    });
+  }
+  for (const t of tag.keeps) keepPromise(pack, game, t);
+  for (const p of tag.promises) authorPromise(game, p.tag, p.label, game.turn + p.window);
+  game.acts.push({
+    term: game.term, turn: game.turn, verb: tag.verb, title: tag.title,
+    reading: tag.reading, credibility: tag.credibility, charge: tag.charge,
+  });
+  game.tag = null;
+  pushWire(game, wire);
+  return wire;
+}
+
+// R11: an act whose repeal needs no consent can be taken back; a law needs a repeal through the same door.
+export function withdraw(pack: Pack, game: Game, id: string): WireLine[] {
+  const law = game.inForce.find((l) => l.id === id);
+  if (!law) throw new Error("No such act.");
+  if (law.repealConsent !== "none") throw new Error("That one needs a repeal.");
+  const price: Price = { authority: WITHDRAW_COST, treasury: 0, chest: 0 };
+  if (!canAfford(pack, game, price)) throw new Error("The ledgers cannot afford that act.");
+  const wire = pay(pack, game, price, `withdrew ${law.title}`);
+  repeal(game, id);
+  pushWire(game, wire);
+  return wire;
 }

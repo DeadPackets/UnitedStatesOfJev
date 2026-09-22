@@ -508,3 +508,16 @@ test("pricing an act writes the tag, and a refusal is a 200 that costs one autho
   game.stage = "test";
   expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(409);
 });
+
+test("price then commit moves the ledgers once, and a second commit has nothing to apply", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(61);
+  const before = game.ledgers.authority;
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
+  const r = await post("acts", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(r.body.tag).toBeNull();
+  expect(r.body.acts).toHaveLength(1);
+  expect(game.ledgers.authority).toBe(before - 3);
+  expect((await post("acts", { turn: 1 })).status).toBe(409);
+});

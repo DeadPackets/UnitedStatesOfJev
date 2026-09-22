@@ -15,7 +15,7 @@ import {
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
-import { available, priceTag } from "./acts";
+import { available, commit, priceTag, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -171,8 +171,27 @@ export class GameDO extends DurableObject<Env> {
     if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
     switch (parts[1] ?? "") {
       case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined);
+      case "": return this.doAct(game, pack);
+      case "withdraw": return this.undoAct(game, pack, String(body.id ?? ""));
       default: throw new Reject(404, "Unknown action");
     }
+  }
+
+  private doAct(game: Game, pack: Pack): Extra {
+    const tag = game.tag;
+    if (!tag) throw new Reject(409, "Nothing is priced.");
+    if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
+    commit(pack, game, tag);
+    return {};
+  }
+
+  private undoAct(game: Game, pack: Pack, id: string): Extra {
+    const law = game.inForce.find((l) => l.id === id);
+    if (!law) throw new Reject(404, "No such act.");
+    if (law.repealConsent !== "none") throw new Reject(409, "That one needs a repeal.");
+    if (!canAfford(pack, game, { authority: WITHDRAW_COST, treasury: 0, chest: 0 })) throw new Reject(402, "There is not enough to pay for that.");
+    withdraw(pack, game, id);
+    return {};
   }
 
   // A refusal is a 200 because it costs 1 authority, and a Reject would keep the charge without the answer.

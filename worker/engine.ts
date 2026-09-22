@@ -690,7 +690,7 @@ function pendingItem(pack: Pack, game: Game, w: { warned: Warning[]; fired: Warn
   return null;
 }
 
-function keepPromise(pack: Pack, game: Game, tag: string) {
+export function keepPromise(pack: Pack, game: Game, tag: string) {
   const p = game.promises[tag];
   if (!p || p.state !== "pending") return;
   if (++p.passed < 2) return;
