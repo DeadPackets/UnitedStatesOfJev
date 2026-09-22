@@ -88,3 +88,22 @@ test("an empty box and an unpriced verb both fall back to what the pack allows",
   expect(settleVerb("Send troops in.", { spend: {}, proclaim: {} } as never)).toBe("proclaim");
   expect(settleVerb("anything", {} as never)).toBe(null);
 });
+
+import { unreadTabs } from "./rules";
+
+const g = {
+  turn: 7,
+  posts: [{ turn: 6 }],
+  inForce: [{ turn: 5, term: 1 }],
+  warnings: [{ at: 7 }],
+  wire: [{ kind: "ledger", ledger: "popularity", delta: 2, cause: "the post" }],
+} as never;
+
+test("a tab is unread when its content moved after the player last opened it", () => {
+  expect(unreadTabs(g, { feed: 0, country: 0, room: 0, record: 0, pinned: 0 }).sort())
+    .toEqual(["country", "feed", "record", "room"]);
+});
+
+test("opening a tab clears its mark and nothing else", () => {
+  expect(unreadTabs(g, { feed: 6, country: 7, room: 7, record: 5, pinned: 0 })).toEqual([]);
+});

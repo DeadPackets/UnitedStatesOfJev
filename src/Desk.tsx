@@ -16,10 +16,10 @@ import Wire from "./Wire";
 import Holders from "./Holders";
 import Compose from "./Compose";
 import Tag from "./PriceTag";
-import { settleVerb, type LedgerKey, type VerbKey } from "./rules";
+import { settleVerb, unreadTabs, type LedgerKey, type VerbKey } from "./rules";
+import Rail, { type Tab } from "./Rail";
 
 type Vocab = GameView["pack"]["vocabulary"];
-const TABS = ["turn", "feed"] as const;
 
 const TOUR = (v: Vocab): Record<string, TourStep> => ({
   write: { id: "write", anchor: "billpad", title: `1 of 3 · Write a ${v.bill}`, text: `Say what it does in a sentence or two. The clerk writes it up, and every ${v.member} reads it.` },
@@ -37,7 +37,8 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const size = pack.chamber.size;
 
   const [dismissed, setDismissed] = useState(-1);
-  const [tab, setTab] = useState<(typeof TABS)[number]>("turn");
+  const [tab, setTab] = useState<Tab>("feed");
+  const [seen, setSeen] = useState<Record<string, number>>({});
   // `n` counts openings, so re-picking the same seat during a sheet's exit still mounts a fresh dialog.
   const [pick, setPick] = useState<{ id: string; n: number } | null>(null);
   const [muted, setMuted] = useState(sound.muted);
@@ -56,7 +57,6 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [picked, setPicked] = useState(false);
   useEffect(() => { if (!picked) setVerb(settleVerb(text, game.instruments)); }, [text, picked, game.instruments]);
   void holder; // the Room panel reads it from Task 13; drop this line then
-  void pins; // the rail reads it from Task 12; drop this line then
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
@@ -107,7 +107,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
     : undefined), [whipped, voted, game.members, game.faction, bill?.whip]); // eslint-disable-line
   const steps = TOUR(v);
   const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
-  const step: TourStep | null = !tour || tab !== "turn" ? null
+  const step: TourStep | null = !tour ? null
     : !bill ? steps.write
     : !whipped ? steps.count
     : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
@@ -255,25 +255,11 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
           <Holders holders={game.holders} warnings={game.warnings} onPick={setHolder} />
         </section>
         <aside className="col railcol" aria-label="The rail">
-          <div className="railbody">
-        <div className="tabs" role="tablist" aria-label="Desk views">
-          {TABS.map((t) => (
-            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={tab === t ? "railpanel" : undefined}
-              tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
-              onKeyDown={(e) => {
-                const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-                const next = d ? TABS[(TABS.indexOf(t) + d + TABS.length) % TABS.length]
-                  : e.key === "Home" ? TABS[0] : e.key === "End" ? TABS[TABS.length - 1] : undefined;
-                if (!next) return;
-                setTab(next); document.getElementById(`tab-${next}`)?.focus();
-              }}>{t === "turn" ? v.turn : v.feed}</button>
-          ))}
-        </div>
-
-        <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
-        {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : null}
-        </div>
-          </div>
+          <Rail label={{ feed: v.feed, country: "Country", room: "Room", record: "Record", pinned: "Pinned" }}
+            tab={tab} onTab={(t) => { setTab(t); setSeen((s) => ({ ...s, [t]: game.turn })); }}
+            unread={unreadTabs(game, seen)} pins={pins} onUnpin={(k) => setPins((xs) => xs.filter((x) => x.key !== k))}>
+            {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : null}
+          </Rail>
         </aside>
       </div>
 

@@ -64,3 +64,21 @@ export function settleVerb(text: string, instruments: Partial<Record<VerbKey, un
   for (const [v, re] of CUES) if (has(v) && re.test(text)) return v;
   return FALLBACK.find(has) ?? null;
 }
+
+type UnreadGame = {
+  turn: number; posts: { turn: number }[]; inForce: { turn: number }[];
+  warnings: { at: number }[]; wire: { kind: string; ledger?: string | null }[];
+};
+
+// Two disclosure levels only, so anything unseen is a mark on a tab, never a third layer (research §2).
+export function unreadTabs(game: UnreadGame, seen: Record<string, number>): string[] {
+  const last = (xs: number[]) => (xs.length ? Math.max(...xs) : 0);
+  const at: Record<string, number> = {
+    feed: last(game.posts.map((p) => p.turn)),
+    country: game.wire.some((l) => l.kind === "ledger" && l.ledger === "popularity") ? game.turn : 0,
+    room: last(game.warnings.map((w) => w.at)),
+    record: last(game.inForce.map((f) => f.turn)),
+    pinned: 0,
+  };
+  return Object.keys(at).filter((k) => at[k] > (seen[k] ?? 0));
+}

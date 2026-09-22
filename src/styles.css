@@ -298,6 +298,24 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .plateh.over .small { color: var(--danger); }
 .desk .hemi { width: 100%; height: auto; max-height: 52vh; margin-inline: auto; }
 .railbody { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; padding-right: 2px; }
+.tabbar { display: flex; gap: 1px; border-bottom: 1px solid var(--ink); flex: none; }
+.tabbar button { position: relative; flex: 1 1 auto; min-height: 44px; padding: 0 5px; color: var(--ink-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font: 600 9.5px/1 var(--sans); letter-spacing: 0.07em; text-transform: uppercase;
+  transition: color var(--t-fast), box-shadow var(--t-fast); }
+.tabbar button:hover { color: var(--ink); }
+.tabbar button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+/* ink, not accent: the default accent is the old red and unread is not a danger (research §3) */
+.tabbar .badge { position: absolute; transform: translate(18px, -14px); background: var(--ink); color: var(--bg);
+  font-size: 9px; padding: 1px 4px; }
+.tabbar .badge.dot { width: 8px; height: 8px; padding: 0; }
+.tabpanel { padding-top: var(--s3); display: grid; gap: var(--s3); align-content: start; }
+.pinned { border-top: 2px solid var(--c, var(--ink)); padding: var(--s2) 0 var(--s3); display: grid; gap: 4px; }
+.pinned h4 { font: 800 18px/1 var(--display); text-transform: uppercase; margin: 0; color: var(--c, var(--ink)); }
+.pinned .line { display: flex; justify-content: space-between; gap: var(--s2); font-size: 12.5px; }
+.unpin { min-height: 44px; justify-self: start; font: 600 10px/1 var(--sans); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.unpin:hover { color: var(--ink); }
 .floorcol .prompt { font: 700 28px/1 var(--display); color: var(--ink-2); text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
 .topbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); }
 .topbar h1 { font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -491,12 +509,8 @@ button.tile { cursor: pointer; display: flex; flex-direction: column; align-item
 .midtermnight .stage p.num { font: 900 clamp(28px, 6vw, 48px)/1 var(--display); margin: 8px 0 0; text-align: center; }
 .midtermnight .verdict h2 { font-size: 28px; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.01em; }
 
-/* the rail's two tabs, and the feed under the second */
-.tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); }
-.tabs button { min-height: 44px; padding: 0 10px; color: var(--ink-2); font: 600 12px/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase;
-  transition: color var(--t-fast), box-shadow var(--t-fast); }
-.tabs button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
-.railpanel, .feed { display: grid; gap: 18px; align-content: start; }
+/* the feed under its rail tab */
+.feed { display: grid; gap: 18px; align-content: start; }
 .feed textarea { width: 100%; resize: vertical; border: 1.5px solid var(--ink); background: var(--bg); padding: 10px 12px; outline: none; }
 .feed textarea::placeholder { color: var(--ink-2); }
 .feed textarea:disabled { border-color: var(--tone); color: var(--ink-2); }
