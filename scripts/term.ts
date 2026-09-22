@@ -50,8 +50,24 @@ const refusals: string[] = [];
 
 // C5 caps a turn at six model calls. Every optional call asks first, so the script never earns a 409.
 const afford = (n: number) => g.calls.spent + n <= g.calls.cap;
+// The view greys an instrument the ledgers or a failure line close; a tag is committed only when it can be paid.
+const open = (v: "law" | "proclaim") => g.instruments[v]?.affordable === true;
+const pays = (c: { authority: number; treasury: number; chest: number }) =>
+  c.authority <= g.ledgers.authority && c.treasury <= g.ledgers.treasury && c.chest <= g.ledgers.chest;
 
-while (g.stage === "session" || g.stage === "midterm") {
+// A won early test resumes the session, so the test sits inside the loop and the term plays on after it.
+while (g.stage === "session" || g.stage === "midterm" || g.stage === "test") {
+  if (g.stage === "test") {
+    const t0 = performance.now();
+    g = await api(`/games/${g.id}/test`, {});
+    console.log(`\n${V.test} in ${ms(t0)}`);
+    const t = g.test;
+    if (t) {
+      for (const h of t.holders) console.log(`  ${h.counted ? "x" : " "} ${h.name.padEnd(24)} weight ${h.weight.toFixed(2)} stance ${h.stance.toFixed(3)}`);
+      console.log(`  mandate ${t.mandate.toFixed(3)} against a bar of ${t.bar.toFixed(3)} -> ${t.won ? "WON" : "LOST"}`);
+    } else console.log(`  an early test was survived; the term goes on at ${V.turn} ${g.turn}`);
+    continue;
+  }
   const turn = g.turn, t0 = performance.now();
 
   if (g.stage === "midterm") {
@@ -63,19 +79,20 @@ while (g.stage === "session" || g.stage === "midterm") {
   }
 
   // The card first: an unanswered one blocks the boundary.
-  const open = g.events.findIndex((e) => e.stance === undefined);
-  if (open >= 0 && afford(2)) {
-    const e = g.events[open];
+  const card = g.events.findIndex((e) => e.stance === undefined);
+  if (card >= 0 && afford(2)) {
+    const e = g.events[card];
     crises.push(`t${e.turn} ${e.kind ?? "crisis"} ${e.id} ${e.card?.title ?? ""}`);
-    g = await api(`/games/${g.id}/events/${open}`, { turn, stance: 0 });
-    console.log(`     ${e.kind ?? "crisis"} ${e.id} "${e.card?.title ?? ""}" -> "${e.stances[0]}": ${g.events[open].outcome ?? "(no line)"}`);
+    g = await api(`/games/${g.id}/events/${card}`, { turn, stance: 0 });
+    console.log(`     ${e.kind ?? "crisis"} ${e.id} "${e.card?.title ?? ""}" -> "${e.stances[0]}": ${g.events[card].outcome ?? "(no line)"}`);
   }
 
   // A law: price it, commit it, and the whip is counted inside the commit.
   let tabled = false;
-  if (afford(2)) {
+  if (afford(2) && open("law")) {
     g = await api(`/games/${g.id}/acts/price`, { turn, verb: "law", text: TEXTS[(turn - 1) % TEXTS.length] });
     if (g.refusal) refusals.push(`t${turn} ${g.refusal.test}: ${g.refusal.line}`);
+    else if (!pays(g.tag!.charge)) console.log(`${String(turn).padStart(2)} law "${g.tag!.title}" left on the desk: the ledgers cannot pay for it`);
     else {
       const tag = g.tag!;
       console.log(`${String(turn).padStart(2)} ${tag.verb} "${tag.title}" cost ${tag.charge.authority}a/${tag.charge.treasury}t/${tag.charge.chest}c` +
@@ -110,10 +127,10 @@ while (g.stage === "session" || g.stage === "midterm") {
     console.log(`     ${voted.passed ? (voted.struck ? "STRUCK" : V.pass) : V.fail} ${voted.yes}/${voted.threshold} | ${voted.headline?.title ?? "(no headline)"}`);
   }
 
-  if (afford(3) && g.ledgers.chest >= 2) {
+  if (afford(3) && open("proclaim")) {
     g = await api(`/games/${g.id}/acts/price`, { turn, verb: "proclaim", text: POSTS[(turn - 1) % POSTS.length] });
     if (g.refusal) refusals.push(`t${turn} ${g.refusal.test}: ${g.refusal.line}`);
-    else {
+    else if (pays(g.tag!.charge)) {
       g = await api(`/games/${g.id}/acts`, { turn });
       const p = g.posts.at(-1)!;
       console.log(`     ${V.post}: ${p.likes} like ${p.boos} boo ${p.shares} share ${p.ignores} ignore | duel ${p.agree.mine}/${p.agree.rival} -> ${p.won ? "won" : "lost"}`);
@@ -134,15 +151,6 @@ while (g.stage === "session" || g.stage === "midterm") {
 console.log(`\nturns 1..${timings.length} in ${ms(started)}; slowest ${(Math.max(...timings) / 1000).toFixed(1)}s, median ${([...timings].sort((a, b) => a - b)[timings.length >> 1] / 1000).toFixed(1)}s`);
 console.log(`cards drawn (${crises.length}):\n  ${crises.join("\n  ") || "none"}`);
 if (refusals.length) console.log(`refused (${refusals.length}):\n  ${refusals.join("\n  ")}`);
-
-if (g.stage === "test") {
-  const t0 = performance.now();
-  g = await api(`/games/${g.id}/test`, {});
-  console.log(`\n${V.test} in ${ms(t0)}`);
-  const t = g.test!;
-  for (const h of t.holders) console.log(`  ${h.counted ? "x" : " "} ${h.name.padEnd(24)} weight ${h.weight.toFixed(2)} stance ${h.stance.toFixed(3)}`);
-  console.log(`  mandate ${t.mandate.toFixed(3)} against a bar of ${t.bar.toFixed(3)} -> ${t.won ? "WON" : "LOST"}`);
-}
 
 // continueTerm clears result and ending, so they print before the continue.
 const term = g.terms.at(-1);
