@@ -115,7 +115,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .mast span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .orn { flex: none; fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
-.head { font: 800 clamp(24px, 4vw, 40px)/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
+/* the premise is the pitch: a sentence at poster size on a poster measure, not a wall of caps */
+.head { font: 800 clamp(27px, 3.8vw, 50px)/1.02 var(--display); letter-spacing: -0.01em; max-width: 26ch; margin: 6px 0 2px; }
 .lede { font: 700 clamp(19px, 2.4vw, 27px)/1.25 var(--display); max-width: 46ch; margin: 0; text-wrap: balance; }
 .masthead { width: 100%; aspect-ratio: 4 / 1; object-fit: cover; display: block; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper); }
 
@@ -148,7 +149,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .picker { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .fcard { width: 100%; display: flex; align-items: start; gap: 12px; text-align: left; padding: 10px 12px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), transform var(--t-fast); }
 .fcard:hover { border-color: var(--ink); }
-.fcard[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
+/* the pick is the whole card taking ink, never a stripe down one side */
+.fcard[aria-checked="true"] { border-color: var(--ink); border-width: 2px; background: var(--tone); }
 .fcard:active { transform: scale(0.96); }
 .fcard .t { display: grid; gap: 3px; min-width: 0; }
 .fcard b { font: 800 19px/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
@@ -382,7 +384,7 @@ button.tile { cursor: pointer; }
 .campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state), transform var(--t-fast) var(--ease-out); }
 .campaign .drafts .opt2:active { transform: scale(0.96); }
 .campaign .drafts .opt2:hover { border-color: var(--ink); }
-.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-left-width: 6px; }
+.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-width: 2px; background: var(--tone); }
 .campaign .levers { display: grid; gap: 10px; }
 .campaign .tworadio { gap: 8px; }
 .campaign .opt[aria-checked="true"] { background: var(--ink); color: var(--bg); }
