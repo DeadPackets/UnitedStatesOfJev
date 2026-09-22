@@ -175,7 +175,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .chamber { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 12px 24px 96px; }
 .topbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 4px solid var(--line); border-bottom: 1px solid var(--line); }
 .topbar h1 { font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase; }
-.topbar nav { display: flex; align-items: center; gap: 2px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.topbar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 2px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
 .stage { display: grid; gap: 14px; align-content: start; }
 .stage .prompt { font: 700 28px/1 var(--display); color: var(--ink-2); text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
 /* the count is the screen: one numeral at poster scale, everything beside it a caption on its baseline */
