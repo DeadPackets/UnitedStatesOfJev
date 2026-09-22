@@ -1,0 +1,1 @@
+CREATE TABLE scenarios (id TEXT PRIMARY KEY, status TEXT, step TEXT, lang TEXT, title TEXT, era TEXT, place TEXT, description TEXT, prompt TEXT, pack TEXT, fragments TEXT, error TEXT, created INTEGER, builds INTEGER DEFAULT 0);

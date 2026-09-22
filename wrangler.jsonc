@@ -8,7 +8,13 @@
   "upload_source_maps": true,
   "assets": { "directory": "./dist/client", "not_found_handling": "single-page-application" },
   "routes": [{ "pattern": "unitedstatesofjev.deadpackets.pw", "custom_domain": true }],
-  "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameDO" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameDO"] }],
-  "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 40, "period": 60 } }]
+  "durable_objects": { "bindings": [{ "name": "GAME", "class_name": "GameDO" }, { "name": "BUILDS", "class_name": "BuildsDO" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameDO"] }, { "tag": "v2", "new_sqlite_classes": ["BuildsDO"] }],
+  "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 40, "period": 60 } }],
+  "d1_databases": [{ "binding": "DB", "database_name": "usoj", "database_id": "f0792d84-dc66-4444-8f8d-8f3db4e94c36" }],
+  "vectorize": [{ "binding": "VEC", "index_name": "usoj-scenarios" }],
+  "r2_buckets": [{ "binding": "ART", "bucket_name": "usoj-art" }],
+  "ai": { "binding": "AI" },
+  "workflows": [{ "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" }],
+  "vars": { "DAILY_BUILD_CAP": "50", "DAILY_GAME_CAP": "200" }
 }

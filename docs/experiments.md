@@ -128,3 +128,64 @@ Six stacks, full sections for every condition, Rome and Egypt twice, Iran 1979 o
 K4 is the stack: the only zero-error Egypt pack, reference errors down from 8.8 to 2.6, and Wikidata inside the stack is free (K4 beats K5 by 0.6 errors at lower cost). K1 alone is the cost-constrained choice at $0.0001 over baseline for 0.8 errors removed.
 
 Three defects found and fixed in the spec: (1) the facts sheet made Iran worse by listing Mosaddegh (d. 1967) as a person, and the frame took "use only people on the sheet" as license to seat him; the sheet flagged him not alive but with no death date, and the validator read only the date. Validator now reads the alive flag, and the frame prompt says leaders must be alive on the start date. (2) The Ides failed in 12 of 12 Rome runs because the model chose a start date 22 days before it and no unit lands day 22 on turn 16 to 18; code now sets start_date as anchor minus 15 turn units, which lands all four saved Rome runs on turn 16. (3) The Wikidata guard let through a Lepidus dead 108 years before the era and an Octavian born in 1996; the guard now requires a birth date within 100 years before start_date.
+
+## Matching, 2026-09-22
+
+`POST /api/scenarios/match` against the live archive (`v3nj3k` Rome, `1wybd8` Germany, 2 ready scenarios; `MIN_CANDIDATES = 3`, cosine cutoff 0.6). Jev probabilities below are from a temporary bypass of both the 0.6 cosine filter and the `MIN_CANDIDATES` gate, to see what Jev would have said; the committed code path is unchanged.
+
+| Prompt | Cosine (v3nj3k, 1wybd8) | Jev probabilities (none_of_these, v3nj3k, 1wybd8) | Decision |
+|---|---|---|---|
+| "Rome 44 BC before the Ides" | 0.542, 0.215 | 0.48, 0.52, 0 | `{build:true}` |
+| "Bundestag 2021" | 0.261, 0.621 | 0, 0, 1.00 | `{load:"1wybd8"}` |
+| "Mars colony 2091" | 0.269, 0.333 | 1.00, 0, 0 | `{build:true}` |
+
+Rome's own pack scores 0.542 against its own prompt, under the 0.6 cosine cutoff, so in the shipped code it never reaches Jev at all — that alone accounts for `build:true`. Forcing the Jev call anyway shows it would not have changed the outcome: 0.52 on `v3nj3k` clears neither the 0.85 offer nor 0.95 load bar. Bundestag clears cosine (0.621) and Jev alone (1.00 on `1wybd8`) — matches expected `load`. Mars scores under cosine on both and Jev puts `none_of_these` at 1.00 — matches expected `build`. All three match the brief's expected shape; Rome's `build` is archive size (2 ready scenarios, one prompt short of even a confident cosine match), not a bug.
+
+(The cosine floor was later lowered to 0.45 once the archive held real vectors — `worker/match.ts`.)
+
+## Stage A live numbers, 2026-09-22
+
+Two proof builds against the real Workflow, D1, Vectorize, R2 and Workers AI (`.superpowers/sdd/2026-09-22-any-polity-stage-a/task-6-report.md`), and one full term against a running Worker (`task-9-report.md`).
+
+### Build, seconds per step
+
+`assign` and `calendar` are pure and finish inside one 2 s poll, so `scripts/build.ts` does not print them.
+
+| Step | Rome `v3nj3k` | Germany `1wybd8` | Spec §4 |
+|---|---|---|---|
+| plan | 5.1 s | 2.4 s | 3 s |
+| fetch | 2.4 s | 4.8 s | 6 s |
+| facts | 21.6 s | 19.2 s | 8 s |
+| frame | 28.8 s | 128.5 s | 20 s |
+| names | 272.3 s | 26.6 s | 6 s |
+| personas | 31.7 s | 24.3 s | 30 s |
+| dedupe | 4.7 s | 2.2 s | 5 s |
+| deck | 19.2 s | 22.3 s | 20 s |
+| art | 36.7 s | 36.3 s | 10 s |
+| index | 2.9 s | 2.9 s | 2 s |
+| **total** | **427.8 s** | **271.7 s** | ~110 s |
+| portraits (after ready, background) | ~90 s, 4 sheets | ~50 s, 2 sheets | 20 s |
+
+Cost about $0.12 per successful build by OpenRouter's own usage figures. `names` (one call for 60 member plus
+250 citizen names) and `frame` were the two steps that blew the spec's ~110 s target; `names` was since split
+into parallel per-category batches (`7ceb475`, `worker/gen/personas.ts`), not re-measured against a live build.
+
+### Term, `bun scripts/term.ts`
+
+Rome `v3nj3k`, Caesarians (24 of 60 seats, threshold 31), 20 turns plus the test: **213.7 s, 113 requests, all
+200**. Two runs: one `reelected` (score 189), one `defeated` (score 79).
+
+Model calls per route, one term (20 bill turns, up to 18 amends, 20 votes, 11 crisis cards, 1 test):
+
+| Route | n | Luna calls | Jev calls | Median wall |
+|---|---|---|---|---|
+| `.../bills` (gate + parse) | 20 | 1 (`parseBill`) | 0 | 1812 ms |
+| `.../bills/:b/whip` | 20 | 0 | 1 | 639 ms |
+| `.../bills/:b/amend` | 18 | 1 (`amendBill`) | 3 (parallel re-whip) | 4382 ms |
+| `.../bills/:b/amend/:i` | 18 | 0 | 0 | 8 ms |
+| `.../bills/:b/lobby` | 2 | 0 | 0 | 436 ms |
+| `.../bills/:b/vote` | 20 | 2 (`narrate`, `quotes`) | 1 (250-citizen call) | 3570 ms |
+| `.../events/:i` | 11 | 1 (`outcome`) | up to 2 (`eventQuestions`, crisis citizens) | 1354 ms |
+| `.../test` | 1 | 0 | 1 (310 questions: 60 loyalty + 250 intent) | 2628 ms |
+
+The test's one Jev call answered in 2.6 s.

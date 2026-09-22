@@ -1,0 +1,13 @@
+{
+  "lead": { "query": { "pages": [{ "title": "Test Page", "extract": "Test Page is a fictional article used for testing." }] } },
+  "sections": { "parse": { "sections": [
+    { "index": "1", "line": "Early life" },
+    { "index": "2", "line": "Career" },
+    { "index": "3", "line": "Legacy" }
+  ] } },
+  "wikitext": {
+    "1": { "parse": { "wikitext": "==Early life==\n{{Infobox|x=1}}Born in [[Rome|the city]].<ref>cite</ref>{|\n|-\n|a||b\n|}\nAfter table." } },
+    "2": { "parse": { "wikitext": "==Career==\nServed as [[consul]].\n" } },
+    "3": { "parse": { "wikitext": "==Legacy==\nRemembered for many things.\n" } }
+  }
+}

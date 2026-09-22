@@ -143,6 +143,7 @@ written to D1 after every step for the build screen.
 | plan | Luna | `{ fiction, lang, lookups: string[] (≤ 10 Wikipedia titles, any edition), wikidata: string[] (entity labels) }` | 3 s |
 | fetch | none | Wikipedia lead plus the 2 to 3 most relevant sections per title via `action=parse`, 6k chars per section; Wikidata birth (P569), death (P570) for every named person, P465 colors and seat counts for parties. Guard: the hit is a human (P31 Q5) born within 100 years before `start_date`, else the row is dropped; measured 2026-09-22, a death-only window let a Lepidus dead 108 years early and a 1996-born Octavian through. Fiction skips | 6 s |
 | facts | Luna | a facts sheet from the sources: people with dates and `alive_on_start_date`, bodies with sizes, groupings with leaders, dated events. The frame may only name people on the sheet, and only people alive on the start date as leaders; the sheet lists the dead too, and without that rule Iran 1979 got Mosaddegh (d. 1967) as a party leader in 4 of 4 runs | 8 s |
+| calendar | none | `{ start_date, turn_unit }` from the sheet's `anchor` event, before the frame is written: `start_date = anchor - 15 units`, so the anchor lands on turn 16; the unit is the one of day, week, month or season that keeps the most sheet events inside turns 1 to 20, ties to the shorter unit. No anchor leaves it null and the frame picks the start date | 0 s |
 | frame | Luna | title, era, place, description, vocabulary, theme, chamber, factions, regions, blocs, patrons, tags, problems, promises, starts, test, endings, lobby, escalations, `start_date` | 20 s |
 | validate | none | reference check on every id and tag; every faction leader alive on `start_date` per the sheet's alive flag, not only its death date; no leader name in a member seat; at least 3 factions when the chamber is over 30 seats; dated events inside the term window. Violations go back to Luna as a list with the previous output, one retry | 0 s, 20 s on retry |
 | assign | none | code fixes every identity field before any parallel call: each member's seat, region and faction from the pack's shares, temperament and years from fixed distributions; each citizen's region, bloc and age band from weights | 0 s |
@@ -156,7 +157,7 @@ written to D1 after every step for the build screen.
 | index | Workers AI | embed `title + era + place + description + prompt`, upsert to Vectorize, mark ready | 2 s |
 | portraits | muse-image | after ready, never blocking: all contact sheets fired at once (size ÷ 16 calls), crop, dither, R2; the pack's `art.portraits` flips to done per sheet | 20 s, in the background |
 
-Calendar: code sets it. The anchor is the latest fully dated sheet event within a year after the model's start date; `turn_unit` is the one of day, week, month or season that puts the anchor closest to turn 17; `start_date` is then anchor minus 15 units, so the anchor lands on turn 16 whatever the model proposed. Every dated storylet carries a date that code maps to a turn. Measured: with the model's start date the Ides missed the window in 12 of 12 Rome runs; with the recomputed start date all four saved runs land it on turn 16.
+Calendar: code sets it, and it is set before the frame, not after. The facts sheet names its own `anchor`, the index of the event the scenario builds toward. `start_date` is that event minus 15 units, so the anchor lands on turn 16; `turn_unit` is the one of day, week, month or season that keeps the most sheet events inside turns 1 to 20, ties to the shorter unit. The frame is then told the start date and the unit as fixed facts and validation rejects any other `start_date`; a scenario with no dated anchor leaves the choice to the model and the unit is a week. Every dated storylet carries a date that code maps to a turn. Measured: with the model's start date the Ides missed the window in 12 of 12 Rome runs; anchoring the term on the event lands it on turn 16 whatever unit wins.
 
 Measured stack (`docs/combos-2026-09-22.md`): 1.2 factual errors per pack against 3.0 without levers, reference errors 2.6 against 8.8, $0.015 and 59 s for the frame path.
 
@@ -194,8 +195,8 @@ Presentation, all CSS, nothing baked into the image:
 Portraits never gate play. A coin shows the member's initials in the faction color until its face lands, then the face fades in; the client polls `art.portraits` every 5 s while any sheet is pending and stops when all are done or failed. A failed sheet is retried once, then left as initials.
 
 Alignment check per sheet: the crop's 16 cells are sampled at the expected eye row; if
-more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the build
-falls back to qwen-image-3. Files go to R2 under
+more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the sheet
+ships as it is (coins are dithered, alignment is cosmetic). Files go to R2 under
 `scenarios/<id>/{members/<memberId>.png, members/<memberId>-plate.png, masthead.png,
 crests/<factionId>.png}`, served through the Worker with immutable cache headers.
 

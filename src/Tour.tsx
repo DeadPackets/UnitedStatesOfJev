@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 // State-driven coach marks: each step is unlocked by game state, never by a timer, so it cannot drift.
 export type TourStep = { id: string; anchor: string; text: string; title: string };
-export const TOUR_BILL = "Give every public school teacher a $10,000 raise, paid for by closing the carried-interest loophole.";
 
 export default function Tour({ step, onSkip }: { step: TourStep | null; onSkip: () => void }) {
   const [box, setBox] = useState<DOMRect | null>(null);
