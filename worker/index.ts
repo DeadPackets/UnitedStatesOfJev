@@ -1,7 +1,8 @@
 import { Hono, type Context } from "hono";
-import { decodeCode, scenarioTag } from "./engine";
+import { decodeCode, hash, scenarioTag } from "./engine";
 import type { Env } from "./jev";
-import { failScenario, getScenario, newScenario } from "./db";
+import { dayKey, dropAttempt, failScenario, getDaily, getPlay, getScenario, newScenario, takeAttempt } from "./db";
+import { identity } from "./identity";
 import { packView } from "./pack";
 import { match } from "./match";
 export { GameDO } from "./game";
@@ -18,6 +19,8 @@ const forward = (c: Ctx, id: string, path: string, body?: unknown) =>
 const ipOf = (c: Ctx) => c.req.header("cf-connecting-ip") ?? "local";
 const buildsDO = (env: Env) => env.BUILDS.get(env.BUILDS.idFromName("builds"));
 const badJson = { error: "bad json" };
+// One scenario and one seed a day for everyone (R12): the day key is the only input.
+export const dailySeed = (day: string) => hash(day) & 0x7fffffff;
 
 // Every game route hands the DO the parsed body and lets it own the turn and stage guards.
 const forwardBody = async (c: Ctx, path: string): Promise<Response> => {
@@ -57,11 +60,23 @@ async function scenariosFromTag(env: Env, tag: string): Promise<string[]> {
 
 app.get("/api/health", (c) => forward(c, "health", "health"));
 
-type Seat = { scenario?: string; faction?: string | number; promises?: number[]; seed?: number; code?: string };
+type Seat = { scenario?: string; faction?: string | number; promises?: number[]; seed?: number; code?: string; platform?: string; mode?: "daily" | "free" };
 app.post("/api/games", async (c) => {
   const body = (await c.req.json<Seat>().catch(() => null)) ?? ({} as Seat);
   let seat: Seat;
-  if (body.code) {
+  let attempt: { id: string; day: string; header?: string } | null = null;
+  if (body.mode === "daily") {
+    if (!c.env.DAILY_SECRET) return c.json({ error: "The daily is not set up yet." }, 503);
+    const day = dayKey();
+    const row = await getDaily(c.env, day);
+    if (!row?.scenario || row.status !== "ready") return c.json({ error: "Today's term is still being written. Try again in a few minutes." }, 503);
+    const who = await identity(c.env.DAILY_SECRET, c.req.raw);
+    const head = who.header ? { "set-cookie": who.header } : undefined;
+    const played = await getPlay(c.env, who.id, day);
+    if (played) return c.json({ error: "You have played today's term.", game: played.game }, 409, head);
+    seat = { scenario: row.scenario, faction: body.faction, promises: body.promises, seed: dailySeed(day), platform: body.platform };
+    attempt = { id: who.id, day, header: who.header };
+  } else if (body.code) {
     let code;
     try { code = decodeCode(body.code); } catch (e) { return c.json({ error: (e as Error).message }, 400); }
     const found = await scenariosFromTag(c.env, code.scenario);
@@ -70,13 +85,26 @@ app.post("/api/games", async (c) => {
     seat = { scenario: found[0], faction: code.faction, promises: code.promises, seed: code.seed };
   } else {
     if (typeof body.scenario !== "string") return c.json({ error: "Name a scenario." }, 400);
-    seat = { scenario: body.scenario, faction: body.faction, promises: body.promises, seed: body.seed };
+    seat = { scenario: body.scenario, faction: body.faction, promises: body.promises, seed: body.seed, platform: body.platform };
   }
   const builds = buildsDO(c.env);
   if (!(await builds.takeGame())) return c.json({ error: "Today's games are used up. Try again tomorrow." }, 429);
   const id = crypto.randomUUID();
-  const r = await forward(c, id, "new", { id, ...seat });
+  // The lock is taken before the game exists, because that is what a lock is for; a failed create gives it back.
+  if (attempt && !(await takeAttempt(c.env, attempt.id, attempt.day, id))) {
+    // Two clicks at once: the loser is told the same thing as a second visit, with the same link back.
+    const raced = await getPlay(c.env, attempt.id, attempt.day);
+    return c.json({ error: "You have played today's term.", game: raced?.game ?? null }, 409,
+      attempt.header ? { "set-cookie": attempt.header } : undefined);
+  }
+  const r = await forward(c, id, "new", { id, ...seat, day: attempt?.day ?? null });
   if (r.ok) await c.env.DB.prepare("UPDATE scenarios SET builds = builds + 1 WHERE id = ?").bind(seat.scenario).run();
+  else if (attempt) await dropAttempt(c.env, attempt.id, attempt.day);
+  if (r.ok && attempt?.header) {
+    const out = new Response(r.body, r);
+    out.headers.append("set-cookie", attempt.header);
+    return out;
+  }
   return r;
 });
 // 6 base36 characters: 2.2 billion ids, short enough to read out.
