@@ -15,6 +15,7 @@ import Peek, { type PinItem } from "./Peek";
 import Wire from "./Wire";
 import Holders from "./Holders";
 import Compose from "./Compose";
+import Tag from "./PriceTag";
 import { settleVerb, type LedgerKey, type VerbKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
@@ -76,7 +77,8 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const sel = pick ? game.members.find((m) => m.id === pick.id) : undefined;
   const amendments = bill?.amendments;
   const event = game.events.at(-1);
-  const openCard = event && event.stance === undefined ? game.events.length - 1 : -1;
+  const cardOpen = !!game.events.at(-1) && game.events.at(-1)!.stance === undefined;
+  const openCard = cardOpen ? game.events.length - 1 : -1;
   const card = event && (event.stance === undefined || answered === event.id) ? event : undefined;
 
   // Roll call: reveal votes one by one, accelerating, and walk the last five when the count is close.
@@ -97,6 +99,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
 
   useEffect(() => { if (bill?.headline && voted && !rolling) sound.play("slide"); }, [bill?.headline, rolling]); // eslint-disable-line
   useEffect(() => { if (bill && !whipped) { sound.play("chime"); setLive(`${v.bill}: ${bill.title}.`); } }, [bill?.id, whipped]); // eslint-disable-line
+  useEffect(() => { if (game.pending) setLive(`Next ${v.turn}. ${game.pending}`); }, [game.pending]); // eslint-disable-line
   useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
   const weakest = useMemo(() => (whipped && !voted
@@ -155,6 +158,17 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         <section className="col deskcol" aria-label="The desk">
           <Compose game={game} act={act} busy={busy} verb={verb} text={text}
             onVerb={(v) => { setPicked(true); setVerb(v); }} onText={setText} />
+          <Tag game={game} act={act} busy={busy} onDone={() => { setText(""); setPicked(false); }} />
+          <div className="endturn panel">
+            {game.pending ? <p className="small"><span className="kicker">Next</span> {game.pending}</p> : null}
+            <button className={`btn ghost ${busy ? "busy" : ""}`} data-tour="end"
+              disabled={busy || cardOpen || game.stage !== "session"}
+              onClick={() => act(() => api.endTurn(game)).then((ok) => { if (ok) { setText(""); setPicked(false); } })}>
+              {busy ? "Ending" : `End the ${v.turn}`}
+            </button>
+            {game.tag ? <p className="small muted">What is priced on the desk is dropped, not committed.</p> : null}
+            {cardOpen ? <p className="small muted">Answer the card on the desk first.</p> : null}
+          </div>
         </section>
         <section className="col floorcol" aria-label={v.chamber}>
           <div className="floorbox">

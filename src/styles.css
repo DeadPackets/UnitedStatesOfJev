@@ -252,6 +252,30 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .deskcol .billpad { width: 100%; min-height: 74px; resize: none; border: 0; border-bottom: 2px solid var(--ink);
   background: transparent; padding: 0 0 7px; outline: none; font: 700 20px/1.2 var(--display); color: var(--ink); }
 .deskcol .billpad:focus { border-bottom-color: var(--accent); }
+.was { font: 600 11px/1 var(--sans); color: var(--ink-2); text-decoration: line-through; margin-left: 5px; }
+.tag { margin: var(--s3) 0 0; border: 2px solid var(--ink); background: var(--bg); position: relative; }
+.tag.refused { border-color: var(--danger); }
+.tag-h { display: flex; justify-content: space-between; gap: var(--s2); background: var(--ink); color: var(--bg);
+  padding: 5px 9px; font: 600 10px/1.4 var(--sans); letter-spacing: 0.11em; text-transform: uppercase; }
+.tag.refused .tag-h { background: var(--danger); }
+.tag-b { padding: var(--s3) var(--s3) var(--s4); }
+.tag-b h3 { font-size: 22px; margin-bottom: var(--s2); text-transform: uppercase; }
+.fig { margin: 0; }
+.fig > div { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: 5px 0; border-bottom: 1px solid var(--tone); }
+.fig dt { font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+.fig dd { margin: 0; font: 800 22px/1 var(--display); font-variant-numeric: tabular-nums; }
+.tagr { display: flex; gap: var(--s2); align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--tone); }
+.tagr:last-of-type { border-bottom: 0; }
+.tagr .k { flex: none; width: 46px; font: 600 10px/1.6 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.tagr .vs { display: flex; flex-wrap: wrap; gap: var(--s1); }
+/* its own name: `.stamp` is the full-page oath stamp and keeps that meaning */
+.priced { position: absolute; right: 9px; bottom: 9px; transform: rotate(-6deg);
+  font: 800 14px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px;
+  border: 3px solid var(--accent); color: var(--accent); mix-blend-mode: multiply; pointer-events: none; }
+.tag .actions { padding: 0 var(--s3) var(--s3); margin-top: 0; }
+.endturn { margin-top: auto; display: grid; gap: 6px; }
+.endturn .btn { width: 100%; }
+.endturn .kicker { display: inline; margin-right: 6px; }
 .floorbox { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; }
 .holders { display: grid; gap: var(--s2); flex: none; }
 .holderrow { display: grid; gap: 4px; }
