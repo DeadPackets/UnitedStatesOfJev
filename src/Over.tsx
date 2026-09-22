@@ -1,34 +1,84 @@
 import { useState } from "react";
-import type { GameView } from "./api";
-import { national } from "./Ledger";
+import { api, type GameView } from "./api";
+import type { Act } from "./App";
+import { Num, national } from "./Ledger";
 
-/** Task 13 owns this screen; it is kept to the view's own fields so the term can end without a crash. */
-export default function Over({ game, onNew }: { game: GameView; onNew: () => void }) {
+/** Clipboard API first; the textarea covers an insecure origin or a denied permission. */
+async function copyText(s: string) {
+  try { await navigator.clipboard.writeText(s); return; } catch {}
+  const ta = document.createElement("textarea");
+  ta.value = s; ta.style.cssText = "position:fixed;opacity:0";
+  document.body.append(ta); ta.select();
+  try { document.execCommand("copy"); } catch {}
+  ta.remove();
+}
+
+/** The run is over: the ending, the score term by term, the last term's record, the code. */
+export default function Over({ game, act, busy, onNew }: { game: GameView; act: Act; busy: boolean; onNew: () => void }) {
   const [copied, setCopied] = useState(false);
   const pack = game.pack;
   const v = pack.vocabulary;
   const r = game.result;
-  const passed = game.bills.filter((b) => b.passed && !b.struck).length;
+  const own = pack.factions.find((f) => f.id === game.faction);
+  const lost = !!r && r.ending !== "reelected";
   return (
     <main className="over stagger press">
       <div className="kicker" style={{ "--i": 0 } as any}>{pack.title}</div>
-      <h1 className={r && r.ending !== "reelected" ? "lose" : ""} style={{ "--i": 1 } as any}>
-        {game.ending?.title ?? (r ? pack.endings[r.ending] : `The ${v.test} is due.`)}
+      <h1 className={lost ? "lose" : ""} style={{ "--i": 1 } as any}>
+        {r ? pack.endings[r.ending] : (game.ending?.title ?? pack.test.name)}
       </h1>
-      {game.ending ? <p style={{ "--i": 2 } as any}>{game.ending.body}</p> : null}
-      {r ? (
-        <div className="ledger" style={{ "--i": 3 } as any}>
-          <div><div className="k">Score</div><div className="v num">{r.score}</div></div>
-          <div><div className="k">{v.pass}</div><div className="v num">{passed} / {game.bills.length}</div></div>
-          <div><div className="k">{v.approval}</div><div className="v num">{Math.round(national(pack, game.ledgers.approval))}%</div></div>
+      {game.ending ? (
+        <div style={{ "--i": 2 } as any}>
+          <p className="lede" style={{ margin: "0 auto 10px" }}>{game.ending.title}</p>
+          <p style={{ margin: 0 }}>{game.ending.body}</p>
         </div>
       ) : null}
-      <div className="panel" style={{ "--i": 4, display: "grid", gap: 10, width: "100%", maxWidth: 520 } as any}>
-        <div className="kicker">Share this {v.chamber}</div>
+
+      {r ? (
+        <table className="scorecard" style={{ "--i": 3 } as any}>
+          <tbody>
+            {game.terms.map((t) => (
+              <tr key={t.term}>
+                <td className="k">Term {t.term}</td>
+                <td><Num value={t.points} /></td>
+                <td className="k">× {(1.5 ** (t.term - 1)).toFixed(t.term > 1 ? 2 : 1)}</td>
+                <td><Num value={Math.round(t.points * 1.5 ** (t.term - 1))} /></td>
+              </tr>
+            ))}
+            <tr className="total">
+              <td className="k">Score</td><td /><td />
+              <td><Num value={r.score} /></td>
+            </tr>
+          </tbody>
+        </table>
+      ) : null}
+
+      {r ? (
+        <div className="ledger" style={{ "--i": 4 } as any}>
+          <div><div className="k">Terms served</div><div className="v num">{game.terms.length}</div></div>
+          <div><div className="k">{v.approval}</div><div className="v"><Num value={Math.round(national(pack, game.ledgers.approval))} />%</div></div>
+          <div><div className="k">Best streak</div><div className="v num">{game.bestStreak}</div></div>
+        </div>
+      ) : null}
+
+      <div className="panel share" style={{ "--i": 5 } as any}>
+        <div className="kicker">The record, term {game.terms.at(-1)?.term ?? game.term}</div>
+        <div className="sharecard" style={{ color: own?.color ?? "var(--ink)" }}>
+          {game.bills.map((b) => (
+            <div key={b.id}>
+              <span className={`sq ${b.passed && !b.struck ? "on" : ""}`} />
+              <span>{v.bill} {b.id}</span>
+            </div>
+          ))}
+        </div>
         <div className="code" aria-label="Share code">{game.code}</div>
-        <button className="btn ghost" onClick={() => { navigator.clipboard.writeText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy the code"}</button>
+        <button className="btn ghost" onClick={() => { copyText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy the code"}</button>
       </div>
-      <div style={{ "--i": 5 } as any}><button className="btn" onClick={onNew}>Start a new term</button></div>
+
+      <div className="row" style={{ "--i": 6, justifyContent: "center" } as any}>
+        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Run it back</button>
+        <button className="btn ghost" onClick={onNew}>New scenario</button>
+      </div>
     </main>
   );
 }

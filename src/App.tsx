@@ -5,6 +5,8 @@ import Match from "./Match";
 import Build from "./Build";
 import Seat from "./Seat";
 import Chamber from "./Chamber";
+import Test from "./Test";
+import Won from "./Won";
 import Over from "./Over";
 import { applyTheme } from "./theme";
 import "./styles.css";
@@ -25,6 +27,7 @@ export default function App() {
   const [booting, setBooting] = useState(() => !!localStorage.getItem("usoj:game") || SCENARIO.test(location.pathname));
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState<string | null>(null);
 
   const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "Network hiccup. Try again.");
 
@@ -98,11 +101,19 @@ export default function App() {
   const quit = () => { localStorage.removeItem("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
 
+  // The test POST lands the run on `won` or `over`, so the reveal holds the screen until it has played.
+  const testKey = game?.test ? `${game.id}#${game.terms.length}` : null;
+  const showTest = !!game && (game.stage === "test" || (!!testKey && revealed !== testKey));
+
   return (
     <>
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
       {booting ? null
-        : game ? (game.phase === "over" ? <Over game={game} onNew={quit} /> : <Chamber game={game} act={act} busy={busy} onQuit={quit} />)
+        : game ? (
+            showTest ? <Test game={game} act={act} busy={busy} onDone={() => setRevealed(testKey)} />
+            : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
+            : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
+            : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} />)
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={(f, p, s) => act(() => api.seat(scenario, f, p, s))} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />

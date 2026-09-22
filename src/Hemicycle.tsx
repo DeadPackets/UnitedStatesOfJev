@@ -92,7 +92,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
           <g key={i} ref={(el) => { if (el) groups.current.set(m.id, el); else groups.current.delete(m.id); }}
             className="seatg" role="button" tabIndex={0} aria-label={label}
             style={{ "--i": i, "--dx": `${300 - s.x}px`, "--dy": `${170 - s.y}px`, "--r": `${r}px` } as any}
-            data-vote={votes && !rolling ? (votes[m.id] ? "yes" : "no") : undefined}
+            data-vote={votes && !rolling && m.id in votes ? (votes[m.id] ? "yes" : "no") : undefined}
             data-tour={hotSet.has(m.id) ? "seat" : undefined}
             onClick={() => onPick(m.id)} onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(m.id); } }}
             onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
