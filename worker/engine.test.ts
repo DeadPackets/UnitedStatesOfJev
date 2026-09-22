@@ -742,7 +742,11 @@ test("a new game opens one holder state per holder in the constitution", () => {
   expect(g.holders.street.line).toBe(70);
   expect(g.holders.guard.response).toBe("coup");
   expect(weightOf(pack, "street")).toBe(0.6);
-  expect(holdersOf({ ...pack, constitution: undefined }).length).toBe(0);
+  const v3: Pack = { ...pack, constitution: undefined };
+  expect(holdersOf(v3).map((h) => h.id)).toEqual(["chamber", "street"]);
+  expect(weightOf(v3, "street")).toBe(pack.chamber.alpha);
+  // A stored v3 pack keeps a winnable test: the chamber and the street, mixed by alpha as in v3.
+  expect(runTest(v3, newGame("g-v3", CODE, v3, "harborites", PROMISES, CAL), { chamber: 1, street: 1 }).won).toBe(true);
 });
 
 test("a bypass raises resistance, a favour lowers it and the nearest to its line is named", () => {

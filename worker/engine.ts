@@ -208,9 +208,18 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
   return game;
 }
 
-export const holdersOf = (pack: Pack): Holder[] => pack.constitution?.holders ?? [];
-export const weightOf = (pack: Pack, id: string): number =>
-  pack.constitution?.retention.weights.find((w) => w.id === id)?.value ?? 0;
+// A pack built before v4 has no constitution: its test was the chamber and the street, mixed by alpha.
+const v3Room = (pack: Pack): Holder[] => (["seats", "citizens"] as const).map((members) => {
+  const name = members === "seats" ? pack.vocabulary.chamber : "the street";
+  return {
+    id: members === "seats" ? "chamber" : "street", name, where: "home", persona: { name, role: name, bio: "", tell: "" },
+    members, stance: 0.5, line: 100, response: "none", levers: [], wants: [], redLines: [], gives: null, responses: [],
+  };
+});
+export const holdersOf = (pack: Pack): Holder[] => pack.constitution?.holders ?? v3Room(pack);
+export const weightOf = (pack: Pack, id: string): number => pack.constitution
+  ? pack.constitution.retention.weights.find((w) => w.id === id)?.value ?? 0
+  : id === "chamber" ? 1 - pack.chamber.alpha : id === "street" ? pack.chamber.alpha : 0;
 
 export function seedHolders(pack: Pack): Record<string, HolderState> {
   return Object.fromEntries(holdersOf(pack).map((h) => [h.id, {

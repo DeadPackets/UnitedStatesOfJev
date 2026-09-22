@@ -49,12 +49,12 @@ test("the view carries the room, the instruments and the bar", () => {
   expect(JSON.stringify(v)).not.toContain("Counts coins while he talks.");
 });
 
-test("a pack with no constitution still ships an empty room", () => {
+test("a pack with no constitution ships the v3 room of chamber and street", () => {
   const bare: Pack = { ...pack, constitution: undefined };
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 56 });
   const game: Game = newGame("g-bare", code, bare, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], bare.calendar);
   const v = view(bare, { game, prose: {} });
-  expect(v.holders).toEqual([]);
+  expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street"]);
   expect(v.instruments).toEqual({});
   expect(v.bar).toBeCloseTo(0.5, 5);
   expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
