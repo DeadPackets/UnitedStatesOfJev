@@ -1,4 +1,4 @@
-import { FONT_PAIRS, ESCALATION_KEYS, type Citizen, type Member, type Storylet } from "../pack";
+import { FONT_PAIRS, ESCALATION_KEYS, type Citizen, type Constitution, type Member, type Storylet } from "../pack";
 import type { Sources } from "../sources";
 import type { Facts } from "./facts";
 import type { Frame } from "./frame";
@@ -7,6 +7,7 @@ import type { Calendar } from "./validate";
 export type GenCtx = {
   prompt: string; lang: string; fiction: boolean;
   sources: Sources; facts: Facts; frame: Frame; calendar: Calendar | null;
+  constitution: Constitution | null;
   members: Member[]; citizens: Citizen[]; deck: Storylet[];
 };
 export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));

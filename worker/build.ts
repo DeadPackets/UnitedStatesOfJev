@@ -14,6 +14,7 @@ import { membersStep, citizensStep, names } from "./gen/personas";
 import { dedupe } from "./gen/dedupe";
 import { deck } from "./gen/deck";
 import { calendarStep } from "./gen/calendar";
+import { constitution } from "./gen/constitution";
 import { NeedsRepair, matchName, realNames } from "./gen/validate";
 import { CONTENT_RULE, FRAME_RULES, HISTORIAN, chunk, sourceBlock, type GenCtx } from "./gen/prompts";
 
@@ -218,6 +219,7 @@ function assemble(id: string, ctx: GenCtx, art: Pack["art"]): Pack {
     sources: ctx.sources.wikipedia.map((p) => ({ title: p.title, url: p.url })),
     starts: f.factions.map((x) => f.starts.find((s) => s.faction === x.id)),
     members: ctx.members, citizens: ctx.citizens, deck: ctx.deck, art, calendar: ctx.calendar,
+    constitution: ctx.constitution ?? undefined,
   });
 }
 
@@ -258,6 +260,13 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           problems: f.problems.slice(0, 3),
         };
       }, GEN_RETRY));
+      merge(await gen("constitution", (e) => constitution(e, ctx), (r) => ({
+        kind: "constitution",
+        holders: r.constitution!.holders.map((h) => ({
+          id: h.id, name: h.name, where: h.where,
+          weight: r.constitution!.retention.weights.find((w) => w.id === h.id)?.value ?? 0,
+        })),
+      })));
       merge(await stage("assign", (e) => assign(e, ctx)));
       merge(await gen("names", (e) => names(e, ctx)));
       merge(await gen("personas", (e) => personasStep(e, ctx),

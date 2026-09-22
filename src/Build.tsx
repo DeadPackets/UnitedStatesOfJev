@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { api, type BuildState, type FrameFragment, type PackView } from "./api";
 import { Ornament, applyTheme, art, hideBroken } from "./theme";
 
-const STEPS = ["plan", "fetch", "facts", "calendar", "frame", "assign", "names", "personas", "dedupe", "deck", "art", "index", "assemble"] as const;
+const STEPS = ["plan", "fetch", "facts", "calendar", "frame", "constitution", "assign", "names", "personas", "dedupe", "deck", "art", "index", "assemble"] as const;
 const PLAIN: Record<string, string> = {
   plan: "Plan the search", fetch: "Read the sources", facts: "Check names and dates", calendar: "Set the calendar",
-  frame: "Draw the chamber", assign: "Fill the seats", names: "Name the members", personas: "Write the people",
+  frame: "Draw the chamber", constitution: "Write the constitution", assign: "Fill the seats", names: "Name the members", personas: "Write the people",
   dedupe: "Clear the repeats", deck: "Build the deck", art: "Print the masthead and crests",
   index: "File it in the archive", assemble: "Bind the pack",
 };
