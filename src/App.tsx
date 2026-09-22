@@ -10,7 +10,7 @@ import Campaign from "./Campaign";
 import Test from "./Test";
 import Won from "./Won";
 import Over from "./Over";
-import { applyTheme } from "./theme";
+import { applyTheme, resetTheme } from "./theme";
 import "./styles.css";
 
 export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
@@ -126,7 +126,7 @@ export default function App() {
     return ok;
   };
 
-  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("write"); go("/"); }, []);
+  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("write"); resetTheme(); go("/"); }, []);
   const quit = () => { store.remove("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
 

@@ -91,6 +91,15 @@ export function applyTheme(t: Partial<Pack["theme"]>) {
   if (t.ornament) root.dataset.ornament = t.ornament;
 }
 
+/** Back to the stylesheet's own look: the next pack starts from the default, not from the last one. */
+export function resetTheme() {
+  const root = document.documentElement;
+  for (const k of ["--ink", "--paper", "--bg", "--accent", "--display", "--sans"]) root.style.removeProperty(k);
+  document.getElementById("packfonts")?.remove();
+  delete root.dataset.texture;
+  delete root.dataset.ornament;
+}
+
 type OrnamentKind = Pack["theme"]["ornament"];
 
 const ORNAMENTS: Record<OrnamentKind, string> = {
