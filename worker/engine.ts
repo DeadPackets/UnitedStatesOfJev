@@ -467,7 +467,7 @@ export const popularity = (pack: Pack, game: Game) => { const a = nationalPopula
 const bump = (game: Game, region: string, d: number) => { game.ledgers.popularity[region] = clamp(round1((game.ledgers.popularity[region] ?? 50) + d), 0, 100); };
 
 // Up to 8 lines of record, for citizen and test calls and for Luna.
-export const RECORD_TOKENS = 1200;   // TUNE: the test call measured 93% of the 64k cap before v4
+export const RECORD_TOKENS = 1200;   // TUNE: largest holder read measured 14503 tokens on a 72 seat pack, 2026-09-23
 const RECORD_LAWS = 5;               // TUNE: laws in force the record names, newest first
 const RECORD_HEADLINES = 3;          // TUNE: headlines the record names, newest first
 
@@ -885,7 +885,7 @@ export interface Post {
 }
 
 // Measured over 5,000 reactions (analysis §4): 0.76 likes - 2 x 0.054 boos = 0.65, what an average notice earns.
-export const POST_BASELINE = 0.65;   // TUNE, re-measure in Stage D: Task 12 rewords the four reactions
+export const POST_BASELINE = 0.67;   // TUNE: re-measured over 8 live posts, 2026-09-23
 export const POST_GAIN = 10;         // TUNE
 export const BOO_WEIGHT = 2;         // TUNE: a boo costs this many times what a like pays
 

@@ -9,6 +9,7 @@ export class Bot {
   calls = 0;
   ms = 0;
   whip: Whip | null = null;
+  used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
 
   constructor(readonly base: string) {}
 
@@ -19,7 +20,15 @@ export class Bot {
       const r = await fetch(`${this.base}/api${path}`,
         body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
       this.ms += performance.now() - t0;
-      if (r.ok) return r.json() as Promise<GameView>;
+      if (r.ok) {
+        const g = await r.json() as GameView & { usage?: Bot["used"] };
+        // The worker resets its meter on every POST, so a turn's spend is the sum over every reply.
+        if (g.usage) {
+          const u = this.used, n = g.usage;
+          this.used = { tokens: u.tokens + n.tokens, cost: u.cost + n.cost, calls: u.calls + n.calls, worst: Math.max(u.worst, n.worst) };
+        }
+        return g;
+      }
       const text = await r.text();
       // wrangler.bots.jsonc allows 240 requests a minute and one bot turn is 6 to 12; back off rather than end the run.
       if (r.status === 429 && attempt < 5) { await new Promise((res) => setTimeout(res, 3000)); continue; }

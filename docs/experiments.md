@@ -296,3 +296,28 @@ The band is 12.3 points wide and contained the drawn share in both runs. It cont
 estimate in one of the two: the campaign and the test ask Jev different questions (`voteQuestions` with the
 canvass messages against `testQuestions` with the whole record), and in run 1 they disagreed by 7.6 points.
 The band is an honest read of sampling error, not of that disagreement.
+
+## One v4 term, measured, 2026-09-23
+
+One 20 turn term, the populist policy, one seed, on a 72 seat pack ("France in 1958", built locally for this),
+through `wrangler.bots.jsonc`. The run is in `docs/bots/2026-09-23-measure`.
+
+| Measurement | Value | Where it went |
+|---|---|---|
+| Cost of one term | $0.0903 | `TERM_USD` in `scripts/bots/run.ts`, rounded up to $0.10 |
+| Terms one pass buys | 250 | `MAX_TERMS` in `scripts/bots/run.ts` |
+| Average Jev input tokens a turn | 59,257 | the §11 token column |
+| Largest single Jev request | 53,314 | a 250 citizen read, not a holder read; 83% of the 64k request cap |
+| Largest per-holder read | 14,503 | the 72 seat holder at the test, under the 20,000 per-holder ceiling |
+| Per-holder record budget | 1200 | `RECORD_TOKENS` in `worker/engine.ts`, unchanged |
+| An average notice, before its own work | 0.670 over 8 posts | `POST_BASELINE` in `worker/engine.ts` |
+
+The report's `Cost:` line reads the Jev meter only, which printed $0.0498 for this term. Luna and the portrait
+sheets are not on that meter, so the term's cost is the OpenRouter key's spend before and after the run: $0.0903.
+An earlier run of the same term spent $0.0543 by the same count, so `TERM_USD` takes the higher figure.
+
+The largest request of the term is a citizen read, which the per-holder budget does not touch. The per-holder
+read was measured on its own, with a log line in `jev()` that was not committed.
+
+The v3 figure of $0.2153 a term measured the game before the Ruler: it has no price call and no holder
+reads, so it is not comparable and is not used anywhere after this.

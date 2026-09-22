@@ -6,9 +6,9 @@ import type { GameView } from "../../src/api";
 import { Bot, type BotAct, type Whip } from "./api";
 import { POLICIES, mulberry, type Policy } from "./policies";
 
-export const TERM_USD = 0.25;    // TUNE: a v3 term measured $0.2153. Task 16 replaces this with a measured v4 term.
+export const TERM_USD = 0.10;    // TUNE: measured, one 20 turn v4 term on a 72 seat pack, 2026-09-23
 export const BUDGET_USD = 25;    // TUNE: the most one balance pass may spend
-export const MAX_TERMS = 100;    // TUNE: the hard stop, whatever the budget arithmetic says
+export const MAX_TERMS = 250;    // TUNE: the hard stop, derived from the measured term
 export const TURNS_PER_TERM = 20;   // mirrors worker/engine.ts
 export const HARD_STOP = 8;      // TUNE: steps a term may take beyond its turns before it is called stuck
 export const TERM_MS = 1_200_000;   // TUNE: 20 minutes, the wall clock a single term may take
@@ -41,8 +41,6 @@ const diff = (before: Record<string, number>, after: Record<string, number>) => 
 };
 const holdersOf = (g: GameView) => ((g as never as { holders?: TurnLog["holders"] }).holders ?? [])
   .map((h) => ({ id: h.id, stance: h.stance, resistance: h.resistance, line: h.line, weight: h.weight }));
-const usageOf = (g: GameView) => (g as never as { usage?: { tokens: number; cost: number; calls: number; worst: number } }).usage
-  ?? { tokens: 0, cost: 0, calls: 0, worst: 0 };
 // The expected effect at commit time is the pack's own price for that verb, which the view prices per turn.
 const priceOf = (g: GameView, verb: string): Record<string, number> => {
   const p = (g as never as { instruments?: Record<string, { price?: Record<string, number> }> }).instruments?.[verb]?.price ?? {};
@@ -55,6 +53,7 @@ export async function runTerm(bot: Bot, policy: Policy, g: GameView, log: TurnLo
   const cap = TURNS_PER_TERM + HARD_STOP;
   const started = performance.now();
   let steps = 0;
+  bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
   while (g.stage === "session" || g.stage === "midterm") {
     if (++steps > cap) throw new Error(`the term took more than ${cap} steps and never reached the test`);
     if (performance.now() - started > TERM_MS) throw new Error(`the term took over ${Math.round(TERM_MS / 60_000)} minutes`);
@@ -76,13 +75,19 @@ export async function runTerm(bot: Bot, policy: Policy, g: GameView, log: TurnLo
       run, policy: policy.name, seed, term, turn,
       bar: (g as never as { bar?: number }).bar ?? 0,
       ledgers: g.ledgers, holders: holdersOf(g), acts: rows, whip: bot.whip,
-      jev: { ...usageOf(g), ms: Math.round(bot.ms - before) },
+      jev: { ...bot.used, ms: Math.round(bot.ms - before) },
       pending: (g as never as { pending?: string | null }).pending ?? null,
       wire: (g as never as { wire?: unknown[] }).wire ?? [],
     });
+    bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
     if (g.turn === turn && g.stage === "session") throw new Error(`turn ${turn} did not advance`);
   }
   if (g.stage === "test") g = await bot.test(g);
+  // The test call is the largest of the term, so it counts on the term's last row.
+  const last = log.at(-1), u = bot.used;
+  if (last?.run === run) {
+    last.jev = { ...last.jev, tokens: last.jev.tokens + u.tokens, cost: last.jev.cost + u.cost, calls: last.jev.calls + u.calls, worst: Math.max(last.jev.worst, u.worst) };
+  }
   return g;
 }
 

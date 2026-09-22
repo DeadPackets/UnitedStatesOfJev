@@ -567,7 +567,7 @@ test("an average post is worth nothing, a loud one is punished and a strong one 
   applyPost(pack, good, 1, "a sharp notice", reactMix(88, 6), saidNothing, {}, tagFor());
   expect(good.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(before[REGIONS[0]]);
   expect(good.posts[0].targets).toEqual([]);
-  expect(POST_BASELINE).toBeCloseTo(0.65, 2);
+  expect(POST_BASELINE).toBeCloseTo(0.67, 2);
   expect(POST_GAIN).toBe(10);
 });
 
