@@ -107,7 +107,7 @@ while (g.stage === "session") {
     g = await api(`/games/${g.id}/midterm`, { turn: g.turn });
     const m = g.midterm!;
     console.log(`   ${V.midterm}: ${m.up.length} up, ${m.lost.length} lost (${m.lostOwn} own side)${m.wipeout ? " (wipeout)" : ""} in ${ms(m0)} | ${m.headline?.title ?? "(no headline)"}`);
-    console.log(`     new: ${g.members.filter((x) => x.id.startsWith(`r${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
+    console.log(`     new: ${g.members.filter((x) => x.id.startsWith("r") && x.id.includes(`-${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
   }
 }
 
