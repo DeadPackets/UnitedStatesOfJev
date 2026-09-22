@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
-import { api, type GameView } from "./api";
+import { api, ApiError, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
@@ -99,7 +99,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
   const draft = async () => {
-    if (await act(() => api.price(game, text, "law").then(() => api.act(game)))) { setText(""); setDismissed(-1); }
+    if (await act(() => api.price(game, text, "law").then((v) => { if (v.refusal) throw new ApiError(409, v.refusal.line); return api.act(game); }))) { setText(""); setDismissed(-1); }
   };
   // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
   const pulsing = useRef(0);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, type GameView, type ViewBill } from "./api";
+import { api, ApiError, type GameView, type ViewBill } from "./api";
 import type { Act } from "./App";
 
 const LIMIT = 240;
@@ -51,7 +51,7 @@ export default function Feed({ game, bill, act, busy }: { game: GameView; bill?:
   const region = (id: string) => game.pack.regions.find((r) => r.id === id)?.name ?? id;
   const home = (name: string) => { const c = game.citizens.find((x) => x.name === name); return c ? `${name}, ${region(c.region)}` : name; };
   const send = async () => {
-    if (await act(() => api.price(game, text.trim(), "proclaim").then(() => api.act(game)))) setText("");
+    if (await act(() => api.price(game, text.trim(), "proclaim").then((v) => { if (v.refusal) throw new ApiError(409, v.refusal.line); return api.act(game); }))) setText("");
   };
 
   return (
