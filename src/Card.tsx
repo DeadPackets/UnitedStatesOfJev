@@ -11,15 +11,20 @@ const UNMOUNT = 200;
  * rather than the `close` event, because the attribute is the one signal every path has to
  * produce, and the guard makes it fire once per sheet however it was closed.
  */
-export function useSheet(onClose: () => void) {
+export function useSheet(onClose: () => void, block = false) {
   const ref = useRef<HTMLDialogElement>(null);
   const timer = useRef(0);
+  // The close watcher answers a second Escape whatever `cancel` says, so a sheet that must be
+  // answered is opened again rather than left mounted and hidden.
+  const blocked = useRef(block);
+  blocked.current = block;
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
     if (!d.open) d.showModal();
     const watch = new MutationObserver(() => {
       if (d.open || timer.current) return;
+      if (blocked.current) { d.showModal(); return; }
       // A self-opened sheet can outlive its opener and leave <body> focused; a click during the exit
       // does the same, so the fallback to the primary action runs only when the window passed untouched.
       let touched = false;
@@ -38,7 +43,7 @@ export function useSheet(onClose: () => void) {
 }
 
 function Poster({ label, children, block, onClose }: { label: string; children: (dismiss: () => void) => ReactNode; block: boolean; onClose: () => void }) {
-  const { ref, dismiss } = useSheet(onClose);
+  const { ref, dismiss } = useSheet(onClose, block);
   // A card that is still open has to be answered, so Escape and a backdrop click do nothing until a stance is taken.
   return (
     <dialog ref={ref} className="poster" aria-label={label}
