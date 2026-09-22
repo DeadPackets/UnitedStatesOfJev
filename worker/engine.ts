@@ -236,7 +236,7 @@ const moveResistance = (_pack: Pack, game: Game, ids: string[], d: number, cause
     if (!h) continue;
     const before = h.resistance;
     h.resistance = clamp(round1(h.resistance + d), 0, 100);
-    if (h.resistance !== before) out.push({ kind: "resistance", id, delta: h.resistance - before, cause });
+    if (h.resistance !== before) out.push({ kind: "resistance", id, delta: round1(h.resistance - before), cause });
   }
   return out;
 };

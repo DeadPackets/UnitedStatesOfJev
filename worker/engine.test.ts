@@ -754,6 +754,8 @@ test("a bypass raises resistance, a favour lowers it and the nearest to its line
   easeResistance(pack, g, ["council"], 10, "a petition granted");
   expect(g.holders.council.resistance).toBe(2);
   expect(nearestLine(g)).toBe("guard");   // 12 of 55 against 2 of 60 and 0 of 70
+  g.holders.league.resistance = 12.3;
+  expect(easeResistance(pack, g, ["league"], 0.1, "a small gift")[0].delta).toBe(-0.1);   // the wire prints no float noise
   raiseResistance(pack, g, ["council"], 999, "everything at once");
   expect(g.holders.council.resistance).toBe(100);
 });
