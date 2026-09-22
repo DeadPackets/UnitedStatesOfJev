@@ -12,6 +12,7 @@ import { Ornament } from "./theme";
 import { sound } from "./sound";
 import Strip from "./Strip";
 import Peek, { type PinItem } from "./Peek";
+import Wire from "./Wire";
 import type { LedgerKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
@@ -261,6 +262,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         onStance={stance} onClose={() => setAnswered(null)} /> : null}
       {notice.length ? <Announce key={game.term} pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
       <Tour step={step} onSkip={endTour} />
+      <Wire game={game} onPick={(k, c) => { setPeek(k); setCause(c); }} />
     </main>
   );
 }

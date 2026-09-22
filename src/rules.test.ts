@@ -42,3 +42,28 @@ test("a ledger's delta sums only this turn's ledger lines, never a resistance mo
   expect(ledgerDelta(game, "chest")).toBe(0);
   expect(ledgerDelta(game, "authority")).toBe(0);
 });
+
+import { wireHue, wireLabel } from "./rules";
+
+test("a wire line names its ledger, its region when it has one, and its cause", () => {
+  const names = new Map([["north", "Etruria"], ["senate", "The senate"]]);
+  expect(wireLabel({ kind: "ledger", ledger: "popularity", id: "north", delta: 2, cause: "the post" }, names))
+    .toBe("popularity, Etruria, the post");
+  expect(wireLabel({ kind: "ledger", ledger: "treasury", delta: -4, cause: "farm credit" }, names))
+    .toBe("treasury, farm credit");
+});
+
+test("a resistance line prints the holder's name, never a raw id", () => {
+  const names = new Map([["senate", "The senate"]]);
+  expect(wireLabel({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" }, names))
+    .toBe("The senate, the levy");
+  expect(wireLabel({ kind: "resistance", id: "curia", delta: 4, cause: "the levy" }, names))
+    .toBe("curia, the levy");
+});
+
+test("a resistance or card line is danger, a ledger or promise line takes its ledger's hue", () => {
+  expect(wireHue({ kind: "ledger", ledger: "chest", delta: -20, cause: "reach" })).toBe("r-che");
+  expect(wireHue({ kind: "promise", ledger: "popularity", delta: -1, cause: "land reform" })).toBe("r-pop");
+  expect(wireHue({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" })).toBe("r-danger");
+  expect(wireHue({ kind: "card", ledger: "treasury", delta: -8, cause: "the flood" })).toBe("r-danger");
+});

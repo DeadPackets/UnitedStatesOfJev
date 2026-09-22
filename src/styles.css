@@ -223,6 +223,20 @@ body:has(.desk) { height: 100dvh; overflow: hidden; }
 .peek .big { font: 900 56px/0.9 var(--display); color: var(--c); display: block; font-variant-numeric: tabular-nums; }
 .peek .acts2 { display: flex; gap: var(--s2); align-items: center; margin-top: var(--s2); }
 .btn.sm { min-height: 44px; padding: 0 12px; font-size: 15px; gap: 5px; }
+.wire { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sticky); background: var(--ink); color: var(--bg);
+  display: flex; align-items: center; height: var(--wire); overflow: hidden; }
+.wire .lbl { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 var(--s3); height: 100%;
+  background: var(--accent); color: var(--bg); font: 800 13px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; }
+.runwrap { flex: 1; min-width: 0; overflow: hidden; }
+.run { display: flex; gap: var(--s5); white-space: nowrap; padding-left: var(--s5); animation: ticker 46s linear infinite; }
+.run.still { animation: none; }
+.wire:hover .run, .wire:focus-within .run { animation-play-state: paused; }
+.wire .w { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--bg); min-height: 38px;
+  border-bottom: 2px solid transparent; }
+button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
+.wire .w b { font: 800 17px/1 var(--display); color: var(--c-on, var(--bg)); font-variant-numeric: tabular-nums; }
+.wire .w .ic { color: var(--c-on); }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .main { display: grid; grid-template-columns: 330px minmax(0, 1fr) 320px; gap: var(--s5); padding-top: var(--s3); min-height: 0; }
 .col { min-height: 0; display: flex; flex-direction: column; }
 .deskcol, .floorcol { gap: var(--s2); }
