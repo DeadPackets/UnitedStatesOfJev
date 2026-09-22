@@ -6,19 +6,18 @@ import type { GameView } from "../src/api";
 const [base = "http://127.0.0.1:8799", scenario = "v3nj3k", faction = "caesarians", picks = "0,5,7"] = process.argv.slice(2);
 const promises = picks.split(",").map(Number);
 
-// Three texts, cycled: works, institutions, supply. Broad enough that a minority government can win a count,
-// and between them they carry the three default pledges (grain supply, governors, public works).
+// Three texts, cycled: works, institutions, supply. No era and no place, so the gate takes them in any polity.
 const TEXTS = [
-  "Repair the roads and the aqueducts of the city and the Italian towns, and publish the accounts of the works each month.",
-  "Set new rules for the governors of the provinces: fixed terms, published accounts, and a court that hears claims of extortion.",
-  "Fund the supply of grain for the coming year out of the treasury and fix the port dues at the harbour.",
+  "Repair the roads, the water supply and the public buildings, and publish the accounts of the works each month.",
+  "Set new rules for the officials who govern: fixed terms, published accounts, and a court that hears claims of extortion.",
+  "Fund the supply of food and fuel for the coming year out of the treasury, and fix the duties charged on what is brought in.",
 ];
 
 // One post a turn, cycled. Each is inside the 240 characters the Feed takes.
 const POSTS = [
-  "The roads and the aqueducts get fixed this year, and the accounts of every work go up in public each month. Read them. Then tell me what else is broken.",
-  "A governor who robs a province will answer for it in a court, with a fixed term and published books. The men who fear that rule are telling you who they are.",
-  "Grain for the coming year is paid for out of the treasury, and the port dues are fixed. No family in this city eats worse because a merchant found a new price.",
+  "The roads, the water and the public buildings get fixed this year, and the accounts of every work go up in public each month. Read them. Then tell me what else is broken.",
+  "An official who robs the public will answer for it in a court, with a fixed term and published books. The people who fear that rule are telling you who they are.",
+  "Food and fuel for the coming year are paid for out of the treasury, and the duties are fixed. No family here eats worse because a merchant found a new price.",
 ];
 
 const ms = (t: number) => `${((performance.now() - t) / 1000).toFixed(1)}s`;
