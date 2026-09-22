@@ -315,9 +315,13 @@ export class GameDO extends DurableObject<Env> {
   private async drafts(game: Game, pack: Pack) {
     if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
     const c = game.campaign!;
-    if (c.drafts.length === 3) return;
-    c.drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
-      .catch(() => ["Keep the course.", "The work is not finished.", "The other side would undo it."]);
+    if (c.drafts.length === 3 && c.drafts.every((d) => d.trim())) return;
+    // Nothing is stored on a failure: the campaign screen offers "Ask for the drafts" again, and a blank
+    // draft would leave the player with three radios they cannot submit.
+    const drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
+      .catch(() => []);
+    if (drafts.length !== 3) throw new Reject(503, "The narrator did not answer. Try again.");
+    c.drafts = drafts;
   }
 
   private async campaign(game: Game, pack: Pack, body: CampaignBody) {

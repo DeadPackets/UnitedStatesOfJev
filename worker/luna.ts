@@ -45,7 +45,8 @@ export async function parseBill(env: Env, pack: Pack, text: string): Promise<Bil
   const d = await luna(env, billDraftSchema(pack), "bill",
     `You are the clerk of ${pack.vocabulary.chamber}. Turn the proposal into a ${pack.vocabulary.bill}. Title: 3 to 7 words. Summary: one paragraph, at most 60 words, neutral, states exactly what it does. Tags: 1 to 4 from the allowed list, only those it materially touches.${world(pack)}`,
     text, 400);
-  return { title: clip(d.title, 80), summary: clip(d.summary, 600), tags: d.tags.slice(0, 4) };
+  // A strict enum array can still repeat a value, and a repeat would keep a promise off one passed bill.
+  return { title: clip(d.title, 80), summary: clip(d.summary, 600), tags: [...new Set(d.tags)].slice(0, 4) };
 }
 
 export async function amendBill(env: Env, pack: Pack, bill: Bill, opponents: Member[], loudestBloc: string): Promise<BillDraft[]> {
@@ -56,7 +57,8 @@ export async function amendBill(env: Env, pack: Pack, bill: Bill, opponents: Mem
       opponents: opponents.map((m) => ({ region: m.region, faction: m.faction, core_issues: m.core_issues, patrons: m.patrons })),
       loudest_opposing_group: loudestBloc,
     }), 900);
-  return d.amendments.slice(0, 3).map((a) => ({ title: clip(a.title, 80), summary: clip(a.summary, 600), tags: a.tags.slice(0, 4) }));
+  if (!d.amendments.length) throw new Error("Luna returned no amendment");
+  return d.amendments.slice(0, 3).map((a) => ({ title: clip(a.title, 80), summary: clip(a.summary, 600), tags: [...new Set(a.tags)].slice(0, 4) }));
 }
 
 export async function narrate(env: Env, pack: Pack, bill: Bill, defectors: Member[]): Promise<{ title: string; lede: string }> {
@@ -127,8 +129,10 @@ export async function messages(env: Env, pack: Pack, state: unknown): Promise<st
   const d = await luna(env, MessagesSchema, "messages",
     `You write the three lines the government could run on this ${pack.vocabulary.turn} of the race, from the record given. Each at most 20 words, each a different argument: one on what was kept, one on the biggest fight, one on what the other side would do.${world(pack)}`,
     JSON.stringify(state), 160);
-  const out = d.messages.slice(0, 3).map((m) => clip(m, 160));
-  while (out.length < 3) out.push(out[0] ?? "");
+  // A blank line is not a message the player can run on, and padding with one makes a campaign unplayable.
+  const out = d.messages.map((m) => clip(m.trim(), 160)).filter(Boolean).slice(0, 3);
+  if (!out.length) throw new Error("Luna returned no campaign message");
+  while (out.length < 3) out.push(out[0]);
   return out;
 }
 

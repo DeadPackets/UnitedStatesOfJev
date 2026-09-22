@@ -343,3 +343,26 @@ test("a Jev failure mid-vote leaves the stored game exactly as the request found
   expect(do_.saved).toEqual(before);
   expect(do_.saved.game.turn).toBe(1);
 });
+
+test("blank campaign drafts are a 503 the player can retry, not three lines nobody can pick", async () => {
+  stubModels(0.6);
+  const { do_, post } = seatedGame(41);
+  do_.saved.game.stage = "campaign";
+  do_.saved.game.campaign = { drafts: [], messages: [], turns: [], rival: [], intent: {} };
+
+  const ok = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.response_format?.json_schema?.name === "messages") {
+      return Response.json({ choices: [{ message: { content: JSON.stringify({ messages: ["", "   ", ""] }) } }] });
+    }
+    return ok(url as never, init);
+  }) as unknown as typeof fetch;
+
+  const r = await post("campaign/drafts", {});
+  expect(r.status).toBe(503);
+  expect(do_.saved.game.campaign.drafts).toEqual([]);
+
+  globalThis.fetch = ok;
+  expect((await post("campaign/drafts", {})).body.campaign.drafts).toHaveLength(3);
+});
