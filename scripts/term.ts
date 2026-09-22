@@ -12,6 +12,8 @@ const TEXTS = [
   "Set new rules for the officials who govern: fixed terms, published accounts, and a court that hears claims of extortion.",
   "Fund the supply of food and fuel for the coming year out of the treasury, and fix the duties charged on what is brought in.",
 ];
+// §4: the treasury opens at 0 and funds nothing until revenue passes, so an empty treasury tables a levy first.
+const LEVY = "Levy a duty of one part in twenty on grain and wine brought into the ports, paid into the treasury.";
 
 // One post a turn, cycled. Each is inside the 240 characters the Feed takes.
 const POSTS = [
@@ -90,9 +92,12 @@ while (g.stage === "session" || g.stage === "midterm" || g.stage === "test") {
   // A law: price it, commit it, and the whip is counted inside the commit.
   let tabled = false;
   if (afford(2) && open("law")) {
-    g = await api(`/games/${g.id}/acts/price`, { turn, verb: "law", text: TEXTS[(turn - 1) % TEXTS.length] });
+    g = await api(`/games/${g.id}/acts/price`, { turn, verb: "law", text: g.ledgers.treasury < 5 ? LEVY : TEXTS[(turn - 1) % TEXTS.length] });
     if (g.refusal) refusals.push(`t${turn} ${g.refusal.test}: ${g.refusal.line}`);
-    else if (!pays(g.tag!.charge)) console.log(`${String(turn).padStart(2)} law "${g.tag!.title}" left on the desk: the ledgers cannot pay for it`);
+    else if (!pays(g.tag!.charge)) {
+      const c = g.tag!.charge;
+      console.log(`${String(turn).padStart(2)} law "${g.tag!.title}" left on the desk: it costs ${c.authority}a/${c.treasury}t/${c.chest}c`);
+    }
     else {
       const tag = g.tag!;
       console.log(`${String(turn).padStart(2)} ${tag.verb} "${tag.title}" cost ${tag.charge.authority}a/${tag.charge.treasury}t/${tag.charge.chest}c` +
