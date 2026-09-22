@@ -1,20 +1,20 @@
 import { useLayoutEffect, useRef } from "react";
-import { animate, useReducedMotion } from "motion/react";
+import { tween, useReduced } from "./motion";
 import type { GamePack, GameView } from "./api";
 
 /** Rolling digits. `shown` is what is on screen, so a tick interrupted mid-flight resumes from there. */
 export function Num({ value, decimals = 0, className, instant = false }: { value: number; decimals?: number; className?: string; instant?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const shown = useRef(value);
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   // Layout, not passive: React commits `value` into this span, so the roll must be the last
   // writer before the paint or a target arriving mid-roll is the digit the frame shows.
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     const write = (v: number) => { shown.current = v; el.textContent = v.toFixed(decimals); };
     if (reduced || instant || Math.abs(shown.current - value) < 0.05) { write(value); return; }
-    const c = animate(shown.current, value, { duration: 0.6, ease: [0.22, 1, 0.36, 1], onUpdate: write, onComplete: () => write(value) });
-    return () => c.stop();
+    const stop = tween(shown.current, value, 600, write, () => write(value));
+    return stop;
   }, [value, decimals, reduced, instant]);
   return <span ref={ref} className={`num ${className ?? ""}`}>{value.toFixed(decimals)}</span>;
 }

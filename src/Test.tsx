@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReduced } from "./motion";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
@@ -15,7 +15,7 @@ type Props = { game: GameView; act: Act; busy: boolean; onDone: () => void };
  * The numeral counts the half being walked and carries the other half as its base.
  */
 export default function Test({ game, act, busy, onDone }: Props) {
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   const pack = game.pack;
   const v = pack.vocabulary;
   const test = game.test;

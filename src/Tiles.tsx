@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReduced } from "./motion";
 
 export type Box = { x: number; y: number; w: number; h: number };
 export type Tile<T> = Box & { d: T };
@@ -133,7 +133,7 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
   regions: RevealRegion[]; names: Map<string, string>; skip?: boolean; label?: string; ms?: number;
   onProgress: (shown: number, share: number) => void; onDone: () => void;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   const [shown, setShown] = useState(0);
   const [flash, setFlash] = useState<string>();
   const order = useMemo(() => [...regions].sort((a, b) => a.weight - b.weight), [regions]);

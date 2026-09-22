@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReduced } from "./motion";
 import { api, ApiError, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
@@ -24,7 +24,7 @@ const TOUR = (v: Vocab): Record<string, TourStep> => ({
 type ChamberProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
 
 export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberProps) {
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   const pack = game.pack;
   const v = pack.vocabulary;
   const size = pack.chamber.size;

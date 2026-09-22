@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
+import { useReduced } from "./motion";
 import { api, type GameView, type ViewMember } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
@@ -18,7 +18,7 @@ const NO_WHIP: Record<string, number> = {};
 export default function Midterm({ game, act, busy, onDone }: Props) {
   const pack = game.pack;
   const v = pack.vocabulary;
-  const reduced = useReducedMotion();
+  const reduced = useReduced();
   const result = game.midterm;
   const called = useRef(false);
   const [failed, setFailed] = useState(false);
