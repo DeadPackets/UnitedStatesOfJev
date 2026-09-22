@@ -154,7 +154,7 @@ export class GameDO extends DurableObject<Env> {
     if (parts[1] === undefined) throw new Reject(404, "Unknown action");
     const action = parts[2];
     const bill = game.bills.find((b) => b.id === Number(parts[1]));
-    if (!bill || bill.id !== game.turn) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
+    if (!bill || bill.id !== game.turn || bill.votes) throw new Reject(409, `Not the current ${pack.vocabulary.bill}.`);
     // C5: the budget is charged before the guards, because a route that cannot pay must not move anything.
     // whip is 0: a bill tabled by POST /acts is already counted and paid for in that call.
     const CALLS: Record<string, number> = { lobby: 1, amend: 3, vote: 1 };
@@ -163,14 +163,14 @@ export class GameDO extends DurableObject<Env> {
     try {
       switch (action) {
         case "whip":
-          if (bill!.whip) throw new Reject(409, "Already counted.");
-          Object.assign(bill!, await this.count(game, pack, bill!));
+          if (bill.whip) throw new Reject(409, "Already counted.");
+          Object.assign(bill, await this.count(game, pack, bill));
           return {};
-        case "lobby": await this.lobby(game, pack, bill!, String(body.memberId ?? ""), body.action as LobbyAction); return {};
+        case "lobby": await this.lobby(game, pack, bill, String(body.memberId ?? ""), body.action as LobbyAction); return {};
         case "amend":
-          parts[3] !== undefined ? this.adopt(bill!, Number(parts[3])) : await this.amend(game, pack, bill!);
+          parts[3] !== undefined ? this.adopt(bill, Number(parts[3])) : await this.amend(game, pack, bill);
           return {};
-        case "vote": return this.vote(game, pack, bill!);
+        case "vote": return this.vote(game, pack, bill);
         default: throw new Reject(404, "Unknown action");
       }
     } catch (e) {
@@ -180,7 +180,8 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async acts(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
-    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    // Session only, like the bill routes: a law tabled before the half-term draw would be counted by seats it replaces.
+    if (game.stage !== "session") throw new Reject(409, "Not now.");
     switch (parts[1] ?? "") {
       case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined, body.memberId as string | undefined);
       case "": return this.doAct(game, pack);
@@ -229,15 +230,17 @@ export class GameDO extends DurableObject<Env> {
     const text = raw.trim().slice(0, 1200);
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
+    if (verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     const seat = memberId ? game.members.find((m) => m.id === memberId) : undefined;
     if (memberId && !seat) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
-    // C5: a tag the player never commits still spent its call.
-    if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    if (!callsLeft(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     const q = await priceAct(this.env, pack, game, text, verb).catch((e) => {
       if (e instanceof UpstreamError) throw e;
       throw new Reject(503, "The clerk did not answer. Try again.");
     });
     if (!available(pack, game, q.verb)) throw new Reject(400, "That instrument is not available.");
+    // C5: charged once the answer is usable, so a 4xx or a 503 spends nothing; an uncommitted tag still spent it.
+    spendCalls(game);
     if (!q.power || !q.era) {
       game.tag = null;
       game.refusal = { line: q.refusal ?? "That cannot be done here.", test: q.power ? "era" : "power", cost: REFUSAL_COST };
@@ -363,7 +366,7 @@ export class GameDO extends DurableObject<Env> {
     if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
     if (!(Number.isInteger(stance) && stance >= 0 && stance < event.stances.length)) throw new Reject(400, "Pick a stance.");
     if (!spendCalls(game, 2)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
-    const storylet = pack.deck.find((s) => s.id === event.id);
+    const storylet = deckOf(pack, game).find((s) => s.id === event.id);
     const taken = event.stances[stance];
     const state = { event: event.card ?? { title: storylet?.title_hint ?? event.id }, stance: taken, record: record(pack, game) };
     const questions = storylet ? eventQuestions(pack, storylet.scored) : {};

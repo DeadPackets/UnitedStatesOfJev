@@ -554,6 +554,10 @@ test("committing a law tables it, counts the whip once and prints the band", asy
   expect(r.body.bills[0].band[1]).toBeGreaterThanOrEqual(r.body.bills[0].expected);
   expect(game.calls).toBe(2);                       // one for the price call, one for the whip count
   expect((await post("bills", { turn: 1, text: "anything at all here" })).status).toBe(404);
+  expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
+  const authority = game.ledgers.authority;
+  expect((await post("bills/1/vote", { turn: 1 })).status).toBe(409);   // a decided bill is never voted twice
+  expect(game.ledgers.authority).toBe(authority);
 });
 
 test("a favour names a seat, and a body that names none is a 400", async () => {
