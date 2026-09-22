@@ -102,7 +102,7 @@ export class GameDO extends DurableObject<Env> {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError) return Response.json({ error: "The chamber is in recess. Try again." }, { status: 503 });
       console.error(e);
-      return Response.json({ error: e instanceof Error ? e.message : "Something went wrong." }, { status: 502 });
+      return Response.json({ error: e instanceof Error ? e.message : "The turn did not finish. Try again." }, { status: 502 });
     }
   }
 

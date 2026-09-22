@@ -33,7 +33,7 @@ export default function App() {
   const [revealed, setRevealed] = useState<string | null>(() => localStorage.getItem("usoj:revealed"));
   const [counted, setCounted] = useState<string | null>(() => localStorage.getItem("usoj:counted"));
 
-  const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "Network hiccup. Try again.");
+  const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "The connection dropped. Try again.");
 
   /** `/s/<id>` is the one deep link: a ready scenario opens Seat, a running one opens Build. */
   const open = useCallback(async (id: string, push = true) => {

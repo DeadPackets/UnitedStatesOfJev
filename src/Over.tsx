@@ -77,7 +77,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
       </div>
 
       <div className="row" style={{ "--i": 6 } as any}>
-        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Run it back</button>
+        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Play this code again</button>
         <button className="btn ghost" onClick={onNew}>New scenario</button>
       </div>
     </main>

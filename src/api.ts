@@ -42,8 +42,8 @@ export class ApiError extends Error { constructor(public status: number, message
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
   const r = await fetch(`/api${path}`, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
-  const data = await r.json().catch(() => ({ error: "Bad response" }));
-  if (!r.ok) throw new ApiError(r.status, data.error ?? "Something went wrong");
+  const data = await r.json().catch(() => ({ error: "The server sent something we cannot read." }));
+  if (!r.ok) throw new ApiError(r.status, data.error ?? "The request failed. Try again.");
   return data as T;
 }
 
