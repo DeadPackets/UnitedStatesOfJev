@@ -199,6 +199,7 @@ a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min
 .takeseat .rail .row .btn { width: auto; flex: 1 1 0; }
 .takeseat .stage .causes li b { min-width: 46px; }
 .takeseat .ask { font-size: 17px; border-bottom-width: 1.5px; }
+.takeseat .stagearea { position: relative; overflow: clip; display: grid; gap: var(--s3); align-content: start; }
 
 /* chamber */
 .chamber { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 12px 24px 96px; }
@@ -492,6 +493,8 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
   /* the wipe crossfades instead of sweeping, and keeps its 600ms so the theme still lands behind it */
   .wipe { animation-name: wipefade !important; animation-duration: 600ms !important; }
   @keyframes wipefade { 0%, 100% { opacity: 0; } 35%, 65% { opacity: 1; } }
+  .stamp.hit { animation: stampfade 200ms ease forwards !important; }
+  @keyframes stampfade { from { opacity: 0; transform: translate(-50%, -50%) rotate(-6deg); } to { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg); } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 }
 

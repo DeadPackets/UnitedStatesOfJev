@@ -54,7 +54,11 @@ export default function Seat({ pack, busy, onSeat }: {
         <span>{pack.era} · {pack.place}</span>
       </div>
 
+      {stamped ? <div className="wipe" aria-hidden="true" /> : null}
+      <div className="sr" role="status" aria-live="polite">{stamped ? `Sworn in. ${pack.title}.` : ""}</div>
+
       <section className="stage" aria-label={PAGES[page]}>
+        <div className="stagearea">
         <div className="kicker">{page + 1} of 3 · {PAGES[page]}</div>
         {page === 0 ? (<>
           <h2 className="head">{start.premise}</h2>
@@ -63,7 +67,7 @@ export default function Seat({ pack, busy, onSeat }: {
           <Tiles items={tiles} label="The regions by weight" foot={(d) => `${Math.round(d.p * 100)}`} />
         </>) : page === 1 ? (<>
           <p>{c?.briefing.room}</p>
-          <div className="stagearea"><Chamber pack={pack} members={pack.members} own={start.faction} coalition={start.coalition} /></div>
+          <Chamber pack={pack} members={pack.members} own={start.faction} coalition={start.coalition} />
           <ul className="causes" aria-label="Who can stop you">
             {(c?.holders ?? []).map((h) => (
               <li key={h.id}>
@@ -82,6 +86,8 @@ export default function Seat({ pack, busy, onSeat }: {
           <p className="small num">{c?.retention.name ?? pack.test.name} asks for {(barAt(pack, 1) * 100).toFixed(0)} of the room at the end of the term.</p>
           <p className="small">{difficulty(gap)}. You hold {own} of {pack.chamber.size}, and {pack.chamber.threshold} carries a vote.</p>
         </>)}
+        <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">{v.seat}</div>
+        </div>
       </section>
 
       <aside className="rail" aria-label="Take the seat">
