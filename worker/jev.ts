@@ -29,11 +29,15 @@ export async function post(env: Env, path: string, body: unknown): Promise<any> 
 
 type Noul = { type: "noul"; instructions: unknown; criteria?: { true: string; false: string } };
 type Score = { type: "score"; instructions: unknown; criteria: string[] };
-export type Question = Noul | Score;
+type Choice = { type: "choice"; instructions: unknown; options: string[] };
+export type Question = Noul | Score | Choice;
 export type Answers = Record<string, { noul?: number; score?: number; probabilities?: Record<string, number> }>;
 
 export async function jev(env: Env, state: unknown, questions: Record<string, Question>): Promise<{ answers: Answers; usage: { input_tokens: number; cost?: number } }> {
-  const r = await post(env, "systemone", { model: "typesafe/jev-1.13", state, questions });
+  // Choice options go on the wire as criteria keys with a null value, the shape measured against jev-1.13.
+  const wire = Object.fromEntries(Object.entries(questions).map(([k, q]) => [k,
+    q.type === "choice" ? { type: q.type, instructions: q.instructions, criteria: Object.fromEntries(q.options.map((o) => [o, null])) } : q]));
+  const r = await post(env, "systemone", { model: "typesafe/jev-1.13", state, questions: wire });
   return { answers: r.answers, usage: r.usage };
 }
 
