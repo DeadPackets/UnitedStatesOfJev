@@ -1,4 +1,4 @@
-import type { Bill, BillDraft, Campaign, Event, Game, Lever, LobbyAction, Member } from "../worker/engine";
+import type { Bill, BillDraft, Campaign, Event, Game, InForce, Lever, LobbyAction, Member } from "../worker/engine";
 import type { Citizen, Pack, PackView } from "../worker/pack";
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
@@ -27,6 +27,7 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "c
   turnsPerTerm: number;
   ending?: { title: string; body: string };
   deltas?: Record<string, number>;   // per-region approval move from the last citizen call, one frame only
+  inForce: InForce[];
 };
 /** The pack as the game screens see it: the deck never leaves the Worker. */
 export type GamePack = GameView["pack"];

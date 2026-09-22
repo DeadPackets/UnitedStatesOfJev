@@ -406,6 +406,7 @@ export function migrate(game: Game): void {
   game.revolt ??= null;
   game.holders ??= {};
   game.warnings ??= [];
+  game.inForce ??= [];
   game.wire ??= [];
   game.pending ??= null;
 }

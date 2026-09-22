@@ -1,4 +1,4 @@
-import type { Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet } from "./pack";
+import type { Consent, Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -49,6 +49,7 @@ export interface Game {
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
   holders: Record<string, HolderState>;
   warnings: Warning[];
+  inForce: InForce[];
   earlyTest?: string;   // the holder that called it; the test route reads it instead of the term test
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
@@ -184,6 +185,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
     holders: seedHolders(pack),
     warnings: [],
+    inForce: [],
     promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
@@ -271,10 +273,14 @@ export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
     case "refuse_levy": drop("treasury", LEVY_HIT); break;
     case "embargo": drop("treasury", EMBARGO_HIT); break;
     case "excommunicate": drop("loyalty", EXCOMMUNICATE_HIT); break;
-    case "strike":
+    case "strike": {
+      // R11: a court strikes the act the ruler just put in force, not an old one it has lived with.
+      const law = game.inForce.at(-1);
+      if (law) repeal(game, law.id);
       L.authority = clamp(L.authority - STRIKE_HIT, 0, 200);
       wire.push({ kind: "card", ledger: "authority", delta: -STRIKE_HIT, cause: name });
       break;
+    }
     case "early_test": game.earlyTest = w.holder; game.stage = "test"; game.phase = "over"; break;
     case "coup": {
       game.stage = "over"; game.phase = "over";
@@ -439,8 +445,46 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
 
 export interface TurnEnd { wire: WireLine[]; warned: Warning[]; fired: Warning[]; event: Event | null; pending: string | null }
 
-// Stubs until Tasks 14 and 15 fill them; the signatures are final.
-export const applyRates = (_pack: Pack, _game: Game): WireLine[] => [];
+export interface InForce {
+  id: string; verb: Verb; title: string; term: number; turn: number;
+  perTurn: { ledger: LedgerV4; id?: string | null; delta: number }[];
+  repealConsent: Consent; sunset: number | null;   // turns of life, authored into the text
+}
+
+export const inForceAge = (game: Game, law: InForce) => (game.term - law.term) * TURNS_PER_TERM + (game.turn - law.turn);
+
+export function enact(game: Game, law: Omit<InForce, "term" | "turn">): InForce {
+  const row: InForce = { ...law, term: game.term, turn: game.turn };
+  game.inForce.push(row);
+  return row;
+}
+
+export function repeal(game: Game, id: string): boolean {
+  const n = game.inForce.length;
+  game.inForce = game.inForce.filter((l) => l.id !== id);
+  return game.inForce.length < n;
+}
+
+// The rate sheet: every law in force collects or pays once at the boundary, and prints its own line.
+export function applyRates(pack: Pack, game: Game): WireLine[] {
+  const wire: WireLine[] = [];
+  for (const law of [...game.inForce]) {
+    if (law.sunset !== null && inForceAge(game, law) >= law.sunset) { repeal(game, law.id); continue; }
+    for (const rate of law.perTurn) {
+      if (rate.ledger === "popularity") {
+        const regions = rate.id ? pack.regions.filter((r) => r.id === rate.id) : pack.regions;
+        for (const r of regions) { bump(game, r.id, rate.delta); wire.push({ kind: "ledger", ledger: "popularity", id: r.id, delta: rate.delta, cause: law.title }); }
+        continue;
+      }
+      const hi = rate.ledger === "authority" ? 200 : rate.ledger === "loyalty" ? 100 : 9999;
+      game.ledgers[rate.ledger] = round1(clamp(game.ledgers[rate.ledger] + rate.delta, 0, hi));
+      wire.push({ kind: "ledger", ledger: rate.ledger, delta: rate.delta, cause: law.title });
+    }
+  }
+  return wire;
+}
+
+// Stub until Task 15 fills it; the signature is final.
 export const decayPromises = (pack: Pack, game: Game): WireLine[] => { checkPromises(pack, game); return []; };
 
 // Spec §5.3, the whole boundary in order: rates, decay, warnings, the ledgers' lines, the Director, the
@@ -1019,6 +1063,7 @@ export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
 // Members, memory, ledgers and director.seen carry over; two more escalations stack.
 export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
+  game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
   game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
   game.director.intensity = 0; game.director.lastCrisis = -1;
   game.test = undefined; game.campaign = undefined; game.midterm = undefined; game.result = undefined;

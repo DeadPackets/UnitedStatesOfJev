@@ -7,6 +7,7 @@ import {
 import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, weightOf } from "./engine";
 import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
 import { endTurn } from "./engine";
+import { enact, inForceAge, repeal, STRIKE_HIT } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -805,4 +806,46 @@ test("the half-term still follows turn 10 and the campaign still follows turn 20
   endTurn(pack, h);
   expect(h.stage).toBe("campaign");
   expect(h.campaign!.turns).toEqual([]);
+});
+
+test("a law in force collects every turn until it is repealed", () => {
+  const g = game();
+  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
+  endTurn(pack, g);
+  expect(g.ledgers.treasury).toBe(6);
+  expect(g.wire.find((w) => w.cause === "The harbour levy")!.delta).toBe(6);
+  endTurn(pack, g);
+  expect(g.ledgers.treasury).toBe(12);
+  expect(repeal(g, "l1")).toBe(true);
+  expect(repeal(g, "l1")).toBe(false);
+  endTurn(pack, g);
+  expect(g.ledgers.treasury).toBe(12);
+});
+
+test("an authored sunset lapses the law on its own", () => {
+  const g = game();
+  enact(g, { id: "l2", verb: "decree", title: "A two tide curfew", perTurn: [{ ledger: "popularity", delta: -2 }], repealConsent: "none", sunset: 2 });
+  endTurn(pack, g);
+  endTurn(pack, g);
+  expect(inForceAge(g, g.inForce[0])).toBe(2);
+  endTurn(pack, g);
+  expect(g.inForce).toEqual([]);
+});
+
+test("a per region rate moves every region", () => {
+  const g = game();
+  const before = { ...g.ledgers.popularity };
+  enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }], repealConsent: "chamber", sunset: null });
+  endTurn(pack, g);
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] + 1);
+});
+
+test("a court that strikes takes the newest law in force with it", () => {
+  const g = game();
+  enact(g, { id: "l4", verb: "law", title: "The old levy", perTurn: [{ ledger: "treasury", delta: 1 }], repealConsent: "chamber", sunset: null });
+  enact(g, { id: "l5", verb: "decree", title: "The new curfew", perTurn: [{ ledger: "popularity", delta: -1 }], repealConsent: "none", sunset: null });
+  const authority = g.ledgers.authority;
+  fireResponse(pack, g, { holder: "council", response: "strike", at: 1, fires: 3, number: 70 });
+  expect(g.inForce.map((l) => l.id)).toEqual(["l4"]);   // the newest goes, the older one stands
+  expect(g.ledgers.authority).toBe(authority - STRIKE_HIT);
 });
