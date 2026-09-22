@@ -115,18 +115,18 @@ describe("calendar", () => {
 const CONSTITUTION = mkConstitution();
 const parse = (over: Record<string, unknown> = {}) => mkConstitution(over);
 
-test("weights are renormalised to 1, and a weight outside the band is reported, not clamped", () => {
-  const c = parse({ retention: { ...CONSTITUTION.retention, weights: [{ id: "council", value: 0.9 }, { id: "street", value: 0.05 }] } });
+test.each([[0.9, 0.05], [0.4, 0.3, 0.1, 0.1, 0.1]])("weights land in the 0.15 to 0.6 band and sum to 1: %p", (...raw: number[]) => {
+  const ids = ["council", "street", "a", "b", "c"].slice(0, raw.length);
+  const holders = ids.map((id) => ({ ...CONSTITUTION.holders[0], id }));
+  const c = parse({ holders: [...holders, ...CONSTITUTION.holders.filter((h) => h.where === "abroad")],
+    retention: { ...CONSTITUTION.retention, weights: raw.map((value, i) => ({ id: ids[i], value })) } });
   const { constitution: fixed, violations } = settleConstitution(c, true);
   const values = fixed.retention.weights.map((w) => w.value);
-  // 0.9 and 0.05 total 0.95: 0.9 / 0.95 = 0.947..., 0.05 / 0.95 = 0.052..., and they sum to 1.
-  expect(values[0]).toBeCloseTo(0.9 / 0.95, 5);
-  expect(values[1]).toBeCloseTo(0.05 / 0.95, 5);
-  expect(values.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 5);
-  // Clamping to 0.15..0.6 and renormalising cannot satisfy both rules with two holders, so the band is a
-  // violation the model redoes, not arithmetic code can fix.
-  expect(violations.join(" ")).toContain("0.15");
-  expect(settleConstitution(parse(), true).violations).toEqual([]);
+  expect(values.reduce((x, y) => x + y, 0)).toBeCloseTo(1, 9);
+  for (const v of values) { expect(v).toBeGreaterThanOrEqual(0.15); expect(v).toBeLessThanOrEqual(0.6); }
+  for (let i = 1; i < values.length; i++) expect(values[i]).toBeLessThanOrEqual(values[i - 1] + 1e-12);   // order kept
+  expect(violations.filter((v) => v.includes("weight"))).toEqual([]);
+  if (raw.length === 2) { expect(values[0]).toBeCloseTo(0.6, 9); expect(values[1]).toBeCloseTo(0.4, 9); }
 });
 
 test("a retention nobody votes in is rejected", () => {

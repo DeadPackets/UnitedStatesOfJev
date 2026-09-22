@@ -105,7 +105,7 @@ const calendarHasAnchor = (start: string, facts: Facts) => {
   return facts.dated_events.some((ev) => { const x = ymd(ev.date); return !!x && days(x) >= days(s) && days(x) - days(s) <= 366; });
 };
 
-// Spec §3. settleConstitution renormalises the weights to 1; every other rule is one a model must redo.
+// Spec §3. settleConstitution puts the weights in the band summing to 1; every other rule is one a model must redo.
 export function constitution(c: Constitution, chamberExists: boolean): string[] {
   const e: string[] = [];
   const ids = new Set(c.holders.map((h) => h.id));

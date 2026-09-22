@@ -4,15 +4,22 @@ import { ConstitutionSchema, HOLDER_RESPONSES, VERBS, type Constitution } from "
 import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, constitution as check } from "./validate";
 
-// Renormalise only. A model's weights never come back summing to 1, and asking it again costs a whole
-// repair round; the 0.15 to 0.6 band is left to the validator because clamping and renormalising cannot
-// satisfy both rules at once (two holders clamped to 0.6 and 0.15 renormalise to 0.8 and 0.2).
-// No rounding: three equal holders rounded to 0.333 sum to 0.999, and the mandate reads this number.
+// Scale, then clamp to the 0.15 to 0.6 band, with the scale found by bisection: the sum rises with the scale,
+// so it lands on 1 whenever 2 to 6 holders vote. The live model gave minor holders 0.1 and repeated it on retry.
+const LO = 0.15, HI = 0.6;
+function band(vs: number[]): number[] {
+  if (vs.length * LO > 1 || vs.length * HI < 1) { const t = vs.reduce((a, b) => a + b, 0); return vs.map((v) => v / t); }
+  const at = (k: number) => vs.map((v) => Math.min(HI, Math.max(LO, v * k)));
+  let lo = 0, hi = HI / Math.min(...vs);
+  for (let i = 0; i < 100; i++) { const k = (lo + hi) / 2; if (at(k).reduce((a, b) => a + b, 0) < 1) lo = k; else hi = k; }
+  return at(hi);
+}
+
 export function settleConstitution(c: Constitution, chamberExists: boolean): { constitution: Constitution; violations: string[] } {
   const ids = new Set(c.holders.map((h) => h.id));
   const kept = c.retention.weights.filter((w) => ids.has(w.id) && w.value > 0);
-  const total = kept.reduce((a, w) => a + w.value, 0);
-  const weights = total > 0 ? kept.map((w) => ({ id: w.id, value: w.value / total })) : [];
+  const values = kept.length ? band(kept.map((w) => w.value)) : [];
+  const weights = kept.map((w, i) => ({ id: w.id, value: values[i] }));
   const bar = { ...c.retention.bar, step: Math.max(0, c.retention.bar.step), cap: Math.max(c.retention.bar.start, c.retention.bar.cap) };
   const fixed: Constitution = { ...c, retention: { ...c.retention, weights, bar } };
   return { constitution: fixed, violations: check(fixed, chamberExists) };
