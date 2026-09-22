@@ -1,4 +1,4 @@
-import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep, type WorkflowStepConfig } from "cloudflare:workers";
 import { NonRetryableError } from "cloudflare:workflows";
 import { UpstreamError, type Env } from "./jev";
 import { luna } from "./luna";
@@ -34,16 +34,22 @@ const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice
 
 // ---- refusals: one retry of the whole step on Grok, then the build fails with a plain message ----
 
-const REFUSAL = /cannot|refuse|policy/i;
-const refused = (e: unknown) =>
-  e instanceof UpstreamError && e.status >= 400 && e.status < 500 &&
-  (e.status === 400 || e.status === 403 || REFUSAL.test(e.message));
+const REFUSAL_MARKERS = ["refus", "policy", "safety", "content", "cannot help", "can't help"];
+const refused = (e: unknown): e is UpstreamError =>
+  e instanceof UpstreamError && (e.status === 400 || e.status === 403) &&
+  REFUSAL_MARKERS.some((m) => e.message.toLowerCase().includes(m));
 
-async function onRefusal<T>(env: Env, fn: (env: Env) => Promise<T>): Promise<T> {
+async function onRefusal<T>(env: Env, step: string, fn: (env: Env) => Promise<T>): Promise<T> {
   try {
     return await fn(env);
   } catch (e) {
-    if (!refused(e)) throw e;
+    if (!refused(e)) {
+      if (e instanceof UpstreamError) {
+        console.error(`upstream error at ${step}`, e.message);
+        throw new NonRetryableError(`The generator failed at ${step}. Try again in a minute.`);
+      }
+      throw e;
+    }
     try {
       return await fn({ ...env, MODEL: GROK });
     } catch {
@@ -71,12 +77,16 @@ async function fetchStep(p: Plan): Promise<Partial<GenCtx>> {
 
 const FRAME_SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
 
-async function frameStep(env: Env, id: string, ctx: GenCtx): Promise<Partial<GenCtx>> {
+async function frameStep(env: Env, id: string, ctx: GenCtx, repaired: { done: boolean }): Promise<Partial<GenCtx>> {
   let out: Partial<GenCtx>;
   try {
-    out = await onRefusal(env, (e) => frame(e, ctx));
+    out = await onRefusal(env, "frame", (e) => frame(e, ctx));
   } catch (err) {
     if (!(err instanceof NeedsRepair)) throw err;
+    // ponytail: repaired lives in a closure outside step.do, so it only caps the Astra repair to
+    // once per build if the retry replays in the same isolate; if not, the retries.limit: 1 below is the real cap.
+    if (repaired.done) throw err;
+    repaired.done = true;
     console.warn(`frame repair ${id}`, err.violations.join("; "));
     const user = [
       sourceBlock(ctx, ctx.facts),
@@ -210,15 +220,15 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
     const merge = (p: Partial<GenCtx>) => { ctx = { ...ctx, ...p }; };
 
     // step.do types its result through Serializable<T>, which a generic T can never satisfy; every step here returns JSON.
-    const stage = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown): Promise<T> =>
-      step.do(name, RETRY, async () => {
+    const stage = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown, config: WorkflowStepConfig = RETRY): Promise<T> =>
+      step.do(name, config, async () => {
         await putStatus(env, id, name);
         const r = await fn(env);
         if (fragment) await putStatus(env, id, name, JSON.stringify(fragment(r)));
         return r as never;
       }) as Promise<T>;
     const gen = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown) =>
-      stage(name, (e) => onRefusal(e, fn), fragment);
+      stage(name, (e) => onRefusal(e, name, fn), fragment);
 
     let pack: Pack;
     try {
@@ -227,7 +237,8 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
       merge(await stage("fetch", () => fetchStep(p)));
       merge(await gen("facts", (e) => facts(e, ctx)));
       merge(await stage("calendar", (e) => calendarStep(e, ctx)));
-      merge(await stage("frame", (e) => frameStep(e, id, ctx), (r) => {
+      const frameRepaired = { done: false };
+      merge(await stage("frame", (e) => frameStep(e, id, ctx, frameRepaired), (r) => {
         const f = r.frame!;
         return {
           kind: "frame", title: f.title, era: f.era, place: f.place, description: f.description, vocabulary: f.vocabulary,
@@ -235,7 +246,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           factions: f.factions.map((x) => ({ id: x.id, name: x.name, short: x.short, color: x.color })),
           problems: f.problems.slice(0, 3),
         };
-      }));
+      }, { retries: { limit: 1, delay: "5 seconds" } }));
       merge(await stage("assign", (e) => assign(e, ctx)));
       merge(await gen("names", (e) => names(e, ctx)));
       merge(await gen("personas", (e) => personasStep(e, ctx),

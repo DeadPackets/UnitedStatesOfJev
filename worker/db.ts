@@ -8,8 +8,12 @@ export type ScenarioRow = {
   error: string | null; created: number; builds: number;
 };
 
-function parseRow(row: any): ScenarioRow {
-  return { ...row, pack: row.pack ? PackSchema.parse(JSON.parse(row.pack)) : null, fragments: row.fragments ? JSON.parse(row.fragments) : [] };
+export function parseRow(row: any): ScenarioRow {
+  const fragments = row.fragments ? JSON.parse(row.fragments) : [];
+  if (!row.pack) return { ...row, pack: null, fragments };
+  const parsed = PackSchema.safeParse(JSON.parse(row.pack));
+  if (!parsed.success) return { ...row, pack: null, fragments, status: "failed", error: "pack no longer matches the schema" };
+  return { ...row, pack: parsed.data, fragments };
 }
 
 export async function getScenario(env: Env, id: string): Promise<ScenarioRow | null> {
