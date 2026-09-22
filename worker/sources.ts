@@ -25,7 +25,15 @@ function pickSections<T extends { line: string }>(sections: T[], keywords: strin
   return (matched.length ? matched : scored).slice(0, 3).map((x) => x.s);
 }
 
-export async function fetchWikipedia(lang: string, title: string, keywords: string[], fetchImpl: typeof fetch = fetch) {
+// `lang` is a model's answer and it becomes the host of every call below, so nothing but a BCP 47 code passes.
+const LANG = /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/;
+export const edition = (lang: string) => {
+  const s = String(lang ?? "").toLowerCase();
+  return LANG.test(s) ? s.split("-")[0] : "en";
+};
+
+export async function fetchWikipedia(rawLang: string, title: string, keywords: string[], fetchImpl: typeof fetch = fetch) {
+  const lang = edition(rawLang);
   const base = `https://${lang}.wikipedia.org/w/api.php`;
   const common = "format=json&formatversion=2&origin=*";
   const t = encodeURIComponent(title);

@@ -65,10 +65,9 @@ async function onRefusal<T>(env: Env, step: string, fn: (env: Env) => Promise<T>
 const signedYear = (y: number) => `${y < 0 ? "-" : ""}${String(Math.abs(y)).padStart(4, "0")}-01-01`;
 
 async function fetchStep(p: Plan): Promise<Partial<GenCtx>> {
-  const edition = (p.lang || "en").split("-")[0];
   const start = signedYear(p.year);
   const [wikipedia, people, parties] = await Promise.all([
-    Promise.all(p.lookups.slice(0, PAGES).map((t) => fetchWikipedia(edition, t, p.keywords).catch(() => null))),
+    Promise.all(p.lookups.slice(0, PAGES).map((t) => fetchWikipedia(p.lang, t, p.keywords).catch(() => null))),
     Promise.all(p.people.slice(0, PEOPLE).map((l) => lookupPerson(l, start).catch(() => null))),
     Promise.all(p.parties.slice(0, PARTIES).map((l) => lookupParty(l).catch(() => null))),
   ]);
