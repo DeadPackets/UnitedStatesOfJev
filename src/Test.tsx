@@ -51,7 +51,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [n, beat, reduced]); // eslint-disable-line
+  }, [n, beat, reduced, done]); // eslint-disable-line
 
   useEffect(() => { if (shown > 0 && !done) sound.play("tick", { pitch: shown }); }, [shown]); // eslint-disable-line
   useEffect(() => {
@@ -85,7 +85,6 @@ export default function Test({ game, act, busy, onDone }: Props) {
     ? walk.seats.slice(0, sShown).filter((s) => s.yes).length / (test.seats.length || 1)
     : test.drawnLoyalty;
   const pct = (a * pub + (1 - a) * loy) * 100;
-  const margin = Math.abs(test.mandate - 0.5) * 100;
   const yes = walk.seats.slice(0, sShown).filter((s) => s.yes).length;
 
   return (
@@ -101,8 +100,9 @@ export default function Test({ game, act, busy, onDone }: Props) {
 
       <section className="stage" aria-label={pack.test.name}>
         <div className="kicker">{pack.test.name}</div>
+        {/* the key remounts the numeral at the verdict: a rolling digit must not land on a stale frame */}
         <div className={`count ${done ? "bounce" : ""}`}>
-          <Num value={pct} decimals={1} className={`n ${done && !test.won ? "fail" : ""}`} />
+          <Num key={`m${done}`} value={pct} decimals={1} instant={done} className={`n ${done && !test.won ? "fail" : ""}`} />
           <span className="muted">% of the mandate · 50% wins</span>
         </div>
         <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} aria-label="Mandate">
@@ -114,11 +114,9 @@ export default function Test({ game, act, busy, onDone }: Props) {
             votes={votes} onPick={() => {}} />
         ) : null}
         {done ? (
-          <div className="rise" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 18, marginTop: 8 }}>
-            <span className={`stampsm stampin shake ${test.won ? "pass" : "fail"}`}
-              style={{ "--sh": `${margin >= 10 ? 6 : margin >= 4 ? 4 : 2}px` } as any}>
-              {test.won ? pack.test.win : pack.test.lose}
-            </span>
+          // The pack writes win and lose as whole sentences, so the verdict is prose, not a stamp.
+          <div className="verdict rise">
+            <p className={`lede ${test.won ? "" : "fail"}`}>{test.won ? pack.test.win : pack.test.lose}</p>
             <button className="btn" onClick={onDone}>See the result</button>
           </div>
         ) : null}
@@ -144,7 +142,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
             <div className="kicker">{v.chamber}</div>
             <div className="meter">
               <div className="k">Declared for</div>
-              <div className="v"><Num value={yes} /> of <span className="num">{test.seats.length}</span></div>
+              <div className="v"><Num key={`y${done}`} value={yes} instant={done} /> of <span className="num">{test.seats.length}</span></div>
               <div className="bar"><i style={{ width: `${(yes / (test.seats.length || 1)) * 100}%` }} /></div>
             </div>
           </div>
