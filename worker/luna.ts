@@ -134,7 +134,7 @@ export async function messages(env: Env, pack: Pack, state: unknown): Promise<st
 
 export async function halfTerm(env: Env, pack: Pack, state: unknown) {
   const d = await luna(env, HeadlineSchema, "halfterm",
-    `You write for ${pack.vocabulary.feed} the morning after the seats changed hands. One headline, at most 12 words, and a two-sentence lede on where the government stands at the half of its term.${world(pack)}`,
+    `You write for ${pack.vocabulary.feed} the morning after the seats changed hands. The government lost seats_lost of the seats_changed seats that changed hands. One headline, at most 12 words, and a two-sentence lede on where the government stands at the half of its term.${world(pack)}`,
     JSON.stringify(state), 220);
   return { title: clip(d.title, 90), lede: clip(d.lede, 300) };
 }
@@ -144,7 +144,7 @@ export async function newMembers(env: Env, pack: Pack, slots: { id: string; seat
   if (!slots.length) return [];
   const name = (id: string, xs: { id: string; name: string }[]) => xs.find((x) => x.id === id)?.name ?? id;
   const d = await luna(env, PersonaSchema(pack), "newmembers",
-    `You write the people who just won these seats. Each row has its seat, region, faction, temperament and years: never change them. Write name, bio (at most 40 words), tell (one visible habit, at most 18 words) and 1 to 3 core_issues from the tags. Names are invented, plausible for the period and place, never a real person. Every row is a different person.`,
+    `You write the people who just won these seats. Each row has its region, faction, temperament and years: never change them. Write name, bio (at most 40 words), tell (one visible habit, at most 18 words) and 1 to 3 core_issues from the tags. Names are invented, plausible for the period and place, never a real person. Every row is a different person.`,
     JSON.stringify({
       tags: pack.tags,
       rows: slots.map((s) => ({ id: s.id, region: name(s.region, pack.regions), faction: name(s.faction, pack.factions), temperament: s.temperament, years: s.years })),

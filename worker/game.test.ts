@@ -284,6 +284,7 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
   await playTo(post, game, 10);
   // Saturated approval settles every midterm roll, so the class holds and the term reaches the campaign.
   for (const r of pack.regions) game.ledgers.approval[r.id] = 999;
+  game.ledgers.capital = 200; game.ledgers.party = 100;   // and no impeachment before the campaign starts
   await playTo(post, game, 20);
   expect(game.stage).toBe("campaign");
   stubModels(0.6);

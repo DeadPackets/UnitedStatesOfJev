@@ -279,7 +279,7 @@ export class GameDO extends DurableObject<Env> {
     for (const group of chunk(fresh, SHEET)) this.ctx.waitUntil(portraitSheet(this.env, pack.id, pack, group));
     const head = await halfTerm(this.env, pack, {
       ...record(pack, game),
-      seats_lost: draw.lost.length, seats_up: draw.up.length,
+      seats_lost: draw.lostOwn, seats_changed: draw.lost.length, seats_up: draw.up.length,
       [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
     }).catch(() => undefined);
     if (head && game.midterm) game.midterm.headline = head;
