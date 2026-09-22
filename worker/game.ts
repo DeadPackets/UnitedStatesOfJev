@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm, director,
-  effectiveWhip, encodeCode, endTerm, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalApproval,
+  effectiveWhip, encodeCode, endTerm, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
   threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
@@ -217,7 +217,7 @@ export class GameDO extends DurableObject<Env> {
     if (!m || !Object.hasOwn(LOBBY_COSTS, action)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
     if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
     // Gating on the priced cost stops applyLobby's clamp at 0 from ever handing out a free offer.
-    if (game.ledgers.capital < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    if (game.ledgers.authority < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
     const whip = bill.whip;
     const { offer } = applyLobby(pack, game, bill, m, action);
     const r = await jev(this.env, whipState(pack, game, bill), { [m.id]: memberQuestion(pack, m, offer) });
@@ -292,7 +292,7 @@ export class GameDO extends DurableObject<Env> {
     const head = await halfTerm(this.env, pack, {
       ...record(pack, game),
       seats_lost: draw.lostOwn, seats_changed: draw.lost.length, seats_up: draw.up.length,
-      [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
+      [pack.vocabulary.approval]: Math.round(nationalPopularity(pack, game)),
     }).catch(() => undefined);
     if (head && game.midterm) game.midterm.headline = head;
   }
@@ -339,7 +339,7 @@ export class GameDO extends DurableObject<Env> {
     const lever = readLever(pack, game, body.lever);
     const cost = leverCost(game, lever);
     if (cost.chest > game.ledgers.chest) throw new Reject(402, "Not enough in the chest.");
-    if (cost.capital > game.ledgers.capital) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    if (cost.capital > game.ledgers.authority) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
     const spend: Record<string, number> = {};
     if (lever.kind === "spend") for (const r of lever.regions) spend[r.id] = r.amount;
     const rivalAmount = RIVAL_SPEND * (game.stageB.rival_surge ?? 1);
@@ -410,6 +410,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
+    // Stage C replaces the screens; until then the v3 names ride beside the v4 ones.
+    ledgers: { ...game.ledgers, approval: game.ledgers.popularity, capital: game.ledgers.authority, party: game.ledgers.loyalty },
     scenario: game.pack, pack: pv,
     // What an offer costs this term, priced here so the drawer never reads the pack's own number.
     lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])

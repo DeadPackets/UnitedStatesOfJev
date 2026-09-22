@@ -13,7 +13,8 @@ export type ViewEvent = Event;
 /** `leverGain` priced for every step the campaign screen can offer: per region, one per SPEND_STEPS entry. */
 export type Gains = { favor: number; favorCost: number; spend: Record<string, number[]> };
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
-export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "campaign"> & {
+export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "campaign" | "ledgers"> & {
+  ledgers: Game["ledgers"] & { approval: Record<string, number>; capital: number; party: number };
   campaign?: Campaign & { gains: Gains };
   scenario: string;
   pack: PackView;

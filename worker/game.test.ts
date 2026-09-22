@@ -175,7 +175,7 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
   await playTo(post, game, 10);
   expect(game.stage).toBe("midterm");
   // A tanked ledger settles the draw before the roll: the government's seats fall, the opposition's hold.
-  for (const r of pack.regions) game.ledgers.approval[r.id] = -999;
+  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
   const before = current().members.map((m) => m.id);
 
   const r = await post("midterm", { turn: 11 });
@@ -205,7 +205,7 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   const { game, background, post } = seatedGame(9);
   game.stage = "midterm";
   game.marks.midterm = ["seat-01", "seat-11", "seat-12", "seat-13", "seat-19", "seat-20"];   // one government seat in six
-  for (const r of pack.regions) game.ledgers.approval[r.id] = -999;
+  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
 
   const { status, body } = await post("midterm", { turn: game.turn });
   expect(status).toBe(200);
@@ -300,8 +300,8 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
   const { game, post } = seatedGame(13);
   await playTo(post, game, 10);
   // Saturated approval settles every midterm roll, so the class holds and the term reaches the campaign.
-  for (const r of pack.regions) game.ledgers.approval[r.id] = 999;
-  game.ledgers.capital = 200; game.ledgers.party = 100;   // and no impeachment before the campaign starts
+  for (const r of pack.regions) game.ledgers.popularity[r.id] = 999;
+  game.ledgers.authority = 200; game.ledgers.loyalty = 100;   // and no impeachment before the campaign starts
   await playTo(post, game, 20);
   expect(game.stage).toBe("campaign");
   stubModels(0.6);
@@ -318,12 +318,12 @@ test("a campaign turn needs a draft, a lever it can pay for, and four of them re
 
   // The favor is the one lever that spends capital, so it is priced before it is charged.
   const own = game.members.find((m) => m.faction === game.faction)!;
-  const capital = game.ledgers.capital;
+  const authority = game.ledgers.authority;
   let g = (await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
   expect(g.campaign.turns[0].lever.kind).toBe("favor");
-  expect(g.ledgers.capital).toBeLessThan(capital);
+  expect(g.ledgers.capital).toBeLessThan(authority);
   g = (await post("campaign/drafts", {})).body;
-  game.ledgers.capital = 0;
+  game.ledgers.authority = 0;
   expect((await post("campaign", { n: 1, message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
   // A replayed turn is refused, and the one it replays is still there to play.
   expect((await post("campaign", { n: 0, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
@@ -401,9 +401,9 @@ test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeErro
   const own = game.members[0];
   expect((await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts each month." })).status).toBe(200);
   expect((await post("bills/1/whip", { turn: 1 })).status).toBe(200);
-  const capital = game.ledgers.capital;
+  const authority = game.ledgers.authority;
   expect((await post("bills/1/lobby", { turn: 1, memberId: own.id, action: "toString" })).status).toBe(400);
-  expect(game.ledgers.capital).toBe(capital);
+  expect(game.ledgers.authority).toBe(authority);
 
   // A card left open is answered on the floor, never after the term is scored.
   game.events.push({ id: "gen-01", turn: 1, relief: false, stances: ["Hold", "Fold"] });

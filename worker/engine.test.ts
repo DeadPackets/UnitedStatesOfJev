@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
-  applyEscalation, ESCALATION_EFFECTS, FAVOR_OWED, nationalApproval, newGame, resolveEvent, runTest, scenarioTag,
+  applyEscalation, ESCALATION_EFFECTS, FAVOR_OWED, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
 } from "./engine";
 import { whipState } from "./jev";
@@ -43,13 +43,22 @@ test("the code round-trips", () => {
 test("a new game reads the pack, not the roster", () => {
   const g = game();
   expect(g.members.length).toBe(pack.chamber.size);
-  expect(g.ledgers.party).toBe(pack.starts[0].party);
-  expect(Object.keys(g.ledgers.approval).sort()).toEqual([...REGIONS].sort());
+  expect(g.ledgers.loyalty).toBe(pack.starts[0].party);
+  expect(Object.keys(g.ledgers.popularity).sort()).toEqual([...REGIONS].sort());
   expect(g.members.filter((m) => m.situation).length).toBe(Math.round(pack.chamber.size * 0.15));
   expect(g.marks.midterm.length).toBe(Math.round(pack.chamber.size / 3));
   expect(g.members.find((m) => m.faction === "harborites")!.loyalty).toBe(100);
   expect(g.members.find((m) => m.faction === "keelwrights")!.loyalty).toBe(25);   // hostile coalition partner
-  expect(newGame("g", CODE, pack, "harborites", PROMISES, CAL).ledgers.approval).toEqual(g.ledgers.approval);
+  expect(newGame("g", CODE, pack, "harborites", PROMISES, CAL).ledgers.popularity).toEqual(g.ledgers.popularity);
+});
+
+test("a new game opens the five ledgers under their v4 names", () => {
+  const g = game();
+  expect(Object.keys(g.ledgers).sort()).toEqual(["authority", "chest", "loyalty", "popularity", "treasury"]);
+  expect(g.ledgers.authority).toBe(pack.starts[0].capital);
+  expect(g.ledgers.loyalty).toBe(pack.starts[0].party);
+  expect(g.ledgers.treasury).toBe(0);
+  expect(Object.keys(g.ledgers.popularity).sort()).toEqual([...REGIONS].sort());
 });
 
 test("the threshold comes from the pack, and rises on a filibuster, a veto or escalation 2", () => {
@@ -85,8 +94,8 @@ test("a passed bill moves the five ledgers", () => {
   expect(b.passed).toBe(true);
   expect(b.yes).toBe(16);
   expect(b.threshold).toBe(pack.chamber.threshold);
-  expect(g.ledgers.capital).toBe(before.capital + 5);
-  expect(g.ledgers.party).toBe(before.party + 3);
+  expect(g.ledgers.authority).toBe(before.authority + 5);
+  expect(g.ledgers.loyalty).toBe(before.loyalty + 3);
   expect(g.streak).toBe(1);
   expect(g.patrons["grand-exchange"]).toBe(1);
   expect(g.patrons["keelwright-hall"]).toBe(-1);
@@ -98,17 +107,17 @@ test("a passed bill moves the five ledgers", () => {
 
   applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
   expect(g.promises.tariffs.state).toBe("kept");
-  expect(g.ledgers.party).toBe(before.party + 3 + 3 + 5);
-  expect(nationalApproval(pack, g)).toBeGreaterThan(nationalApproval(pack, game()));
+  expect(g.ledgers.loyalty).toBe(before.loyalty + 3 + 3 + 5);
+  expect(nationalPopularity(pack, g)).toBeGreaterThan(nationalPopularity(pack, game()));
 });
 
 test("passing on the other side's votes costs party mood", () => {
   const g = game();
   for (const m of g.members) m.loyalty = 100;
-  const before = g.ledgers.party;
+  const before = g.ledgers.loyalty;
   applyVote(pack, g, bill(g, 1));
   expect(g.bills[0].yes).toBe(pack.chamber.size);
-  expect(g.ledgers.party).toBe(before - 6);
+  expect(g.ledgers.loyalty).toBe(before - 6);
 });
 
 test("a failed bill costs capital and party mood", () => {
@@ -117,8 +126,8 @@ test("a failed bill costs capital and party mood", () => {
   const b = bill(g, 0);
   applyVote(pack, g, b);
   expect(b.passed).toBe(false);
-  expect(g.ledgers.capital).toBe(before.capital - 5);
-  expect(g.ledgers.party).toBe(before.party - 2);
+  expect(g.ledgers.authority).toBe(before.authority - 5);
+  expect(g.ledgers.loyalty).toBe(before.loyalty - 2);
   expect(g.streak).toBe(0);
 });
 
@@ -147,9 +156,9 @@ test("promise deadlines bite at 12 and 20, or 8 and 16 under fickle base", () =>
 test("hostile press costs a point in every region on every verdict", () => {
   const g = game();
   g.escalations = ["hostile_press"];
-  const before = { ...g.ledgers.approval };
+  const before = { ...g.ledgers.popularity };
   applyVote(pack, g, bill(g, 0));
-  for (const r of REGIONS) expect(g.ledgers.approval[r]).toBe(before[r] - 1);
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] - 1);
 });
 
 test("lobby costs the v1 table, rises 1.5x under costly favors, and a broken threat leaves a grudge", () => {
@@ -245,13 +254,13 @@ test("a term ends with a score, and another term stacks two escalations", () => 
   expect(g.terms[0].passed).toBe(4);
 
   const memory = g.members.map((m) => m.memory.length);
-  const approval = { ...g.ledgers.approval };
+  const approval = { ...g.ledgers.popularity };
   continueTerm(pack, g);
   expect(g.term).toBe(2);
   expect(g.turn).toBe(1);
   expect(g.escalations).toEqual(["hostile_press", "supermajority_era"]);
   expect(g.members.map((m) => m.memory.length)).toEqual(memory);
-  expect(g.ledgers.approval).toEqual(approval);
+  expect(g.ledgers.popularity).toEqual(approval);
   expect(g.bills.length).toBe(0);
   expect(g.terms.length).toBe(1);
 });
@@ -265,7 +274,7 @@ test("every escalation of the twenty has a hook or a stored number", () => {
   g.escalations = pack.escalations.map((e) => e.key);
   for (const e of pack.escalations) applyEscalation(pack, g, e.key);
   expect(g.economy).toBe("recession");
-  expect(g.ledgers.party).toBe(35);
+  expect(g.ledgers.loyalty).toBe(35);
   expect(g.marks.famine.length).toBe(REGIONS.length);   // the pack has fewer than 10 regions
   expect(g.marks.meddling.length).toBe(2);
   expect(g.members.filter((m) => m.situation === "is under investigation for corruption").length).toBeGreaterThanOrEqual(4);
@@ -278,8 +287,8 @@ test("a term cut short still scores its bills and promises", () => {
   const g = game();
   const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);
   for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
-  g.ledgers.capital = 5;
-  g.ledgers.party = 15;
+  g.ledgers.authority = 5;
+  g.ledgers.loyalty = 15;
   applyVote(pack, g, bill(g, 0));
   expect(g.result!.ending).toBe("impeached");
   expect(g.terms.length).toBe(1);
@@ -386,7 +395,7 @@ test("the test draws both halves whatever the reveal order is", () => {
 test("a hostile party shows in the whip state, and a favor comes back as capital", () => {
   const g = game();
   expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).not.toContain("party_leadership");
-  g.ledgers.party = 20;
+  g.ledgers.loyalty = 20;
   expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).toContain('"party_leadership":"hostile"');
 
   const h = game();
@@ -396,9 +405,9 @@ test("a hostile party shows in the whip state, and a favor comes back as capital
   expect(m.memory).toContain(FAVOR_OWED);
   applyVote(pack, h, b);                    // the bill the favor bought does not repay it
   expect(m.memory).toContain(FAVOR_OWED);
-  const capital = h.ledgers.capital;
+  const capital = h.ledgers.authority;
   applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((x) => [x.id, x.id === m.id ? 1 : 0])) }));
-  expect(h.ledgers.capital).toBe(capital - 5 + 10);
+  expect(h.ledgers.authority).toBe(capital - 5 + 10);
   expect(m.memory).not.toContain(FAVOR_OWED);
 });
 
@@ -439,7 +448,7 @@ const agreeAll = (who: "government" | "rival") => Object.fromEntries(pack.citize
 // holdP reads the approval ledger raw, so 999 and -999 saturate the sigmoid and settle every draw before it rolls.
 const midtermWorld = (g: Game, hold: boolean) => {
   const own = new Set(midtermUp(g).filter((m) => m.faction === "harborites").map((m) => m.region));
-  for (const r of pack.regions) g.ledgers.approval[r.id] = own.has(r.id) === hold ? 999 : -999;
+  for (const r of pack.regions) g.ledgers.popularity[r.id] = own.has(r.id) === hold ? 999 : -999;
   return Object.fromEntries(pack.citizens.map((c) => [c.id, own.has(c.region) === hold ? 1 : 0]));
 };
 
@@ -452,7 +461,7 @@ test("boos cost approval, and loud opposition makes them cost half again as much
   expect(pa.boos).toBe(250);
   expect(pa.regions[one]).toBeLessThan(0);
   expect(pb.regions[one]).toBeLessThan(pa.regions[one]);
-  expect(a.ledgers.approval[one]).toBeGreaterThan(b.ledgers.approval[one]);
+  expect(a.ledgers.popularity[one]).toBeGreaterThan(b.ledgers.popularity[one]);
 });
 
 test("a region where shares lead goes hot and its seats remember the post", () => {
@@ -473,7 +482,7 @@ test("losing the post duel is recorded on the post", () => {
 
 test("a seat holds on approval and intent, and the odds flip for the opposition", () => {
   const g = game();
-  for (const r of pack.regions) g.ledgers.approval[r.id] = 66;      // (66 - 50) / 8 = 2, sigmoid 0.8808
+  for (const r of pack.regions) g.ledgers.popularity[r.id] = 66;      // (66 - 50) / 8 = 2, sigmoid 0.8808
   const byRegion = regionIntent(pack, allIntent(0.7));
   const own = g.members.find((m) => m.faction === "harborites")!;
   const opp = g.members.find((m) => m.faction === "tidebound")!;
@@ -547,7 +556,7 @@ test("losing 40% of the class on the government's own side ends the run as a lam
 test("the campaign follows turn 20, not the test", () => {
   const g = game();
   g.turn = 20;
-  for (const r of pack.regions) g.ledgers.approval[r.id] = 80;   // the three promises break on this vote: stay off the lame duck floor
+  for (const r of pack.regions) g.ledgers.popularity[r.id] = 80;   // the three promises break on this vote: stay off the lame duck floor
   applyVote(pack, g, bill(g, 0.9));
   expect(g.stage).toBe("campaign");
   expect(g.campaign!.turns.length).toBe(0);
@@ -576,9 +585,9 @@ test("a campaign turn charges its lever and records the rival's targets", () => 
   expect(t.rival.length).toBe(2);
   expect(t.band[0]).toBeLessThan(t.public);
   expect(t.band[1]).toBeGreaterThan(t.public);
-  const capital = g.ledgers.capital;
+  const capital = g.ledgers.authority;
   applyCampaign(pack, g, "m2", { kind: "favor", memberId: g.members[0].id }, allIntent(0.5));
-  expect(g.ledgers.capital).toBe(capital - leverCost(g, { kind: "favor", memberId: g.members[0].id }).capital);
+  expect(g.ledgers.authority).toBe(capital - leverCost(g, { kind: "favor", memberId: g.members[0].id }).capital);
   expect(g.members[0].memory.length).toBe(1);
   g.stageB.rival_surge = 2;
   const surged = applyCampaign(pack, g, "m3", { kind: "spend", regions: [] }, allIntent(0.5));

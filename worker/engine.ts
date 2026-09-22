@@ -39,7 +39,7 @@ export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
   term: number; turn: number; stage: "session" | "midterm" | "campaign" | "test" | "won" | "over";
   phase: "draft" | "whip" | "over";
-  ledgers: { approval: Record<string, number>; capital: number; party: number; chest: number };
+  ledgers: { treasury: number; authority: number; chest: number; loyalty: number; popularity: Record<string, number> };
   patrons: Record<string, number>;   // -2..2
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
@@ -112,8 +112,9 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     id, code, pack: pack.id, faction: start.faction, seed: c.seed, calendar,
     term: 1, turn: 1, stage: "session", phase: "draft",
     ledgers: {
-      approval: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
-      capital: start.capital, party: start.party, chest: 0,
+      treasury: 0,
+      authority: start.capital, chest: 0, loyalty: start.party,
+      popularity: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
     },
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
@@ -132,13 +133,13 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
 const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>
   faction === own ? 100 : (start.hostile ?? []).includes(faction) ? 25 : start.coalition.includes(faction) ? 70 : 0;
 
-export function nationalApproval(pack: Pack, game: Game): number {
+export function nationalPopularity(pack: Pack, game: Game): number {
   let w = 0, sum = 0;
-  for (const r of pack.regions) { w += r.weight; sum += r.weight * (game.ledgers.approval[r.id] ?? 50); }
+  for (const r of pack.regions) { w += r.weight; sum += r.weight * (game.ledgers.popularity[r.id] ?? 50); }
   return w ? sum / w : 50;
 }
-export const popularity = (pack: Pack, game: Game) => { const a = nationalApproval(pack, game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
-const bump = (game: Game, region: string, d: number) => { game.ledgers.approval[region] = clamp(round1((game.ledgers.approval[region] ?? 50) + d), 0, 100); };
+export const popularity = (pack: Pack, game: Game) => { const a = nationalPopularity(pack, game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
+const bump = (game: Game, region: string, d: number) => { game.ledgers.popularity[region] = clamp(round1((game.ledgers.popularity[region] ?? 50) + d), 0, 100); };
 
 // Up to 8 lines of record, for citizen and test calls and for Luna.
 export function record(pack: Pack, game: Game) {
@@ -147,7 +148,7 @@ export function record(pack: Pack, game: Game) {
     term: game.term, [pack.vocabulary.turn]: game.turn,
     kept: p.filter((x) => x.state === "kept").map((x) => x.label),
     broken: p.filter((x) => x.state === "broken").map((x) => x.label),
-    streak: game.streak, [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
+    streak: game.streak, [pack.vocabulary.approval]: Math.round(nationalPopularity(pack, game)),
     headlines: game.bills.filter((b) => b.headline).slice(-3).map((b) => b.headline!.title),
     ...(game.economy ? { economy: game.economy } : {}),
   };
@@ -191,13 +192,13 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
   leaks: { leak: 0.3 },
   war_footing: {
     supermajority: (bill) => bill.tags.some((t) => WAR_TAGS.test(t)),
-    turn: (_pack, game) => { game.ledgers.capital = clamp(game.ledgers.capital - 2, 0, 200); },
+    turn: (_pack, game) => { game.ledgers.authority = clamp(game.ledgers.authority - 2, 0, 200); },
   },
   famine: {
     start: (pack, game) => { game.marks.famine = seeded(game, 0xfa11, pack.regions, 10).map((r) => r.id); for (const id of game.marks.famine) bump(game, id, -2); },
     turn: (_pack, game) => { for (const id of (game.marks.famine ?? []).slice(0, 3)) bump(game, id, -0.5); },
   },
-  succession_crisis: { start: (_pack, game) => { game.ledgers.party = 35; } },
+  succession_crisis: { start: (_pack, game) => { game.ledgers.loyalty = 35; } },
   foreign_meddling: {
     start: (pack, game) => { game.marks.meddling = seeded(game, 0xf0e1, pack.regions, 2).map((r) => r.id); },
     test: (game, regions) => { for (const id of game.marks.meddling ?? []) { const r = regions.find((x) => x.id === id); if (r) r.p = clamp(r.p - 0.05, 0, 1); } },
@@ -245,10 +246,10 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   Object.assign(bill, { votes, yes, threshold: th, passed, struck, vetoed: Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6) });
 
   const L = game.ledgers;
-  L.capital = clamp(L.capital + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
+  L.authority = clamp(L.authority + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
   const own = game.members.filter((m) => m.faction === game.faction);
   const ownYes = own.filter((m) => votes[m.id]).length;
-  L.party = clamp(L.party + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
+  L.loyalty = clamp(L.loyalty + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
 
   game.streak = passed && !struck ? game.streak + 1 : 0;
   game.bestStreak = Math.max(game.bestStreak, game.streak);
@@ -267,7 +268,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     else if (bill.offers[m.id]) line = votes[m.id] ? `Took the offer on "${bill.title}" and voted with the government.` : `Refused the offer on "${bill.title}".`;
     else if (votes[m.id] && m.memory.includes(FAVOR_OWED)) {
       m.memory = m.memory.filter((x) => x !== FAVOR_OWED);
-      L.capital = clamp(L.capital + 10, 0, 200);
+      L.authority = clamp(L.authority + 10, 0, 200);
       line = `Returned the favor and voted for "${bill.title}".`;
     }
     else if (m.faction === game.faction && !votes[m.id]) line = `Broke with their own faction and voted against "${bill.title}".`;
@@ -292,7 +293,7 @@ function keepPromise(pack: Pack, game: Game, tag: string) {
   if (!p || p.state !== "pending") return;
   if (++p.passed < 2) return;
   p.state = "kept";
-  game.ledgers.party = clamp(game.ledgers.party + 5, 0, 100);
+  game.ledgers.loyalty = clamp(game.ledgers.loyalty + 5, 0, 100);
   for (const r of pack.regions) bump(game, r.id, 4);
 }
 function checkPromises(pack: Pack, game: Game) {
@@ -311,7 +312,7 @@ export const lobbyCost = (game: Game, action: LobbyAction) => Math.round(LOBBY_C
 
 export function applyLobby(pack: Pack, game: Game, bill: Bill, member: Member, action: LobbyAction): { cost: number; offer: string; leak: boolean } {
   const cost = lobbyCost(game, action);
-  game.ledgers.capital = clamp(game.ledgers.capital - cost, 0, 200);
+  game.ledgers.authority = clamp(game.ledgers.authority - cost, 0, 200);
   const offer = pack.lobby[action].text;
   bill.offers[member.id] = offer;
   (bill.acts ??= {})[member.id] = action;
@@ -447,7 +448,7 @@ export function regionIntent(pack: Pack, intent: Record<string, number>): Record
 // v2 §7: half the seat's fate is the region's approval, half is its citizens' intent. The odds flip for a
 // seat the government does not hold.
 export function holdP(pack: Pack, game: Game, m: Member, byRegion: Record<string, number>): number {
-  const base = 0.5 * sigmoid(((game.ledgers.approval[m.region] ?? 50) - 50) / 8) + 0.5 * (byRegion[m.region] ?? 0.5);
+  const base = 0.5 * sigmoid(((game.ledgers.popularity[m.region] ?? 50) - 50) / 8) + 0.5 * (byRegion[m.region] ?? 0.5);
   return clamp(ownSide(pack, game, m.faction) ? base : 1 - base, 0, 1);
 }
 
@@ -540,7 +541,7 @@ export interface CampaignTurn {
 export interface Campaign { drafts: string[]; messages: string[]; turns: CampaignTurn[]; rival: string[]; intent: Record<string, number> }
 
 export function startCampaign(pack: Pack, game: Game): void {
-  const intent = Object.fromEntries(pack.regions.map((r) => [r.id, clamp((game.ledgers.approval[r.id] ?? 50) / 100, 0, 1)]));
+  const intent = Object.fromEntries(pack.regions.map((r) => [r.id, clamp((game.ledgers.popularity[r.id] ?? 50) / 100, 0, 1)]));
   game.campaign = { drafts: [], messages: [], turns: [], rival: rivalTargets(pack, game, intent), intent };
 }
 
@@ -586,7 +587,7 @@ export function applyCampaign(pack: Pack, game: Game, message: string, lever: Le
   const c = game.campaign!;
   const cost = leverCost(game, lever);
   game.ledgers.chest = round1(clamp(game.ledgers.chest - cost.chest, 0, 9999));
-  game.ledgers.capital = clamp(game.ledgers.capital - cost.capital, 0, 200);
+  game.ledgers.authority = clamp(game.ledgers.authority - cost.capital, 0, 200);
   if (lever.kind === "favor") {
     const m = game.members.find((x) => x.id === lever.memberId);
     if (m) {
@@ -611,10 +612,11 @@ export function applyCampaign(pack: Pack, game: Game, message: string, lever: Le
 
 /* ---------- the Director ---------- */
 
+// The keys are the storylet effect targets (pack.ts LEDGERS), which no stored deck can rename.
 const VALUE: Record<Condition["ledger"], (pack: Pack, game: Game, id?: string | null) => number> = {
-  approval: (pack, game) => nationalApproval(pack, game),
-  capital: (_p, game) => game.ledgers.capital,
-  party: (_p, game) => game.ledgers.party,
+  approval: (pack, game) => nationalPopularity(pack, game),
+  capital: (_p, game) => game.ledgers.authority,
+  party: (_p, game) => game.ledgers.loyalty,
   chest: (_p, game) => game.ledgers.chest,
   bloc: (_p, game, id) => game.blocs[id ?? ""] ?? 0.5,
   patron: (_p, game, id) => game.patrons[id ?? ""] ?? 0,
@@ -717,8 +719,8 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
   const d = clamp(e.delta ?? 0, -15, 15), L = game.ledgers;
   switch (e.ledger) {
     case "approval": for (const r of pack.regions) bump(game, r.id, d); break;
-    case "capital": L.capital = clamp(L.capital + d, 0, 200); break;
-    case "party": L.party = clamp(L.party + d, 0, 100); break;
+    case "capital": L.authority = clamp(L.authority + d, 0, 200); break;
+    case "party": L.loyalty = clamp(L.loyalty + d, 0, 100); break;
     case "chest": L.chest = clamp(round1(L.chest + d), 0, 9999); break;
     case "bloc": if (e.id && e.id in game.blocs) game.blocs[e.id] = clamp(game.blocs[e.id] + d, 0, 1); break;
     case "patron": if (e.id && e.id in game.patrons) game.patrons[e.id] = clamp(game.patrons[e.id] + d, -2, 2); break;
@@ -777,8 +779,8 @@ export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResul
 }
 
 export function ending(pack: Pack, game: Game): Ending | null {
-  if (game.ledgers.capital <= 0 && game.ledgers.party < 20) return "impeached";
-  if (game.turn >= 18 && nationalApproval(pack, game) < 35) return "lame_duck";
+  if (game.ledgers.authority <= 0 && game.ledgers.loyalty < 20) return "impeached";
+  if (game.turn >= 18 && nationalPopularity(pack, game) < 35) return "lame_duck";
   return null;
 }
 
@@ -787,7 +789,7 @@ export function termPoints(game: Game, mandate: number): TermRecord {
   const p = Object.values(game.promises);
   const passed = game.bills.filter((b) => b.passed && !b.struck).length;
   const kept = p.filter((x) => x.state === "kept").length, broken = p.filter((x) => x.state === "broken").length;
-  const points = passed * 10 + kept * 25 - broken * 15 + Math.round(mandate * 100) + Math.round(game.ledgers.capital / 4) + game.bestStreak * 5;
+  const points = passed * 10 + kept * 25 - broken * 15 + Math.round(mandate * 100) + Math.round(game.ledgers.authority / 4) + game.bestStreak * 5;
   return { term: game.term, passed, kept, broken, mandate, points };
 }
 export const score = (game: Game) => Math.round(game.terms.reduce((a, t) => a + t.points * 1.5 ** (t.term - 1), 0));

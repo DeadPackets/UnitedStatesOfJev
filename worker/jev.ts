@@ -122,7 +122,7 @@ export function whipState(pack: Pack, game: Game, bill: Bill) {
     government: {
       title: start?.seat_title ?? "the government", faction: name(game.faction), popularity: popularity(pack, game),
       // Measured -6 to -10 on co-factionals (v2 §4): the whip count must see a leadership that has turned.
-      ...(game.ledgers.party < 30 ? { party_leadership: "hostile" } : {}),
+      ...(game.ledgers.loyalty < 30 ? { party_leadership: "hostile" } : {}),
     },
     [pack.vocabulary.chamber]: { largest_faction: name(largest), needed_to_pass: threshold(pack, game, bill), of: pack.chamber.size },
     record: record(pack, game),
