@@ -41,9 +41,11 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
   const ordered = useMemo(() => orderMembers(members, own, coalition, whip), [members, own, coalition, whip]);
   const seats = useMemo(() => points(pack.theme.layout, members.length), [pack.theme.layout, members.length]);
   const gap = useMemo(() => minGap(seats), [seats]);
-  const r = Math.min(20, gap * 0.4);
+  // `points` rounds to a tenth of a unit, but `minGap` is a hypotenuse, so every radius drawn from it
+  // carried 17 digits into eight attributes on each of up to 72 seats. A unit is about 1.3 px on screen.
+  const r = Math.round(Math.min(20, gap * 0.4) * 100) / 100;
   // A 9 px circle is a 28 px target. Half the gap is the largest target two seats can hold without overlapping.
-  const hit = gap / 2;
+  const hit = Math.round(gap * 50) / 100;
   const factions = useMemo(() => new Map(pack.factions.map((f) => [f.id, f])), [pack.factions]);
   const regions = useMemo(() => new Map(pack.regions.map((g) => [g.id, g.name])), [pack.regions]);
   // SVG ids are document-wide: the reveal and the drawer can hold a chamber each.
