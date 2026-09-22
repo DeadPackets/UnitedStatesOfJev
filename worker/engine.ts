@@ -38,6 +38,7 @@ export interface HolderState {
   id: string; stance: number; resistance: number; line: number;
   response: HolderResponse; weight: number; warnedAt: number | null;
 }
+export interface Warning { holder: string; response: HolderResponse; at: number; fires: number; number: number }
 export interface TermRecord { term: number; passed: number; kept: number; broken: number; mandate: number; points: number }
 export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
@@ -47,6 +48,8 @@ export interface Game {
   patrons: Record<string, number>;   // -2..2
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
   holders: Record<string, HolderState>;
+  warnings: Warning[];
+  earlyTest?: string;   // the holder that called it; the test route reads it instead of the term test
   promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
   director: { intensity: number; lastCrisis: number; seen: string[] };
@@ -108,6 +111,12 @@ export const RESIST_HIT = 8;       // TUNE, C2: an act that costs a holder somet
 export const RESIST_SERVE = 10;    // TUNE, C2: a favour or a service
 export const RESIST_DECAY = 1;     // TUNE, C2: a turn, toward 0
 export const RESIST_CARRY = 0.5;   // TUNE, R21: what a new term inherits
+export const WARN_TURNS = 2;   // TUNE, R4
+export const RIOT_HIT = 8;         // TUNE, popularity in every region
+export const LEVY_HIT = 10;        // TUNE, treasury
+export const EMBARGO_HIT = 8;      // TUNE, treasury
+export const EXCOMMUNICATE_HIT = 25;   // TUNE, loyalty
+export const STRIKE_HIT = 3;       // TUNE, authority when a law is struck
 export const LOBBY_COSTS = { pork: 10, favor: 15, threat: 20 } as const;
 export type LobbyAction = keyof typeof LOBBY_COSTS;
 export const SITUATIONS = [
@@ -172,6 +181,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
     holders: seedHolders(pack),
+    warnings: [],
     promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
@@ -217,6 +227,62 @@ export function nearestLine(game: Game): string | null {
   const rows = Object.values(game.holders).filter((h) => h.line > 0);
   if (!rows.length) return null;
   return rows.sort((a, b) => b.resistance / b.line - a.resistance / a.line)[0].id;
+}
+
+// R4: a holder over its line plays a warning card with the number, and fires two turns later if still over.
+export function advanceWarnings(pack: Pack, game: Game): { warned: Warning[]; fired: Warning[]; wire: WireLine[] } {
+  const warned: Warning[] = [], fired: Warning[] = [], wire: WireLine[] = [];
+  for (const h of Object.values(game.holders)) {
+    const over = h.resistance >= h.line;
+    const open = game.warnings.find((w) => w.holder === h.id);
+    if (!over) {
+      if (open) game.warnings = game.warnings.filter((w) => w !== open);
+      h.warnedAt = null;
+      continue;
+    }
+    if (!open) {
+      const w: Warning = { holder: h.id, response: h.response, at: game.turn, fires: game.turn + WARN_TURNS, number: h.resistance };
+      game.warnings.push(w);
+      h.warnedAt = game.turn;
+      warned.push(w);
+      continue;
+    }
+    open.number = h.resistance;
+    if (game.turn >= open.fires) {
+      game.warnings = game.warnings.filter((w) => w !== open);
+      h.warnedAt = null;
+      fired.push(open);
+      wire.push(...fireResponse(pack, game, open));
+    }
+  }
+  return { warned, fired, wire };
+}
+
+export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
+  const wire: WireLine[] = [], L = game.ledgers, name = pack.constitution?.holders.find((h) => h.id === w.holder)?.name ?? w.holder;
+  const drop = (l: "treasury" | "chest" | "loyalty", d: number) => {
+    L[l] = round1(clamp(L[l] - d, 0, l === "loyalty" ? 100 : 9999));
+    wire.push({ kind: "card", ledger: l, delta: -d, cause: name });
+  };
+  switch (w.response) {
+    case "riot": for (const r of pack.regions) { bump(game, r.id, -RIOT_HIT); wire.push({ kind: "card", ledger: "popularity", id: r.id, delta: -RIOT_HIT, cause: name }); } break;
+    case "refuse_levy": drop("treasury", LEVY_HIT); break;
+    case "embargo": drop("treasury", EMBARGO_HIT); break;
+    case "excommunicate": drop("loyalty", EXCOMMUNICATE_HIT); break;
+    case "strike":
+      L.authority = clamp(L.authority - STRIKE_HIT, 0, 200);
+      wire.push({ kind: "card", ledger: "authority", delta: -STRIKE_HIT, cause: name });
+      break;
+    case "early_test": game.earlyTest = w.holder; game.stage = "test"; game.phase = "over"; break;
+    case "coup": {
+      game.stage = "over"; game.phase = "over";
+      game.terms.push(termPoints(game, 0));
+      game.result = { ending: "coup", score: score(game) };
+      break;
+    }
+    case "none": break;
+  }
+  return wire;
 }
 
 const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>
@@ -870,10 +936,9 @@ export function runTest(pack: Pack, game: Game, answers: TestAnswers): TestResul
   return { loyalty, public: pub, drawnLoyalty, drawnPublic, mandate, won: mandate >= 0.5, seats: drawnSeats, regions: drawnRegions };
 }
 
-export function ending(pack: Pack, game: Game): Ending | null {
-  if (game.ledgers.authority <= 0 && game.ledgers.loyalty < 20) return "impeached";
-  if (game.turn >= 18 && nationalPopularity(pack, game) < 35) return "lame_duck";
-  return null;
+// The only end a turn can reach on its own is a coup; every other stop is a holder's response or the test.
+export function ending(_pack: Pack, game: Game): Ending | null {
+  return game.result?.ending === "coup" ? "coup" : null;
 }
 
 // EV ÷ 2 in v2 becomes mandate × 100: a lost term still scores its bills and promises.

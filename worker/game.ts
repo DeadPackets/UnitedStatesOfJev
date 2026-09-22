@@ -400,6 +400,7 @@ export function migrate(game: Game): void {
   game.posts ??= [];
   game.revolt ??= null;
   game.holders ??= {};
+  game.warnings ??= [];
 }
 
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {

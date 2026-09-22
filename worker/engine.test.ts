@@ -1,10 +1,11 @@
 import { test, expect } from "bun:test";
 import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
-  applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, LAW_LOST, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
+  applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
 } from "./engine";
 import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, weightOf } from "./engine";
+import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -288,15 +289,16 @@ test("a term cut short still scores its bills and promises", () => {
   const g = game();
   const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);
   for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
-  g.ledgers.authority = LAW_LOST;
-  g.ledgers.loyalty = 15;
-  applyVote(pack, g, bill(g, 0));
-  expect(g.result!.ending).toBe("impeached");
+  fireResponse(pack, g, { holder: "guard", response: "coup", at: g.turn, fires: g.turn, number: 90 });
+  expect(g.result!.ending).toBe("coup");
   expect(g.terms.length).toBe(1);
   expect(g.terms[0]).toEqual(termPoints(g, 0));
-  // 4 passed x 10 + 1 kept promise x 25 + mandate 0 + capital 0 + best streak 4 x 5
-  expect(g.terms[0].points).toBe(85);
-  expect(g.result!.score).toBe(85);
+  // 4 passed x 10 = 40, 1 kept promise x 25 = 25, mandate 0, best streak 4 x 5 = 20, and authority:
+  // it opens at 40, each of the 4 passed laws pays LAW_PASSED 2, the kept promise pays PROMISE_AUTHORITY 3,
+  // so 40 + 8 + 3 = 51, and termPoints adds round(51 / 4) = 13. 40 + 25 + 0 + 20 + 13 = 98.
+  expect(g.ledgers.authority).toBe(51);
+  expect(g.terms[0].points).toBe(98);
+  expect(g.result!.score).toBe(98);
 });
 
 test("the seeded region lists differ by seed", () => {
@@ -699,4 +701,54 @@ test("a bypass raises resistance, a favour lowers it and the nearest to its line
   expect(nearestLine(g)).toBe("guard");   // 12 of 55 against 2 of 60 and 0 of 70
   raiseResistance(pack, g, ["council"], 999, "everything at once");
   expect(g.holders.council.resistance).toBe(100);
+});
+
+test("a holder over its line warns once and fires two turns later", () => {
+  const g = game();
+  g.holders.street.resistance = 80;         // over its line of 70
+  const first = advanceWarnings(pack, g);
+  expect(first.warned.map((w) => w.holder)).toEqual(["street"]);
+  expect(first.fired).toEqual([]);
+  expect(g.warnings[0].fires).toBe(g.turn + WARN_TURNS);
+  expect(g.warnings[0].number).toBe(80);
+
+  g.turn += 1;
+  expect(advanceWarnings(pack, g).fired).toEqual([]);   // still over, still waiting
+  g.turn += 1;
+  const third = advanceWarnings(pack, g);
+  expect(third.fired.map((w) => w.holder)).toEqual(["street"]);
+  expect(g.warnings).toEqual([]);
+});
+
+test("a warning drops when the holder comes back under its line", () => {
+  const g = game();
+  g.holders.street.resistance = 80;
+  advanceWarnings(pack, g);
+  g.holders.street.resistance = 10;
+  g.turn += 2;
+  const r = advanceWarnings(pack, g);
+  expect(r.fired).toEqual([]);
+  expect(g.warnings).toEqual([]);
+  expect(g.holders.street.warnedAt).toBeNull();
+});
+
+test("each response does its own thing and a coup ends the run", () => {
+  const g = game();
+  const before = nationalPopularity(pack, g);
+  fireResponse(pack, g, { holder: "street", response: "riot", at: 1, fires: 3, number: 80 });
+  expect(nationalPopularity(pack, g)).toBeLessThan(before);
+
+  g.ledgers.treasury = 20;
+  fireResponse(pack, g, { holder: "league", response: "embargo", at: 1, fires: 3, number: 60 });
+  expect(g.ledgers.treasury).toBeLessThan(20);
+
+  fireResponse(pack, g, { holder: "council", response: "early_test", at: 1, fires: 3, number: 70 });
+  expect(g.earlyTest).toBe("council");
+  expect(g.stage).toBe("test");
+
+  const h = game();
+  fireResponse(pack, h, { holder: "guard", response: "coup", at: 1, fires: 3, number: 70 });
+  expect(h.stage).toBe("over");
+  expect(h.result!.ending).toBe("coup");
+  expect(h.terms.length).toBe(1);
 });
