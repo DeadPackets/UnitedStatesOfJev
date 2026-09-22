@@ -31,6 +31,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("landing");
   const [prompt, setPrompt] = useState("");
   const [daily, setDaily] = useState<Daily | null>(null);
+  const [dailySeat, setDailySeat] = useState<string | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [scenario, setScenario] = useState<string | null>(null);
   const [pack, setPack] = useState<PackView | null>(null);
@@ -128,10 +129,16 @@ export default function App() {
   const resume = () => { if (resumeId) act(() => api.load(resumeId)); };
 
   const takeSeat = async (faction: string, promises: number[], seed: number, platform: string) => {
-    const ok = await act(() => api.seat(scenario!, faction, promises, seed, platform));
+    const ok = await act(() => (dailySeat === scenario ? api.playDaily(faction, promises, platform) : api.seat(scenario!, faction, promises, seed, platform)));
     if (ok) go("/", true);
     return ok;
   };
+
+  // "Take the seat" on an unplayed day is the one path that spends the attempt; the replay is practice.
+  const playDaily = useCallback(async (id: string) => {
+    setDailySeat(daily?.played ? null : id);
+    await open(id);
+  }, [daily, open]);
 
   const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("landing"); resetTheme(); go("/"); }, []);
   const quit = () => { store.remove("usoj:game"); setGame(null); restart(); };
@@ -164,7 +171,7 @@ export default function App() {
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
-        : <Landing daily={daily} resume={!!resumeId} busy={busy} onFind={find} onResume={resume} onCode={(code) => act(() => api.share(code))} onPlayDaily={open} />}
+        : <Landing daily={daily} resume={!!resumeId} busy={busy} onFind={find} onResume={resume} onCode={(code) => act(() => api.share(code))} onPlayDaily={playDaily} />}
       <div role="status" aria-live="polite">{toast ? <div className="toast">{toast}</div> : null}</div>
     </>
   );

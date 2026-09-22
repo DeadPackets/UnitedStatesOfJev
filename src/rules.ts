@@ -99,3 +99,21 @@ export const difficulty = (gap: number) =>
 /** Spec §6: the same weighted sum the test runs, printed live so the arithmetic is never a surprise. */
 export const mandateOf = (holders: { weight: number; stance: number }[]) =>
   holders.reduce((a, h) => a + h.weight * h.stance, 0);
+
+export const GRID_WIDTH = 5;   // TUNE: squares a row, so a 20 turn term copies as four rows
+
+// A message box carries characters and not CSS, so the copied grid uses the nearest square to each hue.
+export const GRID_SQUARES: Record<string, string> = {
+  treasury: "🟩", authority: "🟪", chest: "🟨", loyalty: "🟦", popularity: "🟧", quiet: "⬜",
+};
+
+/** The streak changes every day, so the text is built at the moment it is copied and never stored. */
+export function shareText(title: string, day: string, grid: { ledger: string; won?: boolean }[], streak: number): string {
+  const rows: string[] = [];
+  for (let i = 0; i < grid.length; i += GRID_WIDTH) {
+    rows.push(grid.slice(i, i + GRID_WIDTH).map((g) => GRID_SQUARES[g.ledger] ?? "⬜").join(""));
+  }
+  const last = grid.at(-1);
+  if (typeof last?.won === "boolean") rows.push((last.won ? "✅" : "🟥").repeat(4));
+  return [`United States of Jev, ${title}`, `Daily ${day}, streak ${streak}`, ...rows, "unitedstatesofjev.deadpackets.pw"].join("\n");
+}

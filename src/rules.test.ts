@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { LEDGER_KEYS, danger, hueClass, roomTo } from "./rules";
+import { LEDGER_KEYS, danger, hueClass, roomTo, shareText } from "./rules";
 
 test("the five ledgers keep their order and their hue class", () => {
   expect(LEDGER_KEYS).toEqual(["treasury", "authority", "chest", "loyalty", "popularity"]);
@@ -141,4 +141,19 @@ test("the mandate is the weighted sum over the counted holders only", () => {
   ];
   expect(mandateOf(holders)).toBeCloseTo(0.54, 5);
   expect(mandateOf([])).toBe(0);
+});
+
+test("the copied grid is rows of five squares, then the verdict row", () => {
+  const grid = [
+    { ledger: "authority" }, { ledger: "popularity" }, { ledger: "quiet" }, { ledger: "treasury" },
+    { ledger: "chest" }, { ledger: "loyalty", won: true },
+  ];
+  expect(shareText("Rome, 44 BC", "2026-09-22", grid, 3).split("\n")).toEqual([
+    "United States of Jev, Rome, 44 BC", "Daily 2026-09-22, streak 3", "🟪🟧⬜🟩🟨", "🟦", "✅✅✅✅", "unitedstatesofjev.deadpackets.pw",
+  ]);
+});
+
+test("a run with no verdict copies no verdict row, and a lost one copies red", () => {
+  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "authority" }], 0).split("\n")[3]).toBe("unitedstatesofjev.deadpackets.pw");
+  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "treasury", won: false }], 0)).toContain("🟥🟥🟥🟥");
 });

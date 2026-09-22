@@ -78,6 +78,7 @@ export const api = {
   scenario: (id: string) => call<BuildState>(`/scenarios/${id}`),
   seat: (scenario: string, faction: string, promises: number[], seed?: number, platform?: string) =>
     call<GameView>("/games", { scenario, faction, promises, seed, platform }),
+  playDaily: (faction: string, promises: number[], platform?: string) => call<GameView>("/games", { mode: "daily", faction, promises, platform }),
   daily: () => call<Daily>("/daily"),
   share: (code: string) => call<GameView>("/games", { code }),
   load: (id: string) => call<GameView>(`/games/${id}`),

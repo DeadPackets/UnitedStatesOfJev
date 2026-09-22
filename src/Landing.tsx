@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Daily } from "./api";
 import { Ornament } from "./theme";
-import { hueClass, type LedgerKey } from "./rules";
+import { hueClass, shareText, type LedgerKey } from "./rules";
 
 export default function Landing({ daily, resume, busy, onFind, onResume, onCode, onPlayDaily }: {
   daily: Daily | null; resume: boolean; busy: boolean;
@@ -9,6 +9,7 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
 }) {
   const [text, setText] = useState("");
   const [code, setCode] = useState("");
+  const [copied, setCopied] = useState(false);
   const ready = text.trim().length >= 3;
   const send = () => { if (ready && !busy) onFind(text.trim()); };
   return (
@@ -24,6 +25,11 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
             <div className="sharecard" aria-label="Today's result">
               {daily.grid.map((s, i) => <div key={i}><span className={`sq on ${hueClass(s.ledger as LedgerKey)}`} /><span>{i + 1}</span></div>)}
             </div>
+          ) : null}
+          {daily.played && daily.grid ? (
+            <button className="btn ghost" disabled={busy} onClick={() => {
+              navigator.clipboard.writeText(shareText(daily.title, daily.day, daily.grid!, daily.streak)).then(() => setCopied(true), () => setCopied(false));
+            }}>{copied ? "Copied" : "Copy the grid"}</button>
           ) : null}
           <div className="row">
             <button className={`btn ${daily.played ? "ghost" : ""}`} disabled={busy} onClick={() => onPlayDaily(daily.scenario)}>
