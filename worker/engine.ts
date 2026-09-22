@@ -317,6 +317,18 @@ export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: n
 export const easeResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
   moveResistance(pack, game, ids, -Math.abs(amount), cause);
 
+export const CAMPAIGN_FROM = 17;  // TUNE, C4: the turn the last stretch of the term starts on
+export const ARMY_STANCE = 0.5;   // spec §2: force needs the army at or over this
+
+// The army is whoever can end the run by force, else whoever force moves.
+export const armyHolder = (pack: Pack): Holder | null =>
+  holdersOf(pack).find((h) => h.response === "coup") ?? holdersOf(pack).find((h) => h.levers.includes("force")) ?? null;
+
+export function armyAllows(pack: Pack, game: Game): boolean {
+  const a = armyHolder(pack);
+  return !a || (game.holders[a.id]?.stance ?? a.stance) >= ARMY_STANCE;
+}
+
 // The plate the Desk marks: the holder closest to its own line, measured as a share of it.
 export function nearestLine(game: Game): string | null {
   const rows = Object.values(game.holders).filter((h) => h.line > 0);
