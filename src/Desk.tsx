@@ -6,7 +6,7 @@ import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
 import { Num } from "./Ledger";
 import Feed, { FeedLine } from "./Feed";
-import Card, { Announce } from "./Card";
+import Card, { Announce, WarningCard, type CardKind } from "./Card";
 import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
@@ -80,6 +80,11 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const cardOpen = !!game.events.at(-1) && game.events.at(-1)!.stance === undefined;
   const openCard = cardOpen ? game.events.length - 1 : -1;
   const card = event && (event.stance === undefined || answered === event.id) ? event : undefined;
+  const KIND: Record<string, CardKind> = { generic: "crisis", dated: "crisis", relief: "crisis", crisis: "crisis", swan: "swan", foreign: "foreign" };
+  // keyed by holder and turn: two open warnings both dismiss, and a holder warned again later shows again
+  const [held, setHeld] = useState<string[]>([]);
+  const warning = game.warnings.find((w) => !held.includes(`${w.holder}@${w.at}`)) ?? null;
+  const warnedHolder = warning ? game.holders.find((h) => h.id === warning.holder) : undefined;
 
   // Roll call: reveal votes one by one, accelerating, and walk the last five when the count is close.
   const rolledFor = useRef(voted ? bill!.id : -1);
@@ -271,8 +276,16 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
       {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.authority}
         costs={game.lobbyCosts} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
-      {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
-        onStance={stance} onClose={() => setAnswered(null)} /> : null}
+      {card && !rolling ? (
+        <Card key={card.id} pack={pack} event={card} kind={KIND[card.kind ?? "generic"] ?? "crisis"}
+          holders={game.holders.map((h) => ({ id: h.id, name: h.name, stance: h.stance }))}
+          turn={card.turn} busy={busy} onStance={stance} onClose={() => setAnswered(null)} />
+      ) : null}
+      {warning && warnedHolder ? (
+        <WarningCard key={`${warning.holder}@${warning.at}`} pack={pack} holder={{ name: warnedHolder.name, line: warnedHolder.line }} warning={warning}
+          busy={busy} onHold={() => setHeld((xs) => [...xs, `${warning.holder}@${warning.at}`])}
+          onClose={() => setHeld((xs) => [...xs, `${warning.holder}@${warning.at}`])} />
+      ) : null}
       {notice.length ? <Announce key={game.term} pack={pack} keys={notice} onClose={() => setNotice([])} /> : null}
       <Tour step={step} onSkip={endTour} />
       <Wire game={game} onPick={(k, c) => { setPeek(k); setCause(c); }} />
