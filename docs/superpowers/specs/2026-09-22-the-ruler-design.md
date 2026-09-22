@@ -27,6 +27,20 @@ Owner rulings from the 2026-09-22 interview, in the order made:
 | R13 | Metagame: coalition arithmetic decides verdicts; credibility is a bounded visible multiplier. |
 | R14 | UI: the Desk, one page, no scrolling, in its era-palette treatment (`docs/mocks/desk/desk-c.html`), with five fixed resource hues across every pack. |
 
+Owner rulings from the walkthrough, later the same day:
+
+| # | Ruling |
+|---|---|
+| R15 | The daily is produced by a 24-hour cron Workflow: Luna receives the list of past dailies, proposes a scenario that is not a duplicate, the build pipeline runs it, and it becomes the daily. Every daily is archived and replayable as practice. |
+| R16 | Promises: pick-three stays, and authored promises are added: an optional platform sentence at the Seat (Luna extracts up to three tagged promises with windows) and any claim in a proclamation Luna reads as a commitment. Missed promises decay popularity by a share per turn past the window, never a cliff. |
+| R17 | The Seat is a three-page briefing (the situation, the room, you) the player can page back and forth through, with the oath button on every page; Luna writes it at build in plain humanized language for a reader who has never heard of the place. |
+| R18 | Abroad is in Stage A: one to three foreign powers plus the international community as holders with weight 0, each with a persona, wants, red lines, what they give (treasury and chest sources), era-scaled responses, and the seven verbs read as diplomacy. |
+| R19 | Any kind of ruler may win: the test asks whether the room keeps you, never how. Three priced templates inside the existing verbs make the authoritarian path real: bloc drift (a base that grows and hardens with partisan posts while the middle empties), state media (an appointment plus spend that biases reach and damps boos while Feed trust falls and the court and patrons resist), emergency powers (a decree template that suspends the chamber's consent for N turns at a large authority price, held only while the army's stance allows). Stage B, after the baseline is measured. |
+| R20 | Events: dated events from the calendar, Director-paced crisis storylets with two costed stances, foreign moves from the abroad holders' state, and one unweighted black swan roll per term from a short era-true list, bounded and always with a decision. A card fired in an earlier term never fires again; Luna writes two fresh templates per extra term. |
+| R21 | Another term carries every law in force, appointment, favour, resistance (decayed), and persona memory; reseeds the half-term class; deals two escalations on cards at turn 1; Luna writes a one-page "the years between" briefing. The next real period's dated events become state-weighted storylets, because the run has diverged. Stop here is a real ending: an epilogue from the record, the score banked, the daily counted as kept. |
+| R22 | The Over screen names the two turns that decided the run and the style the run played ("ruled by decree 14 of 20 turns"). |
+| R23 | Balance gate: four style bots (strongman, populist, broker, idealist) on the same seeds; term-1 win rates within 10 points; each style's median run ends by its own failure. |
+
 Controller rulings (routine, reversible, marked so the owner can veto):
 
 | # | Ruling |
@@ -49,9 +63,10 @@ Ledger       one of five resources with sources, sinks and a failure line
 Test         a weighted vote of holders on a printed bar, at term end
 ```
 
-Holders in every pack (2 to 6): the chamber (if one exists), the army or security service, the
-court or clergy where it holds power, the street (citizens by region and bloc), the ruler's own
-faction or court, the patrons (donors, guilds, magnates), and at most one foreign power. Each
+Holders in every pack: at home (2 to 6) the chamber (if one exists), the army or security
+service, the court, the clergy where it holds power, the street (citizens by region and bloc),
+the ruler's own faction or court, the patrons (donors, guilds, magnates); and abroad (1 to 3
+plus the international community) the powers that mattered to that polity in that year. Each
 holder has:
 
 | Field | Meaning |
@@ -70,7 +85,16 @@ Examples:
 | Rome 44 BC | Consul | Senate (0.3, early test), legions (0, coup), plebs by region (0.5, riot), patricians (0.2, refuse levy) |
 | America 2023 | President | Congress (0.25, early test), courts (0, strike), citizens by region (0.6, none), the base (0.15, primary: early test), donors (0, embargo on the chest) |
 | A kingdom | King | Nobles' assembly (0.4, early test), army (0.4, coup), church (0.2, excommunicate), peasants (0, riot), guilds (0, refuse levy) |
-| Egypt 2012 | President | People's Assembly (0.3, early test), SCAF (0, coup), citizens (0.5, riot), Brotherhood council (0.2, early test), judiciary (0, strike) |
+| Egypt 2012 | President | People's Assembly (0.3, early test), SCAF (0, coup), the street (0.5, riot), the Guidance Bureau (0.2, early test), judiciary (0, strike), Al-Azhar (0, ruling), Gulf patrons (0, embargo); abroad: USA (aid), Israel (Sinai, the treaty), IMF (the loan), the UN |
+
+Abroad holders add four fields: `wants` (three tags), `redLines` (tags that hit resistance hard
+when a law or decree carries them), `gives` (treasury or chest per turn while served, or once),
+and `responses` scaled to the era (what that power actually did in that period: an aid freeze,
+a border incident card, a resolution, an invasion only where history had one). Their persona
+is one figure (an ambassador, a foreign minister, a mission chief) that Jev judges like a
+member. The seven verbs read as diplomacy toward them: favour is a concession, spend a deal,
+proclaim a statement, force an incident, appoint an envoy. The Director gains a "foreign move"
+card type weighted by their state.
 
 ## 2. Instruments
 
@@ -232,10 +256,27 @@ latency.
 
 | Stage | Delivers |
 |---|---|
-| A | Constitution in the pack and generator; holders, resistance, lines and responses in the engine; the five ledgers with sources and sinks; laws in force as rates; the test on the means |
-| B | The seven instruments with price tags; plausibility gate; posts with baseline; the turn with End turn; the Director weighted by state |
-| C | The Desk (era palette, fixed hues, glance/peek/keep); the wire; the Record |
-| D | The daily; bots and the measurement log; the balance pass |
+| A | Constitution in the pack and generator (home and abroad holders, instruments, test, half-term, ledgers, the briefing pages, the black-swan list); holders, resistance, lines, warnings and responses in the engine; the five ledgers with sources and sinks; laws in force as rates; promises (pick-three plus authored); the test on the means with the climbing bar; another term and stop here |
+| B | The seven instruments with price tags and the plausibility gate; posts with the neutral baseline and authored promises; the turn with End turn; the Director weighted by state with crisis, relief, foreign move and black swan; the three authoritarian templates (bloc drift, state media, emergency powers) |
+| C | The Desk (era palette, fixed hues, glance/peek/keep); the three-page Seat; the cards; the half-term and campaign stage views; the test reveal by holder; Won, Over, the epilogue; the wire; the Record; phone layout |
+| D | The daily cron Workflow and archive; the share grid; the style bots and the measurement log; the balance pass |
+
+## 14. Screens, from the walkthrough
+
+| Screen | Content |
+|---|---|
+| Landing | Today's term (hot when unplayed; streak, played count), Any polity (prompt + Find it), Resume (hot when a game exists), A friend's code; the daily's result grid replaces its card once played |
+| Match | Archive hit opens the Seat; two near hits show both mastheads; none starts the build |
+| Build | Steps and fragments as today, plus Constitution; the content note; theme on by the second minute |
+| Seat | Three pages: the situation (premise, the goal, the regions as tiles with what matters there), the room (your faction in three lines, each party in three lines: wants, sees you as, votes with you on; each holder with power, response, line and today's number; abroad the same), you (each ledger's meaning here, the test and its weights, difficulty label and handicap, pick-three, the platform sentence). Oath button on every page |
+| Oath | The press wipe, the pack's stamp, the gavel |
+| Desk | Strip, stage (floor when a chamber exists; home and abroad holder rows with resistance/line; the nearest to its line marked), the composer with seven verb tabs that settle from the text, the price tag, Commit, End turn, the rail (Feed, Country, Room, Record, Pinned), the wire; three coach marks on first run |
+| Cards | Warning (two turns, the number, stances including Hold), crisis (two costed stances), foreign move (no Hold), black swan, escalation (turn 1 of a new term) |
+| Half-term | The pack's holder draw, walked seat by seat; wipeout re-based on own side's share |
+| Campaign | Turns 17 to 20: 25% discount on acts aimed at test holders; the live test arithmetic per holder with its lever and the band; the rival's spend printed per region |
+| Test | Decided on the means; walked by holder in pack order; the pack's verdict sentence |
+| Won | Score, the record line, another term (bar and the two conditions printed) or stop here (epilogue) or share |
+| Over | Obituary from the record, the scorecard with ×1.5 per term, the style line, the two turns that decided it, share, replay the seed as practice |
 
 ## 13. Out of scope
 
