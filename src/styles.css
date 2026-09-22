@@ -217,19 +217,27 @@ textarea, input, select { font: inherit; color: inherit; }
 
 /* crisis card and term notices: the same poster, centred */
 .poster { width: min(560px, calc(100vw - 32px)); border: 0; border-top: 6px solid var(--line); border-bottom: 2px solid var(--line); padding: 22px 24px 26px;
-  background: var(--paper); color: var(--ink); display: grid; gap: 14px; transition: opacity var(--t-state), transform var(--t-state) var(--ease-out); }
+  background: var(--paper); color: var(--ink); display: grid; gap: 14px;
+  transition: opacity var(--t-state), transform var(--t-state) var(--ease-out), display var(--t-state) allow-discrete, overlay var(--t-state) allow-discrete; }
 .poster::backdrop { background: rgb(0 0 0 / 0.45); }
 .poster h2 { font-size: clamp(26px, 5vw, 40px); text-transform: uppercase; }
 .poster p { margin: 0; }
 .poster .amend { margin-top: 0; }
 @starting-style { .poster[open] { opacity: 0; transform: scale(0.96); } }
+/* the exit is softer and shorter than the enter: a small lift, not the arrival in reverse */
+.poster:not([open]) { display: none; opacity: 0; transform: translateY(-12px); transition-duration: 150ms; }
 
 /* drawer as native dialog */
 .drawer { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(420px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: 2px solid var(--line); padding: 28px 26px; background: var(--bg); color: var(--ink);
-  overflow: auto; display: grid; gap: 16px; align-content: start; transition: transform var(--t-state) var(--ease-out), opacity var(--t-state); }
+  overflow: auto; display: grid; gap: 16px; align-content: start;
+  transition: transform var(--t-state) var(--ease-out), opacity var(--t-state), display var(--t-state) allow-discrete, overlay var(--t-state) allow-discrete; }
 .drawer::backdrop { background: rgb(0 0 0 / 0.35); }
 @starting-style { .drawer[open] { transform: translateX(24px); opacity: 0; } }
-.drawer:not([open]) { display: none; }
+.drawer:not([open]) { display: none; transform: translateX(12px); opacity: 0; transition-duration: 150ms; }
+/* the sheet fades its backdrop with it, so the page is never bare under a closing sheet */
+.poster::backdrop, .drawer::backdrop { transition: opacity 150ms, display 150ms allow-discrete, overlay 150ms allow-discrete; }
+@starting-style { .poster[open]::backdrop, .drawer[open]::backdrop { opacity: 0; } }
+.poster:not([open])::backdrop, .drawer:not([open])::backdrop { opacity: 0; }
 .who h2 { font-size: 30px; }
 .plate { width: 256px; height: 256px; max-width: 100%; position: relative; overflow: hidden; background: var(--paper); color: var(--ink-2);
   border-top: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line); display: grid; place-items: center; font: 800 56px var(--display); }
@@ -288,6 +296,7 @@ textarea, input, select { font: inherit; color: inherit; }
   .count .n { font-size: 60px; }
   .drawer { inset: auto 0 0 0; width: 100vw; height: auto; max-height: 86dvh; border-left: 0; border-top: 2px solid var(--line); }
   @starting-style { .drawer[open] { transform: translateY(24px); opacity: 0; } }
+  .drawer:not([open]) { transform: translateY(12px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }

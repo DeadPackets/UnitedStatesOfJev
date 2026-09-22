@@ -150,7 +150,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
       <aside className="rail" aria-label="The desk">
         <div className="tabs" role="tablist" aria-label="Desk views">
           {TABS.map((t) => (
-            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`}
+            <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={tab === t ? "railpanel" : undefined}
               tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}
               onKeyDown={(e) => {
                 const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
@@ -161,7 +161,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
           ))}
         </div>
 
-        <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
+        <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
         {tab === "feed" ? <Feed game={game} act={act} busy={busy} /> : <>
         <Ledger game={game} />
 

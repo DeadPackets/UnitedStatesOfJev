@@ -2,6 +2,12 @@ import { useEffect, useRef, type ReactNode } from "react";
 import type { GamePack, ViewEvent } from "./api";
 import { Meter } from "./Ledger";
 
+/** Every close runs through the dialog itself, so the browser hands focus back to whatever opened it. */
+export const closeDialog = (e: { currentTarget: HTMLElement }) => e.currentTarget.closest("dialog")?.close();
+
+/** The sheet keeps its exit on screen for one transition, then the caller unmounts it. */
+export const UNMOUNT = 200;
+
 function Poster({ label, children, block, onClose }: { label: string; children: ReactNode; block: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
@@ -9,8 +15,8 @@ function Poster({ label, children, block, onClose }: { label: string; children: 
   return (
     <dialog ref={ref} className="poster" aria-label={label}
       onCancel={(e) => { if (block) e.preventDefault(); }}
-      onClose={onClose}
-      onClick={(e) => { if (!block && e.target === ref.current) onClose(); }}
+      onClose={() => setTimeout(onClose, UNMOUNT)}
+      onClick={(e) => { if (!block && e.target === ref.current) ref.current.close(); }}
     >{children}</dialog>
   );
 }
@@ -23,6 +29,9 @@ type Props = {
 /** The crisis card: the poster, three stances, then what the five groups think of the answer. */
 export default function Card({ pack, event, blocs, turn, busy, onStance, onClose }: Props) {
   const answered = event.stance !== undefined;
+  // Answering removes the stance the player was standing on, so focus moves to the one action left.
+  const done = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (answered) done.current?.focus(); }, [answered]);
   const stances = event.card?.stances ?? event.stances;
   const title = event.card?.title ?? "The floor has news.";
   return (
@@ -44,7 +53,7 @@ export default function Card({ pack, event, blocs, turn, busy, onStance, onClose
             ))}
           </div>
           <p className="lede">{event.outcome ?? stances[event.stance!]}</p>
-          <button className="btn" onClick={onClose}>Close the card</button>
+          <button ref={done} className="btn" onClick={closeDialog}>Close the card</button>
         </>
       )}
     </Poster>
@@ -59,7 +68,7 @@ export function Announce({ pack, keys, onClose }: { pack: GamePack; keys: string
     <Poster label={items[0]!.name} block={false} onClose={onClose}>
       <div className="kicker">{pack.title}</div>
       {items.map((e) => <div key={e!.key}><h2>{e!.name}</h2><p>{e!.headline}</p></div>)}
-      <button className="btn" onClick={onClose}>Close the notice</button>
+      <button className="btn" onClick={closeDialog}>Close the notice</button>
     </Poster>
   );
 }

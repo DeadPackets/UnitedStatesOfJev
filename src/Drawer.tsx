@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { animate, useReducedMotion } from "motion/react";
 import type { GamePack, ViewBill, ViewMember } from "./api";
 import { art, initials as letters } from "./theme";
+import { UNMOUNT, closeDialog } from "./Card";
 
 const TENURE = { long: "veteran", mid: "second term", new: "first term" } as const;
 export type LobbyKind = keyof GamePack["lobby"];
@@ -27,6 +28,7 @@ type MemberDrawerProps = {
  *  view keeps both in the Worker, so what the seat said on this bill stands in for them. */
 export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobby, onClose }: MemberDrawerProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const done = useRef<HTMLButtonElement>(null);
   useEffect(() => { const d = ref.current; if (d && !d.open) d.showModal(); }, []);
   const faction = pack.factions.find((f) => f.id === member.faction);
   const region = pack.regions.find((g) => g.id === member.region);
@@ -39,8 +41,10 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
   const said = bill?.quotes?.find((q) => q.name === member.name)?.text;
   const offered = bill?.offers[member.id];
   const canLobby = !!bill?.whip && !bill.votes && !offered;
+  // An accepted offer takes the lobby buttons away, so focus moves to the one action left.
+  useEffect(() => { if (!canLobby) done.current?.focus(); }, [canLobby]);
   return (
-    <dialog ref={ref} className="drawer" aria-label={member.name} onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose(); }}>
+    <dialog ref={ref} className="drawer" aria-label={member.name} onClose={() => setTimeout(onClose, UNMOUNT)} onClick={(e) => { if (e.target === ref.current) ref.current.close(); }}>
       <div className="plate" aria-hidden="true">
         <span>{letters(member.name)}</span>
         <img src={art(pack.id, `members/${member.id}-plate.png`)} alt="" loading="eager"
@@ -79,7 +83,7 @@ export function MemberDrawer({ pack, member, capital, bill, before, busy, onLobb
           ))}
         </div>
       ) : null}
-      <button className="btn ghost" onClick={onClose}>Close the file</button>
+      <button ref={done} className="btn ghost" onClick={closeDialog}>Close the file</button>
     </dialog>
   );
 }
