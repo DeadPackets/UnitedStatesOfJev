@@ -20,6 +20,9 @@ export function useSheet(onClose: () => void) {
     if (!d.open) d.showModal();
     const watch = new MutationObserver(() => {
       if (d.open || timer.current) return;
+      // A sheet that opened itself can outlive its opener, and the browser then restores focus to
+      // <body>. The screen's one primary action is where the player is going next, so send it there.
+      if (document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
       timer.current = setTimeout(onClose, UNMOUNT) as unknown as number;
     });
     watch.observe(d, { attributeFilter: ["open"] });

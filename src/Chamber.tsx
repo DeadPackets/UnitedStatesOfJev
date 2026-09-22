@@ -172,7 +172,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
             <textarea id="bill" value={text} onChange={(e) => setText(e.target.value)}
               placeholder={`Say what your ${v.bill} does, and who pays for it.`} maxLength={1200} rows={4} />
             <div className="actions">
-              <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || text.trim().length < 12} onClick={draft}>
+              <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy || text.trim().length < 12} onClick={draft}>
                 {busy ? "Drafting" : `Send the ${v.bill}`}
               </button>
             </div>
@@ -191,13 +191,13 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
               </div>
             ) : null}
             <div className="actions">
-              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
+              {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
               {whipped && !voted ? <>
-                <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
+                <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
                 {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
                 <span className="small muted">Tap a {v.seat} to make an offer.</span>
               </> : null}
-              {voted && !rolling ? <button className="btn" disabled={busy} onClick={() => setDismissed(bill.id)}>Next {v.bill}</button> : null}
+              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => setDismissed(bill.id)}>Next {v.bill}</button> : null}
             </div>
             {amendments?.length && !voted ? (
               <div className="amend"><div className="kicker">Adopt an amendment</div>
