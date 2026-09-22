@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
-  applyEscalation, ESCALATION_EFFECTS, FAVOR_OWED, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
+  applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, LAW_LOST, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
 } from "./engine";
 import { whipState } from "./jev";
@@ -94,7 +94,7 @@ test("a passed bill moves the five ledgers", () => {
   expect(b.passed).toBe(true);
   expect(b.yes).toBe(16);
   expect(b.threshold).toBe(pack.chamber.threshold);
-  expect(g.ledgers.authority).toBe(before.authority + 5);
+  expect(g.ledgers.authority).toBe(before.authority + 2);
   expect(g.ledgers.loyalty).toBe(before.loyalty + 3);
   expect(g.streak).toBe(1);
   expect(g.patrons["grand-exchange"]).toBe(1);
@@ -126,7 +126,7 @@ test("a failed bill costs capital and party mood", () => {
   const b = bill(g, 0);
   applyVote(pack, g, b);
   expect(b.passed).toBe(false);
-  expect(g.ledgers.authority).toBe(before.authority - 5);
+  expect(g.ledgers.authority).toBe(before.authority - 2);
   expect(g.ledgers.loyalty).toBe(before.loyalty - 2);
   expect(g.streak).toBe(0);
 });
@@ -287,7 +287,7 @@ test("a term cut short still scores its bills and promises", () => {
   const g = game();
   const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);
   for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
-  g.ledgers.authority = 5;
+  g.ledgers.authority = LAW_LOST;
   g.ledgers.loyalty = 15;
   applyVote(pack, g, bill(g, 0));
   expect(g.result!.ending).toBe("impeached");
@@ -405,9 +405,9 @@ test("a hostile party shows in the whip state, and a favor comes back as capital
   expect(m.memory).toContain(FAVOR_OWED);
   applyVote(pack, h, b);                    // the bill the favor bought does not repay it
   expect(m.memory).toContain(FAVOR_OWED);
-  const capital = h.ledgers.authority;
+  const authority = h.ledgers.authority;
   applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((x) => [x.id, x.id === m.id ? 1 : 0])) }));
-  expect(h.ledgers.authority).toBe(capital - 5 + 10);
+  expect(h.ledgers.authority).toBe(authority - 2 + 1);
   expect(m.memory).not.toContain(FAVOR_OWED);
 });
 
@@ -627,4 +627,50 @@ test("apathy thins the turnout of the player's strongest groups at the test", ()
     intent: Object.fromEntries(pack.citizens.map((c) => [c.id, c.bloc === "dockworkers" || c.bloc === "merchants" ? 1 : 0])),
   };
   expect(runTest(pack, h, answers).public).toBeLessThan(runTest(pack, g, answers).public);
+});
+
+test("each ledger has a failure line, the pack may rename it and the engine reads both", () => {
+  const g = game();
+  expect(ledgerLine(pack, "loyalty")).toBe(20);
+  expect(ledgerLine(pack, "popularity")).toBe(30);
+  expect(ledgerValue(pack, g, "authority")).toBe(g.ledgers.authority);
+  expect(ledgerValue(pack, g, "popularity")).toBeCloseTo(nationalPopularity(pack, g), 5);
+  // A new game opens treasury 0 and chest 0, and both lines are 0, so both are already at the line.
+  expect(belowLine(pack, g)).toEqual(["treasury", "chest"]);
+  g.ledgers.loyalty = 10;
+  expect(belowLine(pack, g)).toEqual(["treasury", "chest", "loyalty"]);   // LEDGERS_V4 order, no sort
+  g.ledgers.treasury = 5; g.ledgers.chest = 5; g.ledgers.loyalty = 55;
+  expect(belowLine(pack, g)).toEqual([]);
+});
+
+test("an act is paid from three ledgers and refused when one is short", () => {
+  const g = game();
+  g.ledgers.treasury = 10;
+  expect(canAfford(pack, g, { authority: 5, treasury: 10, chest: 0 })).toBe(true);
+  expect(canAfford(pack, g, { authority: 5, treasury: 11, chest: 0 })).toBe(false);
+  const wire = pay(pack, g, { authority: 5, treasury: 10, chest: 0 }, "a decree");
+  expect(g.ledgers.treasury).toBe(0);
+  expect(wire.map((w) => w.ledger)).toEqual(["authority", "treasury"]);   // the loop's order, chest skipped at 0
+  expect(wire[0].cause).toBe("a decree");
+  expect(wire.every((w) => w.kind === "ledger")).toBe(true);
+});
+
+test("spec section 4's sources pay: a kept promise, and the chest capped per verdict", () => {
+  const g = game();
+  const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);
+  const pass = () => applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
+  pass();
+  const before = g.ledgers.authority;
+  pass();                                              // the second pass on the tariffs tag keeps the promise
+  expect(g.promises.tariffs.state).toBe("kept");
+  expect(g.ledgers.authority).toBe(before + 2 + PROMISE_AUTHORITY);   // the law passed, then the promise kept
+
+  const h = game();
+  for (const p of pack.patrons) h.patrons[p.id] = 2;   // every one of the pack's ten patrons at its ceiling
+  applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((m) => [m.id, back(m)])) }));
+  // 10 patrons x 2 = 20, which is exactly CHEST_CAP: the cap is the ceiling a ten-patron pack already sits
+  // at, and it binds only where Stage B raises a patron's payout above 2.
+  expect(h.ledgers.chest).toBe(CHEST_CAP);
+  applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((m) => [m.id, back(m)])) }));
+  expect(h.ledgers.chest).toBe(CHEST_CAP * 2);         // it is a cap a verdict, not a cap a term
 });

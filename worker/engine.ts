@@ -1,4 +1,4 @@
-import type { Pack, Member as PackMember, Storylet } from "./pack";
+import type { LedgerV4, Pack, Member as PackMember, Price, Storylet } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -49,9 +49,52 @@ export interface Game {
   escalations: EscalationKey[]; stageB: Partial<Record<EscalationKey, number>>;
   marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
   lastApprove: Record<string, number>;   // previous citizen mean per region, the 0.05 gate
+  revolt: number | null;   // the turn loyalty fell under its line; the faction votes as opposition for it
   economy?: string; terms: TermRecord[]; test?: TestResult;
   midterm?: Midterm; campaign?: Campaign;
   result?: { ending: Ending; score: number };
+}
+
+// kind says what moved (planning brief ruling 7): a resistance move has no ledger, so Stage C's wire reads
+// kind, never a borrowed ledger name.
+export interface WireLine { kind: "ledger" | "resistance" | "promise" | "card"; ledger?: LedgerV4; id?: string | null; delta: number; cause: string }
+
+// Spec §4. The pack may move a line; these are the defaults the generator is told to use.
+export const LEDGER_LINES: Record<LedgerV4, number> = { treasury: 0, authority: 0, chest: 0, loyalty: 20, popularity: 30 };   // TUNE
+export const REVOLT_WHIP = 0.15;   // TUNE, spec §4: under its line the faction votes as opposition
+// Spec §4's table, as numbers. v2 paid ±5 a vote and +10 a favour, which made authority the only ledger
+// that mattered; §4 prices a law at 2 and a kept promise at 3, so promises and holders carry the run.
+export const LAW_PASSED = 2;         // TUNE, §4: a law passed
+export const LAW_LOST = 2;           // TUNE, §4: a lost vote
+export const STRUCK_DECREE = 3;      // TUNE, §4: a struck decree
+export const PROMISE_AUTHORITY = 3;  // TUNE, §4: a promise kept
+export const PROMISE_LOYALTY = 5;    // TUNE, §4: a promise kept
+export const FAVOUR_REPAID = 1;      // TUNE, §4: a favour repaid
+export const CHEST_CAP = 20;         // TUNE, §4: the patrons' payout, capped a turn
+
+export const ledgerLine = (pack: Pack, l: LedgerV4): number => pack.constitution?.ledgers[l].line ?? LEDGER_LINES[l];
+
+export function ledgerValue(pack: Pack, game: Game, l: LedgerV4): number {
+  return l === "popularity" ? nationalPopularity(pack, game) : game.ledgers[l];
+}
+
+export function belowLine(pack: Pack, game: Game): LedgerV4[] {
+  // LEDGER_LINES keeps LEDGERS_V4's order; a value import of ./pack here cycles through TEMPERAMENTS.
+  return (Object.keys(LEDGER_LINES) as LedgerV4[]).filter((l) => ledgerValue(pack, game, l) <= ledgerLine(pack, l));
+}
+
+export const canAfford = (_pack: Pack, game: Game, price: Price): boolean =>
+  game.ledgers.authority >= price.authority && game.ledgers.treasury >= price.treasury && game.ledgers.chest >= price.chest;
+
+export function pay(_pack: Pack, game: Game, price: Price, cause: string): WireLine[] {
+  const out: WireLine[] = [];
+  for (const l of ["authority", "treasury", "chest"] as const) {
+    const d = price[l];
+    if (!d) continue;
+    game.ledgers[l] = round1(clamp(game.ledgers[l] - d, 0, l === "authority" ? 200 : 9999));
+    out.push({ kind: "ledger", ledger: l, delta: -d, cause });
+  }
+  return out;
 }
 
 export const TURNS_PER_TERM = 20;
@@ -122,7 +165,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
-    lastApprove: {}, terms: [],
+    lastApprove: {}, terms: [], revolt: null,
   };
   const shuffled = [...game.members].sort(() => r() - 0.5);
   for (const m of shuffled.slice(0, Math.max(1, Math.round(pack.chamber.size * 0.15)))) m.situation = SITUATIONS[Math.floor(r() * SITUATIONS.length)];
@@ -229,6 +272,7 @@ export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
     let p = (bill.whip?.[m.id] ?? 0) + m.mood;
     for (const e of on(game)) p += e.whip?.(game, m) ?? 0;
     if (m.loyalty > 0 && m.loyalty < 30) p = Math.min(p, 0.15);   // a coalition partner under 30 votes as opposition
+    if (game.revolt === game.turn && m.faction === game.faction) p = Math.min(p, REVOLT_WHIP);
     out[m.id] = clamp(p, 0, 1);
   }
   return out;
@@ -246,7 +290,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   Object.assign(bill, { votes, yes, threshold: th, passed, struck, vetoed: Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6) });
 
   const L = game.ledgers;
-  L.authority = clamp(L.authority + (passed ? 5 : -5) - (struck ? 5 : 0), 0, 200);
+  L.authority = clamp(L.authority + (passed ? LAW_PASSED : -LAW_LOST) - (struck ? STRUCK_DECREE : 0), 0, 200);
   const own = game.members.filter((m) => m.faction === game.faction);
   const ownYes = own.filter((m) => votes[m.id]).length;
   L.loyalty = clamp(L.loyalty + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
@@ -256,7 +300,8 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   // Jev scores opposition 0..2, so 1 is neutral for a patron and 1 - s/2 is a bloc's approval.
   for (const [id, s] of Object.entries(bill.patrons ?? {})) if (id in game.patrons) game.patrons[id] = clamp(round1(game.patrons[id] + (1 - s)), -2, 2);
   for (const [id, s] of Object.entries(bill.blocs ?? {})) if (id in game.blocs) game.blocs[id] = clamp(1 - s / 2, 0, 1);
-  L.chest = round1(L.chest + Object.values(game.patrons).reduce((a, b) => a + Math.max(0, b), 0) * (first(game, "chest") ?? 1));
+  // §4: the patrons pay each verdict, capped a turn, so a wall of happy patrons is not an infinite chest.
+  L.chest = round1(L.chest + Math.min(CHEST_CAP, Object.values(game.patrons).reduce((a, b) => a + Math.max(0, b), 0) * (first(game, "chest") ?? 1)));
 
   if (passed && !struck) for (const t of bill.tags) keepPromise(pack, game, t);
   for (const e of on(game)) e.verdict?.(pack, game, bill);
@@ -268,7 +313,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     else if (bill.offers[m.id]) line = votes[m.id] ? `Took the offer on "${bill.title}" and voted with the government.` : `Refused the offer on "${bill.title}".`;
     else if (votes[m.id] && m.memory.includes(FAVOR_OWED)) {
       m.memory = m.memory.filter((x) => x !== FAVOR_OWED);
-      L.authority = clamp(L.authority + 10, 0, 200);
+      L.authority = clamp(L.authority + FAVOUR_REPAID, 0, 200);
       line = `Returned the favor and voted for "${bill.title}".`;
     }
     else if (m.faction === game.faction && !votes[m.id]) line = `Broke with their own faction and voted against "${bill.title}".`;
@@ -293,7 +338,8 @@ function keepPromise(pack: Pack, game: Game, tag: string) {
   if (!p || p.state !== "pending") return;
   if (++p.passed < 2) return;
   p.state = "kept";
-  game.ledgers.loyalty = clamp(game.ledgers.loyalty + 5, 0, 100);
+  game.ledgers.loyalty = clamp(game.ledgers.loyalty + PROMISE_LOYALTY, 0, 100);
+  game.ledgers.authority = clamp(game.ledgers.authority + PROMISE_AUTHORITY, 0, 200);
   for (const r of pack.regions) bump(game, r.id, 4);
 }
 function checkPromises(pack: Pack, game: Game) {
