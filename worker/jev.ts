@@ -1,5 +1,6 @@
 import { popularity, record, threshold, type Bill, type Game, type Member, type Reaction } from "./engine";
 import type { Citizen, Holder, Pack, Storylet } from "./pack";
+import { recordGolden } from "./golden";
 
 export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
@@ -8,6 +9,7 @@ export type Env = {
   DAILY_SECRET: string;
   MODEL?: string;
   BOTS?: string;
+  GOLDEN?: string;
 };
 export class UpstreamError extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -27,7 +29,15 @@ export async function post(env: Env, path: string, body: unknown): Promise<any> 
       if (attempt < 2) { await new Promise((res) => setTimeout(res, 300)); continue; }
       throw new UpstreamError(0, String(e));
     }
-    if (r.ok) return r.json();
+    if (r.ok) {
+      const answer = await r.json();
+      // Only the two model endpoints are a prompt set. worker/art.ts:34 posts image bodies through this
+      // same function, and a base64 sheet is not a prompt.
+      if (path === "systemone" || path === "chat/completions") {
+        await recordGolden(env, path === "systemone" ? "jev" : "luna", body, answer);
+      }
+      return answer;
+    }
     const text = await r.text();
     if (attempt === 0 && (r.status === 429 || r.status >= 500)) { await new Promise((res) => setTimeout(res, 300)); continue; }
     throw new UpstreamError(r.status, text.slice(0, 300));
