@@ -57,9 +57,10 @@ li, figcaption { text-wrap: pretty; }
 .num { font-variant-numeric: tabular-nums; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; touch-action: manipulation; }
 button:disabled { opacity: 0.4; cursor: default; }
-:focus-visible { outline: 2px solid var(--danger); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 textarea, input, select { font: inherit; color: inherit; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+a.sr:focus { z-index: var(--z-coach); width: auto; height: auto; clip: auto; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; background: var(--paper); color: var(--ink); }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border: 2px solid var(--ink); background: var(--ink); color: var(--bg);
   font: 800 19px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; transition: transform var(--t-fast) var(--ease-out), background var(--t-state), color var(--t-state); }
@@ -456,8 +457,6 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; pointer-events: none; }
 .coach .kicker { color: var(--bg); opacity: 0.7; }
 .coach .link { color: var(--bg); opacity: 0.75; padding: 0; pointer-events: auto; }
-[data-tour-hot="true"] { animation: hot 1.4s ease-in-out infinite; }
-@keyframes hot { 50% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--danger) 0%, transparent); } 0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 55%, transparent); } }
 
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 18px; font-size: 14px; font-weight: 500; z-index: var(--z-toast); animation: rise var(--t-state) var(--ease-out) both; }
 

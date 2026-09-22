@@ -26,8 +26,8 @@ export default function Wire({ game, onPick }: { game: GameView; onPick: (k: Led
             const icon = l.kind === "ledger" && l.ledger ? (l.ledger as IconName) : GLYPH[l.kind] ?? "act";
             const body = <><Icon name={icon} sm /><b className="num">{sign(l.delta)}</b><span>{wireLabel(l, names)}</span></>;
             return l.kind === "ledger" && l.ledger
-              ? <button key={`${r}-${i}`} className={`w ${wireHue(l)}`} onClick={() => onPick(l.ledger as LedgerKey, l.cause)}>{body}</button>
-              : <span key={`${r}-${i}`} className={`w ${wireHue(l)}`}>{body}</span>;
+              ? <button key={`${r}-${i}`} className={`w ${wireHue(l)}`} tabIndex={r ? -1 : undefined} aria-hidden={r ? true : undefined} onClick={() => onPick(l.ledger as LedgerKey, l.cause)}>{body}</button>
+              : <span key={`${r}-${i}`} className={`w ${wireHue(l)}`} aria-hidden={r ? true : undefined}>{body}</span>;
           }))}
           {game.pending ? <span className="w"><b className="num">Next</b><span>{game.pending}</span></span> : null}
         </div>

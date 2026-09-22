@@ -10,14 +10,17 @@ export default function Compose({ game, act, busy, verb, onVerb, text, onText }:
   verb: VerbKey | null; onVerb: (v: VerbKey) => void; text: string; onText: (s: string) => void;
 }) {
   const list = VERBS.filter((v) => game.instruments[v]);
-  const i = verb ? list.indexOf(verb) : 0;
+  const open = list.filter((v) => game.instruments[v]!.affordable);
+  // the one tab stop: the picked verb, or the first open one while none is picked
+  const stop = verb && open.includes(verb) ? verb : open[0];
+  const i = open.indexOf(stop);
   const keys = (e: KeyboardEvent<HTMLButtonElement>) => {
     const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-    const j = d ? (i + d + list.length) % list.length : e.key === "Home" ? 0 : e.key === "End" ? list.length - 1 : -1;
+    const j = d ? (i + d + open.length) % open.length : e.key === "Home" ? 0 : e.key === "End" ? open.length - 1 : -1;
     if (j < 0) return;
     e.preventDefault();
-    onVerb(list[j]);
-    document.getElementById(`verb-${list[j]}`)?.focus();
+    onVerb(open[j]);
+    document.getElementById(`verb-${open[j]}`)?.focus();
   };
   const price = () => act(() => api.price(game, text.trim(), verb ?? undefined));
   return (
@@ -26,7 +29,7 @@ export default function Compose({ game, act, busy, verb, onVerb, text, onText }:
         {list.map((v) => {
           const ins = game.instruments[v]!;
           return (
-            <button key={v} id={`verb-${v}`} role="tab" aria-selected={verb === v} tabIndex={verb === v ? 0 : -1}
+            <button key={v} id={`verb-${v}`} role="tab" aria-selected={verb === v} tabIndex={stop === v ? 0 : -1}
               disabled={!ins.affordable} title={ins.affordable ? undefined : "Not affordable this turn"}
               onKeyDown={keys} onClick={() => onVerb(v)}>{ins.name}</button>
           );

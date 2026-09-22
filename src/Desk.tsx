@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReduced } from "./motion";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
@@ -20,13 +20,13 @@ import { settleVerb, unreadTabs, type LedgerKey, type VerbKey } from "./rules";
 import Rail, { type Tab } from "./Rail";
 import { Country, Room, RecordTab } from "./Panels";
 
-type Vocab = GameView["pack"]["vocabulary"];
-
-const TOUR = (v: Vocab): Record<string, TourStep> => ({
-  write: { id: "write", anchor: "billpad", title: `1 of 3 · Write a ${v.bill}`, text: `Say what it does in a sentence or two. The clerk writes it up, and every ${v.member} reads it.` },
-  count: { id: "count", anchor: "whip", title: `2 of 3 · ${v.whip}`, text: `One call asks all of them how they will vote. Then tap a faint ${v.seat} on your own side.` },
-  lobby: { id: "lobby", anchor: "seat", title: `2 of 3 · ${v.lobby}`, text: `That is the softest ${v.seat} on your side. Tap it, make an offer, watch the number move.` },
-  vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: `The count is a forecast, not a promise. Every ${v.member} rolls their own dice.` },
+const TOUR = (game: GameView): Record<string, TourStep> => ({
+  write: { id: "write", anchor: "compose", title: "1 of 3 · Say what you are doing",
+    text: "Seven instruments, each with its own price. Write the act in a sentence and the right one settles itself." },
+  price: { id: "price", anchor: "tag", title: "2 of 3 · Read the price",
+    text: `What it costs, what it earns, who it serves and who it hits. Nothing is hidden, so ${game.ruler.role} can see a loss coming.` },
+  end: { id: "end", anchor: "end", title: `3 of 3 · End the ${game.pack.vocabulary.turn}`,
+    text: "Acts resolve as you make them. The world moves only when you end the turn." },
 });
 
 type DeskProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
@@ -107,20 +107,15 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   useEffect(() => { if (game.pending) setLive(`Next ${v.turn}. ${game.pending}`); }, [game.pending]); // eslint-disable-line
   useEffect(() => { if (whipped && !voted) setLive(`${v.whip}: ${exp.toFixed(1)} expected yes, ${need} needed.`); }, [whipped, voted]); // eslint-disable-line
 
-  const weakest = useMemo(() => (whipped && !voted
-    ? game.members.filter((m) => m.faction === game.faction).sort((a, b) => (bill!.whip![a.id] ?? 0) - (bill!.whip![b.id] ?? 0))[0]
-    : undefined), [whipped, voted, game.members, game.faction, bill?.whip]); // eslint-disable-line
-  const steps = TOUR(v);
+  const steps = TOUR(game);
   const pickSeat = useCallback((id: string) => { if (!rolling) setPick((p) => ({ id, n: (p?.n ?? 0) + 1 })); }, [rolling]);
   const step: TourStep | null = !tour ? null
-    : !bill ? steps.write
-    : !whipped ? steps.count
-    : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
-    : !voted ? steps.vote : null;
-  const hotSeat = useMemo(() => (step?.id === "lobby" && weakest ? [weakest.id] : undefined), [step?.id, weakest?.id]);
+    : !game.tag && !game.refusal && !text.trim() ? steps.write
+    : game.tag || game.refusal ? steps.price
+    : steps.end;
   const endTour = () => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
-  const wasVoted = useRef(voted);
-  useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
+  const wasEnded = useRef(game.turn);
+  useEffect(() => { if (tour && game.turn > wasEnded.current) endTour(); wasEnded.current = game.turn; }, [game.turn]); // eslint-disable-line
 
   // The drawer stays open after an offer so the player watches the percentage move; the seat pulses behind it.
   const pulsing = useRef(0);
@@ -142,6 +137,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
 
   return (
     <main className="desk press" onPointerDown={sound.unlock}>
+      <a className="sr" href="#actpad">Skip to the desk</a>
       <header className="mast">
         <b>{pack.title}</b>
         <nav aria-label={v.turn}>
@@ -179,9 +175,9 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
                   </div>
                 ) : null}
                 <div className="actions">
-                  {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-tour="whip" data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
+                  {!whipped ? <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy} onClick={() => act(() => api.whip(game))}>{busy ? "Counting" : v.whip}</button> : null}
                   {whipped && !voted ? <>
-                    <button className={`btn ${busy ? "busy" : ""}`} data-tour="vote" data-tour-hot={step?.id === "vote"} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
+                    <button className={`btn ${busy ? "busy" : ""}`} data-primary disabled={busy} onClick={() => act(() => api.vote(game))}>{busy ? "Voting" : "Call the vote"}</button>
                     {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
                     <span className="small muted">Tap a {v.seat} to make an offer.</span>
                   </> : null}
@@ -235,7 +231,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
           <div className="floorbox">
             <ChamberFloor ref={floor} pack={pack} members={game.members} own={game.faction} coalition={game.coalition}
               whip={bill?.whip} votes={bill?.votes} rolling={rolling} pulse={pulse} selected={sel?.id}
-              hot={hotSeat} onPick={pickSeat} />
+              onPick={pickSeat} />
           </div>
         {!bill ? <p className="prompt rise" style={{ margin: "0 auto" }}>{game.seatTitle}. Write a {v.bill}.</p> : (
           <>
