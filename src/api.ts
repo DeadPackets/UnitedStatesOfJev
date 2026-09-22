@@ -1,6 +1,19 @@
 import type { Game, LobbyAction } from "../worker/engine";
+import type { Pack } from "../worker/pack";
 
 export type GameView = Game & { billsPerTerm: number | null };
+/** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. No screen reads either. */
+export type PackView = Pack;
+export type Offer = { id: string; title: string; era: string; place: string; description: string; p: number };
+export type MatchResult = { build?: true; load?: string; offer?: Offer[] };
+export type Fragment = { kind: string } & Record<string, unknown>;
+export type FrameFragment = {
+  kind: "frame"; title: string; era: string; place: string; description: string;
+  theme: Partial<Pack["theme"]>; factions: { id: string; name: string; short: string; color: string }[];
+  problems?: string[]; vocabulary?: Pack["vocabulary"];
+};
+export type BuildState = { status: string; step: string | null; fragments: Fragment[]; pack?: PackView; error?: string };
+
 export class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
@@ -11,8 +24,10 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
 }
 
 export const api = {
-  daily: () => call<{ code: string }>("/daily"),
-  create: (code: string) => call<GameView>("/games", { code }),
+  match: (prompt: string) => call<MatchResult>("/scenarios/match", { prompt }),
+  build: (prompt: string) => call<{ id: string }>("/scenarios", { prompt }),
+  scenario: (id: string) => call<BuildState>(`/scenarios/${id}`),
+  seat: (scenario: string, faction: string, promises: number[], seed: number) => call<GameView>("/games", { scenario, faction, promises, seed }),
   load: (id: string) => call<GameView>(`/games/${id}`),
   draft: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/bills`, { turn: g.turn, text }),
   whip: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/whip`, { turn: g.turn }),
