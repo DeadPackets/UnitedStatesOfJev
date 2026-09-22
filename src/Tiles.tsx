@@ -52,7 +52,17 @@ const TARGET = 44 * 44 * 2;
 export function floorWeights(weights: number[], boxArea: number, min = TARGET): number[] {
   const total = weights.reduce((a, b) => a + b, 0) || 1;
   const floor = min / (boxArea || 1);
-  return weights.map((w) => Math.max(w / total, floor));
+  // squarify divides by the sum it is handed, so a floor applied once is eroded by its own lifting:
+  // k lifted tiles next to one large region leave each of them F/(R+kF). Lift, renormalise, repeat —
+  // the lifted set only grows, so it settles; past the point where the box cannot hold one target
+  // per region every round clamps everything alike and the cap hands back the even split.
+  let out = weights.map((w) => w / total);
+  for (let round = 0; round < 8; round++) {
+    const sum = out.reduce((a, b) => a + b, 0) || 1;
+    if (out.every((x) => x / sum >= floor)) break;
+    out = out.map((x) => Math.max(x / sum, floor));
+  }
+  return out;
 }
 
 /** The map: one tile per region, area by weight. It paints what it is given and owns no clock. */

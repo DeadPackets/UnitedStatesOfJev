@@ -47,6 +47,20 @@ test("a floored map holds a 44px target in every tile, phone and desktop", () =>
   }
 });
 
+// squarify renormalises by the sum it is handed, so one dominant region next to a long tail used to
+// erode the floor it had just been given: 59 lifted tiles plus a 0.5 region gave a 29 px side on a phone.
+test("a long tail beside one big region still holds its targets", () => {
+  const tail = [0.5, ...Array(59).fill(0.5 / 59)];
+  for (const [w, h] of [[760, 471], [358, 448]]) {
+    const lay = floorWeights(tail, w * h);
+    const out = squarify(lay.map((weight, i) => ({ weight, i })), { x: 0, y: 0, w, h });
+    for (const r of out) {
+      expect(r.w * r.h).toBeGreaterThanOrEqual(44 * 44);
+      expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(44);
+    }
+  }
+});
+
 test("the floor only lifts the tiles that need it", () => {
   const even = Array(8).fill(0.125);
   expect(floorWeights(even, 760 * 471)).toEqual(even);
