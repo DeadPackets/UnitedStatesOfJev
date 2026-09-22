@@ -289,8 +289,10 @@ test("an early test brings its caller in and renormalises the weights", () => {
   expect(r.mandate).toBeCloseTo(1 / (1 + EARLY_WEIGHT), 5);
 
   Object.assign(g, { stage: "test", phase: "over", earlyTest: "guard", turn: 11 });
+  g.holders.guard.resistance = g.holders.guard.line + 5;
   endTerm(pack, g, r);                                   // won: the term goes on, into the half-term it cut off
   expect([g.stage, g.earlyTest, g.result, g.terms.length]).toEqual(["midterm", undefined, undefined, 0]);
+  expect(g.holders.guard.resistance).toBe(g.holders.guard.line - 1);   // under its line, so it does not call again next turn
   endTerm(pack, g, earlyTest(pack, g, "guard", { council: 0, street: 0, guard: 0 }));
   expect(g.stage).toBe("over");                          // lost: the term ends
 });
@@ -970,7 +972,7 @@ test("one turn's Jev answers can only move the country so far", () => {
   expect(Math.abs(second[REGIONS[0]])).toBeCloseTo(4, 1);       // only 4 of the 12 was left
   expect(g.swing).toBeCloseTo(JEV_SWING, 1);
   const third = capSwing(pack, g, all(-8));
-  expect(third[REGIONS[0]]).toBeCloseTo(0, 5);   // round1(-8 * 0) is -0, and Object.is(-0, 0) is false
+  expect(third[REGIONS[0]]).toBe(0);
   endTurn(pack, g);
   expect(g.swing).toBe(0);
 });
@@ -1018,6 +1020,8 @@ test("three quiet turns owe the player a card", () => {
   const g = game();
   endTurn(pack, g);
   expect(g.quiet).toBe(1);                       // no act, no vote, no rate: not one ledger line
+  endTurn(pack, g);
+  expect(g.quiet).toBe(2);                       // last turn's rival line is not this turn's move
   const h = game();
   h.quiet = FIC_TURNS;
   h.director.lastCrisis = h.turn;                // even with a crisis last turn, the floor fires

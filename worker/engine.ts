@@ -361,7 +361,7 @@ export function capSwing(pack: Pack, game: Game, deltas: Record<string, number>)
   const k = move <= room ? 1 : room / move;
   game.swing = round1(game.swing + move * k);
   if (k === 1) return deltas;
-  return Object.fromEntries(Object.entries(deltas).map(([id, d]) => [id, round1(d * k)]));
+  return Object.fromEntries(Object.entries(deltas).map(([id, d]) => [id, round1(d * k) || 0]));   // never -0
 }
 
 export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
@@ -726,7 +726,9 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   for (const e of on(game)) e.turn?.(pack, game);
 
   const voted = game.turn;
-  game.quiet = [...game.wire, ...wire].some((w) => w.kind === "ledger") ? 0 : game.quiet + 1;
+  // game.wire still holds last turn's tick until this turn's first push, and that tick is not this turn's move.
+  const acted = game.wireTurn === game.turn ? game.wire : [];
+  game.quiet = [...acted, ...wire].some((w) => w.kind === "ledger") ? 0 : game.quiet + 1;
   // After the quiet count: the rival moves every turn, so counting it would keep the FicMachine floor from firing.
   const rival = game.stage === "session" || game.stage === "midterm" ? rivalMove(pack, game) : null;
   game.rival = rival?.move ?? null;
@@ -1264,6 +1266,9 @@ export function endTerm(pack: Pack, game: Game, test: TestResult): void {
   // §6: only a lost early test ends the term; a won one resumes it where the fired warning stopped the turn.
   if (test.early && test.won) {
     game.earlyTest = undefined;
+    // Survived: the caller steps back under its line, so it does not warn again the next turn on the same grievance.
+    const h = game.holders[test.early];
+    if (h) h.resistance = Math.min(h.resistance, Math.max(0, h.line - 1));
     if (game.turn > TURNS_PER_TERM) game.stage = "test";
     else { game.stage = game.turn === 11 ? "midterm" : "session"; game.phase = "draft"; }   // 11: turn 10's half-term was skipped
     return;
