@@ -3,14 +3,10 @@ import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
   applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
+  easeResistance, holdersOf, nearestLine, raiseResistance, weightOf, advanceWarnings, fireResponse, WARN_TURNS,
+  endTurn, enact, inForceAge, repeal, STRIKE_HIT, authorPromise, PROMISE_WINDOW, record, RECORD_TOKENS,
+  bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR,
 } from "./engine";
-import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, weightOf } from "./engine";
-import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
-import { endTurn } from "./engine";
-import { enact, inForceAge, repeal, STRIKE_HIT } from "./engine";
-import { authorPromise, PROMISE_WINDOW } from "./engine";
-import { record, RECORD_TOKENS } from "./engine";
-import { bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
