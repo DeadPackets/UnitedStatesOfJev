@@ -103,7 +103,8 @@ export const PackSchema = z.object({
   // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
   art: z.object({ masthead: z.string(), crests: z.array(IdStr), portraits: z.array(IdStr).default([]) }),
 }).refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
-  .refine((p) => p.starts.length === p.factions.length, "one start per faction");
+  .refine((p) => p.starts.length === p.factions.length, "one start per faction")
+  .refine((p) => p.starts.every((s, i) => s.faction === p.factions[i].id), "starts must follow factions order");
 
 export type Pack = z.infer<typeof PackSchema>;
 export type Member = z.infer<typeof MemberSchema>;

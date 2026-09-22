@@ -27,6 +27,11 @@ test("fixture parses with generated citizens", () => {
   expect(parsed.escalations.length).toBe(20);
 });
 
+test("starts out of factions order fails validation", () => {
+  const pack = { ...mini, citizens: makeCitizens(), starts: [...mini.starts].reverse() };
+  expect(() => PackSchema.parse(pack)).toThrow("starts must follow factions order");
+});
+
 test("scaleSeats uses largest remainder with a minimum of one seat", () => {
   const seats = scaleSeats({ SPD: 206, CDU: 197, Greens: 118, FDP: 92, AfD: 83, Linke: 39, SSW: 1 }, 100);
   expect(seats).toEqual({ SPD: 28, CDU: 27, Greens: 16, FDP: 12, AfD: 11, Linke: 5, SSW: 1 });
