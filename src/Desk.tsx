@@ -11,6 +11,7 @@ import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
 import Strip from "./Strip";
+import Peek, { type PinItem } from "./Peek";
 import type { LedgerKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
@@ -43,10 +44,14 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [live, setLive] = useState("");
   const [answered, setAnswered] = useState<string | null>(null);
   const [peek, setPeek] = useState<LedgerKey | null>(null);
+  const [pins, setPins] = useState<PinItem[]>([]);
+  const [cause, setCause] = useState<string>();
+  void pins; // the rail reads it from Task 12; drop this line then
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
   const floor = useRef<RollHandle>(null);
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === "Escape") setPeek(null); }; addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, []);
 
   // The last bill stays on the desk after its vote until "Next" clears it.
   const latest = game.bills.at(-1);
@@ -131,7 +136,11 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         </nav>
       </header>
 
-      <div className="striprow"><Strip game={game} open={peek} onOpen={setPeek} /></div>
+      <div className="striprow" onPointerLeave={(e) => { if (e.pointerType === "mouse" && !document.querySelector<HTMLElement>(".peek[data-stick]")) setPeek(null); }}>
+        <Strip game={game} open={peek} onOpen={(k) => { setPeek(k); setCause(undefined); }} />
+        {peek ? <Peek game={game} of={peek} cause={cause} onClose={() => setPeek(null)}
+          onPin={(p) => setPins((xs) => (xs.some((x) => x.key === p.key) ? xs : [...xs, p]))} /> : null}
+      </div>
 
       <div className="main">
         <section className="col deskcol" aria-label="The desk">{/* the composer lands here in Task 9 */}</section>
