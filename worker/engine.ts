@@ -308,16 +308,30 @@ export const popularity = (pack: Pack, game: Game) => { const a = nationalPopula
 const bump = (game: Game, region: string, d: number) => { game.ledgers.popularity[region] = clamp(round1((game.ledgers.popularity[region] ?? 50) + d), 0, 100); };
 
 // Up to 8 lines of record, for citizen and test calls and for Luna.
-export function record(pack: Pack, game: Game) {
+export const RECORD_TOKENS = 1200;   // TUNE: the test call measured 93% of the 64k cap before v4
+const RECORD_LAWS = 5;               // TUNE: laws in force the record names, newest first
+const RECORD_HEADLINES = 3;          // TUNE: headlines the record names, newest first
+
+const estTokens = (o: unknown) => Math.ceil(JSON.stringify(o).length / 4);
+
+// One serialiser for the test, the epilogue and the years between; soft sections drop from the end to fit the budget.
+export function record(pack: Pack, game: Game, budget = RECORD_TOKENS): Record<string, unknown> {
   const p = Object.values(game.promises);
-  return {
+  const base: Record<string, unknown> = {
     term: game.term, [pack.vocabulary.turn]: game.turn,
-    kept: p.filter((x) => x.state === "kept").map((x) => x.label),
-    broken: p.filter((x) => x.state === "broken").map((x) => x.label),
     streak: game.streak, [pack.vocabulary.approval]: Math.round(nationalPopularity(pack, game)),
-    headlines: game.bills.filter((b) => b.headline).slice(-3).map((b) => b.headline!.title),
     ...(game.economy ? { economy: game.economy } : {}),
   };
+  const soft: [string, unknown][] = [
+    ["kept", p.filter((x) => x.state === "kept").map((x) => x.label)],
+    ["broken", p.filter((x) => x.state === "broken").map((x) => x.label)],
+    ["in_force", game.inForce.slice(-RECORD_LAWS).map((l) => l.title)],
+    ["headlines", game.bills.filter((b) => b.headline).slice(-RECORD_HEADLINES).map((b) => b.headline!.title)],
+  ];
+  const out = { ...base };
+  for (const [k, v] of soft) out[k] = v;
+  for (let i = soft.length - 1; i >= 0 && estTokens(out) > budget; i--) delete out[soft[i][0]];
+  return out;
 }
 
 /* ---------- escalations: spec §7's twenty, each a few lines at its own hook ---------- */

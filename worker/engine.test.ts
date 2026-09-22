@@ -9,6 +9,7 @@ import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
 import { endTurn } from "./engine";
 import { enact, inForceAge, repeal, STRIKE_HIT } from "./engine";
 import { authorPromise, PROMISE_WINDOW } from "./engine";
+import { record, RECORD_TOKENS } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -866,4 +867,22 @@ test("a court that strikes takes the newest law in force with it", () => {
   fireResponse(pack, g, { holder: "council", response: "strike", at: 1, fires: 3, number: 70 });
   expect(g.inForce.map((l) => l.id)).toEqual(["l4"]);   // the newest goes, the older one stands
   expect(g.ledgers.authority).toBe(authority - STRIKE_HIT);
+});
+
+const estimate = (o: unknown) => Math.ceil(JSON.stringify(o).length / 4);
+
+test("the record is bounded, and drops its softest lines first", () => {
+  const g = game();
+  g.term = 3;
+  for (let i = 0; i < 40; i++) {
+    g.bills.push({ id: i, text: "", title: `Decree ${i}`, summary: "", tags: [], offers: {}, headline: { title: `A long headline about decree ${i} and the harbour`.repeat(4), lede: "" } });
+    enact(g, { id: `l${i}`, verb: "law", title: `A law with a long name number ${i}`.repeat(3), perTurn: [{ ledger: "treasury", delta: 1 }], repealConsent: "none", sunset: null });
+  }
+  const full = record(pack, g);
+  expect(estimate(full)).toBeLessThanOrEqual(RECORD_TOKENS);
+  expect(full.term).toBe(3);
+  const tiny = record(pack, g, 60);
+  expect(estimate(tiny)).toBeLessThanOrEqual(60);
+  expect(tiny.term).toBe(3);
+  expect(tiny.headlines).toBeUndefined();
 });
