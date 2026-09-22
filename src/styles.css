@@ -280,9 +280,10 @@ textarea, input, select { font: inherit; color: inherit; }
 .verdict .lede { color: var(--ink); }
 .verdict .lede.fail { color: var(--red); }
 
-.coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; }
+/* the mark never eats a click: only its own button takes one, so the control it points at stays live */
+.coach { position: fixed; z-index: var(--z-coach); background: var(--ink); color: var(--bg); padding: 14px 16px; font-size: 14px; pointer-events: none; }
 .coach .kicker { color: var(--bg); opacity: 0.7; }
-.coach .link { color: var(--bg); opacity: 0.75; padding: 0; }
+.coach .link { color: var(--bg); opacity: 0.75; padding: 0; pointer-events: auto; }
 [data-tour-hot="true"] { animation: hot 1.4s ease-in-out infinite; }
 @keyframes hot { 50% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--red) 0%, transparent); } 0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--red) 55%, transparent); } }
 
