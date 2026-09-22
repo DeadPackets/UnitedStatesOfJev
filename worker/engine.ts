@@ -1134,14 +1134,22 @@ export function endTerm(pack: Pack, game: Game, test: TestResult): void {
 export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
   pack.escalations.map((e) => e.key).filter((k) => !game.escalations.includes(k));
 
-// Members, memory, ledgers and director.seen carry over; two more escalations stack.
+// R21: laws, appointments, favours, decayed resistance and persona memory carry; the class is reseeded.
 export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
-  game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
   game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
   game.director.intensity = 0; game.director.lastCrisis = -1;
   game.test = undefined; game.campaign = undefined; game.midterm = undefined; game.result = undefined;
-  for (const p of Object.values(game.promises)) { p.passed = 0; p.state = "pending"; }
+  game.earlyTest = undefined; game.warnings = []; game.wire = []; game.pending = null; game.revolt = null;
+  game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
+  for (const h of Object.values(game.holders)) { h.resistance = round1(h.resistance * RESIST_CARRY); h.warnedAt = null; }
+  for (const [tag, p] of Object.entries(game.promises)) {
+    if (p.authored) { delete game.promises[tag]; continue; }
+    p.passed = 0; p.state = "pending";
+  }
+  const r = rng(game.seed ^ (game.term * 0x9e37));
+  game.marks.midterm = [...game.members].sort(() => r() - 0.5).slice(0, Math.round(pack.chamber.size / 3)).map((m) => m.seat);
+  delete game.marks.doubled;   // the new term's class may double again on its own revolt
   const add = remainingEscalations(pack, game).slice(0, 2);
   game.escalations.push(...add);
   for (const k of add) applyEscalation(pack, game, k);

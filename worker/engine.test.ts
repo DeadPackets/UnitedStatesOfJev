@@ -316,6 +316,25 @@ test("a term ends with a score, and another term stacks two escalations", () => 
   expect(g.terms.length).toBe(1);
 });
 
+test("another term carries the laws and the resistance, and reseeds the half-term class", () => {
+  const g = game();
+  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
+  g.holders.council.resistance = 40;
+  g.holders.street.resistance = 80;
+  advanceWarnings(pack, g);
+  const first = [...g.marks.midterm];
+  endTerm(pack, g, runTest(pack, g, { council: 1, street: 1 }));
+  continueTerm(pack, g);
+  expect(g.term).toBe(2);
+  expect(g.inForce.length).toBe(1);
+  expect(g.holders.council.resistance).toBe(20);
+  expect(g.warnings).toEqual([]);
+  expect(g.holders.street.warnedAt).toBeNull();
+  expect(g.marks.midterm).not.toEqual(first);
+  expect(g.marks.midterm.length).toBe(Math.round(pack.chamber.size / 3));
+  expect(g.earlyTest).toBeUndefined();
+});
+
 test("every escalation of the twenty has a hook or a stored number", () => {
   const g = game();
   for (const e of pack.escalations) {

@@ -105,7 +105,7 @@ export async function cardText(env: Env, pack: Pack, storylet: Storylet, state: 
 
 export async function ending(env: Env, pack: Pack, kind: keyof Pack["endings"], state: unknown): Promise<{ title: string; body: string }> {
   const d = await luna(env, EndingSchema, "ending",
-    `You write the last page of a term in ${pack.title}. The ending is "${pack.endings[kind]}". Write a title (at most 8 words) and a body of 3 sentences from the record given. Say what happened, never what it meant for history.${world(pack)}`,
+    `You write the last page of a term in ${pack.title}. The ending is "${pack.endings[kind] ?? kind}". Write a title (at most 8 words) and a body of 3 sentences from the record given. Say what happened, never what it meant for history.${world(pack)}`,
     JSON.stringify(state), 200);
   return { title: clip(d.title, 90), body: clip(d.body, 600) };
 }

@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm,
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
-  newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
+  newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, score, SPEND_STEPS,
   holdersOf, threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
 } from "./engine";
@@ -96,7 +96,9 @@ export class GameDO extends DurableObject<Env> {
             break;
           case "stop":
             if (game.stage !== "won") throw new Reject(409, "There is nothing to stop.");
-            game.stage = "over";
+            game.stage = "over"; game.phase = "over";
+            game.result = { ending: "stopped", score: score(game) };
+            s.prose = {};
             break;
           default: throw new Reject(404, "Unknown action");
         }
