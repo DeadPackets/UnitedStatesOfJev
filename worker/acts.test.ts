@@ -230,3 +230,30 @@ test("a favour lifts the member and leaves a favour owed", () => {
   expect(m.mood).toBeCloseTo(FAVOUR_MOOD, 5);
   expect(m.memory.some((l) => l.includes("favor"))).toBe(true);
 });
+
+import { FORCE_ARMY_EASE, FORCE_ARMY_RISE, FORCE_POP_HIT, FORCE_RESENT } from "./acts";
+import { armyAllows } from "./engine";
+
+test("force needs the army's stance, and the army is paid in resistance either way", () => {
+  const g = game();
+  expect(armyAllows(pack, g)).toBe(true);      // the guard opens at stance 0.5
+  g.holders.guard.resistance = 20;
+  const before = { ...g.ledgers.popularity };
+  const one = [pack.regions[0].id];
+  commit(pack, g, priceTag(pack, g, quote({ verb: "force", title: "The watch turned out", regions: one, hits: ["street"] })));
+  expect(g.holders.guard.resistance).toBe(20 - FORCE_ARMY_EASE);
+  // RESIST_HIT 8 from touch(), the street's own answer, and what the holder it fell on goes on resenting.
+  expect(g.holders.street.resistance).toBe(8 + FORCE_POP_HIT + FORCE_RESENT);
+  expect(g.ledgers.popularity[one[0]]).toBeCloseTo(before[one[0]] - FORCE_POP_HIT, 1);
+  expect(g.holders.street.stance).toBe(0.5);   // force moves resistance, never stance
+});
+
+test("an unwilling army is turned out anyway and resents it", () => {
+  const h = game();
+  h.holders.guard.stance = 0.2;
+  expect(armyAllows(pack, h)).toBe(false);
+  expect(available(pack, h, "force")).toBe(false);
+  expect(pack.constitution!.instruments.force.consent).toBe("army");
+  commit(pack, h, priceTag(pack, h, quote({ verb: "force", title: "A curfew" })));
+  expect(h.holders.guard.resistance).toBe(FORCE_ARMY_RISE);
+});

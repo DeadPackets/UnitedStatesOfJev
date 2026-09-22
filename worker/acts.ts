@@ -1,5 +1,5 @@
 import {
-  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, pay,
+  ARMY_STANCE, armyAllows, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, pay,
   pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
   type Game, type Member, type PriceTag, type Quote, type WireLine,
 } from "./engine";
@@ -25,6 +25,7 @@ export function available(pack: Pack, game: Game, verb: Verb): boolean {
   // §4: at 0 authority only proclaim and spend are left; at 0 treasury no spending act passes.
   if (below.includes("authority") && verb !== "proclaim" && verb !== "spend") return false;
   if (below.includes("treasury") && verb === "spend") return false;
+  if (verb === "force" && i.consent === "army" && !armyAllows(pack, game)) return false;
   return true;
 }
 
@@ -110,10 +111,33 @@ function applyFavour(_pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   return [];
 }
 
+export const FORCE_ARMY_EASE = 5;      // TUNE, §2: they like being used
+export const FORCE_ARMY_RISE = 10;     // TUNE, §2: they do not
+export const FORCE_POP_HIT = 4;        // TUNE: what the region and the street pay
+// Resistance, not stance: the holder read rewrites stance every turn, so a stance drop here would not last.
+export const FORCE_RESENT = 6;         // TUNE: what the holders it fell on go on resenting
+
+function applyForce(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  const wire: WireLine[] = [];
+  const a = armyHolder(pack);
+  if (a) {
+    const willing = (game.holders[a.id]?.stance ?? a.stance) >= ARMY_STANCE;
+    wire.push(...(willing
+      ? easeResistance(pack, game, [a.id], FORCE_ARMY_EASE, tag.title)
+      : raiseResistance(pack, game, [a.id], FORCE_ARMY_RISE, tag.title)));
+  }
+  const street = holdersOf(pack).find((h) => h.members === "citizens");
+  if (street) wire.push(...raiseResistance(pack, game, [street.id], FORCE_POP_HIT, tag.title));
+  wire.push(...raiseResistance(pack, game, tag.hits, FORCE_RESENT, tag.title));
+  wire.push(...movePopularity(pack, game, tag.regions, -FORCE_POP_HIT, tag.title));
+  return wire;
+}
+
 function applyVerb(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   switch (tag.verb) {
     case "spend": return applySpend(pack, game, tag);
     case "favour": return applyFavour(pack, game, tag);
+    case "force": return applyForce(pack, game, tag);
     default: return [];
   }
 }

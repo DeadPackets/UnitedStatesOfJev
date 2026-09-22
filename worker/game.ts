@@ -181,6 +181,7 @@ export class GameDO extends DurableObject<Env> {
     const tag = game.tag;
     if (!tag) throw new Reject(409, "Nothing is priced.");
     if (tag.verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
+    if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
     if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);

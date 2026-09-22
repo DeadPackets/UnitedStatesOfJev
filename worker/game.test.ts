@@ -550,3 +550,10 @@ test("a favour names a seat, and a body that names none is a 400", async () => {
   expect(r.body.tag.member).toBe(m.id);
   expect((await post("acts/price", { turn: 1, text: "Give them the harbour board seat.", memberId: "nobody" })).status).toBe(400);
 });
+
+test("force is refused while the army will not carry it", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(64);
+  game.holders.guard.stance = 0.2;
+  expect((await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." })).status).toBe(400);
+});
