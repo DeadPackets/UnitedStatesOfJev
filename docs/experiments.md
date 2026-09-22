@@ -111,3 +111,20 @@ Decision: fetch full sections, not leads; L4 plus L2 in the pipeline; L3 reduced
 | step 1 then Noul inline | **5 of 5** | **5 of 5** | 0 | 0 |
 
 Twins were the top choice in 19 of 20 directions. By-id Noul ranks right but calibrates low (twins 0.34 to 0.70). Inline Noul puts twins at 0.83 to 0.93 and the worst non-twin at 0.24, so 0.5 has margin both ways. Same finding as the lobby-offer calibration: put the thing to judge inside the question, not in the state. Decision: step 1 Choice at 0.5, union of both directions, step 2 inline Noul at 0.5, never step 1 alone. About $0.006 and 4.5 s per 100 personas. Bound: 10 planted pairs and 2 seeds, recall at least 0.7 at 95%; twins with a changed region or edited issues untested.
+
+## Lever combinations, 2026-09-22
+
+Six stacks, full sections for every condition, Rome and Egypt twice, Iran 1979 once with its checklist frozen first. Full tables in `docs/combos-2026-09-22.md`. Spend $0.37.
+
+| Stack | Factual errors, mean | Rome | Egypt | Iran | Reference errors | Cost | Seconds |
+|---|---|---|---|---|---|---|---|
+| B full sections only | 3.0 | 3.0 | 4.5 | 0 | 8.8 | $0.006 | 32 |
+| K1 Wikidata dates and colors | 2.2 | 2.5 | 3.0 | 0 | 15.4 | $0.007 | 34 |
+| K2 + facts sheet | 2.2 | 3.0 | 2.0 | 1 | 10.0 | $0.010 | 41 |
+| K3 + reduced validators, one retry | 2.0 | 2.0 | 2.5 | 1 | 5.0 | $0.017 | 63 |
+| K4 + code calendar | **1.2** | 2.0 | **0.5** | 1 | **2.6** | $0.015 | 59 |
+| K5 K4 without Wikidata | 1.8 | 2.0 | 2.0 | 1 | 4.6 | $0.016 | 63 |
+
+K4 is the stack: the only zero-error Egypt pack, reference errors down from 8.8 to 2.6, and Wikidata inside the stack is free (K4 beats K5 by 0.6 errors at lower cost). K1 alone is the cost-constrained choice at $0.0001 over baseline for 0.8 errors removed.
+
+Three defects found and fixed in the spec: (1) the facts sheet made Iran worse by listing Mosaddegh (d. 1967) as a person, and the frame took "use only people on the sheet" as license to seat him; the sheet flagged him not alive but with no death date, and the validator read only the date. Validator now reads the alive flag, and the frame prompt says leaders must be alive on the start date. (2) The Ides failed in 12 of 12 Rome runs because the model chose a start date 22 days before it and no unit lands day 22 on turn 16 to 18; code now sets start_date as anchor minus 15 turn units, which lands all four saved Rome runs on turn 16. (3) The Wikidata guard let through a Lepidus dead 108 years before the era and an Octavian born in 1996; the guard now requires a birth date within 100 years before start_date.

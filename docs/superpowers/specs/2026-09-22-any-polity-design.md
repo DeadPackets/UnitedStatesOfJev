@@ -141,10 +141,10 @@ written to D1 after every step for the build screen.
 | Step | Model | Output | Time |
 |---|---|---|---|
 | plan | Luna | `{ fiction, lang, lookups: string[] (≤ 10 Wikipedia titles, any edition), wikidata: string[] (entity labels) }` | 3 s |
-| fetch | none | Wikipedia lead plus the 2 to 3 most relevant sections per title via `action=parse`, 6k chars per section; Wikidata birth (P569), death (P570) for every named person, P465 colors and seat counts for parties, with a guard that the hit is a human or party of the right era. Fiction skips | 6 s |
-| facts | Luna | a facts sheet from the sources: people with dates and `alive_on_start_date`, bodies with sizes, groupings with leaders, dated events. The frame may only name people on the sheet | 8 s |
+| fetch | none | Wikipedia lead plus the 2 to 3 most relevant sections per title via `action=parse`, 6k chars per section; Wikidata birth (P569), death (P570) for every named person, P465 colors and seat counts for parties. Guard: the hit is a human (P31 Q5) born within 100 years before `start_date`, else the row is dropped; measured 2026-09-22, a death-only window let a Lepidus dead 108 years early and a 1996-born Octavian through. Fiction skips | 6 s |
+| facts | Luna | a facts sheet from the sources: people with dates and `alive_on_start_date`, bodies with sizes, groupings with leaders, dated events. The frame may only name people on the sheet, and only people alive on the start date as leaders; the sheet lists the dead too, and without that rule Iran 1979 got Mosaddegh (d. 1967) as a party leader in 4 of 4 runs | 8 s |
 | frame | Luna | title, era, place, description, vocabulary, theme, chamber, factions, regions, blocs, patrons, tags, problems, promises, starts, test, endings, lobby, escalations, `start_date` | 20 s |
-| validate | none | reference check on every id and tag; every faction leader alive on `start_date` per the sheet; no leader name in a member seat; at least 3 factions when the chamber is over 30 seats; dated events inside the term window. Violations go back to Luna as a list with the previous output, one retry | 0 s, 20 s on retry |
+| validate | none | reference check on every id and tag; every faction leader alive on `start_date` per the sheet's alive flag, not only its death date; no leader name in a member seat; at least 3 factions when the chamber is over 30 seats; dated events inside the term window. Violations go back to Luna as a list with the previous output, one retry | 0 s, 20 s on retry |
 | assign | none | code fixes every identity field before any parallel call: each member's seat, region and faction from the pack's shares, temperament and years from fixed distributions; each citizen's region, bloc and age band from weights | 0 s |
 | names | Luna | one call: `chamber.size` member names and 250 citizen names for the era; code dedupes and tops up collisions with one small call. One call, so uniqueness is a set check, not model memory | 6 s |
 | members | Luna | 25 assigned rows per call in parallel (name, seat, region, faction, temperament, years given); Luna writes bio, core issues, tell, patrons | 15 s |
@@ -156,9 +156,11 @@ written to D1 after every step for the build screen.
 | index | Workers AI | embed `title + era + place + description + prompt`, upsert to Vectorize, mark ready | 2 s |
 | portraits | muse-image | after ready, never blocking: all contact sheets fired at once (size ÷ 16 calls), crop, dither, R2; the pack's `art.portraits` flips to done per sheet | 20 s, in the background |
 
-Calendar: code sets it. `turn_unit` is chosen so the sheet's last dated event lands on turn 16 to 18 (day, week, month or season, whichever fits), and every dated storylet carries a date that code maps to a turn. Measured: a model-chosen calendar put the Ides on turn 6 or 15.
+Calendar: code sets it. The anchor is the latest fully dated sheet event within a year after the model's start date; `turn_unit` is the one of day, week, month or season that puts the anchor closest to turn 17; `start_date` is then anchor minus 15 units, so the anchor lands on turn 16 whatever the model proposed. Every dated storylet carries a date that code maps to a turn. Measured: with the model's start date the Ides missed the window in 12 of 12 Rome runs; with the recomputed start date all four saved runs land it on turn 16.
 
-Cost per build: Luna path about $0.10 with a $0.01 frame path, Astra repair adds about $0.30 when it runs, art about $0.05 at build plus $0.03 of portraits in the background. The
+Measured stack (`docs/combos-2026-09-22.md`): 1.2 factual errors per pack against 3.0 without levers, reference errors 2.6 against 8.8, $0.015 and 59 s for the frame path.
+
+Cost per build: Luna path about $0.10 with a $0.015 frame path, Astra repair adds about $0.30 when it runs, art about $0.05 at build plus $0.03 of portraits in the background. The
 content rule sits in every generation prompt: no depiction, planning or reward of
 atrocities in bills, storylets, headlines or quotes; when a prompt seats the player in a
 regime defined by them, the generator keeps the period and seats the player in the nearest
