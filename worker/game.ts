@@ -231,6 +231,7 @@ export class GameDO extends DurableObject<Env> {
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
     if (verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
+    if (verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
     const seat = memberId ? game.members.find((m) => m.id === memberId) : undefined;
     if (memberId && !seat) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
     if (!callsLeft(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);

@@ -337,6 +337,9 @@ test("one proclamation a turn, and the view carries the reactions", async () => 
   expect(game.ledgers.chest).toBe(8);
   expect((await post("acts/price", { turn: 1, text: "A second notice this turn about the wharf." })).status).toBe(200);
   expect((await post("acts", { turn: 1 })).status).toBe(409);
+  const calls = game.calls;
+  expect((await post("acts/price", { turn: 1, verb: "proclaim", text: "A third notice this turn about the wharf." })).status).toBe(409);
+  expect(game.calls).toBe(calls);                 // refused before the clerk is asked
   postTag = false;
   expect(game.posts).toHaveLength(1);
   expect(game.acts).toHaveLength(1);              // the refused second notice paid nothing
