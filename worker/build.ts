@@ -167,28 +167,32 @@ const sheetPrompt = (pack: Pack, group: Member[]) =>
   `4x4 grid of 16 different ${pack.era} ${pack.vocabulary.member}, passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall. ` +
   `Faces in reading order: ${group.map((m) => `${AGE[m.years]} and ${m.temperament}`).join("; ")}. ${NO_TEXT}`;
 
-async function portraitsStep(env: Env, id: string, pack: Pack) {
+// One sheet of at most 16 faces. The GameDO reuses it for the members a midterm puts in the chamber.
+export async function portraitSheet(env: Env, scenario: string, pack: Pack, group: Member[]): Promise<boolean> {
   const ink = rgb(pack.theme.ink), paper = rgb(pack.theme.paper);
+  try {
+    const prompt = sheetPrompt(pack, group);
+    let cut = cells(await muse(env, prompt, "1:1"));
+    if (!alignment(cut).ok) cut = cells(await muse(env, prompt, "1:1"));
+    await Promise.all(group.map(async (m, i) => {
+      const cell = cut[i];
+      if (!cell) return;
+      await put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell));
+      await put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper));
+    }));
+    return true;
+  } catch (e) {
+    console.warn(`portraits ${scenario}`, plain(e));
+    return false;
+  }
+}
+
+async function portraitsStep(env: Env, id: string, pack: Pack) {
   // The sheets run at once but share one pack row, so the D1 read-modify-writes are chained.
   let writes: Promise<unknown> = Promise.resolve();
-  const flip = (sheet: string, status: "done" | "failed") => { writes = writes.then(() => markPortrait(env, id, sheet, status)); };
   await Promise.all(chunk(pack.members, SHEET).map(async (group, gi) => {
-    const sheet = `sheet-${gi + 1}`;
-    try {
-      const prompt = sheetPrompt(pack, group);
-      let cut = cells(await muse(env, prompt, "1:1"));
-      if (!alignment(cut).ok) cut = cells(await muse(env, prompt, "1:1"));
-      await Promise.all(group.map(async (m, i) => {
-        const cell = cut[i];
-        if (!cell) return;
-        await put(env, `scenarios/${id}/members/${m.id}.png`, face(cell));
-        await put(env, `scenarios/${id}/members/${m.id}-plate.png`, plate(cell, ink, paper));
-      }));
-      flip(sheet, "done");
-    } catch (e) {
-      console.warn(`portraits ${id} ${sheet}`, plain(e));
-      flip(sheet, "failed");
-    }
+    const ok = await portraitSheet(env, id, pack, group);
+    writes = writes.then(() => markPortrait(env, id, `sheet-${gi + 1}`, ok ? "done" : "failed"));
   }));
   await writes;
 }

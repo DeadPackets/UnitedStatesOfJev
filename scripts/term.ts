@@ -41,6 +41,13 @@ const timings: number[] = [];
 
 while (g.stage === "session" || g.stage === "midterm") {
   const turn = g.turn, t0 = performance.now();
+  if (g.stage === "midterm") {
+    g = await api(`/games/${g.id}/midterm`, { turn });
+    const m = g.midterm!;
+    console.log(`   ${V.midterm}: ${m.up.length} up, ${m.lost.length} lost${m.wipeout ? " (wipeout)" : ""} | ${m.headline?.title ?? "(no headline)"}`);
+    console.log(`     new: ${g.members.filter((x) => x.id.startsWith(`r${g.term}-`)).map((x) => `${x.name} (${x.seat}, ${x.faction})`).join(", ") || "none"}`);
+    if (g.stage !== "session") break;
+  }
   g = await api(`/games/${g.id}/bills`, { turn, text: TEXTS[(turn - 1) % TEXTS.length] });
   g = await api(`/games/${g.id}/bills/${turn}/whip`, { turn });
   const short = () => { const b = g.bills.at(-1)!; return (b.expected ?? 0) < (b.needed ?? Infinity); };

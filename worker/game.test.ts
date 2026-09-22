@@ -1,6 +1,8 @@
-import { test, expect, mock } from "bun:test";
-// game.ts pulls in `cloudflare:workers` for the Durable Object class, which only workerd resolves.
-mock.module("cloudflare:workers", () => ({ DurableObject: class {} }));
+import { test, expect, mock, afterEach } from "bun:test";
+// game.ts pulls in `cloudflare:workers` for the Durable Object class, and build.ts for the portrait sheet;
+// only workerd resolves either module.
+mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
+mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { view, pickStart, GameDO } = await import("./game");
 import { encodeCode, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
@@ -62,6 +64,127 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
   resolveSlow();
   const r1 = await p1;
   expect(r1.status).toBe(200);
+});
+
+// Every model call goes out through one fetch: `systemone` is Jev, `chat/completions` is Luna, keyed by schema name.
+const canned = (name: string, user: string): unknown => {
+  switch (name) {
+    case "bill": return { title: "Harbor Levy", summary: "It raises the levy on the wharf.", tags: ["tariffs"] };
+    case "headline": case "halfterm": return { title: "The seats change hands", lede: "The council woke up smaller. Nobody in the chair slept." };
+    case "quotes": return { quotes: [] };
+    case "outcome": return { line: "It held." };
+    case "card": return { title: "A storm", body: "The wharf floods.", stances: ["Hold the line"] };
+    case "ending": return { title: "Out", body: "The term ends." };
+    case "newmembers": return {
+      rows: (JSON.parse(user).rows as { id: string }[]).map((r, i) => ({
+        id: r.id, name: `Newcomer ${i + 1}`, bio: "Won the seat in the swing.", tell: "Reads the roll twice.", core_issues: ["tariffs"],
+      })),
+    };
+    default: return {};
+  }
+};
+
+const realFetch = globalThis.fetch;
+afterEach(() => { globalThis.fetch = realFetch; });
+
+function stubModels(intent: number) {
+  globalThis.fetch = (async (_url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.questions) {
+      // A citizen's vote intent drives the midterm draw; every other answer is a comfortable yes.
+      const answers = Object.fromEntries(Object.keys(body.questions).map((k) =>
+        [k, { noul: k.startsWith("vote_") ? intent : 0.9, score: 0.5 }]));
+      return Response.json({ answers, usage: { input_tokens: 1 } });
+    }
+    const name = body.response_format?.json_schema?.name;
+    if (!name) return Response.json({});   // the portrait sheet's image call, which has no schema and no answer here
+    return Response.json({ choices: [{ message: { content: JSON.stringify(canned(name, body.messages[1].content)) } }] });
+  }) as unknown as typeof fetch;
+}
+
+function seatedGame(seed: number) {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed });
+  const game: Game = newGame("g-mid", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const background: Promise<unknown>[] = [];
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } }, waitUntil: (p: Promise<unknown>) => background.push(p) } as any;
+  const do_ = new GameDO(ctx, {} as any) as any;
+  do_.ctx = ctx; do_.env = { OPENROUTER_API_KEY: "test" };
+  do_.saved = { game, prose: {} };
+  do_.pack = pack;
+  const post = async (path: string, body: unknown) => {
+    const r = await do_.fetch(new Request(`https://do/${path}`, { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } }));
+    return { status: r.status, body: await r.json() as any };
+  };
+  return { do_, game, background, post, view: () => view(pack, do_.saved) };
+}
+
+async function playTo(post: (p: string, b: unknown) => Promise<{ status: number }>, game: Game, n: number) {
+  while (game.turn <= n) {
+    const turn = game.turn;
+    for (const path of ["bills", `bills/${turn}/whip`, `bills/${turn}/vote`]) {
+      const r = await post(path, { turn, text: "Raise the harbor levy on the wharf and publish the accounts each month." });
+      if (r.status !== 200) throw new Error(`${path} on turn ${turn}: ${r.status}`);
+    }
+    if (game.turn === turn) throw new Error(`turn ${turn} did not advance`);
+  }
+}
+
+test("the midterm swaps the seats it lost and ships the new members in the view", async () => {
+  stubModels(0);
+  const { game, background, post, view: current } = seatedGame(7);
+  await playTo(post, game, 10);
+  expect(game.stage).toBe("midterm");
+  // A tanked ledger settles the draw before the roll: the government's seats fall, the opposition's hold.
+  for (const r of pack.regions) game.ledgers.approval[r.id] = -999;
+  const before = current().members.map((m) => m.id);
+
+  const r = await post("midterm", { turn: 11 });
+  expect(r.status).toBe(200);
+  const g = r.body;
+  expect(g.stage === "session" || g.stage === "over").toBe(true);
+  expect(g.midterm.up.length).toBe(Math.round(g.pack.chamber.size / 3));
+  expect(g.midterm.headline.title.length).toBeGreaterThan(0);
+  expect(g.members.length).toBe(g.pack.chamber.size);
+  expect(g.midterm.lost.length).toBeGreaterThan(0);
+  for (const l of g.midterm.lost) {
+    const seat = g.members.find((m: any) => m.seat === l.seat)!;
+    expect(before).not.toContain(seat.id);
+    expect(seat.id).toBe(`r1-${l.seat}`);
+    expect(seat.faction).toBe(l.to);
+    expect(seat.name.length).toBeGreaterThan(0);
+    expect(seat.memory).toEqual([]);
+    expect(seat.portrait).toBe(`members/r1-${l.seat}.png`);
+    expect("bio" in seat || "tell" in seat).toBe(false);
+  }
+  expect(background.length).toBe(1);        // the portrait sheet runs after the answer, never before it
+  await Promise.all(background);
+});
+
+test("a midterm that is not a wipeout hands the chamber back to the session", async () => {
+  stubModels(0);
+  const { game, background, post } = seatedGame(9);
+  game.stage = "midterm";
+  game.marks.midterm = ["seat-01", "seat-11", "seat-12", "seat-13", "seat-19", "seat-20"];   // one government seat in six
+  for (const r of pack.regions) game.ledgers.approval[r.id] = -999;
+
+  const { status, body } = await post("midterm", { turn: game.turn });
+  expect(status).toBe(200);
+  expect(body.stage).toBe("session");
+  expect(body.phase).toBe("draft");
+  expect(body.midterm.lost.map((l: any) => l.seat)).toEqual(["seat-01"]);
+  expect(body.members).toHaveLength(pack.chamber.size);
+  expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe("r1-seat-01");
+  await Promise.all(background);
+});
+
+test("the midterm is refused outside its stage, and a bill cannot jump it", async () => {
+  stubModels(0);
+  const { game, post } = seatedGame(8);
+  expect((await post("midterm", { turn: 1 })).status).toBe(409);
+  game.stage = "midterm";
+  const blocked = await post("bills", { turn: 1, text: "Raise the harbor levy on the wharf and publish the accounts." });
+  expect(blocked.status).toBe(409);
+  expect(blocked.body.error).toBe(`The ${pack.vocabulary.midterm} comes first.`);
 });
 
 test("amend after adopt is refused: adopt leaves an empty amendments array, not an absent one", async () => {

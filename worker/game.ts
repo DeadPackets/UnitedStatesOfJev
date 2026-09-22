@@ -1,16 +1,18 @@
 import { DurableObject } from "cloudflare:workers";
 import {
-  applyCitizens, applyLobby, applyVote, continueTerm, director, effectiveWhip, encodeCode, endTerm, expectedYes,
-  LOBBY_COSTS, newGame, record, resolveEvent, runTest, scenarioTag, threshold, TURNS_PER_TERM,
+  applyCitizens, applyLobby, applyMidterm, applyVote, continueTerm, director, effectiveWhip, encodeCode, endTerm,
+  expectedYes, LOBBY_COSTS, lobbyCost, nationalApproval, newGame, record, replacements, resolveEvent, runMidterm, runTest,
+  scenarioTag, threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member,
 } from "./engine";
 import {
   citizenQuestions, citizenState, eventQuestions, gateQuestion, jev, memberQuestion, nouls, scores,
-  testQuestions, testState, UpstreamError, whipQuestions, whipState, type Env,
+  testQuestions, testState, UpstreamError, voteQuestions, voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, type Pack } from "./pack";
-import { amendBill, cardText, ending, narrate, outcome, parseBill, quotes } from "./luna";
+import { amendBill, cardText, ending, halfTerm, narrate, newMembers, outcome, parseBill, quotes } from "./luna";
+import { portraitSheet } from "./build";
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -53,6 +55,7 @@ export class GameDO extends DurableObject<Env> {
         switch (parts[0]) {
           case "bills": extra = await this.bill(game, pack, parts, body); break;
           case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+          case "midterm": await this.midterm(game, pack); break;
           case "test": await this.term(s, pack); break;
           case "continue":
             if (game.stage !== "won") throw new Reject(409, "The term is not won.");
@@ -126,7 +129,7 @@ export class GameDO extends DurableObject<Env> {
   /* ---------- the floor ---------- */
 
   private async bill(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
-    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "The term is over. Run the test.");
+    if (game.stage !== "session") throw new Reject(409, game.stage === "midterm" ? `The ${pack.vocabulary.midterm} comes first.` : "The term is over.");
     const action = parts.length === 1 ? "draft" : parts[2];
     // The path segment is the bill's id, which is the turn it was drafted on, not its index.
     const bill = parts[1] !== undefined ? game.bills.find((b) => b.id === Number(parts[1])) : undefined;
@@ -176,9 +179,8 @@ export class GameDO extends DurableObject<Env> {
     const m = game.members.find((x) => x.id === memberId);
     if (!m || !(action in LOBBY_COSTS)) throw new Reject(400, `Bad ${pack.vocabulary.member} or action.`);
     if (bill.offers[m.id]) throw new Reject(409, "Already offered them something on this one.");
-    // 1.5 is the costly_favors multiplier. Gating on the worst case stops applyLobby's clamp at 0 from ever
-    // handing out a free offer.
-    if (game.ledgers.capital < LOBBY_COSTS[action] * 1.5) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
+    // Gating on the priced cost stops applyLobby's clamp at 0 from ever handing out a free offer.
+    if (game.ledgers.capital < lobbyCost(game, action)) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
     const whip = bill.whip;
     const { offer } = applyLobby(pack, game, bill, m, action);
     const r = await jev(this.env, whipState(pack, game, bill), { [m.id]: memberQuestion(pack, m, offer) });
@@ -237,9 +239,27 @@ export class GameDO extends DurableObject<Env> {
       const storylet = pack.deck.find((s) => s.id === event.id);
       if (storylet) event.card = await cardText(this.env, pack, storylet, record(pack, game)).catch(() => undefined);
     }
-    // The midterm draw is Stage B, so the stage goes straight back to the session.
-    if (game.stage === "midterm") game.stage = "session";
     return { deltas };
+  }
+
+  private async midterm(game: Game, pack: Pack) {
+    if (game.stage !== "midterm") throw new Reject(409, `The ${pack.vocabulary.midterm} is not due.`);
+    const r = await jev(this.env, voteState(pack, game, []), voteQuestions(pack, game, pack.citizens, {}, {}));
+    const draw = runMidterm(pack, game, nouls(r.answers, "vote_"));
+    const slots = replacements(pack, game, draw);
+    const personas = await newMembers(this.env, pack, slots).catch(() => []);
+    applyMidterm(pack, game, draw, personas);
+    const fresh = game.members.filter((m) => slots.some((s) => s.id === m.id));
+    if (fresh.length) {
+      // Portraits never gate play: initials stand in until the sheet lands (v3 spec §5).
+      this.ctx.waitUntil(portraitSheet(this.env, pack.id, pack, fresh.slice(0, 16)));
+    }
+    const head = await halfTerm(this.env, pack, {
+      ...record(pack, game),
+      seats_lost: draw.lost.length, seats_up: draw.up.length,
+      [pack.vocabulary.approval]: Math.round(nationalApproval(pack, game)),
+    }).catch(() => undefined);
+    if (head && game.midterm) game.midterm.headline = head;
   }
 
   private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
