@@ -1128,7 +1128,7 @@ test("the style line names the ledger that led the most turns, and the decisive 
   const r = runStyle(pack, g);
   expect(r.line).toBe(STYLE_LINES.authority);
   expect(r.decisive.map((d) => d.turn)).toEqual([2, 3]);
-  expect(r.decisive[1].line).toContain("the harbour works");
+  expect(r.decisive[1].line).toMatch(/^the harbour works\. [A-Z]/);
   expect(r.grid.map((x) => x.ledger)).toEqual(["authority", "authority", "treasury"]);
   expect(r.grid[2].won).toBe(true);
   expect(r.grid[0].won).toBeUndefined();

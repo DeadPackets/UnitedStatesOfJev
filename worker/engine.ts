@@ -534,7 +534,8 @@ export function runStyle(pack: Pack, game: Game): RunStyle {
   for (const r of log) counts.set(r.ledger, (counts.get(r.ledger) ?? 0) + 1);
   let lead: Square = "quiet", most = 0;
   for (const [s, n] of counts) if (n > most) { most = n; lead = s; }
-  const name = (s: Square) => (s === "quiet" ? "nothing" : pack.constitution?.ledgers[s].name ?? s);
+  // A v3 pack has no constitution, so its name is the bare id, and the name opens a sentence.
+  const name = (s: Square) => { const n = s === "quiet" ? "nothing" : pack.constitution?.ledgers[s].name ?? s; return n[0].toUpperCase() + n.slice(1); };
   const decisive = log.filter((r) => r.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, DECISIVE).sort((a, b) => a.turn - b.turn)
     .map((r) => ({ turn: r.turn, line: `${r.cause}. ${name(r.ledger)} moved ${Math.round(r.delta)}.` }));
   const grid: RunStyle["grid"] = log.map((r) => ({ ledger: r.ledger }));
