@@ -97,7 +97,7 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any) as any;
-  doInstance.ctx = ctx;
+  doInstance.ctx = ctx; doInstance.env = {};
   doInstance.pack = pack;
   const r = await doInstance.fetch(new Request("https://do/state"));
   expect(r.status).toBe(200);
@@ -125,7 +125,7 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
   const game: Game = newGame("g-busy", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any);
-  (doInstance as any).ctx = ctx;
+  (doInstance as any).ctx = ctx; (doInstance as any).env = {};
   (doInstance as any).saved = { game, prose: {} };
   (doInstance as any).pack = pack;
   let entered!: () => void;

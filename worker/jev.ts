@@ -7,6 +7,7 @@ export type Env = {
   BUILDS: DurableObjectNamespace<import("./db").BuildsDO>; DAILY_BUILD_CAP: string; DAILY_GAME_CAP: string;
   DAILY_SECRET: string;
   MODEL?: string;
+  BOTS?: string;
 };
 export class UpstreamError extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -39,11 +40,24 @@ type Choice = { type: "choice"; instructions: unknown; options: string[] };
 export type Question = Noul | Score | Choice;
 export type Answers = Record<string, { noul?: number; score?: number; probabilities?: Record<string, number> }>;
 
+// Spec §11 wants tokens, cost and the largest single call a turn. One GameDO instance answers one request
+// at a time and run.ts is sequential, so reset then read is safe; a shared isolate would need per-DO state.
+export const meter = {
+  tokens: 0, cost: 0, calls: 0, worst: 0,
+  reset() { this.tokens = 0; this.cost = 0; this.calls = 0; this.worst = 0; },
+};
+
 export async function jev(env: Env, state: unknown, questions: Record<string, Question>): Promise<{ answers: Answers; usage: { input_tokens: number; cost?: number } }> {
   // Choice options go on the wire as criteria keys with a null value, the shape measured against jev-1.13.
   const wire = Object.fromEntries(Object.entries(questions).map(([k, q]) => [k,
     q.type === "choice" ? { type: q.type, instructions: q.instructions, criteria: Object.fromEntries(q.options.map((o) => [o, null])) } : q]));
   const r = await post(env, "systemone", { model: "typesafe/jev-1.13", state, questions: wire });
+  // jev() is typed `usage: { input_tokens: number; cost?: number }`; there is no total_tokens on this response.
+  const used = Number(r.usage?.input_tokens ?? 0);
+  meter.tokens += used;
+  meter.cost += Number(r.usage?.cost ?? 0);
+  meter.worst = Math.max(meter.worst, used);
+  meter.calls++;
   return { answers: r.answers, usage: r.usage };
 }
 

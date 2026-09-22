@@ -9,7 +9,7 @@ import {
 } from "./engine";
 import {
   agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, HOLDER_SAMPLE, holderQuestions,
-  holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
+  holderStance, holderState, jev, memberQuestion, meter, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { endPlay, getScenario } from "./db";
@@ -32,7 +32,7 @@ type Saved = { game: Game; prose: Prose };
 type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
-type Extra = { deltas?: Record<string, number> };
+type Extra = { deltas?: Record<string, number>; usage?: { tokens: number; cost: number; calls: number; worst: number } };
 
 export class GameDO extends DurableObject<Env> {
   private saved?: Saved;
@@ -55,6 +55,7 @@ export class GameDO extends DurableObject<Env> {
       if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
       if (this.busy) throw new Reject(409, "one move at a time");
       this.busy = true;
+      meter.reset();
       // Engine mutations run before the Jev awaits, so an upstream failure would leave the cached game
       // half-applied and the next save would persist it. Roll back to the state the request started from.
       const before = structuredClone(s);
@@ -99,6 +100,8 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async reply(s: Saved, pack?: Pack, extra: Extra = {}) {
+    // Off in production: BOTS is set only by the measurement config, so no player ever sees a token count.
+    if (this.env.BOTS === "1") extra = { ...extra, usage: { tokens: meter.tokens, cost: meter.cost, calls: meter.calls, worst: meter.worst } };
     return Response.json(view(pack ?? await this.loadPack(s.game.pack), s, extra));
   }
 
