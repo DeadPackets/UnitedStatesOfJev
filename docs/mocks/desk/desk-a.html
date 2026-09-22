@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desk A · Semantic accents &mdash; United States of Jev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#fff;--paper:#f4f4f2;--tone:#e6e6e3;--ink:#0b0b0b;--ink-2:#5b5b58;--red:#d0001f;--accent:#d0001f;
+/* one hue per resource, ink-dark enough to carry small text on paper */
+--tre:oklch(.50 .12 80);--cap:oklch(.48 .13 300);--che:oklch(.50 .11 150);
+--moo:oklch(.52 .13 45);--app:oklch(.50 .11 215);
+/* the four factions: their own colours, kept under the resource hues in chroma */
+--f-cae:oklch(.42 .11 350);--f-opt:oklch(.52 .07 250);--f-pop:oklch(.54 .08 138);--f-lib:oklch(.62 .08 85);
+--display:"Big Shoulders Display","Arial Narrow",sans-serif;--sans:"Public Sans",system-ui,sans-serif;
+--ease-out:cubic-bezier(.22,1,.36,1);--t-fast:120ms;--t-state:220ms;
+--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+--head:46px;--wire:38px;
+color-scheme:light}
+.r-tre{--c:var(--tre)}.r-cap{--c:var(--cap)}.r-che{--c:var(--che)}
+.r-moo{--c:var(--moo)}.r-app{--c:var(--app)}
+b.r-tre,b.r-cap,b.r-che,b.r-moo,b.r-app,.hint b.num{color:var(--c)}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);
+-webkit-font-smoothing:antialiased;height:100dvh;overflow:hidden}
+body::before{content:"";position:fixed;inset:-7px;z-index:0;pointer-events:none;opacity:.5;
+background-image:radial-gradient(var(--tone) .7px,transparent .9px);background-size:7px 7px;
+mask-image:radial-gradient(58% 48% at 50% 40%,#000,transparent 80%);animation:drift 5s linear infinite}
+@keyframes drift{to{transform:translate(7px,7px)}}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:.95;margin:0;text-transform:uppercase;
+letter-spacing:.01em;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.kicker{font:600 11px/1.2 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.muted{color:var(--ink-2)}.small{font-size:13px}.neg{color:var(--red)}
+.panel{border-top:2px solid var(--ink);padding-top:var(--s3)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+textarea{font:inherit;color:inherit}
+.ic{width:20px;height:20px;flex:none;vertical-align:-4px;color:var(--c,currentColor)}
+.ic.sm{width:15px;height:15px;stroke-width:2.2;vertical-align:-2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 16px;
+border:2px solid var(--ink);background:var(--bg);color:var(--ink);font:800 17px/1 var(--display);
+letter-spacing:.06em;text-transform:uppercase;
+transition:transform var(--t-fast) var(--ease-out),background var(--t-state),color var(--t-state)}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn:active{transform:scale(.96)}
+.btn.hot{background:var(--ink);color:var(--bg)}
+.btn.hot:hover{background:var(--bg);color:var(--ink)}
+.btn.sm{min-height:34px;padding:0 11px;font-size:15px;gap:5px}
+.btn[disabled]{opacity:.35;cursor:default;transform:none}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid var(--ink);
+font:600 11px/1.2 var(--sans)}
+.chip.red{border-color:var(--red);color:var(--red)}
+.chip.faint{border-color:var(--tone);color:var(--ink-2)}
+
+/* shell: one screen, no page scroll */
+.page{position:relative;z-index:1;height:100dvh;display:grid;
+grid-template-rows:auto auto minmax(0,1fr);max-width:1400px;margin:0 auto;padding:0 20px var(--wire)}
+.mast{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);
+border-top:4px solid var(--ink);border-bottom:1px solid var(--ink);padding:7px 0}
+.mast b{font:800 21px/1 var(--display);letter-spacing:.07em;text-transform:uppercase}
+
+/* the strip: five ledgers, one hue each */
+.striprow{position:relative}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:2px solid var(--ink)}
+.led{text-align:left;padding:9px 14px 11px;border-right:1px solid var(--tone);display:grid;gap:2px;
+transition:background var(--t-fast)}
+.led:first-child{padding-left:0}.led:last-child{border-right:0;padding-right:0}
+.led:hover,.led[aria-expanded=true]{background:color-mix(in oklab,var(--c) 9%,transparent)}
+.ledk{display:flex;align-items:center;gap:6px}
+.ledk .kicker{color:var(--c)}
+.top{display:flex;align-items:baseline;gap:var(--s2)}
+.led .v{font:800 38px/1 var(--display);letter-spacing:-.01em}
+.led .d{font:800 15px/1 var(--display);color:var(--c)}
+.track{position:relative;display:block;height:9px;background:color-mix(in oklab,var(--c) 20%,var(--bg));
+margin-top:5px}
+.track i{position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--c)}
+.track .fail{position:absolute;top:-4px;left:var(--x);width:2px;height:17px;background:var(--red)}
+.room{font:600 11px/1.3 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+.led.danger .room{color:var(--red)}
+.led.danger .v{color:var(--red)}
+
+/* the peek: an overlay, so opening it never moves the page */
+.peek{position:absolute;left:0;right:0;top:100%;z-index:16;background:var(--bg);
+border:2px solid var(--c,var(--ink));border-top:0;padding:var(--s3) var(--s4);
+display:grid;grid-template-columns:1fr 1fr 210px;gap:var(--s4);box-shadow:0 14px 0 -10px rgb(0 0 0/.12)}
+.peek[hidden]{display:none}
+.peek h3{font-size:22px;color:var(--c)}
+.peek .flow{list-style:none;margin:6px 0 0;padding:0}
+.peek .flow li{display:flex;justify-content:space-between;gap:var(--s2);font-size:13px;padding:4px 0;
+border-bottom:1px solid var(--tone)}
+.peek .flow li b{font:800 16px/1 var(--display);font-variant-numeric:tabular-nums}
+.peek .big{font:900 56px/.9 var(--display);color:var(--c);display:block}
+.peek .acts2{display:flex;gap:var(--s2);align-items:center;margin-top:var(--s2)}
+
+/* three columns */
+.main{display:grid;grid-template-columns:330px minmax(0,1fr) 320px;gap:var(--s5);
+padding-top:var(--s3);min-height:0}
+.col{min-height:0;display:flex;flex-direction:column}
+.deskcol{gap:var(--s2)}
+.billpad{width:100%;min-height:74px;resize:none;border:0;border-bottom:2px solid var(--ink);
+background:transparent;padding:0 0 7px;outline:none;font:700 20px/1.2 var(--display);color:var(--ink)}
+.billpad:focus{border-bottom-color:var(--accent)}
+.tag{margin:var(--s3) 0 0;border:2px solid var(--ink);background:var(--bg);position:relative}
+.tag-h{display:flex;justify-content:space-between;gap:var(--s2);background:var(--ink);color:var(--bg);
+padding:5px 9px;font:600 10px/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase}
+.tag-b{padding:var(--s3) var(--s3) var(--s4)}
+.tag-b h3{font-size:22px;margin-bottom:var(--s2)}
+.fig{margin:0}
+.fig>div{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);padding:5px 0;
+border-bottom:1px solid var(--tone)}
+.fig dt{font-size:12.5px;display:flex;align-items:center;gap:6px}
+.fig dd{margin:0;font:800 22px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--c)}
+.tagr{display:flex;gap:var(--s2);align-items:baseline;padding:6px 0;border-bottom:1px solid var(--tone)}
+.tagr:last-of-type{border-bottom:0}
+.tagr .k{flex:none;width:42px;font:600 10px/1.6 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+color:var(--ink-2)}
+.tagr .vs{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.stamp{position:absolute;right:9px;bottom:9px;font:800 14px/1 var(--display);letter-spacing:.08em;
+text-transform:uppercase;padding:4px 9px;border:3px solid var(--accent);color:var(--accent);
+transform:rotate(-6deg);mix-blend-mode:multiply;pointer-events:none}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:var(--s3)}
+.acts .btn{width:100%}
+.hint{font:400 12px/1.45 var(--sans);color:var(--ink-2);margin-top:6px}
+
+/* the floor */
+.floorcol{gap:var(--s2)}
+.floorbox{position:relative;flex:1;min-height:0;display:flex;align-items:center}
+.hemi{width:100%;height:auto;max-height:52vh;display:block;overflow:visible;margin-inline:auto}
+.seat{cursor:pointer;outline:none}
+.seat .disc{transition:opacity var(--t-state),stroke-width var(--t-fast)}
+.seat:hover .disc,.seat:focus-visible .disc,.seat.on .disc{opacity:1;stroke-width:3}
+.seat .halo{stroke:var(--accent);stroke-width:2;opacity:0}
+.seat:hover .halo,.seat:focus-visible .halo,.seat.on .halo{opacity:1}
+.seatlabel{position:fixed;z-index:30;background:var(--ink);color:var(--bg);padding:8px 11px;max-width:290px;
+pointer-events:none;border-left:4px solid var(--c,var(--accent))}
+.seatlabel b{font:800 18px/1 var(--display);display:block}
+.seatlabel .s{font-size:12px;opacity:.85;display:block;margin-top:3px}
+.seatlabel q{font:700 15px/1.2 var(--display);display:block;margin-top:6px}
+.whip{display:flex;align-items:baseline;gap:var(--s3)}
+.whip .n{font:900 62px/.9 var(--display);letter-spacing:-.02em}
+.whipbar{position:relative;height:10px;background:var(--tone);margin-top:6px}
+.whipbar i{position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--ink)}
+.whipbar .tick{position:absolute;top:-7px;left:var(--x);width:2px;height:24px;background:var(--ink)}
+.whipbar .tick span{position:absolute;top:25px;left:50%;transform:translateX(-50%);
+font:600 11px/1 var(--sans);color:var(--ink-2);white-space:nowrap}
+.key{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px var(--s4);font-size:12px;
+color:var(--ink-2)}
+.key li{display:inline-flex;align-items:center;gap:6px}
+.key b{font:800 14px/1 var(--display);color:var(--ink)}
+.sw{width:15px;height:15px;flex:none}
+/* the member file, opened by a click, pinnable */
+.file{border:2px solid var(--ink);background:var(--bg);padding:var(--s3);display:grid;gap:6px}
+.file[hidden]{display:none}
+.file h3{font-size:22px}
+.file .who{display:flex;align-items:center;gap:var(--s2)}
+.file .loy{font:900 34px/1 var(--display);margin-left:auto}
+.file q{font:700 17px/1.22 var(--display)}
+
+/* the rail */
+.railcol{min-height:0}
+.tabbar{display:flex;gap:1px;border-bottom:1px solid var(--ink);flex:none}
+.tabbar button{position:relative;flex:1 1 auto;min-height:42px;padding:0 5px;color:var(--ink-2);
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+font:600 9.5px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;
+transition:color var(--t-fast),box-shadow var(--t-fast)}
+.tabbar button:hover{color:var(--ink)}
+.tabbar button[aria-selected=true]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.tabbar .badge{background:var(--accent);color:#fff;font-size:9px;padding:1px 4px;position:absolute;
+transform:translate(18px,-14px)}
+.railbody{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;padding-right:2px}
+.tabpanel{padding-top:var(--s3)}
+.pinned{border-top:2px solid var(--c,var(--ink));padding:var(--s2) 0 var(--s3);display:grid;gap:4px}
+.pinned h4{font:800 18px/1 var(--display);text-transform:uppercase;margin:0;color:var(--c,var(--ink))}
+.pinned .line{display:flex;justify-content:space-between;gap:var(--s2);font-size:12.5px}
+.pinned .line b{font-variant-numeric:tabular-nums}
+.unpin{font:600 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);
+text-decoration:underline;text-underline-offset:3px;justify-self:start;min-height:28px}
+.unpin:hover{color:var(--red)}
+
+/* the feed */
+.postbox{width:100%;min-height:58px;resize:vertical;border:1.5px solid var(--ink);background:var(--bg);
+padding:8px 10px;outline:none;font:400 13.5px/1.45 var(--sans);color:var(--ink)}
+.postbox:focus{border-color:var(--accent)}
+.attn{display:flex;gap:6px;align-items:center;margin:7px 0}
+.attn b{width:12px;height:12px;border:2px solid var(--ink);display:inline-block}
+.attn b.spent{background:var(--app)}
+.post .lede{font:700 19px/1.26 var(--display);margin:0 0 var(--s2)}
+.split{display:flex;height:15px;border:1px solid var(--ink);background:var(--bg)}
+.split .like{background:var(--app)}
+.split .boo{background:var(--red)}
+.split .share{background-image:repeating-linear-gradient(45deg,var(--app) 0 1.5px,transparent 1.5px 5px)}
+.split .pass{background:var(--tone)}
+.splitkey{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:5px;font-size:12px;color:var(--ink-2)}
+.splitkey b{font:800 15px/1 var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.splitkey i{width:10px;height:10px;display:inline-block;border:1px solid var(--ink);margin-right:5px;
+vertical-align:-1px}
+.pull{margin:var(--s3) 0 0;border-left:3px solid var(--app);padding:2px 0 2px 11px;font:700 16px/1.25 var(--display)}
+.pull cite{display:block;margin-top:3px;font:500 11px/1 var(--sans);font-style:normal;letter-spacing:.08em;
+text-transform:uppercase;color:var(--ink-2)}
+.rival{margin-top:var(--s3);padding:9px 11px;border:1.5px solid var(--ink);
+background-image:repeating-linear-gradient(45deg,var(--ink-2) 0 1px,transparent 1px 7px)}
+.rival .kicker,.rival p{background:var(--bg);width:fit-content;padding-right:5px}
+.rival p{font:700 16px/1.24 var(--display);margin-top:4px}
+.causes{list-style:none;margin:0;padding:0}
+.causes li{display:flex;gap:var(--s2);align-items:baseline;padding:5px 0;border-bottom:1px solid var(--tone);
+font-size:12.5px}
+.causes li b{font:800 16px/1 var(--display);min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.tiles{position:relative;width:100%;aspect-ratio:100/62;border:1px solid var(--ink);background:var(--bg)}
+.tile{position:absolute;border:1px solid var(--ink);background:var(--bg);padding:5px 6px;overflow:hidden;color:var(--ink)}
+.tile::before{content:"";position:absolute;inset:0;background:var(--app);opacity:var(--d)}
+.tile>*{position:relative;display:block}
+.tile.dark{color:var(--bg)}
+.tile .nm{font:800 13px/1.05 var(--display);letter-spacing:.05em;text-transform:uppercase}
+.tile .ap{font:800 21px/1 var(--display);margin-top:1px}
+.tile .wt,.tile .flag{display:none}
+.tile .mv{font-size:10px;font-weight:600;margin-top:2px}
+.tile.served{outline:3px solid var(--accent);outline-offset:-3px}
+
+/* the wire, coloured by resource and clickable */
+.wire{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--bg);
+display:flex;align-items:center;height:var(--wire);overflow:hidden}
+.wire .lbl{flex:none;display:flex;align-items:center;gap:6px;padding:0 var(--s3);height:100%;
+background:var(--accent);color:#fff;font:800 13px/1 var(--display);letter-spacing:.12em;text-transform:uppercase}
+.runwrap{flex:1;min-width:0;overflow:hidden}
+.run{display:flex;gap:var(--s5);white-space:nowrap;animation:tick 46s linear infinite;
+padding-left:var(--s5);will-change:transform}
+.wire:hover .run,.wire:focus-within .run{animation-play-state:paused}
+.wire .w{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--bg);
+border-bottom:2px solid transparent;padding-bottom:1px}
+button.w:hover{border-bottom-color:var(--c)}
+.wire .w b{font:800 17px/1 var(--display);color:var(--c);font-variant-numeric:tabular-nums}
+.wire .w .ic{color:var(--c)}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+transition-duration:.01ms!important}
+.run{animation:none}
+}
+
+.stage{flex:none}
+.floorcol .key{margin-top:var(--s2)}
+
+@media(max-width:900px){
+body{height:auto;overflow:auto;padding-bottom:calc(var(--wire) + 52px)}
+.page{height:auto;display:block;padding:0 15px var(--s5)}
+.mast b{font-size:16px}.mast span{font-size:10px}
+.strip{grid-template-columns:1fr 1fr;border-bottom:0}
+.led{padding:8px 0 10px;border-right:0;border-bottom:1px solid var(--tone)}
+.led:nth-child(odd){padding-right:10px;border-right:1px solid var(--tone)}
+.led:last-child{grid-column:1/-1;border-bottom:2px solid var(--ink)}
+.led .v{font-size:30px}
+.peek{position:static;grid-template-columns:1fr;gap:var(--s3);border:2px solid var(--c);margin-bottom:var(--s3)}
+.main{display:grid;grid-template-columns:1fr;gap:var(--s4);padding-top:var(--s4)}
+.floorcol{order:1}.railcol{order:2}.deskcol{order:3}
+.floorbox{min-height:210px}
+.whip .n{font-size:48px}
+.tabbar{position:fixed;left:0;right:0;bottom:var(--wire);z-index:19;background:var(--bg);
+border-top:2px solid var(--ink);border-bottom:0}
+.tabbar button{font-size:9px;padding:0 2px;min-height:50px}
+.tabbar button[aria-selected=true]{box-shadow:inset 0 3px 0 var(--ink)}
+.tabbar .badge{transform:translate(16px,-16px)}
+.railbody{overflow:visible}
+.tabpanel[hidden]{display:none!important}
+.seatlabel{left:12px!important;right:12px;max-width:none;bottom:calc(var(--wire) + 56px);top:auto!important}
+}
+</style>
+</head>
+<body class="">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-treasury" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 11v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8v-5"/></symbol><symbol id="i-capital" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 12.5-8 8a2.1 2.1 0 1 1-3-3l8-8"/><path d="m16 16 5.5-5.5"/><path d="m8 8 5.5-5.5"/><path d="m9 7 8 8"/><path d="m20.5 11.5-8-8"/></symbol><symbol id="i-chest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="1"/><circle cx="12" cy="12.5" r="3"/><path d="M12 9.5v-1M3 9h18"/></symbol><symbol id="i-mood" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol><symbol id="i-approval" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="2.8"/><path d="M7.5 19v-1a4.5 4.5 0 0 1 9 0v1"/><circle cx="4.5" cy="10" r="2"/><path d="M1.5 18.5V18a3 3 0 0 1 3-3"/><circle cx="19.5" cy="10" r="2"/><path d="M22.5 18.5V18a3 3 0 0 0-3-3"/></symbol><symbol id="i-bill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.2a6 6 0 0 0-8.5-8.5L5 10.3V19h8.5z"/><path d="M16 8 3 21"/><path d="M17 15H9.5"/></symbol><symbol id="i-post" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 17-5v12L3 14z"/><path d="M11.5 16.8a3 3 0 1 1-5.7-1.6"/><path d="M20 9.5h2M20 13.5h2"/></symbol><symbol id="i-lobby" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7 9.5 4.5a2 2 0 0 0-3 0L2.8 8.2a2 2 0 0 0 0 3L7 15.5"/><path d="m12 7 2.5-2.5a2 2 0 0 1 3 0l3.7 3.7a2 2 0 0 1 0 3L17 15.5"/><path d="m9 13 2 2"/><path d="m11.5 10.5 4 4"/></symbol><symbol id="i-vote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M8 7V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V7"/><path d="m9 13.2 2.4 2.4 4.1-4.1"/></symbol><symbol id="i-crisis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6 6 0 0 1 12 0c0 6.5 3 8.5 3 8.5H3s3-2 3-8.5z"/><path d="M10.4 20.5a1.9 1.9 0 0 0 3.2 0"/></symbol><symbol id="i-region" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10.2c0 5.8-8 11.8-8 11.8s-8-6-8-11.8a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.8"/></symbol><symbol id="i-seat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.5v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><path d="M6.5 18.5V21M17.5 18.5V21"/><path d="M8.5 12.5V8a3.5 3.5 0 0 1 7 0v4.5"/></symbol><symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.5V4h6v6.5l3 3.5H6z"/></symbol><symbol id="i-wire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2.5-6 3 12L16 12h4"/></symbol></defs></svg>
+<div class="page">
+<header class="mast"><b>United States of Jev</b><span class="kicker">Rome · Kalends of Iunius 44 BC · Turn 7 of 20 · Caesarians</span></header>
+<div class="striprow"><div class="strip" role="group" aria-label="The five ledgers"><button class="led r-tre" data-res="tre" aria-expanded="false"><span class="ledk"><svg class="ic" aria-hidden="true"><use href="#i-treasury"/></svg><span class="kicker">Treasury</span></span><span class="top"><b class="v num">38</b><span class="d num">−4</span></span><span class="track"><i style="--w:38%"></i><b class="fail" style="--x:0%"></b></span><span class="room num">38 to crisis</span></button><button class="led r-cap" data-res="cap" aria-expanded="false"><span class="ledk"><svg class="ic" aria-hidden="true"><use href="#i-capital"/></svg><span class="kicker">Capital</span></span><span class="top"><b class="v num">14</b><span class="d num">−2</span></span><span class="track"><i style="--w:47%"></i><b class="fail" style="--x:0%"></b></span><span class="room num">14 to no floor</span></button><button class="led r-che" data-res="che" aria-expanded="false"><span class="ledk"><svg class="ic" aria-hidden="true"><use href="#i-chest"/></svg><span class="kicker">Party chest</span></span><span class="top"><b class="v num">120</b><span class="d num">+8</span></span><span class="track"><i style="--w:60%"></i><b class="fail" style="--x:0%"></b></span><span class="room num">120 to no reach</span></button><button class="led r-moo" data-res="moo" aria-expanded="false"><span class="ledk"><svg class="ic" aria-hidden="true"><use href="#i-mood"/></svg><span class="kicker">Party mood</span></span><span class="top"><b class="v num">47</b><span class="d num">−3</span></span><span class="track"><i style="--w:47%"></i><b class="fail" style="--x:20%"></b></span><span class="room num">27 to revolt</span></button><button class="led r-app" data-res="app" aria-expanded="false"><span class="ledk"><svg class="ic" aria-hidden="true"><use href="#i-approval"/></svg><span class="kicker">Approval</span></span><span class="top"><b class="v num">56</b><span class="d num">+2</span></span><span class="track"><i style="--w:56%"></i><b class="fail" style="--x:30%"></b></span><span class="room num">26 to impeachment</span></button></div><div class="peek" id="peek" hidden></div></div>
+<div class="main">
+  <section class="col deskcol" aria-label="The bill desk"><label class="kicker" for="bill"><svg class="ic sm" aria-hidden="true"><use href="#i-bill"/></svg> The bill on your desk · turn 7</label>
+<textarea class="billpad" id="bill" spellcheck="false">Four years of state loans to the Etrurian and Latin smallholders, at a tenth of the grain price.</textarea>
+<figure class="tag">
+<figcaption class="tag-h"><span><svg class="ic sm" aria-hidden="true"><use href="#i-bill"/></svg> Price tag · Luna</span><span class="num">0.4 s</span></figcaption>
+<div class="tag-b">
+<h3>Eastern farm credit bill</h3>
+<dl class="fig">
+<div class="r-tre"><dt><svg class="ic sm" aria-hidden="true"><use href="#i-treasury"/></svg> Treasury, on passage</dt><dd class="num">&minus;12</dd></div>
+<div class="r-tre"><dt><svg class="ic sm" aria-hidden="true"><use href="#i-treasury"/></svg> Revenue, each of 4 turns</dt><dd class="num">+3</dd></div>
+<div class="r-cap"><dt><svg class="ic sm" aria-hidden="true"><use href="#i-capital"/></svg> Capital to table</dt><dd class="num">&minus;2</dd></div>
+<div class="r-moo"><dt><svg class="ic sm" aria-hidden="true"><use href="#i-mood"/></svg> Party mood</dt><dd class="num">&minus;6</dd></div>
+</dl>
+<div class="tagr"><span class="k">Serves</span><span class="vs"><span class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-region"/></svg> Etruria</span><span class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-region"/></svg> Latium</span></span></div>
+<div class="tagr"><span class="k">Hits</span><span class="vs"><span class="chip red"><svg class="ic sm" aria-hidden="true"><use href="#i-approval"/></svg> Grain traders</span></span></div>
+<div class="tagr"><span class="k">Keeps</span><span class="vs"><span class="chip faint">Land for the legions</span></span></div>
+<span class="stamp">Priced</span>
+</div></figure>
+<div class="acts">
+<button class="btn hot"><svg class="ic sm" aria-hidden="true"><use href="#i-vote"/></svg> Table</button><button class="btn"><svg class="ic sm" aria-hidden="true"><use href="#i-bill"/></svg> Amend</button>
+<button class="btn"><svg class="ic sm" aria-hidden="true"><use href="#i-lobby"/></svg> Lobby</button><button class="btn" disabled><svg class="ic sm" aria-hidden="true"><use href="#i-vote"/></svg> Vote</button></div>
+<p class="hint">Table spends <b class="num r-cap">2</b> capital. Lobby spends <b class="num r-che">3</b>
+of the chest a seat. <b>5 seats short.</b></p></section>
+  <section class="col floorcol" aria-label="The floor">
+    <div class="stage"><div class="whip"><span class="n num">26</span><div>
+<div class="kicker"><svg class="ic sm" aria-hidden="true"><use href="#i-seat"/></svg> Whipped yes of 31 needed</div>
+<div class="small muted">60 seats · 5 short · the Optimates hold the door</div></div></div>
+<div class="whipbar" role="meter" aria-label="Whip count" aria-valuenow="26">
+<i style="--w:43.3%"></i><b class="tick" style="--x:51.6%"><span>31 to pass</span></b></div><div class="floorbox"><svg class="hemi" viewBox="0 0 600 308" role="group" aria-label="Chamber floor, 60 seats, 26 whipped yes of 31 needed"><defs><pattern id="f-cae" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="var(--f-cae)"/></pattern><pattern id="f-pop" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="var(--f-pop)"/><circle cx="3" cy="3" r="1.4" fill="var(--ink)"/></pattern><pattern id="f-opt" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--f-opt)"/><path d="M0 0 V6" stroke="var(--ink)" stroke-width="1.6"/></pattern><pattern id="f-lib" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="var(--f-lib)"/><circle cx="3" cy="3" r="2" fill="var(--paper)"/></pattern></defs>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="M. Antonius" data-f="Caesarians" data-r="Latium" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="M. Antonius, Caesarians, Latium, 100 percent yes"><circle class="halo" cx="19.2" cy="284.0" r="23.8" fill="none"/><circle class="disc" cx="19.2" cy="284.0" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="19.2" cy="284.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="A. Hirtius" data-f="Caesarians" data-r="Hispania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="A. Hirtius, Caesarians, Hispania, 100 percent yes"><circle class="halo" cx="61.5" cy="283.1" r="23.8" fill="none"/><circle class="disc" cx="61.5" cy="283.1" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="61.5" cy="283.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="P. Munatius Cicero" data-f="Caesarians" data-r="Sicilia" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="P. Munatius Cicero, Caesarians, Sicilia, 100 percent yes"><circle class="halo" cx="103.7" cy="284.2" r="23.8" fill="none"/><circle class="disc" cx="103.7" cy="284.2" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="103.7" cy="284.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="C. Cassius Maximus" data-f="Caesarians" data-r="Gallia Cisalpina" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="C. Cassius Maximus, Caesarians, Gallia Cisalpina, 100 percent yes"><circle class="halo" cx="145.9" cy="285.6" r="23.8" fill="none"/><circle class="disc" cx="145.9" cy="285.6" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="145.9" cy="285.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="A. Vibius Dolabella" data-f="Caesarians" data-r="Etruria" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="A. Vibius Dolabella, Caesarians, Etruria, 100 percent yes"><circle class="halo" cx="188.9" cy="284.6" r="23.8" fill="none"/><circle class="disc" cx="188.9" cy="284.6" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="188.9" cy="284.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="T. Fufius Rufinus" data-f="Caesarians" data-r="Campania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="T. Fufius Rufinus, Caesarians, Campania, 100 percent yes"><circle class="halo" cx="28.8" cy="232.8" r="23.8" fill="none"/><circle class="disc" cx="28.8" cy="232.8" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="28.8" cy="232.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="L. Gabinius Plancus" data-f="Caesarians" data-r="Latium" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="L. Gabinius Plancus, Caesarians, Latium, 100 percent yes"><circle class="halo" cx="73.5" cy="230.7" r="23.8" fill="none"/><circle class="disc" cx="73.5" cy="230.7" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="73.5" cy="230.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Ser. Oppius Niger" data-f="Caesarians" data-r="Hispania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Ser. Oppius Niger, Caesarians, Hispania, 100 percent yes"><circle class="halo" cx="117.1" cy="234.2" r="23.8" fill="none"/><circle class="disc" cx="117.1" cy="234.2" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="117.1" cy="234.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Sex. Tullius Bibulus" data-f="Caesarians" data-r="Sicilia" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Sex. Tullius Bibulus, Caesarians, Sicilia, 100 percent yes"><circle class="halo" cx="47.6" cy="184.3" r="23.8" fill="none"/><circle class="disc" cx="47.6" cy="184.3" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="47.6" cy="184.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Q. Terentius Cinna" data-f="Caesarians" data-r="Gallia Cisalpina" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Q. Terentius Cinna, Caesarians, Gallia Cisalpina, 100 percent yes"><circle class="halo" cx="161.0" cy="239.2" r="23.8" fill="none"/><circle class="disc" cx="161.0" cy="239.2" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="161.0" cy="239.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="M. Hirtius Sabinus" data-f="Caesarians" data-r="Etruria" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="M. Hirtius Sabinus, Caesarians, Etruria, 100 percent yes"><circle class="halo" cx="96.8" cy="182.3" r="23.8" fill="none"/><circle class="disc" cx="96.8" cy="182.3" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="96.8" cy="182.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Cn. Iunius Brutus" data-f="Caesarians" data-r="Campania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Cn. Iunius Brutus, Caesarians, Campania, 100 percent yes"><circle class="halo" cx="75.0" cy="140.1" r="23.8" fill="none"/><circle class="disc" cx="75.0" cy="140.1" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="75.0" cy="140.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="P. Sulpicius Crispus" data-f="Caesarians" data-r="Latium" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="P. Sulpicius Crispus, Caesarians, Latium, 100 percent yes"><circle class="halo" cx="142.9" cy="189.5" r="23.8" fill="none"/><circle class="disc" cx="142.9" cy="189.5" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="142.9" cy="189.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="C. Domitius Lepidus" data-f="Caesarians" data-r="Hispania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="C. Domitius Lepidus, Caesarians, Hispania, 100 percent yes"><circle class="halo" cx="210.9" cy="238.9" r="23.8" fill="none"/><circle class="disc" cx="210.9" cy="238.9" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="210.9" cy="238.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="A. Cornelius Pulcher" data-f="Caesarians" data-r="Sicilia" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="A. Cornelius Pulcher, Caesarians, Sicilia, 100 percent yes"><circle class="halo" cx="189.7" cy="199.7" r="23.8" fill="none"/><circle class="disc" cx="189.7" cy="199.7" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="189.7" cy="199.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="T. Valerius Calenus" data-f="Caesarians" data-r="Gallia Cisalpina" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="T. Valerius Calenus, Caesarians, Gallia Cisalpina, 100 percent yes"><circle class="halo" cx="130.3" cy="140.3" r="23.8" fill="none"/><circle class="disc" cx="130.3" cy="140.3" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="130.3" cy="140.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="L. Calpurnius Gallus" data-f="Caesarians" data-r="Etruria" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="L. Calpurnius Gallus, Caesarians, Etruria, 100 percent yes"><circle class="halo" cx="110.0" cy="101.6" r="23.8" fill="none"/><circle class="disc" cx="110.0" cy="101.6" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="110.0" cy="101.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Ser. Aemilius Caepio" data-f="Caesarians" data-r="Campania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Ser. Aemilius Caepio, Caesarians, Campania, 100 percent yes"><circle class="halo" cx="179.5" cy="152.9" r="23.8" fill="none"/><circle class="disc" cx="179.5" cy="152.9" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="179.5" cy="152.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Sex. Asinius Scaeva" data-f="Caesarians" data-r="Latium" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Sex. Asinius Scaeva, Caesarians, Latium, 100 percent yes"><circle class="halo" cx="172.3" cy="106.8" r="23.8" fill="none"/><circle class="disc" cx="172.3" cy="106.8" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="172.3" cy="106.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Q. Servilius Ahenobarbus" data-f="Caesarians" data-r="Hispania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Q. Servilius Ahenobarbus, Caesarians, Hispania, 100 percent yes"><circle class="halo" cx="151.5" cy="70.2" r="23.8" fill="none"/><circle class="disc" cx="151.5" cy="70.2" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="151.5" cy="70.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="M. Antonius Longinus" data-f="Caesarians" data-r="Sicilia" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="M. Antonius Longinus, Caesarians, Sicilia, 100 percent yes"><circle class="halo" cx="229.2" cy="171.0" r="23.8" fill="none"/><circle class="disc" cx="229.2" cy="171.0" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="229.2" cy="171.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:solid" data-n="Cn. Labienus Nerva" data-f="Caesarians" data-r="Gallia Cisalpina" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Cn. Labienus Nerva, Caesarians, Gallia Cisalpina, 100 percent yes"><circle class="halo" cx="250.5" cy="207.3" r="23.8" fill="none"/><circle class="disc" cx="250.5" cy="207.3" r="16.8" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="250.5" cy="207.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:dots" data-n="Q. Fufius Calenus" data-f="Populares" data-r="Etruria" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="Q. Fufius Calenus, Populares, Etruria, 100 percent yes"><circle class="halo" cx="224.2" cy="127.1" r="23.8" fill="none"/><circle class="disc" cx="224.2" cy="127.1" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="224.2" cy="127.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:dots" data-n="P. Cornelius Dolabella" data-f="Populares" data-r="Campania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="P. Cornelius Dolabella, Populares, Campania, 100 percent yes"><circle class="halo" cx="198.1" cy="47.0" r="23.8" fill="none"/><circle class="disc" cx="198.1" cy="47.0" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="198.1" cy="47.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:dots" data-n="A. Vibius Dolabella" data-f="Populares" data-r="Latium" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="A. Vibius Dolabella, Populares, Latium, 100 percent yes"><circle class="halo" cx="220.7" cy="83.5" r="23.8" fill="none"/><circle class="disc" cx="220.7" cy="83.5" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="220.7" cy="83.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped" tabindex="0" role="button" style="--c:dots" data-n="T. Fufius Rufinus" data-f="Populares" data-r="Hispania" data-p="100" data-s="Table it. I will second it before the ink dries." aria-label="T. Fufius Rufinus, Populares, Hispania, 100 percent yes"><circle class="halo" cx="248.2" cy="32.8" r="23.8" fill="none"/><circle class="disc" cx="248.2" cy="32.8" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="248.2" cy="32.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="L. Gabinius Plancus" data-f="Populares" data-r="Sicilia" data-p="58" data-s="Show me what Etruria pays back, and when." aria-label="L. Gabinius Plancus, Populares, Sicilia, 58 percent yes"><circle class="halo" cx="275.6" cy="155.9" r="23.8" fill="none"/><circle class="disc" cx="275.6" cy="155.9" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.75"/><circle class="edge" cx="275.6" cy="155.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="Ser. Oppius Niger" data-f="Populares" data-r="Gallia Cisalpina" data-p="68" data-s="I am with you, if the sum still holds at the vote." aria-label="Ser. Oppius Niger, Populares, Gallia Cisalpina, 68 percent yes"><circle class="halo" cx="274.2" cy="113.7" r="23.8" fill="none"/><circle class="disc" cx="274.2" cy="113.7" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.81"/><circle class="edge" cx="274.2" cy="113.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="Sex. Tullius Bibulus" data-f="Populares" data-r="Etruria" data-p="51" data-s="Show me what Etruria pays back, and when." aria-label="Sex. Tullius Bibulus, Populares, Etruria, 51 percent yes"><circle class="halo" cx="273.1" cy="71.5" r="23.8" fill="none"/><circle class="disc" cx="273.1" cy="71.5" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.71"/><circle class="edge" cx="273.1" cy="71.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="Q. Terentius Cinna" data-f="Populares" data-r="Campania" data-p="60" data-s="I am with you, if the sum still holds at the vote." aria-label="Q. Terentius Cinna, Populares, Campania, 60 percent yes"><circle class="halo" cx="300.0" cy="196.0" r="23.8" fill="none"/><circle class="disc" cx="300.0" cy="196.0" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.76"/><circle class="edge" cx="300.0" cy="196.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="M. Hirtius Sabinus" data-f="Populares" data-r="Latium" data-p="70" data-s="I am with you, if the sum still holds at the vote." aria-label="M. Hirtius Sabinus, Populares, Latium, 70 percent yes"><circle class="halo" cx="300.0" cy="28.0" r="23.8" fill="none"/><circle class="disc" cx="300.0" cy="28.0" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.82"/><circle class="edge" cx="300.0" cy="28.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="Cn. Iunius Brutus" data-f="Populares" data-r="Hispania" data-p="53" data-s="Show me what Etruria pays back, and when." aria-label="Cn. Iunius Brutus, Populares, Hispania, 53 percent yes"><circle class="halo" cx="326.9" cy="71.5" r="23.8" fill="none"/><circle class="disc" cx="326.9" cy="71.5" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.72"/><circle class="edge" cx="326.9" cy="71.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="P. Sulpicius Crispus" data-f="Populares" data-r="Sicilia" data-p="63" data-s="I am with you, if the sum still holds at the vote." aria-label="P. Sulpicius Crispus, Populares, Sicilia, 63 percent yes"><circle class="halo" cx="325.8" cy="113.7" r="23.8" fill="none"/><circle class="disc" cx="325.8" cy="113.7" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.78"/><circle class="edge" cx="325.8" cy="113.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="C. Domitius Lepidus" data-f="Populares" data-r="Gallia Cisalpina" data-p="45" data-s="Show me what Etruria pays back, and when." aria-label="C. Domitius Lepidus, Populares, Gallia Cisalpina, 45 percent yes"><circle class="halo" cx="324.4" cy="155.9" r="23.8" fill="none"/><circle class="disc" cx="324.4" cy="155.9" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.67"/><circle class="edge" cx="324.4" cy="155.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:dots" data-n="A. Cornelius Pulcher" data-f="Populares" data-r="Etruria" data-p="55" data-s="Show me what Etruria pays back, and when." aria-label="A. Cornelius Pulcher, Populares, Etruria, 55 percent yes"><circle class="halo" cx="351.8" cy="32.8" r="23.8" fill="none"/><circle class="disc" cx="351.8" cy="32.8" r="16.8" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.4" opacity="0.73"/><circle class="edge" cx="351.8" cy="32.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="M. Tullius Cicero" data-f="Optimates" data-r="Campania" data-p="28" data-s="The traders in my region will not forgive this." aria-label="M. Tullius Cicero, Optimates, Campania, 28 percent yes"><circle class="halo" cx="379.3" cy="83.5" r="23.8" fill="none"/><circle class="disc" cx="379.3" cy="83.5" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.57"/><circle class="edge" cx="379.3" cy="83.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Servilia Caepionis" data-f="Optimates" data-r="Latium" data-p="10" data-s="I will not lend the treasury to men who plough." aria-label="Servilia Caepionis, Optimates, Latium, 10 percent yes"><circle class="halo" cx="401.9" cy="47.0" r="23.8" fill="none"/><circle class="disc" cx="401.9" cy="47.0" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.46"/><circle class="edge" cx="401.9" cy="47.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Ser. Aemilius Caepio" data-f="Optimates" data-r="Hispania" data-p="20" data-s="The traders in my region will not forgive this." aria-label="Ser. Aemilius Caepio, Optimates, Hispania, 20 percent yes"><circle class="halo" cx="375.8" cy="127.1" r="23.8" fill="none"/><circle class="disc" cx="375.8" cy="127.1" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.52"/><circle class="edge" cx="375.8" cy="127.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Sex. Asinius Scaeva" data-f="Optimates" data-r="Sicilia" data-p="30" data-s="The traders in my region will not forgive this." aria-label="Sex. Asinius Scaeva, Optimates, Sicilia, 30 percent yes"><circle class="halo" cx="349.5" cy="207.3" r="23.8" fill="none"/><circle class="disc" cx="349.5" cy="207.3" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.58"/><circle class="edge" cx="349.5" cy="207.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Q. Servilius Ahenobarbus" data-f="Optimates" data-r="Gallia Cisalpina" data-p="12" data-s="I will not lend the treasury to men who plough." aria-label="Q. Servilius Ahenobarbus, Optimates, Gallia Cisalpina, 12 percent yes"><circle class="halo" cx="370.8" cy="171.0" r="23.8" fill="none"/><circle class="disc" cx="370.8" cy="171.0" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="370.8" cy="171.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="M. Antonius Longinus" data-f="Optimates" data-r="Etruria" data-p="23" data-s="The traders in my region will not forgive this." aria-label="M. Antonius Longinus, Optimates, Etruria, 23 percent yes"><circle class="halo" cx="448.5" cy="70.2" r="23.8" fill="none"/><circle class="disc" cx="448.5" cy="70.2" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.54"/><circle class="edge" cx="448.5" cy="70.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Cn. Labienus Nerva" data-f="Optimates" data-r="Campania" data-p="33" data-s="The traders in my region will not forgive this." aria-label="Cn. Labienus Nerva, Optimates, Campania, 33 percent yes"><circle class="halo" cx="427.7" cy="106.8" r="23.8" fill="none"/><circle class="disc" cx="427.7" cy="106.8" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.60"/><circle class="edge" cx="427.7" cy="106.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="P. Munatius Cicero" data-f="Optimates" data-r="Latium" data-p="15" data-s="I will not lend the treasury to men who plough." aria-label="P. Munatius Cicero, Optimates, Latium, 15 percent yes"><circle class="halo" cx="420.5" cy="152.9" r="23.8" fill="none"/><circle class="disc" cx="420.5" cy="152.9" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.49"/><circle class="edge" cx="420.5" cy="152.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="C. Cassius Maximus" data-f="Optimates" data-r="Hispania" data-p="25" data-s="The traders in my region will not forgive this." aria-label="C. Cassius Maximus, Optimates, Hispania, 25 percent yes"><circle class="halo" cx="490.0" cy="101.6" r="23.8" fill="none"/><circle class="disc" cx="490.0" cy="101.6" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.55"/><circle class="edge" cx="490.0" cy="101.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="A. Vibius Dolabella" data-f="Optimates" data-r="Sicilia" data-p="8" data-s="I will not lend the treasury to men who plough." aria-label="A. Vibius Dolabella, Optimates, Sicilia, 8 percent yes"><circle class="halo" cx="410.3" cy="199.7" r="23.8" fill="none"/><circle class="disc" cx="410.3" cy="199.7" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.45"/><circle class="edge" cx="410.3" cy="199.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="T. Fufius Rufinus" data-f="Optimates" data-r="Gallia Cisalpina" data-p="18" data-s="I will not lend the treasury to men who plough." aria-label="T. Fufius Rufinus, Optimates, Gallia Cisalpina, 18 percent yes"><circle class="halo" cx="469.7" cy="140.3" r="23.8" fill="none"/><circle class="disc" cx="469.7" cy="140.3" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.51"/><circle class="edge" cx="469.7" cy="140.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="L. Gabinius Plancus" data-f="Optimates" data-r="Etruria" data-p="28" data-s="The traders in my region will not forgive this." aria-label="L. Gabinius Plancus, Optimates, Etruria, 28 percent yes"><circle class="halo" cx="389.1" cy="238.9" r="23.8" fill="none"/><circle class="disc" cx="389.1" cy="238.9" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.57"/><circle class="edge" cx="389.1" cy="238.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Ser. Oppius Niger" data-f="Optimates" data-r="Campania" data-p="10" data-s="I will not lend the treasury to men who plough." aria-label="Ser. Oppius Niger, Optimates, Campania, 10 percent yes"><circle class="halo" cx="457.1" cy="189.5" r="23.8" fill="none"/><circle class="disc" cx="457.1" cy="189.5" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.46"/><circle class="edge" cx="457.1" cy="189.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Sex. Tullius Bibulus" data-f="Optimates" data-r="Latium" data-p="20" data-s="The traders in my region will not forgive this." aria-label="Sex. Tullius Bibulus, Optimates, Latium, 20 percent yes"><circle class="halo" cx="525.0" cy="140.1" r="23.8" fill="none"/><circle class="disc" cx="525.0" cy="140.1" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.52"/><circle class="edge" cx="525.0" cy="140.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="Q. Terentius Cinna" data-f="Optimates" data-r="Hispania" data-p="30" data-s="The traders in my region will not forgive this." aria-label="Q. Terentius Cinna, Optimates, Hispania, 30 percent yes"><circle class="halo" cx="503.2" cy="182.3" r="23.8" fill="none"/><circle class="disc" cx="503.2" cy="182.3" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.58"/><circle class="edge" cx="503.2" cy="182.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hatch" data-n="M. Hirtius Sabinus" data-f="Optimates" data-r="Sicilia" data-p="12" data-s="I will not lend the treasury to men who plough." aria-label="M. Hirtius Sabinus, Optimates, Sicilia, 12 percent yes"><circle class="halo" cx="439.0" cy="239.2" r="23.8" fill="none"/><circle class="disc" cx="439.0" cy="239.2" r="16.8" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="439.0" cy="239.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="C. Cassius Longinus" data-f="Liberators" data-r="Gallia Cisalpina" data-p="11" data-s="I will not lend the treasury to men who plough." aria-label="C. Cassius Longinus, Liberators, Gallia Cisalpina, 11 percent yes"><circle class="halo" cx="552.4" cy="184.3" r="23.8" fill="none"/><circle class="disc" cx="552.4" cy="184.3" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="552.4" cy="184.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="M. Iunius Brutus" data-f="Liberators" data-r="Etruria" data-p="21" data-s="The traders in my region will not forgive this." aria-label="M. Iunius Brutus, Liberators, Etruria, 21 percent yes"><circle class="halo" cx="482.9" cy="234.2" r="23.8" fill="none"/><circle class="disc" cx="482.9" cy="234.2" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.53"/><circle class="edge" cx="482.9" cy="234.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="C. Domitius Lepidus" data-f="Liberators" data-r="Campania" data-p="4" data-s="I will not lend the treasury to men who plough." aria-label="C. Domitius Lepidus, Liberators, Campania, 4 percent yes"><circle class="halo" cx="526.5" cy="230.7" r="23.8" fill="none"/><circle class="disc" cx="526.5" cy="230.7" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="526.5" cy="230.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="A. Cornelius Pulcher" data-f="Liberators" data-r="Latium" data-p="13" data-s="I will not lend the treasury to men who plough." aria-label="A. Cornelius Pulcher, Liberators, Latium, 13 percent yes"><circle class="halo" cx="571.2" cy="232.8" r="23.8" fill="none"/><circle class="disc" cx="571.2" cy="232.8" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.48"/><circle class="edge" cx="571.2" cy="232.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="T. Valerius Calenus" data-f="Liberators" data-r="Hispania" data-p="4" data-s="I will not lend the treasury to men who plough." aria-label="T. Valerius Calenus, Liberators, Hispania, 4 percent yes"><circle class="halo" cx="411.1" cy="284.6" r="23.8" fill="none"/><circle class="disc" cx="411.1" cy="284.6" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="411.1" cy="284.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="L. Calpurnius Gallus" data-f="Liberators" data-r="Sicilia" data-p="6" data-s="I will not lend the treasury to men who plough." aria-label="L. Calpurnius Gallus, Liberators, Sicilia, 6 percent yes"><circle class="halo" cx="454.1" cy="285.6" r="23.8" fill="none"/><circle class="disc" cx="454.1" cy="285.6" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.44"/><circle class="edge" cx="454.1" cy="285.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="Ser. Aemilius Caepio" data-f="Liberators" data-r="Gallia Cisalpina" data-p="15" data-s="I will not lend the treasury to men who plough." aria-label="Ser. Aemilius Caepio, Liberators, Gallia Cisalpina, 15 percent yes"><circle class="halo" cx="496.3" cy="284.2" r="23.8" fill="none"/><circle class="disc" cx="496.3" cy="284.2" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.49"/><circle class="edge" cx="496.3" cy="284.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="Sex. Asinius Scaeva" data-f="Liberators" data-r="Etruria" data-p="4" data-s="I will not lend the treasury to men who plough." aria-label="Sex. Asinius Scaeva, Liberators, Etruria, 4 percent yes"><circle class="halo" cx="538.5" cy="283.1" r="23.8" fill="none"/><circle class="disc" cx="538.5" cy="283.1" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="538.5" cy="283.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat" tabindex="0" role="button" style="--c:hollow" data-n="Q. Servilius Ahenobarbus" data-f="Liberators" data-r="Campania" data-p="8" data-s="I will not lend the treasury to men who plough." aria-label="Q. Servilius Ahenobarbus, Liberators, Campania, 8 percent yes"><circle class="halo" cx="580.8" cy="284.0" r="23.8" fill="none"/><circle class="disc" cx="580.8" cy="284.0" r="16.8" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.4" opacity="0.45"/><circle class="edge" cx="580.8" cy="284.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g></svg><div class="seatlabel" id="slab" hidden></div></div></div>
+    <ul class="key"><li><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="url(#f-cae)" stroke="var(--ink)" stroke-width="3"/></svg>Caesarians <b class="num">22</b></li><li><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="url(#f-pop)" stroke="var(--ink)" stroke-width="1.2"/></svg>Populares <b class="num">13</b></li><li><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="url(#f-opt)" stroke="var(--ink)" stroke-width="1.2"/></svg>Optimates <b class="num">16</b></li><li><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="url(#f-lib)" stroke="var(--ink)" stroke-width="1.2"/></svg>Liberators <b class="num">9</b></li><li><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--ink)" stroke-width="3"/></svg>Whipped <b class="num">26</b></li></ul>
+    <div class="file" id="file" hidden></div>
+  </section>
+  <section class="col railcol" aria-label="The rail"><div class="tabbar" role="tablist" aria-label="The rail"><button role="tab" id="t0" aria-controls="p0" aria-selected="true"><svg class="ic sm" aria-hidden="true"><use href="#i-post"/></svg><span>Feed</span></button><button role="tab" id="t1" aria-controls="p1"><svg class="ic sm" aria-hidden="true"><use href="#i-region"/></svg><span>Country</span></button><button role="tab" id="t2" aria-controls="p2"><svg class="ic sm" aria-hidden="true"><use href="#i-seat"/></svg><span>Seats</span></button><button role="tab" id="t3" aria-controls="p3"><svg class="ic sm" aria-hidden="true"><use href="#i-vote"/></svg><span>Record</span></button><button role="tab" id="t4" aria-controls="p4"><svg class="ic sm" aria-hidden="true"><use href="#i-pin"/></svg><span>Pinned</span><b class="badge num" hidden>0</b></button></div><div class="railbody"><div class="tabpanel" role="tabpanel" id="p0" aria-labelledby="t0"><label class="kicker" for="post"><svg class="ic sm" aria-hidden="true"><use href="#i-post"/></svg> Your notice for turn 7 · 240 characters</label>
+<textarea class="postbox" id="post" spellcheck="false">The traders call it charity. Ask Etruria what it calls a harvest it can keep.</textarea>
+<div class="attn"><span class="kicker" style="margin-right:4px">Attention</span>
+<b class="spent"></b><b></b><span class="small muted">1 of 2 left</span></div>
+<div class="acts" style="grid-template-columns:1fr auto">
+<button class="btn">Post &middot; 20 chest</button><button class="btn sm">Reach</button></div><div class="panel" style="margin-top:14px"><div class="post">
+<div class="kicker">Your notice · turn 6 · reach 20 of the chest · 250 citizens read it</div>
+<p class="lede">Rome eats what Etruria grows. The grain traders eat what Rome pays.</p>
+<div class="split" role="img" aria-label="61 percent like, 5 percent boo, 18 percent share, 16 percent pass">
+<span class="like" style="width:61%"></span><span class="boo" style="width:5%"></span>
+<span class="share" style="width:18%"></span><span class="pass" style="width:16%"></span></div>
+<div class="splitkey">
+<span><i style="background:var(--ink)"></i><b class="num">61%</b> like</span>
+<span><i style="background:var(--red);border-color:var(--red)"></i><b class="num">5%</b> boo</span>
+<span><i style="background-image:repeating-linear-gradient(45deg,var(--ink) 0 1.5px,transparent 1.5px 5px)"></i><b class="num">18%</b> share</span>
+<span><i style="background:var(--tone)"></i><b class="num">16%</b> pass</span></div>
+<blockquote class="pull">Finally a man who counts the sacks and not the speeches.<cite>Vibia Rufina · Etruria · +3 approval there</cite></blockquote>
+<blockquote class="pull">My father farmed at Veii. He would have signed it twice.<cite>Titus Nerva · Latium · +2 approval there</cite></blockquote>
+<div class="rival"><div class="kicker">M. Tullius Cicero answers</div>
+<p>He buys the fields he cannot win, with silver he does not have.</p></div>
+</div></div></div><div class="tabpanel" role="tabpanel" id="p1" aria-labelledby="t1" hidden><div class="tiles"><div class="tile dark served small" style="--d:0.55;left:0.000%;top:0.000%;width:44.000%;height:59.091%"><span class="nm">Latium</span><span class="ap num">62</span><span class="wt num">weight 26</span><span class="mv num">+2 · the post</span><span class="flag">Serves</span></div><div class="tile hit small" style="--d:0.34;left:0.000%;top:59.091%;width:44.000%;height:40.909%"><span class="nm">Campania</span><span class="ap num">54</span><span class="wt num">weight 18</span><span class="mv num">0 · steady</span><span class="flag red">Traders</span></div><div class="tile dark served small" style="--d:0.78;left:44.000%;top:0.000%;width:28.903%;height:55.357%"><span class="nm">Etruria</span><span class="ap num">67</span><span class="wt num">weight 16</span><span class="mv num">+3 · the post</span><span class="flag">Serves</span></div><div class="tile small" style="--d:0.18;left:72.903%;top:0.000%;width:27.097%;height:55.357%"><span class="nm">Gallia Cisalpina</span><span class="ap num">49</span><span class="wt num">weight 15</span><span class="mv num">0 · steady</span></div><div class="tile hit small" style="--d:0.18;left:44.000%;top:55.357%;width:29.120%;height:44.643%"><span class="nm">Sicilia</span><span class="ap num">51</span><span class="wt num">weight 13</span><span class="mv num">-1 · grain tax</span><span class="flag red">Traders</span></div><div class="tile small" style="--d:0.06;left:73.120%;top:55.357%;width:26.880%;height:44.643%"><span class="nm">Hispania</span><span class="ap num">44</span><span class="wt num">weight 12</span><span class="mv num">-3 · grain price</span></div></div><p class="hint"><svg class="ic sm" aria-hidden="true"><use href="#i-region"/></svg> National <b class="num r-app">56</b> is the weighted sum. <b>Hispania at 44 is the drag.</b></p></div><div class="tabpanel" role="tabpanel" id="p2" aria-labelledby="t2" hidden><ul class="causes" aria-label="Seats worth working">
+<li><b class="num">92%</b><span>M. Antonius · Caesarians · Latium · whipped</span></li>
+<li><b class="num">71%</b><span>Q. Fufius Calenus · Populares · Campania · whipped</span></li>
+<li><b class="num">44%</b><span>P. Cornelius Dolabella · Populares · Latium · 3 chest to turn</span></li>
+<li><b class="num">31%</b><span>L. Munatius Plancus · Optimates · Gallia Cisalpina · 3 chest</span></li>
+<li><b class="num">18%</b><span>Servilia Caepionis · Optimates · Etruria · 6 chest</span></li>
+<li><b class="num">6%</b><span>C. Cassius Longinus · Liberators · Sicilia · will not move</span></li>
+</ul></div><div class="tabpanel" role="tabpanel" id="p3" aria-labelledby="t3" hidden><ul class="causes" aria-label="The record">
+<li><b class="num">6</b><span>bills tabled · 4 passed · 2 failed</span></li>
+<li><b class="num">+9</b><span>turn 4 · Latin road repairs · passed 38&ndash;22</span></li>
+<li><b class="neg num">&minus;3</b><span>turn 5 · Grain price cap · failed 27&ndash;33</span></li>
+<li><b class="num">+2</b><span>turn 6 · Veterans' land grant · passed 33&ndash;27</span></li>
+<li><b class="num">2</b><span>promises kept of 3 · land for the legions pending</span></li>
+</ul></div><div class="tabpanel" role="tabpanel" id="p4" aria-labelledby="t4" hidden><div id="pinned"></div><p class="hint" id="pinempty">Nothing pinned. Hover a ledger or a seat, then press <b>Pin</b> to keep it here for the turn.</p></div></div></section>
+</div>
+</div>
+<div class="wire"><span class="lbl"><svg class="ic" aria-hidden="true"><use href="#i-wire"/></svg> Wire</span><div class="runwrap"><div class="run"><button class="w r-tre" data-res="tre"><svg class="ic sm" aria-hidden="true"><use href="#i-treasury"/></svg><b class="num">−4</b><span>treasury · farm credit</span></button><button class="w r-app" data-res="app"><svg class="ic sm" aria-hidden="true"><use href="#i-approval"/></svg><b class="num">+2</b><span>approval · Latium, the post</span></button><button class="w r-app" data-res="app"><svg class="ic sm" aria-hidden="true"><use href="#i-approval"/></svg><b class="num">+3</b><span>approval · Etruria, the post</span></button><button class="w r-moo" data-res="moo"><svg class="ic sm" aria-hidden="true"><use href="#i-mood"/></svg><b class="num">−6</b><span>mood · grain traders read the price tag</span></button><button class="w r-che" data-res="che"><svg class="ic sm" aria-hidden="true"><use href="#i-chest"/></svg><b class="num">−20</b><span>chest · reach on the post</span></button><button class="w r-cap" data-res="cap"><svg class="ic sm" aria-hidden="true"><use href="#i-capital"/></svg><b class="num">−4</b><span>capital · favour to Sulpicia Rufa</span></button><span class="w"><b class="num">26</b><span>of 31 whipped · 5 short</span></span><span class="w"><b class="num">13</b><span>turns left · midterm at turn 11</span></span><button class="w r-tre" data-res="tre"><svg class="ic sm" aria-hidden="true"><use href="#i-treasury"/></svg><b class="num">−4</b><span>treasury · farm credit</span></button><button class="w r-app" data-res="app"><svg class="ic sm" aria-hidden="true"><use href="#i-approval"/></svg><b class="num">+2</b><span>approval · Latium, the post</span></button><button class="w r-app" data-res="app"><svg class="ic sm" aria-hidden="true"><use href="#i-approval"/></svg><b class="num">+3</b><span>approval · Etruria, the post</span></button><button class="w r-moo" data-res="moo"><svg class="ic sm" aria-hidden="true"><use href="#i-mood"/></svg><b class="num">−6</b><span>mood · grain traders read the price tag</span></button><button class="w r-che" data-res="che"><svg class="ic sm" aria-hidden="true"><use href="#i-chest"/></svg><b class="num">−20</b><span>chest · reach on the post</span></button><button class="w r-cap" data-res="cap"><svg class="ic sm" aria-hidden="true"><use href="#i-capital"/></svg><b class="num">−4</b><span>capital · favour to Sulpicia Rufa</span></button><span class="w"><b class="num">26</b><span>of 31 whipped · 5 short</span></span><span class="w"><b class="num">13</b><span>turns left · midterm at turn 11</span></span></div></div></div>
+<script>
+const LED = {"tre":{n:"Treasury",v:38,fail:0,room:38,fl:"0 · crisis",rows:[["Grain tax, Sicilia",9],["Legion pay",-7],["Farm credit, 1 of 4",-6]]},"cap":{n:"Capital",v:14,fail:0,room:14,fl:"0 · no floor",rows:[["Turn allowance",4],["Tabling the bill",-2],["Favour to Sulpicia",-4]]},"che":{n:"Party chest",v:120,fail:0,room:120,fl:"0 · no reach",rows:[["Patron: the Crassus estate",28],["Reach on the post",-20],["Canvass, Etruria",0]]},"moo":{n:"Party mood",v:47,fail:20,room:27,fl:"20 · revolt",rows:[["Promise kept: land bill",3],["Grain traders in caucus",-6],["Whip called twice",0]]},"app":{n:"Approval",v:56,fail:30,room:26,fl:"30 · impeachment",rows:[["The post, Etruria",3],["The post, Latium",2],["Grain price, Hispania",-3]]}};
+const $ = s => document.querySelector(s);
+
+/* ---- tabs, with arrow keys ---- */
+const tabs = [...document.querySelectorAll('[role=tab]')];
+const pick = i => tabs.forEach((t, j) => {
+  t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1;
+  document.getElementById(t.getAttribute('aria-controls')).hidden = j !== i;
+});
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => pick(i));
+  t.addEventListener('keydown', e => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const n = (i + d + tabs.length) % tabs.length;
+    tabs[n].focus(); pick(n);
+  });
+});
+pick(0);
+
+/* ---- pinning: a copy of any panel lives in the rail for the turn ---- */
+const pinned = $('#pinned'), badge = $('.tabbar .badge'), empty = $('#pinempty');
+function pin(key, title, lines) {
+  if (pinned.querySelector('[data-k="' + key + '"]')) return;
+  const el = document.createElement('div');
+  el.className = 'pinned r-' + key.split(':')[0];
+  el.dataset.k = key;
+  el.innerHTML = '<h4>' + title + '</h4>' +
+    lines.map(l => '<div class="line"><span>' + l[0] + '</span><b class="num">' + l[1] + '</b></div>').join('') +
+    '<button class="unpin">Unpin</button>';
+  el.querySelector('.unpin').onclick = () => { el.remove(); count(); };
+  pinned.append(el); count();
+}
+function count() {
+  const n = pinned.children.length;
+  badge.hidden = !n; badge.textContent = n; empty.hidden = !!n;
+}
+
+/* ---- (a) the ledger peek, and (d) the wire ---- */
+const peek = $('#peek');
+let open = null;
+function showPeek(res, cause) {
+  const d = LED[res];
+  peek.className = 'peek r-' + res;
+  peek.innerHTML =
+    '<div><h3>' + d.n + '</h3>' +
+    '<ul class="flow">' + d.rows.map(r =>
+      '<li><span>' + r[0] + '</span><b class="num"' + (r[1] < 0 ? ' style="color:var(--red)"' : '') + '>' +
+      (r[1] > 0 ? '+' : '') + r[1] + '</b></li>').join('') + '</ul></div>' +
+    '<div><div class="kicker">Room to the failure line</div><span class="big num">' + d.room + '</span>' +
+    '<div class="small muted">Fails at <b class="num">' + d.fail + '</b> &middot; ' + d.fl.split('· ')[1] +
+    (cause ? '<br><b>' + cause + '</b>' : '') + '</div></div>' +
+    '<div><div class="kicker">Keep it in the rail</div>' +
+    '<div class="acts2"><button class="btn sm" id="pinbtn">Pin</button>' +
+    '<button class="btn sm" id="closebtn">Close</button></div></div>';
+  peek.hidden = false;
+  $('#pinbtn').onclick = () => {
+    pin(res, d.n, d.rows.map(r => [r[0], (r[1] > 0 ? '+' : '') + r[1]])
+      .concat([['Room to ' + d.fl.split('· ')[1], d.room]]));
+    pick(tabs.length - 1);
+  };
+  $('#closebtn').onclick = hidePeek;
+  open = res;
+}
+function hidePeek() {
+  peek.hidden = true; open = null;
+  document.querySelectorAll('.led').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+document.querySelectorAll('.led').forEach(b => {
+  const res = b.dataset.res;
+  const show = () => {
+    document.querySelectorAll('.led').forEach(o => o.setAttribute('aria-expanded', o === b));
+    showPeek(res);
+  };
+  b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(); });
+  b.addEventListener('focus', show);
+  b.addEventListener('click', () => open === res ? hidePeek() : show());
+});
+$('.striprow').addEventListener('pointerleave', e => {
+  if (e.pointerType === 'mouse' && !peek.dataset.stick) hidePeek();
+});
+peek.addEventListener('pointerenter', () => peek.dataset.stick = '1');
+peek.addEventListener('pointerleave', () => { delete peek.dataset.stick; hidePeek(); });
+document.querySelectorAll('button.w').forEach(w => w.addEventListener('click', () => {
+  showPeek(w.dataset.res, w.querySelector('span').textContent);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}));
+
+/* ---- (b) the seats: hover peeks, click files ---- */
+const slab = $('#slab'), file = $('#file');
+const FAC = { Caesarians: 'cae', Optimates: 'opt', Populares: 'pop', Liberators: 'lib' };
+document.querySelectorAll('.seat').forEach(g => {
+  const d = g.dataset;
+  const label = e => {
+    slab.style.setProperty('--c', 'var(--f-' + FAC[d.f] + ')');
+    slab.innerHTML = '<b>' + d.n + '</b><span class="s">' + d.f + ' &middot; ' + d.r +
+      ' &middot; <span class="num">' + d.p + '%</span> yes</span><q>' + d.s + '</q>';
+    slab.hidden = false;
+    const r = g.getBoundingClientRect();
+    slab.style.left = Math.min(innerWidth - 300, Math.max(8, r.left - 130)) + 'px';
+    slab.style.top = Math.max(8, r.top - slab.offsetHeight - 10) + 'px';
+  };
+  g.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') label(e); });
+  g.addEventListener('focus', label);
+  g.addEventListener('pointerleave', () => slab.hidden = true);
+  g.addEventListener('blur', () => slab.hidden = true);
+  const openFile = () => {
+    document.querySelectorAll('.seat.on').forEach(o => o.classList.remove('on'));
+    g.classList.add('on');
+    file.className = 'file';
+    file.style.setProperty('--c', 'var(--f-' + FAC[d.f] + ')');
+    file.innerHTML = '<div class="who"><svg class="ic"><use href="#i-seat"/></svg>' +
+      '<h3>' + d.n + '</h3><span class="loy num">' + d.p + '%</span></div>' +
+      '<div class="small muted">' + d.f + ' &middot; ' + d.r + ' &middot; ' +
+      (g.classList.contains('whipped') ? 'whipped' : '3 of the chest to turn') + '</div>' +
+      '<q>' + d.s + '</q>' +
+      '<div class="acts2" style="display:flex;gap:8px;margin-top:4px">' +
+      '<button class="btn sm" id="pinseat">Pin</button>' +
+      '<button class="btn sm" id="lobbyseat">Lobby</button>' +
+      '<button class="btn sm" id="shut">Close</button></div>';
+    file.hidden = false;
+    $('#pinseat').onclick = () => {
+      pin('seat:' + d.n, d.n, [[d.f + ' · ' + d.r, d.p + '%'], ['Said', ''], [d.s, '']]);
+      pick(tabs.length - 1);
+    };
+    $('#lobbyseat').onclick = () => showPeek('che', 'lobby ' + d.n);
+    $('#shut').onclick = () => { file.hidden = true; g.classList.remove('on'); };
+  };
+  g.addEventListener('click', openFile);
+  g.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFile(); }
+  });
+});
+count();
+</script>
+</body>
+</html>

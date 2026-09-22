@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Broadsheet &mdash; United States of Jev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#fff;--paper:#f4f4f2;--tone:#e6e6e3;--ink:#0b0b0b;--ink-2:#5b5b58;--red:#d0001f;--accent:#d0001f;
+--display:"Big Shoulders Display","Arial Narrow",sans-serif;--sans:"Public Sans",system-ui,sans-serif;
+--ease-out:cubic-bezier(.22,1,.36,1);--ease-expo:cubic-bezier(.16,1,.3,1);
+--t-fast:120ms;--t-state:220ms;
+--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+color-scheme:light}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);
+-webkit-font-smoothing:antialiased;min-height:100dvh}
+/* the halftone plate, behind the stage only, exactly as the app prints it */
+body::before{content:"";position:fixed;inset:-7px;z-index:0;pointer-events:none;opacity:.55;
+background-image:radial-gradient(var(--tone) .7px,transparent .9px);background-size:7px 7px;
+mask-image:radial-gradient(60% 50% at 50% 34%,#000,transparent 80%);animation:drift 5s linear infinite}
+@keyframes drift{to{transform:translate(7px,7px)}}
+.page,.sheet{position:relative;z-index:1}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:.95;margin:0;
+text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.kicker{font:600 11px/1.2 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.neg{color:var(--red)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.panel{border-top:2px solid var(--ink);padding-top:var(--s3)}
+.rule{border-top:1px solid var(--tone)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+textarea{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;
+border:2px solid var(--ink);background:var(--bg);color:var(--ink);font:800 18px/1 var(--display);
+letter-spacing:.06em;text-transform:uppercase;
+transition:transform var(--t-fast) var(--ease-out),background var(--t-state),color var(--t-state)}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn:active{transform:scale(.96)}
+.btn.hot{background:var(--ink);color:var(--bg)}
+.btn.hot:hover{background:var(--bg);color:var(--ink)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:16px}
+.btn[disabled]{opacity:.4;cursor:default;transform:none}
+.chip{display:inline-block;padding:4px 9px;border:1px solid var(--ink);font:600 11px/1.2 var(--sans);letter-spacing:.02em}
+.chip.red{border-color:var(--red);color:var(--red)}
+.chip.faint{border-color:var(--tone);color:var(--ink-2)}
+
+/* masthead */
+.mast{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);
+border-top:4px solid var(--ink);border-bottom:1px solid var(--ink);padding:var(--s2) 0}
+.mast b{font:800 22px/1 var(--display);letter-spacing:.07em;text-transform:uppercase}
+.mast .orn{flex:none;margin:0 auto}
+
+/* the five ledgers */
+.strip{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:2px solid var(--ink)}
+.led{padding:var(--s3) var(--s4) 26px;border-right:1px solid var(--tone)}
+.led:first-child{padding-left:0}
+.led:last-child{border-right:0;padding-right:0}
+.led .top{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1)}
+.led .v{font:800 42px/1 var(--display);letter-spacing:-.01em}
+.led .d{font:600 12px/1 var(--sans)}
+.track{position:relative;height:9px;background:var(--tone);margin-top:var(--s2)}
+.track i{position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--ink)}
+.track .fail{position:absolute;top:-5px;left:var(--x);width:2px;height:19px;background:var(--red)}
+.track .fail span{position:absolute;top:21px;left:0;font:600 10px/1 var(--sans);letter-spacing:.06em;
+text-transform:uppercase;color:var(--red);white-space:nowrap}
+.led.near .v{color:var(--red)}
+
+/* price tag: a stamped object, not a paragraph */
+.tag{margin:0;border:2px solid var(--ink);background:var(--bg);position:relative}
+.tag-h{display:flex;justify-content:space-between;gap:var(--s2);background:var(--ink);color:var(--bg);
+padding:5px 10px;font:600 10px/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase}
+.tag-b{padding:var(--s3) var(--s3) var(--s4)}
+.tag-b h3{font-size:24px;margin-bottom:var(--s3);max-width:20ch}
+.fig{margin:0;display:grid;gap:0}
+.fig>div{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);
+padding:6px 0;border-bottom:1px solid var(--tone)}
+.fig dt{font-size:13px}
+.fig dd{margin:0;font:800 24px/1 var(--display);font-variant-numeric:tabular-nums}
+.tagr{display:flex;gap:var(--s2);align-items:baseline;padding:7px 0;border-bottom:1px solid var(--tone)}
+.tagr:last-of-type{border-bottom:0}
+.tagr .k{flex:none;width:44px;font:600 10px/1.6 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.tagr .vs{display:flex;flex-wrap:wrap;gap:var(--s1)}
+.stamp{position:absolute;right:10px;bottom:10px;font:800 15px/1 var(--display);letter-spacing:.08em;
+text-transform:uppercase;padding:4px 10px;border:3px solid var(--accent);color:var(--accent);
+transform:rotate(-6deg);mix-blend-mode:multiply;pointer-events:none}
+
+/* the desk */
+.billpad{width:100%;min-height:104px;resize:vertical;border:0;border-bottom:2px solid var(--ink);
+background:transparent;padding:0 0 var(--s2);outline:none;font:700 23px/1.18 var(--display);color:var(--ink)}
+.billpad::placeholder{color:var(--ink-2)}
+.billpad:focus{border-bottom-color:var(--accent)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-top:var(--s3)}
+.acts .btn{width:100%}
+.hint{font:400 12px/1.45 var(--sans);color:var(--ink-2);margin-top:var(--s2)}
+
+/* the floor */
+.hemi{width:100%;height:auto;display:block;overflow:visible}
+.seat circle{transition:opacity var(--t-state) var(--ease-out)}
+.whip{display:flex;align-items:baseline;gap:var(--s3)}
+.whip .n{font:800 68px/.9 var(--display);letter-spacing:-.02em}
+.whipbar{position:relative;height:10px;background:var(--tone);margin-top:var(--s2)}
+.whipbar i{position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--ink)}
+.whipbar .tick{position:absolute;top:-7px;left:var(--x);width:2px;height:24px;background:var(--ink)}
+.whipbar .tick span{position:absolute;top:26px;left:50%;transform:translateX(-50%);
+font:600 11px/1 var(--sans);color:var(--ink-2);white-space:nowrap}
+.key{list-style:none;margin:var(--s5) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);
+font-size:12px;color:var(--ink-2)}
+.key li{display:inline-flex;align-items:center;gap:6px}
+.key b{font:800 14px/1 var(--display);color:var(--ink)}
+.key em{font-style:normal;opacity:.75}
+
+/* tabs, and on a phone the same tablist is the bottom bar */
+.tabbar{display:flex;gap:2px;border-bottom:1px solid var(--ink)}
+.tabbar button{flex:1 1 auto;min-height:44px;padding:0 10px;color:var(--ink-2);
+font:600 11px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;
+transition:color var(--t-fast),box-shadow var(--t-fast)}
+.tabbar button:hover{color:var(--ink)}
+.tabbar button[aria-selected=true]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.tabbar button:active{transform:scale(.97)}
+.tabpanel{padding-top:var(--s3)}
+
+/* the feed */
+.postbox{width:100%;min-height:66px;resize:vertical;border:1.5px solid var(--ink);background:var(--bg);
+padding:9px 11px;outline:none;font:400 14px/1.45 var(--sans);color:var(--ink);transition:border-color var(--t-state)}
+.postbox:focus{border-color:var(--accent)}
+.attn{display:flex;gap:6px;align-items:center;margin:var(--s2) 0}
+.attn b{width:12px;height:12px;border:2px solid var(--ink);display:inline-block}
+.attn b.spent{background:var(--ink)}
+.post .lede{font:700 20px/1.26 var(--display);margin:0 0 var(--s3)}
+/* the reaction split, read as one bar */
+.split{display:flex;height:16px;border:1px solid var(--ink);background:var(--paper)}
+.split span{display:block}
+.split .like{background:var(--ink)}
+.split .boo{background:var(--red)}
+.split .share{background-image:repeating-linear-gradient(45deg,var(--ink) 0 1.5px,transparent 1.5px 5px)}
+.split .pass{background:var(--tone)}
+.splitkey{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:6px;font-size:12px;color:var(--ink-2)}
+.splitkey b{font:800 15px/1 var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.splitkey i{width:10px;height:10px;display:inline-block;border:1px solid var(--ink);margin-right:5px;vertical-align:-1px}
+.pull{margin:var(--s3) 0 0;border-left:3px solid var(--ink);padding:2px 0 2px 12px;font:700 17px/1.25 var(--display)}
+.pull cite{display:block;margin-top:var(--s1);font:500 11px/1 var(--sans);font-style:normal;
+letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.rival{margin-top:var(--s3);padding:10px 12px;border:1.5px solid var(--ink);
+background-image:repeating-linear-gradient(45deg,var(--ink-2) 0 1px,transparent 1px 7px)}
+.rival .kicker,.rival p{background:var(--bg);width:fit-content;padding-right:5px}
+.rival p{font:700 17px/1.24 var(--display);margin-top:5px}
+
+/* the causes: every number that moved says what moved it */
+.causes{list-style:none;margin:0;padding:0}
+.causes li{display:flex;gap:var(--s2);align-items:baseline;padding:5px 0;border-bottom:1px solid var(--tone);font-size:12.5px}
+.causes li b{font:800 16px/1 var(--display);min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* the country as weighted tiles, approval as ink density in five steps */
+.tiles{position:relative;width:100%;aspect-ratio:100/62;border:1px solid var(--ink);background:var(--paper)}
+.tile{position:absolute;border:1px solid var(--ink);background:var(--paper);padding:7px 8px;overflow:hidden;
+color:var(--ink);transition:outline-color var(--t-state)}
+.tile::before{content:"";position:absolute;inset:0;background:var(--ink);opacity:var(--d)}
+.tile>*{position:relative;display:block}
+.tile.dark{color:var(--paper)}
+.tile .nm{font:800 16px/1.05 var(--display);letter-spacing:.05em;text-transform:uppercase}
+.tile .ap{font:800 34px/1 var(--display);margin-top:2px}
+.tile .wt{font-size:10px;opacity:.72}
+.tile .mv{font-size:11px;font-weight:600;margin-top:3px}
+.tile .flag{position:absolute;right:0;bottom:0;font:600 9px/1 var(--sans);letter-spacing:.1em;
+text-transform:uppercase;background:var(--bg);color:var(--ink);padding:3px 5px;border:1px solid var(--ink)}
+.tile .flag.red{right:auto;left:0;border-color:var(--red);color:var(--red)}
+.tile.served{outline:3px solid var(--accent);outline-offset:-3px}
+.tile.small{padding:5px 6px}
+.tile.small .ap{font-size:22px}
+.tile.small .wt,.tile.small .flag{display:none}
+
+/* the wire: a real ticker, paused on hover */
+.wire{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--bg);
+display:flex;align-items:center;gap:var(--s3);height:38px;overflow:hidden}
+.wire .lbl{flex:none;padding:0 var(--s3);height:100%;display:flex;align-items:center;
+background:var(--accent);color:#fff;font:800 13px/1 var(--display);letter-spacing:.12em;text-transform:uppercase}
+.wire .run{display:flex;gap:var(--s5);white-space:nowrap;animation:tick 42s linear infinite;will-change:transform}
+.wire:hover .run{animation-play-state:paused}
+.wire .run span{font-size:13px}
+.wire .run b{font-variant-numeric:tabular-nums;font-family:var(--display);font-size:16px;font-weight:800;margin-right:4px}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+.wire .run{animation:none;overflow:hidden}
+}
+
+body{background:var(--paper)}
+.sheet{max-width:1280px;margin:0 auto;padding:0 24px 60px;background:var(--bg);min-height:100dvh;
+border-left:1px solid var(--tone);border-right:1px solid var(--tone)}
+.mh{text-align:center;border-bottom:3px solid var(--ink);padding:var(--s4) 0 var(--s2)}
+.mh h1{font-size:80px;font-weight:900;letter-spacing:.06em}
+.mh .rule{display:flex;justify-content:space-between;align-items:center;gap:var(--s4);
+border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);margin-top:var(--s2);padding:5px 0;
+font:600 11px/1.2 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.stock{width:100%;border-collapse:collapse}
+.stock caption{text-align:left;padding:var(--s2) 0 var(--s1);font:600 11px/1.2 var(--sans);
+letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.stock th{font:600 10px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);
+text-align:right;padding:0 0 5px;border-bottom:1px solid var(--ink)}
+.stock th:first-child,.stock th.note{text-align:left}
+.stock td{border-bottom:1px solid var(--tone);padding:5px 0;text-align:right;font-size:13px;
+font-variant-numeric:tabular-nums}
+.stock td:first-child{text-align:left;font:800 20px/1 var(--display);text-transform:uppercase;letter-spacing:.03em}
+.stock td.last{font:800 24px/1 var(--display)}
+.stock td.note{font-family:var(--sans);font-size:12px;color:var(--ink-2);text-align:left;padding-left:var(--s4)}
+.stock tr.near td.last{color:var(--red)}
+.tabbar{margin-top:var(--s4);border-bottom:2px solid var(--ink)}
+.tabbar button{flex:0 0 auto;font:800 17px/1 var(--display);letter-spacing:.07em;padding:0 18px;min-height:46px}
+.head{padding:var(--s4) 0 var(--s3);border-bottom:1px solid var(--ink)}
+.head h2{font-size:60px;max-width:21ch}
+.head .deck{font:700 22px/1.26 var(--display);color:var(--ink-2);margin-top:var(--s2);max-width:62ch}
+.head .byline{font:600 11px/1.2 var(--sans);letter-spacing:.09em;text-transform:uppercase;
+color:var(--ink-2);margin-top:var(--s2)}
+.cols{display:grid;grid-template-columns:1.08fr 1fr 1fr;gap:0 var(--s5);padding-top:var(--s4)}
+.col{border-right:1px solid var(--tone);padding-right:var(--s5);display:grid;gap:var(--s3);align-content:start}
+.col:last-child{border-right:0;padding-right:0}
+.col h3{font-size:26px}
+.colsub{font:700 16px/1.24 var(--display);color:var(--ink-2)}
+.floorwrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--s6);padding-top:var(--s4)}
+.floorwrap>div{display:grid;gap:var(--s3);align-content:start}
+@media(max-width:900px){
+.sheet{padding:0 16px 60px;border:0}
+.mh h1{font-size:40px;letter-spacing:.03em}
+.mh .rule{flex-wrap:wrap;justify-content:center;gap:2px 10px;text-align:center;font-size:10px}
+.stock td.note,.stock th.note{display:none}
+.stock td:first-child{font-size:17px}
+.head h2{font-size:34px}
+.head .deck{font-size:18px}
+.cols,.floorwrap{grid-template-columns:1fr;gap:var(--s5)}
+.col{border-right:0;padding-right:0;border-bottom:2px solid var(--ink);padding-bottom:var(--s4)}
+.col:last-child{border-bottom:0}
+.tabbar{margin-top:0}
+.tabbar button{flex:1 1 auto;font:600 11px/1 var(--sans);letter-spacing:.06em;padding:0 4px;min-height:44px}
+}
+
+@media(max-width:900px){
+body{padding-bottom:96px}
+.page,.sheet{padding-left:16px;padding-right:16px}
+.mast b{font-size:17px}
+.mast .orn{display:none}
+.strip{grid-template-columns:1fr 1fr;border-bottom:0}
+.led{padding:10px 0 26px;border-right:0;border-bottom:1px solid var(--tone)}
+.led:nth-child(odd){padding-right:12px;border-right:1px solid var(--tone)}
+.led:last-child{grid-column:1/-1;border-bottom:2px solid var(--ink)}
+.led .v{font-size:32px}
+.whip .n{font-size:52px}
+.tag-b h3{font-size:21px}
+/* the rail becomes the bottom bar; panels print above it */
+.tabbar{position:fixed;left:0;right:0;bottom:38px;z-index:19;background:var(--bg);
+border-top:2px solid var(--ink);border-bottom:0;gap:0}
+.tabbar button{padding:0 4px;font-size:10px;letter-spacing:.06em}
+.tabbar button[aria-selected=true]{box-shadow:inset 0 3px 0 var(--ink)}
+.tabpanel[hidden]{display:none!important}
+.wire{height:38px}
+.tiles{aspect-ratio:100/128}
+.tile .wt{display:none}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+<header class="mh"><h1>Acta Diurna</h1>
+<div class="rule"><span>United States of Jev</span><span>Rome · Kalends of Iunius · 44 BC</span>
+<span>Turn 7 of 20 · Caesarians</span></div></header>
+<table class="stock">
+<caption>The books, at the close of turn 6</caption>
+<thead><tr><th>Ledger</th><th>Last</th><th>Chg</th><th>Fails at</th><th>Room</th><th class="note">Moved by</th></tr></thead>
+<tbody>
+<tr><td>Treasury</td><td class="last num">38</td><td class="num neg">&minus;4</td><td class="num">0</td><td class="num">38</td><td class="note">farm credit, first instalment</td></tr>
+<tr><td>Capital</td><td class="last num">14</td><td class="num neg">&minus;2</td><td class="num">0</td><td class="num">14</td><td class="note">favour to Sulpicia Rufa</td></tr>
+<tr><td>Party chest</td><td class="last num">120</td><td class="num">+8</td><td class="num">0</td><td class="num">120</td><td class="note">Crassus estate, less 20 of reach</td></tr>
+<tr class="near"><td>Party mood</td><td class="last num">47</td><td class="num neg">&minus;3</td><td class="num">20</td><td class="num">27</td><td class="note">grain traders in the caucus</td></tr>
+<tr><td>Approval</td><td class="last num">56</td><td class="num">+2</td><td class="num">30</td><td class="num">26</td><td class="note">the post, in Etruria and Latium</td></tr>
+</tbody></table>
+<div class="tabbar" role="tablist" aria-label="The rail"><button role="tab" id="pg-t0" aria-controls="pg-p0" aria-selected="true">Front page</button><button role="tab" id="pg-t1" aria-controls="pg-p1">Chamber · 26 of 31</button></div>
+<div class="tabpanel" role="tabpanel" id="pg-p0" aria-labelledby="pg-t0"><div class="head">
+<h2>Credit for the fields, a bill for the traders</h2>
+<p class="deck">Luna prices the eastern farm credit at twelve of the treasury and six of your own party's
+temper. Etruria and Latium would take it gladly. The grain traders sit in your caucus.</p>
+<p class="byline">Filed by Luna · turn 7 of 20 · the floor sits in one turn</p>
+</div>
+<div class="cols">
+<section class="col"><h3>The bill</h3><label class="kicker" for="bill">The bill on your desk · turn 7</label><textarea class="billpad" id="bill" spellcheck="false">Four years of state loans to the Etrurian and Latin smallholders, at a tenth of the grain price.</textarea><figure class="tag">
+<figcaption class="tag-h"><span>Price tag · Luna</span><span class="num">0.4 s</span></figcaption>
+<div class="tag-b">
+<h3>Eastern farm credit bill</h3>
+<dl class="fig">
+<div><dt>Treasury, on passage</dt><dd class="neg num">&minus;12</dd></div>
+<div><dt>Revenue, each of 4 turns</dt><dd class="num">+3</dd></div>
+<div><dt>Capital to table</dt><dd class="neg num">&minus;2</dd></div>
+<div><dt>Party mood</dt><dd class="neg num">&minus;6</dd></div>
+</dl>
+<div class="tagr"><span class="k">Serves</span><span class="vs"><span class="chip">Etruria</span><span class="chip">Latium</span></span></div>
+<div class="tagr"><span class="k">Hits</span><span class="vs"><span class="chip red">Grain traders</span></span></div>
+<div class="tagr"><span class="k">Keeps</span><span class="vs"><span class="chip faint">Land for the legions</span></span></div>
+<span class="stamp">Priced</span>
+</div></figure><div class="acts"><button class="btn hot">Table</button><button class="btn">Amend</button><button class="btn">Lobby</button><button class="btn" disabled>Vote</button></div><p class="hint">Table spends <b class="num">2</b> capital. Lobby spends <b class="num">3</b> of the chest a seat. The vote opens once it is tabled &mdash; <b>5 seats short</b>.</p></section>
+<section class="col"><h3>Letters</h3>
+<p class="colsub">On your notice of yesterday, read by 250 citizens of six regions.</p>
+<div class="post">
+<div class="kicker">Your notice · turn 6 · reach 20 of the chest · 250 citizens read it</div>
+<p class="lede">Rome eats what Etruria grows. The grain traders eat what Rome pays.</p>
+<div class="split" role="img" aria-label="61 percent like, 5 percent boo, 18 percent share, 16 percent pass">
+<span class="like" style="width:61%"></span><span class="boo" style="width:5%"></span>
+<span class="share" style="width:18%"></span><span class="pass" style="width:16%"></span></div>
+<div class="splitkey">
+<span><i style="background:var(--ink)"></i><b class="num">61%</b> like</span>
+<span><i style="background:var(--red);border-color:var(--red)"></i><b class="num">5%</b> boo</span>
+<span><i style="background-image:repeating-linear-gradient(45deg,var(--ink) 0 1.5px,transparent 1.5px 5px)"></i><b class="num">18%</b> share</span>
+<span><i style="background:var(--tone)"></i><b class="num">16%</b> pass</span></div>
+<blockquote class="pull">Finally a man who counts the sacks and not the speeches.<cite>Vibia Rufina · Etruria · +3 approval there</cite></blockquote>
+<blockquote class="pull">My father farmed at Veii. He would have signed it twice.<cite>Titus Nerva · Latium · +2 approval there</cite></blockquote>
+<div class="rival"><div class="kicker">M. Tullius Cicero answers</div>
+<p>He buys the fields he cannot win, with silver he does not have.</p></div>
+</div><label class="kicker" for="post">Your notice for turn 7 · 240 characters</label>
+<textarea class="postbox" id="post" spellcheck="false">The traders call it charity. Ask Etruria what it calls a harvest it can keep.</textarea>
+<div class="attn"><span class="kicker" style="margin-right:4px">Attention</span>
+<b class="spent"></b><b></b><span class="small muted">1 of 2 left</span></div>
+<div class="acts" style="grid-template-columns:1fr auto">
+<button class="btn">Post &middot; 20 chest</button><button class="btn sm">Reach</button></div></section>
+<section class="col"><h3>Late edition</h3>
+<p class="colsub">What moved, and what moved it.</p>
+<ul class="causes">
+<li><b class="neg num">&minus;4</b><span>treasury · farm credit, first instalment</span></li>
+<li><b class="num">+2</b><span>approval · Latium, the post</span></li>
+<li><b class="num">+3</b><span>approval · Etruria, the post</span></li>
+<li><b class="neg num">&minus;6</b><span>mood · Caesarian traders read the price tag</span></li>
+<li><b class="neg num">&minus;20</b><span>chest · reach on the post</span></li>
+<li><b class="neg num">&minus;4</b><span>capital · favour to Sulpicia Rufa</span></li>
+</ul>
+<h3 style="margin-top:20px;font-size:20px">The country</h3><div class="tiles"><div class="tile dark served small" style="--d:0.55;left:0.000%;top:0.000%;width:44.000%;height:59.091%"><span class="nm">Latium</span><span class="ap num">62</span><span class="wt num">weight 26</span><span class="mv num">+2 · the post</span><span class="flag">Serves</span></div><div class="tile hit small" style="--d:0.34;left:0.000%;top:59.091%;width:44.000%;height:40.909%"><span class="nm">Campania</span><span class="ap num">54</span><span class="wt num">weight 18</span><span class="mv num">0 · steady</span><span class="flag red">Traders</span></div><div class="tile dark served small" style="--d:0.78;left:44.000%;top:0.000%;width:28.903%;height:55.357%"><span class="nm">Etruria</span><span class="ap num">67</span><span class="wt num">weight 16</span><span class="mv num">+3 · the post</span><span class="flag">Serves</span></div><div class="tile small" style="--d:0.18;left:72.903%;top:0.000%;width:27.097%;height:55.357%"><span class="nm">Gallia Cisalpina</span><span class="ap num">49</span><span class="wt num">weight 15</span><span class="mv num">0 · steady</span></div><div class="tile hit small" style="--d:0.18;left:44.000%;top:55.357%;width:29.120%;height:44.643%"><span class="nm">Sicilia</span><span class="ap num">51</span><span class="wt num">weight 13</span><span class="mv num">-1 · grain tax</span><span class="flag red">Traders</span></div><div class="tile small" style="--d:0.06;left:73.120%;top:55.357%;width:26.880%;height:44.643%"><span class="nm">Hispania</span><span class="ap num">44</span><span class="wt num">weight 12</span><span class="mv num">-3 · grain price</span></div></div></section>
+</div></div><div class="tabpanel" role="tabpanel" id="pg-p1" aria-labelledby="pg-t1" hidden><div class="head">
+<h2>The floor, as it stands tonight</h2>
+<p class="deck">Sixty seats, thirty-one to pass, twenty-six whipped &mdash; and every one of them
+cost capital or chest.</p></div>
+<div class="floorwrap">
+<div><svg class="hemi " viewBox="0 0 600 308" role="img" aria-label="Chamber floor, 60 seats, 26 whipped yes of 31 needed"><defs>
+<pattern id="f-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="6" height="6" fill="var(--paper)"/><path d="M0 0 V6" stroke="var(--ink)" stroke-width="1.6"/></pattern>
+<pattern id="f-dots" width="6" height="6" patternUnits="userSpaceOnUse">
+<rect width="6" height="6" fill="var(--paper)"/><circle cx="3" cy="3" r="1.4" fill="var(--ink)"/></pattern>
+<pattern id="f-hollow" width="6" height="6" patternUnits="userSpaceOnUse">
+<rect width="6" height="6" fill="var(--ink)"/><circle cx="3" cy="3" r="2" fill="var(--paper)"/></pattern>
+</defs>
+<g class="seat whipped"><circle cx="19.2" cy="284.0" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="19.2" cy="284.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="61.5" cy="283.1" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="61.5" cy="283.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="103.7" cy="284.2" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="103.7" cy="284.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="145.9" cy="285.6" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="145.9" cy="285.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="188.9" cy="284.6" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="188.9" cy="284.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="28.8" cy="232.8" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="28.8" cy="232.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="73.5" cy="230.7" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="73.5" cy="230.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="117.1" cy="234.2" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="117.1" cy="234.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="47.6" cy="184.3" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="47.6" cy="184.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="161.0" cy="239.2" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="161.0" cy="239.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="96.8" cy="182.3" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="96.8" cy="182.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="75.0" cy="140.1" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="75.0" cy="140.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="142.9" cy="189.5" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="142.9" cy="189.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="210.9" cy="238.9" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="210.9" cy="238.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="189.7" cy="199.7" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="189.7" cy="199.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="130.3" cy="140.3" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="130.3" cy="140.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="110.0" cy="101.6" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="110.0" cy="101.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="179.5" cy="152.9" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="179.5" cy="152.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="172.3" cy="106.8" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="172.3" cy="106.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="151.5" cy="70.2" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="151.5" cy="70.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="229.2" cy="171.0" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="229.2" cy="171.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="250.5" cy="207.3" r="16.8" fill="var(--ink)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="250.5" cy="207.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="224.2" cy="127.1" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="224.2" cy="127.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="198.1" cy="47.0" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="198.1" cy="47.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="220.7" cy="83.5" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="220.7" cy="83.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat whipped"><circle cx="248.2" cy="32.8" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="3" opacity="1.00"/><circle class="edge" cx="248.2" cy="32.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="275.6" cy="155.9" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.75"/><circle class="edge" cx="275.6" cy="155.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="274.2" cy="113.7" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.81"/><circle class="edge" cx="274.2" cy="113.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="273.1" cy="71.5" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.71"/><circle class="edge" cx="273.1" cy="71.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="300.0" cy="196.0" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.76"/><circle class="edge" cx="300.0" cy="196.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="300.0" cy="28.0" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.82"/><circle class="edge" cx="300.0" cy="28.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="326.9" cy="71.5" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.72"/><circle class="edge" cx="326.9" cy="71.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="325.8" cy="113.7" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.78"/><circle class="edge" cx="325.8" cy="113.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="324.4" cy="155.9" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.67"/><circle class="edge" cx="324.4" cy="155.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="351.8" cy="32.8" r="16.8" fill="url(#f-dots)" stroke="var(--ink)" stroke-width="1.4" opacity="0.73"/><circle class="edge" cx="351.8" cy="32.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="379.3" cy="83.5" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.57"/><circle class="edge" cx="379.3" cy="83.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="401.9" cy="47.0" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.46"/><circle class="edge" cx="401.9" cy="47.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="375.8" cy="127.1" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.52"/><circle class="edge" cx="375.8" cy="127.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="349.5" cy="207.3" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.58"/><circle class="edge" cx="349.5" cy="207.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="370.8" cy="171.0" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="370.8" cy="171.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="448.5" cy="70.2" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.54"/><circle class="edge" cx="448.5" cy="70.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="427.7" cy="106.8" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.60"/><circle class="edge" cx="427.7" cy="106.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="420.5" cy="152.9" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.49"/><circle class="edge" cx="420.5" cy="152.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="490.0" cy="101.6" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.55"/><circle class="edge" cx="490.0" cy="101.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="410.3" cy="199.7" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.45"/><circle class="edge" cx="410.3" cy="199.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="469.7" cy="140.3" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.51"/><circle class="edge" cx="469.7" cy="140.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="389.1" cy="238.9" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.57"/><circle class="edge" cx="389.1" cy="238.9" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="457.1" cy="189.5" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.46"/><circle class="edge" cx="457.1" cy="189.5" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="525.0" cy="140.1" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.52"/><circle class="edge" cx="525.0" cy="140.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="503.2" cy="182.3" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.58"/><circle class="edge" cx="503.2" cy="182.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="439.0" cy="239.2" r="16.8" fill="url(#f-hatch)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="439.0" cy="239.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="552.4" cy="184.3" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.47"/><circle class="edge" cx="552.4" cy="184.3" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="482.9" cy="234.2" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.53"/><circle class="edge" cx="482.9" cy="234.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="526.5" cy="230.7" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="526.5" cy="230.7" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="571.2" cy="232.8" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.48"/><circle class="edge" cx="571.2" cy="232.8" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="411.1" cy="284.6" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="411.1" cy="284.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="454.1" cy="285.6" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.44"/><circle class="edge" cx="454.1" cy="285.6" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="496.3" cy="284.2" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.49"/><circle class="edge" cx="496.3" cy="284.2" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="538.5" cy="283.1" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.42"/><circle class="edge" cx="538.5" cy="283.1" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g>
+<g class="seat"><circle cx="580.8" cy="284.0" r="16.8" fill="url(#f-hollow)" stroke="var(--ink)" stroke-width="1.4" opacity="0.45"/><circle class="edge" cx="580.8" cy="284.0" r="18.0" fill="none" stroke="var(--ink)" stroke-width="1"/></g></svg><ul class="key">
+<li><svg width="15" height="15" aria-hidden="true"><circle cx="7.5" cy="7.5" r="6.5" fill="var(--ink)" stroke="var(--ink)"/></svg>Caesarians <b class="num">22</b><em>yours</em></li>
+<li><svg width="15" height="15" aria-hidden="true"><circle cx="7.5" cy="7.5" r="6.5" fill="url(#f-dots)" stroke="var(--ink)"/></svg>Populares <b class="num">13</b><em>coalition</em></li>
+<li><svg width="15" height="15" aria-hidden="true"><circle cx="7.5" cy="7.5" r="6.5" fill="url(#f-hatch)" stroke="var(--ink)"/></svg>Optimates <b class="num">16</b></li>
+<li><svg width="15" height="15" aria-hidden="true"><circle cx="7.5" cy="7.5" r="6.5" fill="url(#f-hollow)" stroke="var(--ink)"/></svg>Liberators <b class="num">9</b></li>
+<li><svg width="17" height="15" aria-hidden="true"><circle cx="8.5" cy="7.5" r="5.5" fill="none" stroke="var(--ink)" stroke-width="3"/></svg>Whipped <b class="num">26</b></li>
+</ul></div>
+<div><div class="whip"><span class="n num">26</span><div><div class="kicker">Whipped yes of 31 needed</div><div class="small muted">60 seats · 5 short · the Optimates hold the door</div></div></div><div class="whipbar" role="meter" aria-label="Whip count" aria-valuenow="26"><i style="--w:43.3%"></i><b class="tick" style="--x:51.6%"><span>31 to pass</span></b></div>
+<p class="hint">Lobbying one Optimate costs <b class="num">3</b> of the chest and <b class="num">1</b>
+of capital. <b>Five of them is 15 and 5.</b></p>
+<button class="btn hot" style="width:100%;margin-top:8px">Call the vote</button>
+<ul class="causes" aria-label="Seats worth working">
+<li><b class="num">92%</b><span>M. Antonius · Caesarians · Latium · whipped</span></li>
+<li><b class="num">71%</b><span>Q. Fufius Calenus · Populares · Campania · whipped</span></li>
+<li><b class="num">44%</b><span>P. Cornelius Dolabella · Populares · Latium · 3 chest to turn</span></li>
+<li><b class="num">31%</b><span>L. Munatius Plancus · Optimates · Gallia Cisalpina · 3 chest</span></li>
+<li><b class="num">18%</b><span>Servilia Caepionis · Optimates · Etruria · 6 chest</span></li>
+<li><b class="num">6%</b><span>C. Cassius Longinus · Liberators · Sicilia · will not move</span></li>
+</ul></div></div></div>
+</div>
+<div class="wire"><span class="lbl">Wire</span><div class="run"><span><b>&minus;4</b>treasury · farm credit</span><span><b>+2</b>approval · Latium</span><span><b>+3</b>approval · Etruria</span><span><b>&minus;6</b>mood · grain traders read the price tag</span><span><b>&minus;20</b>chest · reach on the post</span><span><b>26</b>of 31 whipped · 5 short</span><span><b>13</b>turns left · midterm at turn 11</span><span><b>&minus;4</b>treasury · farm credit</span><span><b>+2</b>approval · Latium</span><span><b>+3</b>approval · Etruria</span><span><b>&minus;6</b>mood · grain traders read the price tag</span><span><b>&minus;20</b>chest · reach on the post</span><span><b>26</b>of 31 whipped · 5 short</span><span><b>13</b>turns left · midterm at turn 11</span></div></div>
+<script>
+for (const tl of document.querySelectorAll('[role=tablist]')) {
+  const tabs = [...tl.querySelectorAll('[role=tab]')];
+  const pick = i => tabs.forEach((t, j) => {
+    t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1;
+    document.getElementById(t.getAttribute('aria-controls')).hidden = j !== i;
+  });
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => pick(i));
+    t.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const n = (i + d + tabs.length) % tabs.length;
+      tabs[n].focus(); pick(n);
+    });
+  });
+  pick(Math.max(0, tabs.findIndex(t => t.getAttribute('aria-selected') === 'true')));
+}
+</script>
+</body>
+</html>
