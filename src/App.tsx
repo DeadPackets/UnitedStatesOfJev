@@ -64,7 +64,10 @@ export default function App() {
     if (m) { open(m[1], false); return; }
     const id = localStorage.getItem("usoj:game");
     if (!id) return;
-    api.load(id).then(setGame).catch(() => localStorage.removeItem("usoj:game")).finally(() => setBooting(false));
+    // Only a game the server says is gone drops the pointer: a flat tyre on the way back is not a lost run.
+    api.load(id).then(setGame)
+      .catch((e) => { if (e instanceof ApiError && e.status === 404) localStorage.removeItem("usoj:game"); else fail(e); })
+      .finally(() => setBooting(false));
   }, [open]);
 
   useEffect(() => {
