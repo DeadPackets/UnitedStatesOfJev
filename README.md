@@ -32,6 +32,40 @@ Every one is `POST /api/games/:id/...`, guarded by the same stale-turn check and
 | `campaign/drafts` | `{}` | `campaign`; returns early once three drafts exist |
 | `campaign` | `{ message, lever }` | `campaign`, four times; `lever` is `{kind:"spend",regions:[{id,amount}]}` (two at most, 0/5/10) or `{kind:"favor",memberId}` |
 
+## The daily
+
+One scenario and one seed a day, for everyone. A cron at 03:07 UTC starts the `daily` Workflow for tomorrow: Luna
+reads the last 30 dailies and proposes a scenario that repeats none of them, the ordinary build
+pipeline runs it, and the `dailies` row is published when the scenario turns ready.
+
+| Method | Path | What it answers |
+|---|---|---|
+| GET | `/api/daily` | today's scenario, whether this player has played it, the grid, the streak and the played count |
+| GET | `/api/daily/archive` | the last 30 dailies, newest first; opening one is ordinary practice and never counts |
+| POST | `/api/games` `{ mode: "daily" }` | seats today's term once per player, 409 after that |
+| POST | `/api/games/:id/turn/end` | the turn boundary every run uses |
+
+A player is a signed HttpOnly cookie, `usoj_id`, kept for 400 days and signed with the `DAILY_SECRET`
+secret. One row in `daily_plays` per identity per day is both the attempt lock and the streak record.
+Clearing cookies loses the streak; there is no account and no leaderboard.
+
+Set the secret once: `bunx wrangler secret put DAILY_SECRET`.
+
+## Measuring and balancing
+
+```
+bunx wrangler dev --config ./wrangler.bots.jsonc --port 8799
+bun scripts/bots/run.ts --scenario <id> --seeds <N> --terms 1 --out docs/bots/<date>-spread
+bun scripts/bots/report.ts docs/bots/<date>-spread
+bun scripts/bots/bias.ts --scenario <id>
+bun scripts/bots/golden.ts export docs/golden/<date>.jsonl
+```
+
+Six policies: `random`, `greedy` and the four styles `strongman`, `populist`, `broker`, `idealist`.
+One pass is `MAX_TERMS` terms and at most `BUDGET_USD`, both in `scripts/bots/run.ts`; the runner refuses
+a plan over either before it spends anything. The cost of one term is measured in `docs/experiments.md`
+and the loop is in `docs/balance.md`.
+
 ## Cloudflare bindings
 
 | Binding | Resource | Notes |
@@ -44,6 +78,9 @@ Every one is `POST /api/games/:id/...`, guarded by the same stale-turn check and
 | `GAME` | Durable Object `GameDO` | one per game, unchanged shape plus `scenarioId` |
 | `BUILDS` | Durable Object `BuildsDO` | daily build counter |
 | `RL` | ratelimit `RL` | 40 req/min on `/api/*`, `/api/*/art/*` exempt |
+| `DAILY` | Workflow | `daily`, the cron-started build of tomorrow's term |
+| `DAILY_SECRET` | secret | signs the `usoj_id` cookie |
+| cron | trigger | `7 3 * * *`, one run a day |
 
 ## Models
 

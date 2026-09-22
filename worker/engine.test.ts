@@ -5,7 +5,7 @@ import {
   termPoints, threshold, type Bill, type Game,
   easeResistance, holdersOf, nearestLine, raiseResistance, weightOf, advanceWarnings, fireResponse, WARN_TURNS,
   endTurn, enact, inForceAge, repeal, STRIKE_HIT, authorPromise, PROMISE_WINDOW, record, RECORD_TOKENS,
-  bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR,
+  bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR, biggestMove, runStyle, STYLE_LINES,
 } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
@@ -565,7 +565,7 @@ test("an average post is worth nothing, a loud one is punished and a strong one 
   applyPost(pack, good, 1, "a sharp notice", reactMix(88, 6), saidNothing, {}, tagFor());
   expect(good.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(before[REGIONS[0]]);
   expect(good.posts[0].targets).toEqual([]);
-  expect(POST_BASELINE).toBeCloseTo(0.65, 2);
+  expect(POST_BASELINE).toBeCloseTo(0.67, 2);
   expect(POST_GAIN).toBe(10);
 });
 
@@ -872,6 +872,18 @@ test("a law in force collects every turn until it is repealed", () => {
   expect(g.ledgers.treasury).toBe(12);
 });
 
+test("a rate an empty treasury cannot pay prints the move that landed, so the grid does not count it", () => {
+  const g = game();
+  g.ledgers.treasury = 4;
+  enact(g, { id: "l1", verb: "law", title: "Grain for the quay", perTurn: [{ ledger: "treasury", delta: -15 }], repealConsent: "chamber", sunset: null });
+  endTurn(pack, g);
+  expect(g.ledgers.treasury).toBe(0);
+  expect(g.wire.find((w) => w.cause === "Grain for the quay")!.delta).toBe(-4);
+  endTurn(pack, g);
+  expect(g.wire.find((w) => w.cause === "Grain for the quay")!.delta).toBe(0);
+  expect(g.log[1].cause).not.toBe("Grain for the quay");
+});
+
 test("an authored sunset lapses the law on its own", () => {
   const g = game();
   enact(g, { id: "l2", verb: "decree", title: "A two tide curfew", perTurn: [{ ledger: "popularity", delta: -2 }], repealConsent: "none", sunset: 2 });
@@ -1091,4 +1103,49 @@ test("drift rides on top of every citizen read, so a hardened base stays hardene
   applyCitizens(pack, g, Object.fromEntries(pack.citizens.map((c) => [c.id, 0.5])));
   expect(g.blocs[b]).toBeCloseTo(0.7, 5);
   expect(g.blocs[pack.blocs[1].id]).toBeCloseTo(0.5, 5);
+});
+
+test("the turn's row is the ledger that moved most, and a resistance line is not a ledger move", () => {
+  expect(biggestMove([
+    { kind: "ledger", ledger: "treasury", delta: -4, cause: "upkeep" },
+    { kind: "ledger", ledger: "popularity", id: "r1", delta: 6, cause: "relief" },
+    { kind: "ledger", ledger: "popularity", id: "r2", delta: 3, cause: "relief" },
+  ], 4)).toEqual({ turn: 4, ledger: "popularity", delta: 9, cause: "relief" });
+  expect(biggestMove([{ kind: "resistance", id: "army", delta: 30, cause: "the curfew" }], 2).ledger).toBe("quiet");
+  expect(biggestMove([], 1)).toEqual({ turn: 1, ledger: "quiet", delta: 0, cause: "a still turn" });
+});
+
+test("the style line names the ledger that led the most turns, and the decisive turns are the two largest", () => {
+  const g = game();
+  g.log = [
+    { turn: 1, ledger: "authority", delta: 3, cause: "a decree" },
+    { turn: 2, ledger: "authority", delta: 12, cause: "the army was bought off" },
+    { turn: 3, ledger: "treasury", delta: 30, cause: "the harbour works" },
+  ];
+  g.test = { won: true } as never;
+  const r = runStyle(pack, g);
+  expect(r.line).toBe(STYLE_LINES.authority);
+  expect(r.decisive.map((d) => d.turn)).toEqual([2, 3]);
+  expect(r.decisive[1].line).toMatch(/^the harbour works\. [A-Z]/);
+  expect(r.grid.map((x) => x.ledger)).toEqual(["authority", "authority", "treasury"]);
+  expect(r.grid[2].won).toBe(true);
+  expect(r.grid[0].won).toBeUndefined();
+});
+
+test("a run with no finished turn has a grid with no rows and no decisive turn", () => {
+  const g = game();
+  expect(runStyle(pack, g)).toEqual({ line: STYLE_LINES.quiet, decisive: [], grid: [] });
+  g.log = [{ turn: 1, ledger: "quiet", delta: 0, cause: "a still turn" }];
+  expect(runStyle(pack, g).decisive).toEqual([]);
+});
+
+test("every finished turn adds one row to the log, and a new term starts an empty one", () => {
+  const g = game();
+  endTurn(pack, g);
+  expect(g.log).toHaveLength(1);
+  expect(g.log[0].turn).toBe(1);
+  endTurn(pack, g);
+  expect(g.log).toHaveLength(2);
+  continueTerm(pack, g);
+  expect(g.log).toEqual([]);
 });

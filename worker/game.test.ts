@@ -104,7 +104,7 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any) as any;
-  doInstance.ctx = ctx;
+  doInstance.ctx = ctx; doInstance.env = {};
   doInstance.pack = pack;
   const r = await doInstance.fetch(new Request("https://do/state"));
   expect(r.status).toBe(200);
@@ -122,7 +122,7 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
   const game: Game = newGame("g-busy", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any);
-  (doInstance as any).ctx = ctx;
+  (doInstance as any).ctx = ctx; (doInstance as any).env = {};
   (doInstance as any).saved = { game, prose: {} };
   (doInstance as any).pack = pack;
   let entered!: () => void;
@@ -702,4 +702,60 @@ test("a seat with no platform sentence reaches no model at all", async () => {
     expect(Object.keys(s.game.promises)).toHaveLength(3);
     expect(called).toBe(false);
   } finally { globalThis.fetch = real; }
+});
+
+test("a game saved before the daily existed loads as free play with an empty log", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
+  const game: Game = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  delete (game as Partial<Game>).mode;
+  delete (game as Partial<Game>).day;
+  delete (game as Partial<Game>).log;
+  const rows = [{ v: JSON.stringify({ game, prose: {} }) }];
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => rows }) } } };
+  const do_ = new (GameDO as any)(ctx, {});
+  do_.ctx = ctx;
+  const loaded = await do_.load();
+  expect(loaded.game.mode).toBe("free");
+  expect(loaded.game.day).toBeNull();
+  expect(loaded.game.log).toEqual([]);
+});
+
+test("newGame marks a daily run with its day and starts the log empty", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
+  const free = newGame("g-f", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  expect(free.mode).toBe("free");
+  expect(free.day).toBeNull();
+  const daily = newGame("g-d", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar, { day: "2026-09-22" });
+  expect(daily.mode).toBe("daily");
+  expect(daily.day).toBe("2026-09-22");
+  expect(daily.log).toEqual([]);
+});
+
+test("a daily run writes its grid to the play row exactly once, and a free run writes nothing", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 11 });
+  const writes: unknown[][] = [];
+  const env = { DB: { prepare: (sql: string) => ({ bind: (...a: unknown[]) => ({ run: async () => { writes.push([sql, ...a]); return { meta: { changes: 1 } }; } }) }) } } as never;
+
+  const run = async (mode: "daily" | "free", term = 1) => {
+    const game: Game = newGame("g-" + mode, code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar,
+      mode === "daily" ? { day: "2026-09-22" } : undefined);
+    game.log = [{ turn: 1, ledger: "authority", delta: 6, cause: "a decree" }, { turn: 2, ledger: "treasury", delta: 9, cause: "the works" }];
+    game.result = { ending: "reelected", score: 10 };
+    game.test = { won: true } as never;
+    game.term = term;
+    const do_ = new (GameDO as any)({ storage: {} }, env);
+    do_.env = env;
+    // The prose is already written, so `epilogue` closes the play row and returns before it calls Luna.
+    await do_.epilogue({ game, prose: { ending: { title: "t", body: "b" } } }, pack);
+  };
+
+  await run("free");
+  expect(writes).toHaveLength(0);
+  await run("daily");
+  expect(writes).toHaveLength(1);
+  expect(String(writes[0][0])).toContain("UPDATE daily_plays");
+  expect(JSON.parse(String(writes[0][1])).map((r: { ledger: string }) => r.ledger)).toEqual(["authority", "treasury"]);
+  expect(writes[0][2]).toBe(1);
+  await run("daily", 2);
+  expect(writes).toHaveLength(1);
 });

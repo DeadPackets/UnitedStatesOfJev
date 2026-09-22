@@ -67,6 +67,89 @@ export async function listReady(env: Env, ids: string[]) {
   return results;
 }
 
+export type DailyRow = { day: string; scenario: string | null; status: string; prompt: string | null; created: number };
+export type DailyMeta = DailyRow & { title: string | null; era: string | null; place: string | null };
+export type PlayRow = { id: string; day: string; game: string; grid: string | null; won: number | null; ended: number };
+
+export const STREAK_LOOKBACK = 60;   // TUNE: days of history the streak query reads
+export const ARCHIVE_LIMIT = 30;     // TUNE: past dailies the archive route lists
+
+export const dayKey = (at: number = Date.now()) => new Date(at).toISOString().slice(0, 10);
+export const shiftDay = (day: string, by: number) => dayKey(Date.parse(`${day}T00:00:00Z`) + by * 86_400_000);
+
+export function getDaily(env: Env, day: string): Promise<DailyRow | null> {
+  return env.DB.prepare("SELECT * FROM dailies WHERE day = ?").bind(day).first<DailyRow>();
+}
+
+// Title, era and place are read from the scenarios row: the daily table stores the key, never a copy of it.
+export function dailyMeta(env: Env, day: string): Promise<DailyMeta | null> {
+  return env.DB.prepare(
+    "SELECT d.*, s.title, s.era, s.place FROM dailies d LEFT JOIN scenarios s ON s.id = d.scenario WHERE d.day = ?",
+  ).bind(day).first<DailyMeta>();
+}
+
+// The day's primary key is the lock: a cron that fires twice for one minute takes the row once.
+export async function takeDaily(env: Env, day: string): Promise<boolean> {
+  const r = await env.DB.prepare("INSERT INTO dailies (day, status, created) VALUES (?, 'building', ?) ON CONFLICT(day) DO NOTHING")
+    .bind(day, Date.now()).run();
+  return (r.meta.changes ?? 0) > 0;
+}
+
+export async function putDaily(env: Env, day: string, prompt: string, scenario: string | null, status: string) {
+  await env.DB.prepare("UPDATE dailies SET prompt = ?, scenario = ?, status = ? WHERE day = ?")
+    .bind(prompt, scenario, status, day).run();
+}
+
+export async function listDailies(env: Env, limit: number): Promise<DailyMeta[]> {
+  const { results } = await env.DB.prepare(
+    "SELECT d.*, s.title, s.era, s.place FROM dailies d JOIN scenarios s ON s.id = d.scenario" +
+    " WHERE d.status = 'ready' ORDER BY d.day DESC LIMIT ?",
+  ).bind(limit).all<DailyMeta>();
+  return results;
+}
+
+// One attempt per identity per day. The primary key is the lock, so two requests at once cannot both take it.
+export async function takeAttempt(env: Env, id: string, day: string, game: string): Promise<boolean> {
+  const r = await env.DB.prepare("INSERT INTO daily_plays (id, day, game, created) VALUES (?, ?, ?, ?) ON CONFLICT(id, day) DO NOTHING")
+    .bind(id, day, game, Date.now()).run();
+  return (r.meta.changes ?? 0) > 0;
+}
+
+// A game that never started is not an attempt spent: the lock is taken first, so it has to be givable back.
+export async function dropAttempt(env: Env, id: string, day: string) {
+  await env.DB.prepare("DELETE FROM daily_plays WHERE id = ? AND day = ? AND ended = 0").bind(id, day).run();
+}
+
+export function getPlay(env: Env, id: string, day: string): Promise<PlayRow | null> {
+  return env.DB.prepare("SELECT * FROM daily_plays WHERE id = ? AND day = ?").bind(id, day).first<PlayRow>();
+}
+
+// §14's played count: how many people finished today's term, not how many took the seat.
+export async function playCount(env: Env, day: string): Promise<number> {
+  const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM daily_plays WHERE day = ? AND ended = 1").bind(day).first<{ n: number }>();
+  return row?.n ?? 0;
+}
+
+export async function endPlay(env: Env, game: string, grid: string, won: boolean) {
+  await env.DB.prepare("UPDATE daily_plays SET grid = ?, won = ?, ended = 1 WHERE game = ?")
+    .bind(grid, won ? 1 : 0, game).run();
+}
+
+// Consecutive finished days ending today or yesterday. A missed day breaks it; today still unplayed does not.
+export async function streakOf(env: Env, id: string, today: string, lookback: number): Promise<number> {
+  const { results } = await env.DB.prepare("SELECT day FROM daily_plays WHERE id = ? AND ended = 1 ORDER BY day DESC LIMIT ?")
+    .bind(id, lookback).all<{ day: string }>();
+  const days = results.map((r) => r.day);
+  let want = days[0] === today ? today : shiftDay(today, -1);
+  let n = 0;
+  for (const d of days) {
+    if (d !== want) break;
+    n++;
+    want = shiftDay(want, -1);
+  }
+  return n;
+}
+
 const DAY_MS = 86_400_000;
 
 export class BuildsDO extends DurableObject<Env> {

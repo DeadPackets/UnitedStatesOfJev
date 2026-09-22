@@ -4,15 +4,15 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
+  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
   agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, HOLDER_SAMPLE, holderQuestions,
-  holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
+  holderStance, holderState, jev, memberQuestion, meter, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
-import { getScenario } from "./db";
+import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
 import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
@@ -32,7 +32,7 @@ type Saved = { game: Game; prose: Prose };
 type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
-type Extra = { deltas?: Record<string, number> };
+type Extra = { deltas?: Record<string, number>; usage?: { tokens: number; cost: number; calls: number; worst: number } };
 
 export class GameDO extends DurableObject<Env> {
   private saved?: Saved;
@@ -55,6 +55,7 @@ export class GameDO extends DurableObject<Env> {
       if (body.turn !== undefined && body.turn !== game.turn) throw new Reject(409, "Stale turn. Reload the game.");
       if (this.busy) throw new Reject(409, "one move at a time");
       this.busy = true;
+      meter.reset();
       // Engine mutations run before the Jev awaits, so an upstream failure would leave the cached game
       // half-applied and the next save would persist it. Roll back to the state the request started from.
       const before = structuredClone(s);
@@ -99,6 +100,8 @@ export class GameDO extends DurableObject<Env> {
   }
 
   private async reply(s: Saved, pack?: Pack, extra: Extra = {}) {
+    // Off in production: BOTS is set only by the measurement config, so no player ever sees a token count.
+    if (this.env.BOTS === "1") extra = { ...extra, usage: { tokens: meter.tokens, cost: meter.cost, calls: meter.calls, worst: meter.worst } };
     return Response.json(view(pack ?? await this.loadPack(s.game.pack), s, extra));
   }
 
@@ -115,7 +118,8 @@ export class GameDO extends DurableObject<Env> {
     if (promises.length !== 3 || new Set(promises).size !== 3) throw new Reject(400, `Pick three different ${pack.vocabulary.promise}s.`);
     const seed = Number.isInteger(body.seed) ? Number(body.seed) & 0x7fffffff : crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
     const code = encodeCode({ scenario: scenarioTag(pack.id), faction: f, promises: promises as [number, number, number], seed });
-    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar);
+    const day = typeof body.day === "string" ? body.day : null;
+    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar, day ? { day } : undefined);
     const platform = typeof body.platform === "string" ? body.platform.slice(0, 240) : "";
     if (platform.trim()) for (const p of await platformPromises(this.env, pack, platform)) authorPromise(game, p.tag, p.label, game.turn + p.window);
     const s: Saved = { game, prose: {} };
@@ -441,7 +445,11 @@ export class GameDO extends DurableObject<Env> {
   // Luna's last page, written once: after the test, and after a term impeachment or a lame duck cuts short.
   private async epilogue(s: Saved, pack: Pack) {
     const { game } = s;
-    if (!game.result || s.prose.ending) return;
+    if (!game.result) return;
+    // The row exists from the moment the seat was taken; this is the write that closes it. Idempotent.
+    // Only term 1 is the daily: a won run played on is practice and keeps the first term's grid.
+    if (game.mode === "daily" && game.term === 1) await endPlay(this.env, game.id, JSON.stringify(runStyle(pack, game).grid), game.test?.won ?? false);
+    if (s.prose.ending) return;
     const state = { ...record(pack, game), mandate: game.test ? Math.round(game.test.mandate * 100) : null, score: game.result.score, terms: game.terms };
     s.prose.ending = await ending(this.env, pack, game.result.ending, state).catch(() => undefined);
   }
@@ -477,6 +485,9 @@ export function migrate(game: Game): void {
   game.emergency ??= null;
   game.extra ??= [];
   game.wireTurn ??= game.turn;
+  game.mode ??= "free";       // a game saved before the daily existed is free play
+  game.day ??= null;
+  game.log ??= [];
   game.director.swan ??= null;
   for (const p of Object.values(game.promises)) {
     p.window ??= PROMISE_WINDOW;
@@ -532,6 +543,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
+    // R22 and the share grid are read off the run log, because five places write game.result and none of them own this.
+    ...(game.result ? { result: { ...game.result, ...runStyle(pack, game) } } : {}),
     scenario: game.pack, pack: pv,
     // What an offer costs this term, priced here so the drawer never reads the pack's own number.
     lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])

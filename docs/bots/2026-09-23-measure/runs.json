@@ -1,0 +1,15 @@
+[
+  {
+    "run": "populist-20260922",
+    "game": "0f339321-b168-492a-8107-5511b997e14d",
+    "policy": "populist",
+    "seed": 20260922,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.44316666666666665,
+    "bar": 0.4,
+    "turns": []
+  }
+]
