@@ -21,8 +21,6 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   const reduced = useReducedMotion();
   const result = game.midterm;
   const called = useRef(false);
-  // the floor as the night began: a seat past the clock still shows who held it
-  const before = useRef<ViewMember[]>(game.members);
   const [failed, setFailed] = useState(false);
   const [shown, setShown] = useState(0);
   const [done, setDone] = useState(false);
@@ -67,7 +65,18 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
     try { localStorage.setItem(key, "1"); } catch {}
   }, [done]); // eslint-disable-line
 
-  const held = useMemo(() => new Map(before.current.map((m) => [m.seat, m])), []);
+  // The floor as the night began, rebuilt from what changed hands: a mount after the count still
+  // shows who held the seat, and the swap is still the declaration.
+  const held = useMemo(() => {
+    const out = new Map<string, ViewMember>();
+    for (const l of result?.lost ?? []) {
+      const now = game.members.find((m) => m.seat === l.seat);
+      if (!now) continue;
+      const was = pack.members.find((m) => m.id === l.memberId);
+      out.set(l.seat, { ...now, id: l.memberId, faction: l.from, name: was?.name ?? now.name });
+    }
+    return out;
+  }, [result, game.members, pack.members]);
   const declared = useMemo(() => walk.slice(0, shown), [walk, shown]);
   const swapped = useMemo(() => new Set(declared.filter((w) => !w.kept).map((w) => w.seat)), [declared]);
   const members = useMemo(
