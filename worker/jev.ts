@@ -3,7 +3,7 @@ import type { Citizen, Holder, Pack, Storylet } from "./pack";
 
 export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
-  DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow;
+  DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow; DAILY: Workflow;
   BUILDS: DurableObjectNamespace<import("./db").BuildsDO>; DAILY_BUILD_CAP: string; DAILY_GAME_CAP: string;
   DAILY_SECRET: string;
   MODEL?: string;

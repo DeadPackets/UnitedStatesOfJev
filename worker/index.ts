@@ -11,6 +11,7 @@ import { match } from "./match";
 export { GameDO } from "./game";
 export { BuildsDO } from "./db";
 export { ScenarioBuild } from "./build";
+export { DailyBuild } from "./daily";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -200,4 +201,10 @@ for (const action of ["test", "continue", "stop"]) {
   app.post(`/api/games/:id/${action}`, (c) => forward(c, c.req.param("id"), action, {}));
 }
 
-export default app;
+// The instance id is the day, so a cron that fires twice for one minute starts one Workflow.
+const scheduled: ExportedHandlerScheduledHandler<Env> = async (event, env, ctx) => {
+  const day = dayKey(event.scheduledTime);
+  ctx.waitUntil(env.DAILY.create({ id: `daily-${day}`, params: { day } }).then(() => {}, (e) => console.error("daily", day, e)));
+};
+
+export default { fetch: app.fetch, scheduled };

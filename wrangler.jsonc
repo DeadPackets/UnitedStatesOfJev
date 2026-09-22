@@ -15,6 +15,11 @@
   "vectorize": [{ "binding": "VEC", "index_name": "usoj-scenarios" }],
   "r2_buckets": [{ "binding": "ART", "bucket_name": "usoj-art" }],
   "ai": { "binding": "AI" },
-  "workflows": [{ "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" }],
+  "workflows": [
+    { "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" },
+    { "name": "daily", "binding": "DAILY", "class_name": "DailyBuild" }
+  ],
+  // 03:07 UTC: a build takes 1 to 20 minutes and the first players of the day are hours away.
+  "triggers": { "crons": ["7 3 * * *"] },
   "vars": { "DAILY_BUILD_CAP": "50", "DAILY_GAME_CAP": "200" }
 }
