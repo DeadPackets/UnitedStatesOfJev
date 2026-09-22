@@ -8,6 +8,7 @@ import { easeResistance, holdersOf, nearestLine, raiseResistance, seedHolders, w
 import { advanceWarnings, fireResponse, WARN_TURNS } from "./engine";
 import { endTurn } from "./engine";
 import { enact, inForceAge, repeal, STRIKE_HIT } from "./engine";
+import { authorPromise, PROMISE_WINDOW } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
@@ -145,19 +146,36 @@ test("a struck bill needs 0.7, or 0.5 under a hostile court", () => {
   expect(g.bills[1].struck).toBe(true);
 });
 
-test("promise deadlines bite at 12 and 20, or 8 and 16 under fickle base", () => {
+test("a missed promise decays popularity by a share a turn, never a cliff", () => {
   const g = game();
-  g.turn = 13;
-  applyVote(pack, g, bill(g, 0));
+  for (const r of REGIONS) g.ledgers.popularity[r] = 50;   // a flat start so the arithmetic is exact
+  g.turn = PROMISE_WINDOW;
+  endTurn(pack, g);                                  // the window closes on this boundary
+  expect(Object.values(g.promises).every((p) => p.state === "broken")).toBe(true);
+  // Three pending promises, each taking PROMISE_SHARE 0.02 of what the one before it left, rounded to one
+  // decimal: 50 - round1(1.00) = 49, 49 - round1(0.98) = 48, 48 - round1(0.96) = 47.
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(47);
   endTurn(pack, g);
-  expect(g.promises.tariffs.state).toBe("broken");
+  // Past the window it keeps taking a share, it does not cliff again:
+  // 47 - round1(0.94) = 46.1, 46.1 - round1(0.922) = 45.2, 45.2 - round1(0.904) = 44.3.
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBeCloseTo(44.3, 5);
+});
 
-  const h = game();
-  h.escalations = ["fickle_base"];
-  h.turn = 8;
-  applyVote(pack, h, bill(h, 0));
-  endTurn(pack, h);
-  expect(h.promises.tariffs.state).toBe("broken");
+test("fickle base shortens the window instead of moving a cliff", () => {
+  const g = game();
+  g.escalations = ["fickle_base"];
+  g.turn = PROMISE_WINDOW - 4;
+  endTurn(pack, g);
+  expect(Object.values(g.promises).every((p) => p.state === "broken")).toBe(true);
+});
+
+test("an authored promise carries its own window and share", () => {
+  const g = game();
+  authorPromise(g, "harbor-tolls", "Cut the tolls by the spring", 6, 0.05);
+  expect(g.promises["harbor-tolls"]).toEqual({ label: "Cut the tolls by the spring", passed: 0, state: "pending", window: 6, share: 0.05, authored: true });
+  g.turn = 6;
+  endTurn(pack, g);
+  expect(g.promises["harbor-tolls"].state).toBe("broken");
 });
 
 test("hostile press costs a point in every region on every verdict", () => {

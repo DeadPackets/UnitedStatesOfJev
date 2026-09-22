@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm,
   effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
-  newGame, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
+  newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, SPEND_STEPS,
   threshold, TURNS_PER_TERM,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
 } from "./engine";
@@ -409,6 +409,11 @@ export function migrate(game: Game): void {
   game.inForce ??= [];
   game.wire ??= [];
   game.pending ??= null;
+  for (const p of Object.values(game.promises)) {
+    p.window ??= PROMISE_WINDOW;
+    p.share ??= PROMISE_SHARE;
+    p.authored ??= false;
+  }
 }
 
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {

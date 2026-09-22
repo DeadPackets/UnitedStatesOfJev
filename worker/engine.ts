@@ -51,7 +51,7 @@ export interface Game {
   warnings: Warning[];
   inForce: InForce[];
   earlyTest?: string;   // the holder that called it; the test route reads it instead of the term test
-  promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken" }>;
+  promises: Record<string, { label: string; passed: number; state: "pending" | "kept" | "broken"; window: number; share: number; authored: boolean }>;
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
   director: { intensity: number; lastCrisis: number; seen: string[] };
   streak: number; bestStreak: number;
@@ -186,7 +186,10 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     holders: seedHolders(pack),
     warnings: [],
     inForce: [],
-    promises: Object.fromEntries(promises.map((t) => [t, { label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const }])),
+    promises: Object.fromEntries(promises.map((t) => [t, {
+      label: pack.promises.find((p) => p.tag === t)?.label ?? t, passed: 0, state: "pending" as const,
+      window: PROMISE_WINDOW, share: PROMISE_SHARE, authored: false,
+    }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [] },
     streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
@@ -327,7 +330,7 @@ export type EscalationEffects = {
   supermajority?: (bill: Bill) => boolean;
   test?: (game: Game, regions: { id: string; p: number }[]) => void;
   lobbyCost?: number; chest?: number; struckAt?: number; leak?: number;
-  promiseTurns?: [number, number]; dirLo?: number; dirHi?: number; noRelief?: true;
+  windowShift?: number; dirLo?: number; dirHi?: number; noRelief?: true;
   stageB?: number;
 };
 
@@ -344,7 +347,7 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
   short_fuse: { dirLo: 20, dirHi: 60 },
   split_chamber: { stageB: 8 },          // runMidterm
   costly_favors: { lobbyCost: 1.5 },
-  fickle_base: { promiseTurns: [8, 16] },
+  fickle_base: { windowShift: -4 },
   empty_chest: { chest: 0.5 },
   hostile_court: { struckAt: 0.5 },
   rival_surge: { stageB: 2 },            // rivalTargets spend
@@ -369,7 +372,7 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
 };
 
 const on = (game: Game) => game.escalations.map((k) => ESCALATION_EFFECTS[k]);
-const first = <K extends "lobbyCost" | "chest" | "struckAt" | "leak" | "promiseTurns" | "dirLo" | "dirHi">(game: Game, k: K) =>
+const first = <K extends "lobbyCost" | "chest" | "struckAt" | "leak" | "windowShift" | "dirLo" | "dirHi">(game: Game, k: K) =>
   on(game).map((e) => e[k]).find((v) => v !== undefined);
 
 export function applyEscalation(pack: Pack, game: Game, key: EscalationKey): void {
@@ -484,8 +487,33 @@ export function applyRates(pack: Pack, game: Game): WireLine[] {
   return wire;
 }
 
-// Stub until Task 15 fills it; the signature is final.
-export const decayPromises = (pack: Pack, game: Game): WireLine[] => { checkPromises(pack, game); return []; };
+export const PROMISE_WINDOW = 12;    // TUNE, R16: turns to deliver before the decay starts
+export const PROMISE_SHARE = 0.02;   // TUNE, R16: share of a region's popularity lost a turn past the window
+
+// R16: an authored promise is any commitment the player made in their own words. Stage B's proclaim route
+// and the Seat's platform sentence both land here.
+export function authorPromise(game: Game, tag: string, label: string, window = PROMISE_WINDOW, share = PROMISE_SHARE): void {
+  if (game.promises[tag]) return;
+  game.promises[tag] = { label, passed: 0, state: "pending", window, share, authored: true };
+}
+
+// Never a cliff: past its window an undelivered promise takes a share of each region's popularity a turn.
+export function decayPromises(pack: Pack, game: Game): WireLine[] {
+  const shift = first(game, "windowShift") ?? 0;
+  const wire: WireLine[] = [];
+  for (const p of Object.values(game.promises)) {
+    if (p.state === "kept") continue;
+    if (game.turn < p.window + shift) continue;
+    p.state = "broken";
+    for (const r of pack.regions) {
+      const d = -round1((game.ledgers.popularity[r.id] ?? 50) * p.share);
+      if (!d) continue;
+      bump(game, r.id, d);
+      wire.push({ kind: "promise", ledger: "popularity", id: r.id, delta: d, cause: p.label });
+    }
+  }
+  return wire;
+}
 
 // Spec §5.3, the whole boundary in order: rates, decay, warnings, the ledgers' lines, the Director, the
 // pending item. Every act resolves at once; only this function moves the clock.
@@ -551,15 +579,6 @@ function keepPromise(pack: Pack, game: Game, tag: string) {
   game.ledgers.loyalty = clamp(game.ledgers.loyalty + PROMISE_LOYALTY, 0, 100);
   game.ledgers.authority = clamp(game.ledgers.authority + PROMISE_AUTHORITY, 0, 200);
   for (const r of pack.regions) bump(game, r.id, 4);
-}
-function checkPromises(pack: Pack, game: Game) {
-  const [d1, d2] = first(game, "promiseTurns") ?? [12, 20];
-  for (const p of Object.values(game.promises)) {
-    if (p.state !== "pending") continue;
-    if (!((game.turn >= d1 && p.passed === 0) || (game.turn >= d2 && p.passed < 2))) continue;   // runs before the clock moves
-    p.state = "broken";
-    for (const r of pack.regions) bump(game, r.id, -6);
-  }
 }
 
 export const FAVOR_OWED = "Took a favor from the government and has not repaid it.";
