@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num, national } from "./Ledger";
+import { hueClass, type LedgerKey } from "./rules";
 import { Ornament } from "./theme";
 
 /** Clipboard API first; the textarea covers an insecure origin or a denied permission. */
@@ -20,7 +21,6 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
   const pack = game.pack;
   const v = pack.vocabulary;
   const r = game.result;
-  const own = pack.factions.find((f) => f.id === game.faction);
   const lost = !!r && r.ending !== "reelected";
   return (
     <main className="over stagger press">
@@ -62,22 +62,38 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
         </div>
       ) : null}
 
-      <div className="panel share" style={{ "--i": 5 } as any}>
-        <div className="kicker">The record, term {game.terms.at(-1)?.term ?? game.term}</div>
-        <div className="sharecard" style={{ color: own?.color ?? "var(--ink)" }}>
-          {game.bills.map((b) => (
-            <div key={b.id}>
-              <span className={`sq ${b.passed && !b.struck ? "on" : ""}`} />
-              <span>{v.bill} {b.id}</span>
-            </div>
-          ))}
+      {r?.line ? (
+        <div className="panel escal" style={{ "--i": 5 } as any}>
+          <div className="kicker">How you ruled</div>
+          <p className="lede">{r.line}</p>
         </div>
+      ) : null}
+
+      {r?.decisive?.length ? (
+        <div className="panel escal" style={{ "--i": 6 } as any}>
+          <div className="kicker">The two turns that decided it</div>
+          <ul className="causes">
+            {r.decisive.map((d) => <li key={d.turn}><b className="num">{d.turn}</b><span>{d.line}</span></li>)}
+          </ul>
+        </div>
+      ) : null}
+
+      <div className="panel share" style={{ "--i": 7 } as any}>
+        <div className="kicker">The record, term {game.terms.at(-1)?.term ?? game.term}</div>
+        {r?.grid?.length ? (
+          <div className="sharecard" aria-label="One square per turn">
+            {r.grid.map((s, i) => (
+              <div key={i}><span className={`sq on ${hueClass(s.ledger as LedgerKey)}`} /><span className="num">{i + 1}</span></div>
+            ))}
+            <div className="testrow"><span className={`sq ${r.ending === "reelected" ? "on" : ""}`} /><span>{pack.test.name}</span></div>
+          </div>
+        ) : null}
         <div className="code" aria-label="Share code">{game.code}</div>
         <button className="btn ghost" onClick={() => { copyText(game.code); setCopied(true); }}>{copied ? "Copied" : "Copy the code"}</button>
       </div>
 
-      <div className="row" style={{ "--i": 6 } as any}>
-        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Play this code again</button>
+      <div className="row" style={{ "--i": 8 } as any}>
+        <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={() => act(() => api.share(game.code))}>Replay the seed as practice</button>
         <button className="btn ghost" onClick={onNew}>New scenario</button>
       </div>
     </main>

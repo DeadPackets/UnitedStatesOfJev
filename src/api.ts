@@ -15,6 +15,8 @@ export type Daily = {
   day: string; scenario: string; title: string; era: string; place: string;
   played: boolean; streak: number; plays: number; grid?: { ledger: string; won?: boolean }[];
 };
+/** R22 and the share grid: all three are engine facts (Stage D's `runStyle`). The client prints them and never derives them. */
+export type RunStyle = { line: string; decisive: { turn: number; line: string }[]; grid: { ledger: string; won?: boolean }[] };
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
 export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra" | "calls"> & {
   ledgers: Game["ledgers"];
@@ -46,6 +48,7 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "l
   acts: Act[];
   rival: RivalMove | null;
   test?: TestResult;
+  result?: NonNullable<Game["result"]> & Partial<RunStyle>;
 };
 export type { Act, HolderRow, InForce, PriceTag, Refusal, RivalMove, TestResult, Verb, WireLine };
 /** The pack as the game screens see it: the deck never leaves the Worker. */

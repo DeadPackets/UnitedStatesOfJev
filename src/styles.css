@@ -463,6 +463,9 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .sharecard > div { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .sq { flex: none; width: 14px; height: 14px; border: 2px solid currentColor; }
 .sq.on { background: currentColor; }
+.sharecard .testrow { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--s2);
+  border-top: 1px solid var(--tone); padding-top: 6px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; }
 
 .verdict { display: grid; gap: 16px; justify-items: start; margin-top: 8px; }
 /* the last thing the term says gets the size of a headline, on its own rule */
