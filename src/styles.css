@@ -236,7 +236,6 @@ textarea, input, select { font: inherit; color: inherit; }
 .lobby button .t { display: grid; gap: 2px; text-align: left; padding: 8px 12px 8px 0; }
 .lobby button:not(:disabled):hover .muted { color: var(--tone); }
 .prob { font: 800 64px/1 var(--display); }
-.tell { font: 700 22px/1.15 var(--display); margin: 4px 0 0; }
 .lobby { display: grid; gap: 8px; }
 .lobby button { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--ink); background: var(--bg); transition: background var(--t-state), color var(--t-state), transform var(--t-fast); }
 .lobby button:not(:disabled):hover { background: var(--ink); color: var(--bg); }
