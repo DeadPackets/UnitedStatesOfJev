@@ -34,6 +34,7 @@ export default function App() {
   // Both keys outlive the tab: a reload between the night and the end of the term must not replay it.
   const [revealed, setRevealed] = useState<string | null>(() => localStorage.getItem("usoj:revealed"));
   const [counted, setCounted] = useState<string | null>(() => localStorage.getItem("usoj:counted"));
+  const [rolled, setRolled] = useState<string | null>(() => localStorage.getItem("usoj:rolled"));
 
   const fail = (e: unknown) => setToast(e instanceof ApiError ? e.message : "The connection dropped. Try again.");
 
@@ -123,18 +124,25 @@ export default function App() {
   // The midterm POST hands the stage straight back, so the night holds the screen until the player leaves it.
   const midtermKey = game?.midterm ? `${game.id}#${game.term}` : null;
   const showMidterm = !!game && (game.stage === "midterm" || (!!midtermKey && counted !== midtermKey));
+  // The vote that ends a term flips the stage in the same answer, so the Chamber keeps the floor until
+  // the roll call that did it has been seen. The midterm, the campaign and an impeachment all wait here.
+  const lastBill = game?.bills.at(-1);
+  const rollKey = game && lastBill?.votes ? `${game.id}#${lastBill.id}` : null;
+  const showRoll = !!game && !!rollKey && rolled !== rollKey && game.stage !== "session";
+  const onRolled = () => { if (!rollKey) return; setRolled(rollKey); localStorage.setItem("usoj:rolled", rollKey); };
 
   return (
     <>
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
       {booting ? null
         : game ? (
-            showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); localStorage.setItem("usoj:revealed", testKey!); }} />
+            showRoll ? <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />
+            : showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); localStorage.setItem("usoj:revealed", testKey!); }} />
             : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); localStorage.setItem("usoj:counted", midtermKey!); }} />
             : game.stage === "campaign" ? <Campaign game={game} act={act} busy={busy} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
-            : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} />)
+            : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />)
         : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />

@@ -21,7 +21,9 @@ const TOUR = (v: Vocab): Record<string, TourStep> => ({
   vote: { id: "vote", anchor: "vote", title: "3 of 3 · Call the vote", text: `The count is a forecast, not a promise. Every ${v.member} rolls their own dice.` },
 });
 
-export default function Chamber({ game, act, busy, onQuit }: { game: GameView; act: Act; busy: boolean; onQuit: () => void }) {
+type ChamberProps = { game: GameView; act: Act; busy: boolean; onQuit: () => void; onRolled: () => void };
+
+export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberProps) {
   const reduced = useReducedMotion();
   const pack = game.pack;
   const v = pack.vocabulary;
@@ -198,7 +200,9 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
                 {!bill.amendments ? <button className="btn ghost" disabled={busy} onClick={() => act(() => api.amend(game))}>Amend the {v.bill}</button> : null}
                 <span className="small muted">Tap a {v.seat} to make an offer.</span>
               </> : null}
-              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => setDismissed(bill.id)}>Next {v.bill}</button> : null}
+              {voted && !rolling ? <button className="btn" data-primary disabled={busy} onClick={() => { setDismissed(bill.id); onRolled(); }}>
+                {game.stage === "session" ? `Next ${v.bill}` : "Continue"}
+              </button> : null}
             </div>
             {amendments?.length && !voted ? (
               <div className="amend"><div className="kicker">Adopt an amendment</div>
