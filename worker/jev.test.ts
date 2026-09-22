@@ -1,0 +1,42 @@
+import { test, expect } from "bun:test";
+import { agreeQuestions, choices, reactQuestions, voteQuestions } from "./jev";
+import { newGame, encodeCode, scenarioTag } from "./engine";
+import { PackSchema, type Citizen, type Pack } from "./pack";
+import mini from "./fixtures/mini.json";
+
+const BLOCS = ["dockworkers", "merchants", "fisherfolk", "clergy", "students"];
+const REGIONS = mini.regions.map((r) => r.id);
+const citizens = (): Citizen[] => BLOCS.flatMap((bloc) => Array.from({ length: 50 }, (_, i) => ({
+  id: `${bloc}-${i}`, region: REGIONS[i % REGIONS.length], bloc, name: `C ${bloc} ${i}`, age: 30,
+  job: "docker", town: "Harbor City", worldview: "wants work", issues: ["tariffs", "fish-quotas"] as [string, string], weight: 1,
+})));
+const pack: Pack = PackSchema.parse({ ...mini, citizens: citizens() });
+const game = newGame("g", encodeCode({ scenario: scenarioTag(mini.id), faction: 0, promises: [0, 1, 2], seed: 1 }),
+  pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], { start_date: "0450-05-01", unit: "month" });
+
+test("every citizen gets one reaction choice with four options", () => {
+  const qs = reactQuestions(pack, pack.citizens);
+  expect(Object.keys(qs).length).toBe(250);
+  const q = qs[`react_${pack.citizens[0].id}`] as { type: string; options: string[] };
+  expect(q.type).toBe("choice");
+  expect(q.options).toEqual(["like", "boo", "share", "ignore"]);
+});
+
+test("the duel asks the sample which post it agrees with", () => {
+  const qs = agreeQuestions(pack, pack.citizens.slice(0, 50));
+  expect(Object.keys(qs).length).toBe(50);
+  expect((qs[`agree_${pack.citizens[0].id}`] as { options: string[] }).options).toEqual(["government", "rival"]);
+});
+
+test("a citizen sees the money spent in their own region, not the whole map", () => {
+  const spend = { [REGIONS[0]]: 10 }, rival = { [REGIONS[1]]: 5 };
+  const qs = voteQuestions(pack, game, pack.citizens, spend, rival);
+  const here = pack.citizens.find((c) => c.region === REGIONS[0])!;
+  const there = pack.citizens.find((c) => c.region === REGIONS[2])!;
+  expect(JSON.stringify((qs[`vote_${here.id}`] as { instructions: unknown }).instructions)).toContain("10");
+  expect(JSON.stringify((qs[`vote_${there.id}`] as { instructions: unknown }).instructions)).toContain('"spend_here":0');
+});
+
+test("choices reads the top probability and strips the prefix", () => {
+  expect(choices({ react_a: { probabilities: { like: 0.2, boo: 0.7, share: 0.1 } }, other: { noul: 1 } }, "react_")).toEqual({ a: "boo" });
+});
