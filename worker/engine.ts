@@ -1155,3 +1155,11 @@ export function continueTerm(pack: Pack, game: Game): void {
   for (const k of add) applyEscalation(pack, game, k);
   if (!add.length) for (const r of pack.regions) bump(game, r.id, -2);
 }
+
+// Not in game.ts: tsconfig.app.json sees engine.ts and cannot see the Durable Object.
+export type HolderView = {
+  id: string; name: string; where: "home" | "abroad"; stance: number; resistance: number; line: number;
+  response: HolderResponse; weight: number; levers: Verb[]; warnedAt: number | null; nearest: boolean;
+  persona: { name: string; role: string };
+};
+export type InstrumentView = { name: string; consent: Consent; price: Price; available: boolean; affordable: boolean };

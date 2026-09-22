@@ -3,8 +3,8 @@ import {
   applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm,
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, score, SPEND_STEPS,
-  holdersOf, threshold, TURNS_PER_TERM,
-  type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction,
+  holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
+  type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
   agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, gateQuestion, HOLDER_SAMPLE, holderQuestions,
@@ -12,7 +12,7 @@ import {
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
-import { packView, type Pack } from "./pack";
+import { packView, VERBS, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
@@ -441,6 +441,29 @@ const gains = (pack: Pack, game: Game) => ({
     [r.id, SPEND_STEPS.map((amount) => leverGain(pack, { kind: "spend", regions: [{ id: r.id, amount }] }))])),
 });
 
+// Priced and marked here so the Desk never reads the pack's own numbers, the same reason lobbyCosts exists.
+const room = (pack: Pack, game: Game): HolderView[] => {
+  const near = nearestLine(game);
+  return holdersOf(pack).map((h) => {
+    const s = game.holders[h.id];
+    return {
+      id: h.id, name: h.name, where: h.where, stance: s?.stance ?? h.stance, resistance: s?.resistance ?? 0,
+      line: s?.line ?? h.line, response: s?.response ?? h.response, weight: s?.weight ?? weightOf(pack, h.id),
+      levers: h.levers, warnedAt: s?.warnedAt ?? null, nearest: h.id === near,
+      persona: { name: h.persona.name, role: h.persona.role },
+    };
+  });
+};
+
+const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, InstrumentView>> => {
+  const out: Partial<Record<Verb, InstrumentView>> = {};
+  for (const v of VERBS) {
+    const i = pack.constitution?.instruments[v];
+    if (i) out[v] = { ...i, affordable: i.available && canAfford(pack, game, i.price) };
+  }
+  return out;
+};
+
 // Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
 export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const { director: _hidden, members, bills, ...rest } = game;
@@ -454,6 +477,13 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
     // What an offer costs this term, priced here so the drawer never reads the pack's own number.
     lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])
       .map((k) => [k, lobbyCost(game, k)])) as Record<LobbyAction, number>,
+    holders: room(pack, game),
+    instruments: instrumentRows(pack, game),
+    bar: bar(pack, game.term),
+    ruler: pack.constitution?.ruler ?? { role: start?.seat_title ?? "the government", faction: game.faction },
+    // §6: the Seat screen prints these two; the difficulty label they feed is Stage C's.
+    shortfall: shortfall(pack, game.faction),
+    handicap: shortfall(pack, game.faction) > HANDICAP_SHORTFALL ? HANDICAP : 0,
     members: members.map(({ bio, tell, ...m }) => m),
     bills: bills.map((b) => {
       const cur = b.id < game.turn ? { ...b, vetoes: undefined, offers: {} } : b;

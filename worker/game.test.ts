@@ -31,6 +31,35 @@ test("the view strips personas, citizens and the deck", () => {
   expect(v.turnsPerTerm).toBe(20);
 });
 
+test("the view carries the room, the instruments and the bar", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 55 });
+  const game: Game = newGame("g-view", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  game.holders.guard.resistance = 50;
+  const v = view(pack, { game, prose: {} });
+  expect(v.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league"]);
+  expect(v.holders.find((h) => h.id === "council")!.weight).toBe(0.4);
+  expect(v.holders.find((h) => h.id === "guard")!.nearest).toBe(true);   // 50 of 55 against 0 of 60, 70 and 50
+  expect(v.instruments.law!.name).toBe("a decree of the council");
+  expect(v.instruments.force!.affordable).toBe(true);
+  expect(v.bar).toBeCloseTo(0.5, 5);
+  expect(v.ruler.role).toBe("Consul");
+  expect(v.shortfall).toBe(3);                                            // 13 needed, harborites hold 10
+  expect(v.handicap).toBe(0);
+  // "Counts coins while he talks." is the guard holder's tell in mini.json: the prose stays in the Worker.
+  expect(JSON.stringify(v)).not.toContain("Counts coins while he talks.");
+});
+
+test("a pack with no constitution still ships an empty room", () => {
+  const bare: Pack = { ...pack, constitution: undefined };
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 56 });
+  const game: Game = newGame("g-bare", code, bare, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], bare.calendar);
+  const v = view(bare, { game, prose: {} });
+  expect(v.holders).toEqual([]);
+  expect(v.instruments).toEqual({});
+  expect(v.bar).toBeCloseTo(0.5, 5);
+  expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
+});
+
 test("the view prices every lobby offer, escalations included", () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 3 });
   const game: Game = newGame("g-cost", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
