@@ -1,0 +1,136 @@
+import { z } from "zod";
+import { TEMPERAMENTS } from "./engine";
+
+export const FONT_PAIRS = [
+  "Big Shoulders Display + Public Sans",
+  "Playfair Display + Source Sans 3",
+  "Cinzel + EB Garamond",
+  "Space Grotesk + IBM Plex Sans",
+  "Fraunces + Inter",
+  "Oswald + Lora",
+  "Cormorant Garamond + Work Sans",
+  "Archivo Black + Archivo",
+] as const;
+export const FILLS = ["solid", "hatch", "hatch2", "cross", "dots", "rings", "hollow", "half", "wave", "grid", "brick", "check"] as const;
+export const LAYOUTS = ["hemicycle", "benches", "horseshoe", "circle", "classroom", "court"] as const;
+export const ESCALATION_KEYS = [
+  "hostile_press", "supermajority_era", "recession", "scandal_season", "short_fuse",
+  "split_chamber", "costly_favors", "fickle_base", "empty_chest", "hostile_court",
+  "rival_surge", "apathy", "defections", "loud_opposition", "crisis_fatigue",
+  "leaks", "war_footing", "famine", "succession_crisis", "foreign_meddling",
+] as const;
+
+const SEAT_FLAGS = ["veto", "army", "clergy", "court", "crown"] as const;
+const YEARS = ["new", "mid", "long"] as const;
+const LEDGERS = ["approval", "capital", "party", "chest", "bloc", "patron", "streak", "turn"] as const;
+
+const IdNum = z.object({ id: z.string(), value: z.number() });
+const IdStr = z.object({ id: z.string(), value: z.string() });
+const LobbyText = z.object({ cost: z.number(), label: z.string(), text: z.string() });
+
+const FactionSchema = z.object({
+  id: z.string(), name: z.string(), short: z.string(), color: z.string(),
+  fill: z.enum(FILLS), ideology: z.string(), leader: z.string(),
+});
+const RegionSchema = z.object({ id: z.string(), name: z.string(), weight: z.number(), lean: z.array(IdNum) });
+const BlocSchema = z.object({ id: z.string(), name: z.string(), description: z.string() });
+const PatronSchema = z.object({ id: z.string(), name: z.string(), wants: z.array(z.string()), hates: z.array(z.string()) });
+const MemberSchema = z.object({
+  id: z.string(), seat: z.string(), region: z.string(), faction: z.string(), name: z.string(), bio: z.string(),
+  core_issues: z.array(z.string()), temperament: z.enum(TEMPERAMENTS), tell: z.string(), patrons: z.array(z.string()),
+  years: z.enum(YEARS), flags: z.array(z.enum(SEAT_FLAGS)), portrait: z.string(),
+});
+const CitizenSchema = z.object({
+  id: z.string(), region: z.string(), bloc: z.string(), name: z.string(), age: z.number(), job: z.string(), town: z.string(),
+  worldview: z.string(), issues: z.tuple([z.string(), z.string()]), weight: z.number(),
+});
+const StartSchema = z.object({
+  faction: z.string(), seat_title: z.string(), coalition: z.array(z.string()), premise: z.string(),
+  party: z.number(), capital: z.number(), hostile: z.array(z.string()).nullable().optional(),
+});
+const ConditionSchema = z.object({
+  ledger: z.enum(LEDGERS), id: z.string().nullable().optional(), op: z.enum(["<", ">"]), value: z.number(),
+});
+const EffectSchema = z.object({
+  ledger: z.enum([...LEDGERS, "seat"]), id: z.string().nullable().optional(), delta: z.number().nullable().optional(),
+  set: z.string().nullable().optional(), chance: z.number().nullable().optional(),
+});
+const StoryletSchema = z.object({
+  id: z.string(), kind: z.enum(["generic", "dated"]), turn: z.number().nullable().optional(),
+  date: z.string().regex(/^-?\d{1,6}-\d{2}-\d{2}$/).nullable().optional(),
+  exogenous: z.boolean().nullable().optional(), needs: z.array(ConditionSchema).nullable().optional(),
+  weight: z.number(), title_hint: z.string(), stances: z.array(z.string()),
+  scored: z.array(z.enum(["blocs", "patrons", "none"])), results: z.array(EffectSchema), memory: z.string().nullable().optional(),
+});
+
+export const PackSchema = z.object({
+  v: z.literal(1), id: z.string(), lang: z.string(), prompt: z.string(),
+  title: z.string(), era: z.string(), place: z.string(), description: z.string(),
+  fiction: z.boolean(), sources: z.array(z.object({ title: z.string(), url: z.string() })),
+  content_note: z.string().nullable().optional(),
+  vocabulary: z.object({
+    seat: z.string(), chamber: z.string(), member: z.string(), bill: z.string(), pass: z.string(), fail: z.string(),
+    capital: z.string(), turn: z.string(), midterm: z.string(), campaign: z.string(), test: z.string(), feed: z.string(),
+    post: z.string(), whip: z.string(), lobby: z.string(), promise: z.string(), patron: z.string(), approval: z.string(),
+  }),
+  theme: z.object({
+    fonts: z.enum(FONT_PAIRS), ink: z.string(), paper: z.string(), accent: z.string(),
+    texture: z.enum(["newsprint", "parchment", "concrete", "steel", "none"]),
+    ornament: z.enum(["laurel", "eagle", "star", "crescent", "cross", "gear", "rule", "none"]),
+    layout: z.enum(LAYOUTS),
+  }),
+  chamber: z.object({
+    size: z.number(), threshold: z.number(), supermajority: z.number(), alpha: z.number(),
+    veto: z.object({ flag: z.enum(SEAT_FLAGS), text: z.string() }).nullable().optional(),
+  }),
+  factions: z.array(FactionSchema).min(2).max(12),
+  regions: z.array(RegionSchema).min(6).max(60),
+  blocs: z.array(BlocSchema).length(5),
+  patrons: z.array(PatronSchema).length(10),
+  members: z.array(MemberSchema),
+  citizens: z.array(CitizenSchema).length(250),
+  starts: z.array(StartSchema),
+  problems: z.array(z.string()).min(8).max(12),
+  promises: z.array(z.object({ tag: z.string(), label: z.string() })).length(8),
+  tags: z.array(z.string()).min(16).max(24),
+  deck: z.array(StoryletSchema).min(20),
+  escalations: z.array(z.object({ key: z.enum(ESCALATION_KEYS), name: z.string(), headline: z.string() })).length(20),
+  test: z.object({ name: z.string(), win: z.string(), lose: z.string(), reveal: z.enum(["regions", "seats", "both"]) }),
+  endings: z.object({ reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string() }),
+  lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
+  art: z.object({ masthead: z.string(), crests: z.array(IdStr) }),
+}).refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
+  .refine((p) => p.starts.length === p.factions.length, "one start per faction");
+
+export type Pack = z.infer<typeof PackSchema>;
+export type Member = z.infer<typeof MemberSchema>;
+export type Citizen = z.infer<typeof CitizenSchema>;
+export type Faction = z.infer<typeof FactionSchema>;
+export type Region = z.infer<typeof RegionSchema>;
+export type Storylet = z.infer<typeof StoryletSchema>;
+export type Start = z.infer<typeof StartSchema>;
+
+// Largest remainder method, minimum one seat per faction that held any share.
+export function scaleSeats(shares: Record<string, number>, size: number): Record<string, number> {
+  const total = Object.values(shares).reduce((a, b) => a + b, 0);
+  const keys = Object.keys(shares);
+  const quotas = new Map(keys.map((k) => [k, (shares[k] / total) * size]));
+  const seats = new Map(keys.map((k) => [k, Math.max(Math.floor(quotas.get(k)!), shares[k] > 0 ? 1 : 0)]));
+  let remaining = size - [...seats.values()].reduce((a, b) => a + b, 0);
+  const ranked = [...keys].sort((a, b) => {
+    const remA = quotas.get(a)! - Math.floor(quotas.get(a)!), remB = quotas.get(b)! - Math.floor(quotas.get(b)!);
+    return remB - remA;
+  });
+  for (const k of ranked) {
+    if (remaining <= 0) break;
+    seats.set(k, seats.get(k)! + 1);
+    remaining--;
+  }
+  return Object.fromEntries(seats);
+}
+
+// Client-facing view: drops citizens and member personas (bio, tell) so a build in progress carries no spoilers.
+export function packView(pack: Pack) {
+  const { citizens, ...rest } = pack;
+  return { ...rest, members: rest.members.map(({ bio, tell, ...m }) => m) };
+}
