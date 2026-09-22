@@ -83,6 +83,7 @@ export const PackSchema = z.object({
     size: z.number(), threshold: z.number(), supermajority: z.number(), alpha: z.number().min(0).max(1),
     veto: z.object({ flag: z.enum(SEAT_FLAGS), text: z.string() }).nullable().optional(),
   }),
+  calendar: z.object({ start_date: z.string(), unit: z.enum(["day", "week", "month", "season"]) }),
   factions: z.array(FactionSchema).min(2).max(12),
   regions: z.array(RegionSchema).min(6).max(60),
   blocs: z.array(BlocSchema).length(5),

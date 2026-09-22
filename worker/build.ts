@@ -206,7 +206,7 @@ function assemble(id: string, ctx: GenCtx, art: Pack["art"]): Pack {
     ...f, v: 1, id, lang: ctx.lang, prompt: ctx.prompt, fiction: ctx.fiction,
     sources: ctx.sources.wikipedia.map((p) => ({ title: p.title, url: p.url })),
     starts: f.factions.map((x) => f.starts.find((s) => s.faction === x.id)),
-    members: ctx.members, citizens: ctx.citizens, deck: ctx.deck, art,
+    members: ctx.members, citizens: ctx.citizens, deck: ctx.deck, art, calendar: ctx.calendar,
   });
 }
 

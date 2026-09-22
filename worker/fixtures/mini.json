@@ -38,6 +38,10 @@
     "ornament": "rule",
     "layout": "hemicycle"
   },
+  "calendar": {
+    "start_date": "2024-01-08",
+    "unit": "week"
+  },
   "chamber": {
     "size": 24,
     "threshold": 13,

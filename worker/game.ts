@@ -11,7 +11,6 @@ import {
 import { getScenario } from "./db";
 import { packView, type Pack } from "./pack";
 import { amendBill, cardText, ending, narrate, outcome, parseBill, quotes } from "./luna";
-import { UNIT, UNITS, days, fromDays, turnOf, ymd, type Calendar } from "./gen/validate";
 
 class Reject extends Error { constructor(public status: number, message: string) { super(message); } }
 
@@ -21,20 +20,6 @@ type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "const
 type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
 type Extra = { deltas?: Record<string, number> };
-
-// The pack drops the build's calendar, but its dated cards keep both date and turn. Recover the pair that
-// reproduces every one of them, so a dated card still lands on the turn the deck step gave it.
-export function calendarOf(pack: Pack): Calendar {
-  const dated = pack.deck.filter((s) => ymd(s.date) && s.turn != null);
-  const head = dated[0];
-  if (head) {
-    for (const unit of UNITS) for (const off of [0, -1, 1]) {
-      const start_date = fromDays(days(ymd(head.date)!) - Math.round((head.turn! - 1) * UNIT[unit]) + off);
-      if (dated.every((s) => turnOf(s.date, start_date, unit) === s.turn)) return { start_date, unit };
-    }
-  }
-  return { start_date: "", unit: "week" };   // no fit: turnOf returns null and the engine reads the stored turn
-}
 
 export class GameDO extends DurableObject<Env> {
   private saved?: Saved;
@@ -94,7 +79,7 @@ export class GameDO extends DurableObject<Env> {
     if (promises.length !== 3 || new Set(promises).size !== 3) throw new Reject(400, `Pick three different ${pack.vocabulary.promise}s.`);
     const seed = Number.isInteger(body.seed) ? Number(body.seed) & 0x7fffffff : crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
     const code = encodeCode({ scenario: scenarioTag(pack.id), faction: f, promises: promises as [number, number, number], seed });
-    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), calendarOf(pack));
+    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar);
     const s: Saved = { game, prose: {} };
     this.save(s);
     return s;
