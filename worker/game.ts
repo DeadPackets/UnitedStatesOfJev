@@ -156,7 +156,7 @@ export class GameDO extends DurableObject<Env> {
     // C5: the budget is charged before the guards, because a route that cannot pay must not move anything.
     // whip is 0: a bill tabled by POST /acts is already counted and paid for in that call.
     const CALLS: Record<string, number> = { lobby: 1, amend: 3, vote: 1 };
-    const owed = CALLS[action ?? ""] ?? 0;
+    const owed = parts[3] === undefined ? CALLS[action ?? ""] ?? 0 : 0;   // amend/:i adopts a draft and calls no model
     if (owed && !spendCalls(game, owed)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     switch (action) {
       case "whip":

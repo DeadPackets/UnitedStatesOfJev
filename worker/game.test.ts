@@ -655,6 +655,10 @@ test("the clerks stop at six calls a turn, whichever route asks", async () => {
     expect(r.body.error).toContain("The clerks have done all they can");
   }
   expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(409);
+  const count = { whip: {}, blocs: {}, patrons: {}, vetoes: {}, filibuster: 0, constitutional: 0 };
+  (game.bills[0] as any).amendments = [{ title: "New", summary: "s2", tags: [], count, expected: 1 }];
+  expect((await post("bills/1/amend/0", { turn: 1 })).status).toBe(200);   // adopting a draft calls no model
+  expect(game.calls).toBe(6);
 
   game.calls = 0;
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
