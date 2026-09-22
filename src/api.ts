@@ -1,4 +1,4 @@
-import type { Bill, BillDraft, Event, Game, HolderView, InForce, InstrumentView, LobbyAction, Member } from "../worker/engine";
+import type { Act, Bill, BillDraft, Event, Game, HolderRow, HolderView, InForce, InstrumentView, LobbyAction, Member, PriceTag, Refusal, RivalMove, TestResult, Warning, WireLine } from "../worker/engine";
 import type { Citizen, Pack, PackView, Verb } from "../worker/pack";
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
@@ -10,18 +10,14 @@ export type ViewBill = Omit<Bill, "amendments"> & {
 };
 export type ViewMember = Omit<Member, "bio" | "tell">;
 export type ViewEvent = Event;
+/** Stage D writes this; the landing renders a practice card when it is null. */
+export type Daily = {
+  day: string; scenario: string; title: string; era: string; place: string;
+  played: boolean; streak: number; plays: number; grid?: { ledger: string; won?: boolean }[];
+};
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
 export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra" | "calls"> & {
-  ledgers: Game["ledgers"] & { approval: Record<string, number>; capital: number; party: number };
-  holders: HolderView[];
-  instruments: Partial<Record<Verb, InstrumentView>>;
-  bar: number;
-  ruler: { role: string; faction: string };
-  calls: { spent: number; cap: number };
-  discount: number;
-  shortfall: number;
-  handicap: number;
-  inForce: InForce[];
+  ledgers: Game["ledgers"];
   scenario: string;
   pack: PackView;
   members: ViewMember[];
@@ -33,7 +29,25 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "l
   turnsPerTerm: number;
   ending?: { title: string; body: string };
   deltas?: Record<string, number>;   // per-region approval move from the last citizen call, one frame only
+  holders: HolderView[];
+  instruments: Partial<Record<Verb, InstrumentView>>;
+  bar: number;
+  ruler: { role: string; faction: string };
+  shortfall: number;
+  handicap: number;
+  calls: { spent: number; cap: number };
+  discount: number;
+  warnings: Warning[];
+  inForce: InForce[];
+  wire: WireLine[];
+  pending: string | null;
+  tag: PriceTag | null;
+  refusal: Refusal | null;
+  acts: Act[];
+  rival: RivalMove | null;
+  test?: TestResult;
 };
+export type { Act, HolderRow, InForce, PriceTag, Refusal, RivalMove, TestResult, Verb, WireLine };
 /** The pack as the game screens see it: the deck never leaves the Worker. */
 export type GamePack = GameView["pack"];
 export type Offer = { id: string; title: string; era: string; place: string; description: string; p: number };
@@ -59,7 +73,9 @@ export const api = {
   match: (prompt: string) => call<MatchResult>("/scenarios/match", { prompt }),
   build: (prompt: string) => call<{ id: string }>("/scenarios", { prompt }),
   scenario: (id: string) => call<BuildState>(`/scenarios/${id}`),
-  seat: (scenario: string, faction: string, promises: number[], seed?: number) => call<GameView>("/games", { scenario, faction, promises, seed }),
+  seat: (scenario: string, faction: string, promises: number[], seed?: number, platform?: string) =>
+    call<GameView>("/games", { scenario, faction, promises, seed, platform }),
+  daily: () => call<Daily>("/daily"),
   share: (code: string) => call<GameView>("/games", { code }),
   load: (id: string) => call<GameView>(`/games/${id}`),
   price: (g: GameView, text: string, verb?: string, memberId?: string) =>

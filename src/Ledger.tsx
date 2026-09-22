@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { tween, useReduced } from "./motion";
-import type { GamePack, GameView } from "./api";
+import type { GamePack } from "./api";
 
 /** Rolling digits. `shown` is what is on screen, so a tick interrupted mid-flight resumes from there. */
 export function Num({ value, decimals = 0, className, instant = false }: { value: number; decimals?: number; className?: string; instant?: boolean }) {
@@ -20,7 +20,6 @@ export function Num({ value, decimals = 0, className, instant = false }: { value
 }
 
 const clamp = (x: number) => Math.min(100, Math.max(0, x));
-const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 
 /** The one national number: region approval weighted by region weight, the same sum the test's public half uses. */
 export function national(pack: GamePack, approval: Record<string, number>): number {
@@ -39,38 +38,6 @@ export function Meter({ k, value, decimals = 0, suffix = "", fill, i }: MeterPro
       <div className="v"><Num value={value} decimals={decimals} />{suffix}</div>
       <div className="bar" role="meter" aria-label={k} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(clamp(fill))}>
         <i style={{ width: `${clamp(fill)}%`, transitionDelay: `${i * 100}ms` }} />
-      </div>
-    </div>
-  );
-}
-
-/** Five meters, three pledge stamps, the streak. Every label and number comes from the pack and the view. */
-export default function Ledger({ game }: { game: GameView }) {
-  const v = game.pack.vocabulary;
-  const own = game.pack.factions.find((f) => f.id === game.faction);
-  const L = game.ledgers;
-  const approval = national(game.pack, L.approval);
-  const pledges = Object.values(game.promises);
-  const progress = (pledges.reduce((a, p) => a + Math.min(p.passed, 2), 0) / Math.max(1, pledges.length * 2)) * 100;
-  const patron = mean(Object.values(game.patrons));
-  const meters: MeterProps[] = [
-    { k: v.approval, value: Math.round(approval), suffix: "%", fill: approval, i: 0 },
-    { k: v.capital, value: L.capital, fill: L.capital / 2, i: 1 },
-    { k: v.promise, value: Math.round(progress), suffix: "%", fill: progress, i: 2 },
-    { k: v.patron, value: patron, decimals: 1, fill: ((patron + 2) / 4) * 100, i: 3 },
-    { k: `${own?.short ?? "Party"} mood`, value: L.party, fill: L.party, i: 4 },
-  ];
-  return (
-    <div className="meters panel" aria-label="The ledger">
-      {meters.map((m) => <Meter key={m.k} {...m} />)}
-      <div className="pledges">
-        {pledges.map((p) => (
-          <span key={p.label} className={`stampsm tiny ${p.state === "kept" ? "pass" : p.state === "broken" ? "fail" : "wait"}`}>{p.label}</span>
-        ))}
-      </div>
-      <div className="small muted">
-        Streak <span className="num">{game.streak}</span>
-        {game.bestStreak > game.streak ? <> · best <span className="num">{game.bestStreak}</span></> : null}
       </div>
     </div>
   );

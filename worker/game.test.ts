@@ -106,18 +106,8 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   expect(v.ledgers.authority).toBe(40);
   expect(v.ledgers.loyalty).toBe(55);
   expect(v.ledgers.treasury).toBe(0);
-  expect(v.ledgers.capital).toBe(40);
   expect(v.stage).toBe("test");
   expect("campaign" in v).toBe(false);
-});
-
-test("the view still answers to the v3 ledger names until Stage C", () => {
-  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
-  const game: Game = newGame("g-compat", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  const v = view(pack, { game, prose: {} });
-  expect(v.ledgers.capital).toBe(game.ledgers.authority);
-  expect(v.ledgers.party).toBe(game.ledgers.loyalty);
-  expect(v.ledgers.approval).toEqual(game.ledgers.popularity);
 });
 
 test("a second request while one is in flight gets 409 one move at a time", async () => {

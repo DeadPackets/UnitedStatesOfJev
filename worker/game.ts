@@ -531,8 +531,6 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
-    // Stage C replaces the screens; until then the v3 names ride beside the v4 ones.
-    ledgers: { ...game.ledgers, approval: game.ledgers.popularity, capital: game.ledgers.authority, party: game.ledgers.loyalty },
     scenario: game.pack, pack: pv,
     // What an offer costs this term, priced here so the drawer never reads the pack's own number.
     lobbyCosts: Object.fromEntries((Object.keys(LOBBY_COSTS) as LobbyAction[])

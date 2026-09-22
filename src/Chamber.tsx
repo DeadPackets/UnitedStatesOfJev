@@ -4,7 +4,7 @@ import { api, ApiError, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
-import Ledger, { Num } from "./Ledger";
+import { Num } from "./Ledger";
 import Feed, { FeedLine } from "./Feed";
 import Card, { Announce } from "./Card";
 import Tour, { type TourStep } from "./Tour";
@@ -175,7 +175,6 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
 
         <div id="railpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0} className="railpanel">
         {tab === "feed" ? <Feed game={game} bill={bill} act={act} busy={busy} /> : <>
-        <Ledger game={game} />
 
         {!bill ? (
           <div key="pad" className="billpad panel rise" data-tour="billpad">
@@ -250,7 +249,7 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
       </aside>
 
       <div className="sr" role="status" aria-live="polite">{live}</div>
-      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.capital}
+      {sel ? <MemberDrawer key={`${sel.id}#${pick!.n}`} pack={pack} member={sel} capital={game.ledgers.authority}
         costs={game.lobbyCosts} bill={bill} before={before} busy={busy}
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
       {card && !rolling ? <Card key={card.id} pack={pack} event={card} blocs={game.blocs} turn={card.turn} busy={busy}
