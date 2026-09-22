@@ -12,7 +12,7 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; min-height: 100dvh; }
 /* halftone paper: one cheap repeating gradient, masked so it never sits behind text-heavy areas */
 /* drifts one 7px period per loop, so the seam never shows; transform only, so it stays on the compositor */
 body::before { content: ""; position: fixed; inset: -7px; z-index: 0; pointer-events: none; opacity: 0.55; animation: drift 5s linear infinite;
@@ -37,6 +37,7 @@ body::after { content: ""; position: fixed; top: 0; bottom: 0; left: -100vw; wid
 #root { position: relative; z-index: 1; }
 h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 0.95; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 p { text-wrap: pretty; max-width: 65ch; }
+li, figcaption { text-wrap: pretty; }
 .num { font-variant-numeric: tabular-nums; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; touch-action: manipulation; }
 button:disabled { opacity: 0.4; cursor: default; }
@@ -114,7 +115,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .orn { flex: none; fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
 .head { font: 800 clamp(24px, 4vw, 40px)/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
-.lede { font: 700 clamp(19px, 2.4vw, 27px)/1.25 var(--display); max-width: 46ch; margin: 0; }
+.lede { font: 700 clamp(19px, 2.4vw, 27px)/1.25 var(--display); max-width: 46ch; margin: 0; text-wrap: balance; }
 .masthead { width: 100%; aspect-ratio: 4 / 1; object-fit: cover; display: block; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper); }
 
 /* write */
@@ -206,7 +207,7 @@ textarea, input, select { font: inherit; color: inherit; }
 .meter .bar i { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width 700ms var(--ease-expo); }
 .pledges { display: flex; flex-wrap: wrap; gap: 8px; }
 .quotes { display: grid; gap: 10px; }
-.pull { margin: 0; border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font: 700 19px/1.25 var(--display); }
+.pull { margin: 0; border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font: 700 19px/1.25 var(--display); text-wrap: balance; }
 .pull cite { display: block; margin-top: 4px; font: 500 12px/1 var(--sans); font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 
 .amend { display: grid; gap: 8px; margin-top: 14px; }

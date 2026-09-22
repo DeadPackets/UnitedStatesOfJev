@@ -41,7 +41,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
               <tr key={t.term}>
                 <td className="k">Term {t.term}</td>
                 <td><Num value={t.points} /></td>
-                <td className="k">× {(1.5 ** (t.term - 1)).toFixed(t.term > 1 ? 2 : 1)}</td>
+                <td className="k num">× {(1.5 ** (t.term - 1)).toFixed(t.term > 1 ? 2 : 1)}</td>
                 <td><Num value={Math.round(t.points * 1.5 ** (t.term - 1))} /></td>
               </tr>
             ))}
