@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
-import { Ornament, applyTheme, art, initials } from "./theme";
+import { Ornament, applyTheme, art, hideBroken, initials } from "./theme";
 
-const hide = (e: { currentTarget: HTMLImageElement }) => { e.currentTarget.style.display = "none"; };
 const b36 = (n: number) => n.toString(36);
 
 export default function Seat({ pack, busy, onSeat }: {
@@ -72,7 +71,7 @@ export default function Seat({ pack, busy, onSeat }: {
                     onFocus={() => setHover(f.id)} onBlur={() => setHover(null)}>
                     <span className="crest" style={{ color: f.color }} aria-hidden="true">
                       {initials(f.name)}
-                      <img src={art(pack.id, `crests/${f.id}.png`)} alt="" onError={hide} />
+                      <img src={art(pack.id, `crests/${f.id}.png`)} alt="" onError={hideBroken} />
                     </span>
                     <span className="t">
                       <b style={{ color: f.color }}>{f.name}</b>

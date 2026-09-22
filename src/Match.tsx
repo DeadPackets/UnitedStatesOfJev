@@ -1,7 +1,5 @@
 import type { Offer } from "./api";
-import { Ornament, art } from "./theme";
-
-const hide = (e: { currentTarget: HTMLImageElement }) => { e.currentTarget.style.display = "none"; };
+import { Ornament, art, hideBroken } from "./theme";
 
 export default function Match({ offers, busy, onPlay, onBuild }: {
   offers: Offer[]; busy: boolean; onPlay: (id: string) => void; onBuild: () => void;
@@ -13,7 +11,7 @@ export default function Match({ offers, busy, onPlay, onBuild }: {
       <ul className="cards">
         {offers.map((o, i) => (
           <li key={o.id} className="card rise" style={{ animationDelay: `${i * 90}ms` }}>
-            <img className="masthead" src={art(o.id, "masthead.png")} alt="" onError={hide} />
+            <img className="masthead" src={art(o.id, "masthead.png")} alt="" onError={hideBroken} />
             <div className="kicker">{o.era} · {o.place}</div>
             <h2>{o.title}</h2>
             <p className="small">{o.description}</p>

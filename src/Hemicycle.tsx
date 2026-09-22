@@ -2,7 +2,7 @@ import { forwardRef, memo, useImperativeHandle, useMemo, useRef, useState, type 
 import type { Member } from "../worker/pack";
 import type { GamePack } from "./api";
 import { BOX, minGap, points } from "./layouts";
-import { FILL_DEFS, art, fillFor, initials } from "./theme";
+import { FILL_DEFS, art, fillFor, hideBroken, initials } from "./theme";
 
 /** A seat on the floor: the pack's member or the game's, both without the persona prose. */
 export type Seated = Omit<Member, "bio" | "tell">;
@@ -17,9 +17,7 @@ export function orderMembers(members: Seated[], own: string, coalition: string[]
     .flatMap((id) => (whip ? [...blocks.get(id)!].sort((x, y) => (whip[y.id] ?? 0.5) - (whip[x.id] ?? 0.5)) : blocks.get(id)!));
 }
 
-const hideImg = (e: { currentTarget: SVGImageElement }) => { e.currentTarget.style.display = "none"; };
 const showImg = (e: { currentTarget: SVGImageElement }) => { e.currentTarget.classList.add("on"); };
-const paintSeat = (g: SVGGElement, yes: boolean) => { g.dataset.vote = yes ? "yes" : "no"; };
 
 export type RollHandle = {
   roll: (votes: Record<string, boolean>, onCount: (n: number) => void, onDone: () => void, needed?: number) => void;
@@ -53,7 +51,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
     roll(result, onCount, onDone, needed) {
       const ids = Object.keys(result).sort(() => Math.random() - 0.5);
       const DUR = 2400, SLOW = 400; let shown = 0, yes = 0, next = 0; const t0 = performance.now();
-      const show = () => { const id = ids[shown++]; const g = groups.current.get(id); if (result[id]) yes++; if (g) paintSeat(g, result[id]); onCount(yes); };
+      const show = () => { const id = ids[shown++]; const g = groups.current.get(id); if (result[id]) yes++; if (g) g.dataset.vote = result[id] ? "yes" : "no"; onCount(yes); };
       const tick = (now: number) => {
         // A close call walks its last five seats, one every 400 ms, so the room hears each name.
         if (needed !== undefined && ids.length - shown <= 5 && Math.abs(yes - needed) <= 3) {
@@ -106,7 +104,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
               <circle className="well" cx={s.x} cy={s.y} r={face} fill="var(--paper)" />
               {face >= 6 ? <text className="ini" x={s.x} y={s.y + face * 0.36} textAnchor="middle" style={{ fill: color, fontSize: face }}>{initials(m.name)}</text> : null}
               <image className="coin" href={art(pack.id, `members/${m.id}.png`)} x={s.x - face} y={s.y - face} width={face * 2} height={face * 2}
-                clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideImg} />
+                clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideBroken} />
             </g> : null}
             <circle className="edge" cx={s.x} cy={s.y} r={r + 1.2} fill="none" stroke="var(--ink)" strokeWidth={1} />
           </g>
@@ -126,7 +124,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
             <circle cx={27} cy={23} r={13} fill="var(--paper)" />
             <text className="ini" x={27} y={28} textAnchor="middle" style={{ fill: f?.color, fontSize: 13 }}>{initials(h.name)}</text>
             <image className="coin on" href={art(pack.id, `members/${h.id}.png`)} x={14} y={10} width={26} height={26}
-              clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onError={hideImg} />
+              clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onError={hideBroken} />
             <text x={54} y={20}>{h.name}</text>
             <text className="sub" x={54} y={36}>{sub}</text>
           </g></g>

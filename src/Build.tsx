@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type BuildState, type FrameFragment, type PackView } from "./api";
-import { Ornament, applyTheme, art } from "./theme";
+import { Ornament, applyTheme, art, hideBroken } from "./theme";
 
 const STEPS = ["plan", "fetch", "facts", "calendar", "frame", "assign", "names", "personas", "dedupe", "deck", "art", "index", "assemble"] as const;
 const PLAIN: Record<string, string> = {
@@ -24,7 +24,6 @@ const label = (step: string, v: Vocab) => {
 };
 
 const TOO_LONG = "The build is taking too long. Try again later.";
-const hide = (e: { currentTarget: HTMLImageElement }) => { e.currentTarget.style.display = "none"; };
 const find = <T,>(s: BuildState | null, kind: string) => s?.fragments.find((f) => f.kind === kind) as T | undefined;
 
 export default function Build({ id, onReady, onRestart }: { id: string; onReady: (pack: PackView) => void; onRestart: () => void }) {
@@ -94,7 +93,7 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
       ) : (
         <>
           <section className="stage">
-            {artf ? <img className="masthead rise" src={art(id, "masthead.png")} alt="" onError={hide} /> : null}
+            {artf ? <img className="masthead rise" src={art(id, "masthead.png")} alt="" onError={hideBroken} /> : null}
             {frame ? <p className="lede">{frame.description}</p> : <h1>Reading the era, seating the chamber.</h1>}
             {frame ? (
               <div className="chips" style={{ justifyContent: "start" }}>

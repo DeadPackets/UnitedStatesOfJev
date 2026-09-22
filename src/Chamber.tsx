@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
-import { api, type GameView, type ViewBill } from "./api";
+import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor, type RollHandle } from "./Hemicycle";
 import { MemberDrawer, type LobbyKind } from "./Drawer";
@@ -11,7 +11,6 @@ import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
 
-type Amendment = NonNullable<ViewBill["amendments"]>[number] & { expected: number };
 type Vocab = GameView["pack"]["vocabulary"];
 const TABS = ["turn", "feed"] as const;
 
@@ -55,7 +54,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
   const crossed = voted && !rolling && bill!.passed;
   const margin = Math.abs(yes - need);
   const sel = pick ? game.members.find((m) => m.id === pick) : undefined;
-  const amendments = bill?.amendments as Amendment[] | undefined;
+  const amendments = bill?.amendments;
   const event = game.events.at(-1);
   const openCard = event && event.stance === undefined ? game.events.length - 1 : -1;
   const card = event && (event.stance === undefined || answered === event.id) ? event : undefined;
