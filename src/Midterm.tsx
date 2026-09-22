@@ -35,9 +35,10 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   };
   useEffect(() => { if (!result && !called.current && game.stage === "midterm") run(); }, [result, game.stage]); // eslint-disable-line
 
-  const walk = useMemo(() => (result?.up ?? []).map((seat) => ({
-    seat, kept: !result!.lost.some((l) => l.seat === seat),
-  })), [result]);
+  const walk = useMemo(() => {
+    const lost = new Set(result?.lost.map((l) => l.seat));
+    return (result?.up ?? []).map((seat) => ({ seat, kept: !lost.has(seat) }));
+  }, [result]);
   const n = walk.length;
   // 40 s over the whole class, and no faster than the room can read one seat at a time
   const beat = n ? Math.min(700, 40000 / n) : 0;
@@ -66,12 +67,17 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
     try { localStorage.setItem(key, "1"); } catch {}
   }, [done]); // eslint-disable-line
 
-  const swapped = new Set(walk.slice(0, shown).filter((w) => !w.kept).map((w) => w.seat));
-  const members = game.members.map((m) => (swapped.has(m.seat) ? m : before.current.find((b) => b.seat === m.seat) ?? m));
-  const bySeat = new Map(members.map((m) => [m.seat, m]));
+  const held = useMemo(() => new Map(before.current.map((m) => [m.seat, m])), []);
+  const declared = useMemo(() => walk.slice(0, shown), [walk, shown]);
+  const swapped = useMemo(() => new Set(declared.filter((w) => !w.kept).map((w) => w.seat)), [declared]);
+  const members = useMemo(
+    () => game.members.map((m) => (swapped.has(m.seat) ? m : held.get(m.seat) ?? m)),
+    [game.members, swapped, held],
+  );
+  const bySeat = useMemo(() => new Map(members.map((m) => [m.seat, m])), [members]);
   // A held seat is marked like a yes; a lost one needs its coin, so the swap itself is the declaration.
   const votes: Record<string, boolean> = {};
-  for (const w of walk.slice(0, shown)) { const m = bySeat.get(w.seat); if (m && w.kept) votes[m.id] = true; }
+  for (const w of declared) { const m = bySeat.get(w.seat); if (m && w.kept) votes[m.id] = true; }
   const seatIds = (seats: string[]) => seats.map((s) => bySeat.get(s)?.id ?? "");
   const hot = !result ? seatIds(game.marks.midterm ?? [])
     : done ? seatIds([...swapped])
