@@ -6,6 +6,8 @@ const HUE: Record<LedgerKey, string> = {
 };
 
 export const hueClass = (k: LedgerKey) => HUE[k];
+// A quiet turn (no ledger moved) is an empty square, as its share character is.
+export const squareClass = (ledger: string) => (ledger in HUE ? `sq on ${HUE[ledger as LedgerKey]}` : "sq");
 export const roomTo = (value: number, line: number) => Math.max(0, value - line);
 /** A ledger at its line has already failed: spec §4 reads "0: no spending act until revenue passes". */
 export const danger = (value: number, line: number) => value <= line;

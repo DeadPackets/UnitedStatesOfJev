@@ -140,7 +140,7 @@ export default function App() {
     await open(id);
   }, [daily, open]);
 
-  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("landing"); resetTheme(); go("/"); }, []);
+  const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("landing"); resetTheme(); go("/"); api.daily().then(setDaily).catch(() => {}); }, []);
   const quit = () => { store.remove("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
 

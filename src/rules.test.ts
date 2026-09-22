@@ -1,9 +1,14 @@
 import { expect, test } from "bun:test";
-import { LEDGER_KEYS, danger, hueClass, roomTo, shareText } from "./rules";
+import { LEDGER_KEYS, danger, hueClass, roomTo, shareText, squareClass } from "./rules";
 
 test("the five ledgers keep their order and their hue class", () => {
   expect(LEDGER_KEYS).toEqual(["treasury", "authority", "chest", "loyalty", "popularity"]);
   expect(LEDGER_KEYS.map(hueClass)).toEqual(["r-tre", "r-aut", "r-che", "r-loy", "r-pop"]);
+});
+
+test("a quiet turn is an empty square, a ledger turn is filled in its hue", () => {
+  expect(squareClass("quiet")).toBe("sq");
+  expect(squareClass("treasury")).toBe("sq on r-tre");
 });
 
 test("the room to the failure line is never negative", () => {

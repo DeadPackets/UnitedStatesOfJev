@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Daily } from "./api";
 import { Ornament } from "./theme";
-import { hueClass, shareText, type LedgerKey } from "./rules";
+import { shareText, squareClass } from "./rules";
 
 export default function Landing({ daily, resume, busy, onFind, onResume, onCode, onPlayDaily }: {
   daily: Daily | null; resume: boolean; busy: boolean;
@@ -23,7 +23,7 @@ export default function Landing({ daily, resume, busy, onFind, onResume, onCode,
           <p className="small muted">{daily.era} · {daily.place}</p>
           {daily.played && daily.grid ? (
             <div className="sharecard" aria-label="Today's result">
-              {daily.grid.map((s, i) => <div key={i}><span className={`sq on ${hueClass(s.ledger as LedgerKey)}`} /><span>{i + 1}</span></div>)}
+              {daily.grid.map((s, i) => <div key={i}><span className={squareClass(s.ledger)} /><span>{i + 1}</span></div>)}
             </div>
           ) : null}
           {daily.played && daily.grid ? (

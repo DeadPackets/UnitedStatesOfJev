@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num, national } from "./Ledger";
-import { hueClass, type LedgerKey } from "./rules";
+import { squareClass } from "./rules";
 import { Ornament } from "./theme";
 
 /** Clipboard API first; the textarea covers an insecure origin or a denied permission. */
@@ -83,7 +83,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
         {r?.grid?.length ? (
           <div className="sharecard" aria-label="One square per turn">
             {r.grid.map((s, i) => (
-              <div key={i}><span className={`sq on ${hueClass(s.ledger as LedgerKey)}`} /><span className="num">{i + 1}</span></div>
+              <div key={i}><span className={squareClass(s.ledger)} /><span className="num">{i + 1}</span></div>
             ))}
             <div className="testrow"><span className={`sq ${r.ending === "reelected" ? "on" : ""}`} /><span>{pack.test.name}</span></div>
           </div>
