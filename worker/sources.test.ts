@@ -58,3 +58,14 @@ test("lookupPerson rejects Lepidus born -230 for a -44 start (over 100 years)", 
   const fetchImpl = mockFetch({ wbsearchentities: fx.search, wbgetentities: fx.entities });
   expect(await lookupPerson("Someone Old", "-0044-03-15", fetchImpl)).toBeNull();
 });
+
+test("fetchWikipedia returns null instead of throwing on a missing page", async () => {
+  const queryMissing = mockFetch({ "action=query": { query: { pages: [{ title: "Nonexistent Page Xyz123", missing: true }] } } });
+  expect(await fetchWikipedia("en", "Nonexistent Page Xyz123", [], queryMissing)).toBeNull();
+
+  const parseError = mockFetch({
+    "action=query": { query: { pages: [{ title: "Weird Page", extract: "stub" }] } },
+    "prop=sections": { error: { code: "missingtitle", info: "The page you specified doesn't exist." } },
+  });
+  expect(await fetchWikipedia("en", "Weird Page", [], parseError)).toBeNull();
+});

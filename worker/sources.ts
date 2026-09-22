@@ -31,7 +31,9 @@ export async function fetchWikipedia(lang: string, title: string, keywords: stri
   const t = encodeURIComponent(title);
   const lead = await apiFetch(`${base}?action=query&prop=extracts&exintro=1&explaintext=1&titles=${t}&${common}`, fetchImpl);
   const page = lead.query.pages[0];
+  if (page.missing) return null;
   const list = await apiFetch(`${base}?action=parse&page=${t}&prop=sections&${common}`, fetchImpl);
+  if (list.error) return null;
   const allSections: { index: string; line: string }[] = list.parse.sections;
   const picked = pickSections(allSections, keywords);
   const sections = await Promise.all(picked.map(async (sec) => {
@@ -85,7 +87,7 @@ export async function lookupParty(label: string, fetchImpl: typeof fetch = fetch
   return { label: (hit.label as string) ?? label, qid: hit.id as string, ...(color ? { color } : {}), ...(seats !== undefined ? { seats } : {}) };
 }
 
-export type WikiPage = Awaited<ReturnType<typeof fetchWikipedia>>;
+export type WikiPage = NonNullable<Awaited<ReturnType<typeof fetchWikipedia>>>;
 export type Person = NonNullable<Awaited<ReturnType<typeof lookupPerson>>>;
 export type Party = NonNullable<Awaited<ReturnType<typeof lookupParty>>>;
 export type Sources = { wikipedia: WikiPage[]; people: Person[]; parties: Party[] };
