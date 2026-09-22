@@ -98,7 +98,8 @@ const arg = (name: string, fallback: string) => {
 
 const base = arg("base", "http://127.0.0.1:8799");
 const scenario = arg("scenario", "v3nj3k");
-const faction = arg("faction", "0");
+const factionArg = arg("faction", "0");
+const faction = /^\d+$/.test(factionArg) ? Number(factionArg) : factionArg;
 const seeds = Number(arg("seeds", "8"));
 const maxTerms = Number(arg("terms", "1"));
 const only = arg("policies", "all");
