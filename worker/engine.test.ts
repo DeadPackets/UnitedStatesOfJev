@@ -552,6 +552,21 @@ test("a campaign turn charges its lever and records the rival's targets", () => 
   expect(g.stage).toBe("test");
 });
 
+test("the forecast band is the sampling error of intent, not of a single regional draw", () => {
+  const regions5 = pack.regions.slice(0, 5);
+  const mkCitizens = (n: number): Citizen[] => Array.from({ length: n }, (_, i) => ({
+    id: `c${i}`, region: regions5[i % 5].id, bloc: BLOCS[0], name: `c${i}`, age: 30, job: "harbor worker", town: "Harbor City",
+    worldview: "w", issues: ["tariffs", "dockworker-pay"] as [string, string], weight: 1,
+  }));
+  const intent = Object.fromEntries(regions5.map((r) => [r.id, 0.5]));
+  const wide = forecast({ ...pack, regions: regions5, citizens: mkCitizens(5) }, intent);
+  const narrow = forecast({ ...pack, regions: regions5, citizens: mkCitizens(250) }, intent);
+  expect(narrow.band[1] - narrow.band[0]).toBeLessThan(0.15);      // 250 citizens over 5 regions: a tight forecast
+  expect(wide.band[1] - wide.band[0]).toBeGreaterThan(0.3);        // 5 citizens total: barely a sample
+  expect(narrow.public).toBeCloseTo(0.5, 6);
+  expect(narrow.regions).toEqual(regions5.map((r) => ({ id: r.id, p: 0.5 })));   // sigmoid((0.5 - 0.5) * 12) = 0.5
+});
+
 test("apathy thins the turnout of the player's strongest groups at the test", () => {
   const g = game(), h = game();
   for (const b of pack.blocs) { g.blocs[b.id] = 0.2; h.blocs[b.id] = 0.2; }

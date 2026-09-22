@@ -534,7 +534,7 @@ export const FAVOR_LIFT = 0.3;                     // modelled confidence lift o
 export type Lever = { kind: "spend"; regions: { id: string; amount: number }[] } | { kind: "favor"; memberId: string };
 export interface CampaignTurn {
   n: number; message: string; lever: Lever; cost: { chest: number; capital: number };
-  intent: Record<string, number>; public: number; band: [number, number]; rival: string[];
+  intent: Record<string, number>; public: number; band: [number, number]; regions: { id: string; p: number }[]; rival: string[];
 }
 export interface Campaign { drafts: string[]; messages: string[]; turns: CampaignTurn[]; rival: string[]; intent: Record<string, number> }
 
@@ -565,13 +565,20 @@ export function leverGain(pack: Pack, lever: Lever): number {
   return (1 - a) * (FAVOR_LIFT / pack.chamber.size);
 }
 
-// A band, not a point: the standard error of the weighted share the reveal will draw.
-export function forecast(pack: Pack, byRegion: Record<string, number>): { public: number; band: [number, number] } {
+// A band, not a point: the standard error of the *measured intent*, not of a single Bernoulli draw per region.
+// Each region's own sample size (its citizen count) shrinks its contribution to the error.
+export function forecast(pack: Pack, byRegion: Record<string, number>): { public: number; band: [number, number]; regions: { id: string; p: number }[] } {
   const w = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
   const pub = pack.regions.reduce((a, r) => a + r.weight * (byRegion[r.id] ?? 0.5), 0) / w;
-  const varr = pack.regions.reduce((a, r) => { const p = byRegion[r.id] ?? 0.5; return a + (r.weight / w) ** 2 * p * (1 - p); }, 0);
+  const n = new Map<string, number>();
+  for (const c of pack.citizens) n.set(c.region, (n.get(c.region) ?? 0) + 1);
+  const varr = pack.regions.reduce((a, r) => {
+    const p = byRegion[r.id] ?? 0.5;
+    return a + (r.weight / w) ** 2 * p * (1 - p) / (n.get(r.id) || 1);
+  }, 0);
   const se = Math.sqrt(varr);
-  return { public: pub, band: [clamp(pub - 1.96 * se, 0, 1), clamp(pub + 1.96 * se, 0, 1)] };
+  const regions = pack.regions.map((r) => ({ id: r.id, p: sigmoid(((byRegion[r.id] ?? 0.5) - 0.5) * 12) }));
+  return { public: pub, band: [clamp(pub - 1.96 * se, 0, 1), clamp(pub + 1.96 * se, 0, 1)], regions };
 }
 
 export function applyCampaign(pack: Pack, game: Game, message: string, lever: Lever, intent: Record<string, number>): CampaignTurn {
@@ -594,7 +601,7 @@ export function applyCampaign(pack: Pack, game: Game, message: string, lever: Le
   c.messages.push(message);
   c.intent = byRegion;
   c.rival = rival;
-  const turn: CampaignTurn = { n: c.turns.length + 1, message, lever, cost, intent: byRegion, public: Math.round(f.public * 1000) / 1000, band: f.band, rival };
+  const turn: CampaignTurn = { n: c.turns.length + 1, message, lever, cost, intent: byRegion, public: Math.round(f.public * 1000) / 1000, band: f.band, regions: f.regions, rival };
   c.turns.push(turn);
   c.drafts = [];
   if (c.turns.length >= CAMPAIGN_TURNS) { game.stage = "test"; game.phase = "over"; }
