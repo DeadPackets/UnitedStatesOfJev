@@ -31,7 +31,7 @@ fills a fixed schema.** The engine never sees a country name. Every number is co
 | Grounding | Generator plans lookups, Worker fetches Wikipedia extracts and Wikidata facts, generator writes with sources, a light review checks names and dates |
 | Matching | Workers AI embeddings into Vectorize find top 20, Jev picks with probabilities: ≥ 0.95 load, 0.85 to 0.95 offer, else build |
 | Archive | Public by default, prompt stored as description, no author |
-| Art | muse-image contact sheets via `/api/v1/images`, 16 distinct faces per call at about $0.004; one masthead; one crest per faction. No eye bar. Faces: 16-color dither in a seat coin at seat and hover size, newsprint halftone plate in ink at drawer size. All at build, cached in R2 |
+| Art | muse-image contact sheets via `/api/v1/images`, 16 distinct faces per call at about $0.004; one masthead; one crest per faction. No eye bar. Faces: 16-color dither in a seat coin at seat and hover size, newsprint halftone plate in ink at drawer size. Masthead and crests at build; portraits lazy, generated in the background once the pack is ready, initials until they land, cached in R2 |
 | Palette | Faces are full-color dither, plates are ink. Generator picks page tones from the palette experiment's schema (contrast passed 3 of 3 at 13:1 or better) |
 | Layouts | Six presets: hemicycle, opposing benches, horseshoe, circle, classroom, court |
 | Build guards | One new build per IP per 10 minutes, a global daily cap, matching unlimited |
@@ -147,8 +147,9 @@ written to D1 after every step for the build screen.
 | citizens | Luna | 250 citizens, 50 per call in parallel | 15 s |
 | deck | Luna | 20 generic themed plus 5 to 8 dated storylets | 20 s |
 | review | Astra | `{ errors: { path, wrong, right, source }[] }` on names, dates, seat shares, colors, leaders. Under 4 errors: patch and continue. 4 or more: rerun frame and deck with Astra | 15 s |
-| art | muse-image | contact sheets (size ÷ 16 calls), masthead, one crest per faction; crop, dither, eye bar, R2 | 30 s |
+| art | muse-image | masthead and one crest per faction, in parallel with members and deck; dithered, R2 | 10 s |
 | index | Workers AI | embed `title + era + place + description + prompt`, upsert to Vectorize, mark ready | 2 s |
+| portraits | muse-image | after ready, never blocking: all contact sheets fired at once (size ÷ 16 calls), crop, dither, R2; the pack's `art.portraits` flips to done per sheet | 20 s, in the background |
 
 Cost per build: Luna path about $0.10, Astra fallback about $2.50, art about $0.15. The
 content rule sits in every generation prompt: no depiction, planning or reward of
@@ -180,6 +181,8 @@ Presentation, all CSS, nothing baked into the image:
 |---|---|
 | Seat and hover, 44 to 96 px | seat coin: the `face` in a round crop, a ring in the faction color, a 1 px ink rule outside it. Selected seat gets a thicker ring |
 | Drawer, 256 px | the `plate` on the pack's paper, ink rule top and bottom, faction color only in the name line |
+
+Portraits never gate play. A coin shows the member's initials in the faction color until its face lands, then the face fades in; the client polls `art.portraits` every 5 s while any sheet is pending and stops when all are done or failed. A failed sheet is retried once, then left as initials.
 
 Alignment check per sheet: the crop's 16 cells are sampled at the expected eye row; if
 more than 2 cells fall outside a 12 px band, the sheet is regenerated once, then the build
