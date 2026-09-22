@@ -140,9 +140,22 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
   expect(r1.status).toBe(200);
 });
 
+let refuse = false;
+
 // Every model call goes out through one fetch: `systemone` is Jev, `chat/completions` is Luna, keyed by schema name.
 const canned = (name: string, user: string): unknown => {
   switch (name) {
+    case "price": return refuse
+      ? { verb: "decree", title: "A satellite over the harbour", reading: "You put a satellite over the harbour.",
+          power: true, era: false, refusal: "This age cannot lift anything over the harbour.", credibility: 0.6,
+          cost: { authority: 0, treasury: 0, chest: 0 }, revenue: [], serves: [], hits: [], keeps: [],
+          targets: null, tags: [], regions: [], promises: [], sunset: null, template: null }
+      : { verb: "decree", title: "Raise the harbour levy", reading: "You raise the levy on the wharf.",
+          power: true, era: true, refusal: null, credibility: 0.9,
+          cost: { authority: 0, treasury: 0, chest: 0 },
+          revenue: [{ ledger: "treasury", id: null, delta: 6 }],
+          serves: ["guard"], hits: ["league"], keeps: ["tariffs"], targets: null,
+          tags: ["tariffs"], regions: [], promises: [], sunset: null, template: null };
     case "bill": return { title: "Harbor Levy", summary: "It raises the levy on the wharf.", tags: ["tariffs"] };
     case "headline": case "halfterm": return { title: "The seats change hands", lede: "The council woke up smaller. Nobody in the chair slept." };
     case "quotes": return { quotes: [] };
@@ -542,4 +555,31 @@ test("stopping here writes an ending and banks the score, and continue opens the
       expect(r.body.result).toBeUndefined();
     }
   }
+});
+
+test("pricing an act writes the tag, and a refusal is a 200 that costs one authority", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(60);
+  const before = game.ledgers.authority;
+  const r = await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf and publish the accounts." });
+  expect(r.status).toBe(200);
+  expect(r.body.tag.verb).toBe("decree");
+  expect(r.body.tag.charge.authority).toBe(3);
+  expect(r.body.tag.reading.length).toBeGreaterThan(0);
+  expect(r.body.refusal).toBeNull();
+  expect(game.ledgers.authority).toBe(before);       // pricing costs no ledger
+  expect(game.calls).toBe(1);                        // C5: it does cost one of the turn's six calls
+
+  refuse = true;
+  const no = await post("acts/price", { turn: 1, text: "Launch a satellite over the harbour this month." });
+  expect(no.status).toBe(200);
+  expect(no.body.refusal.line).toContain("cannot");
+  expect(no.body.refusal.test).toBe("era");
+  expect(no.body.tag).toBeNull();
+  expect(game.ledgers.authority).toBe(before - 1);
+  refuse = false;
+
+  expect((await post("acts/price", { turn: 1, text: "too short" })).status).toBe(400);
+  game.stage = "test";
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(409);
 });

@@ -4,6 +4,7 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, score, SPEND_STEPS,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
+  pay, pushWire, REFUSAL_COST, spendCalls,
   type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -13,7 +14,8 @@ import {
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
-import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, quotes, replies } from "./luna";
+import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
+import { available, priceTag } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -82,6 +84,7 @@ export class GameDO extends DurableObject<Env> {
       try {
         switch (parts[0]) {
           case "bills": extra = await this.bill(game, pack, parts, body); break;
+          case "acts": extra = await this.acts(game, pack, parts, body); break;
           case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
           case "midterm": await this.midterm(game, pack); break;
           case "post": await this.post(game, pack, String(body.text ?? "")); break;
@@ -187,6 +190,37 @@ export class GameDO extends DurableObject<Env> {
       case "vote": return this.vote(game, pack, bill!);
       default: throw new Reject(404, "Unknown action");
     }
+  }
+
+  private async acts(game: Game, pack: Pack, parts: string[], body: Record<string, unknown>): Promise<Extra> {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    switch (parts[1] ?? "") {
+      case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined);
+      default: throw new Reject(404, "Unknown action");
+    }
+  }
+
+  // A refusal is a 200 because it costs 1 authority, and a Reject would keep the charge without the answer.
+  private async price(game: Game, pack: Pack, raw: string, verb?: Verb): Promise<Extra> {
+    const text = raw.trim().slice(0, 1200);
+    if (text.length < 12) throw new Reject(400, "Write a little more.");
+    if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
+    // C5: a tag the player never commits still spent its call.
+    if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    const q = await priceAct(this.env, pack, game, text, verb).catch((e) => {
+      if (e instanceof UpstreamError) throw e;
+      throw new Reject(503, "The clerk did not answer. Try again.");
+    });
+    if (!available(pack, game, q.verb)) throw new Reject(400, "That instrument is not available.");
+    if (!q.power || !q.era) {
+      game.tag = null;
+      game.refusal = { line: q.refusal ?? "That cannot be done here.", test: q.power ? "era" : "power", cost: REFUSAL_COST };
+      pushWire(game, pay(pack, game, { authority: REFUSAL_COST, treasury: 0, chest: 0 }, "the clerk refused the act"));
+      return {};
+    }
+    game.refusal = null;
+    game.tag = priceTag(pack, game, q);
+    return {};
   }
 
   private async draft(_game: Game, _pack: Pack, _raw: string) {
