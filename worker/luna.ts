@@ -187,7 +187,6 @@ export async function ending(env: Env, pack: Pack, kind: keyof Pack["endings"], 
 }
 
 const RepliesSchema = z.object({ replies: z.array(z.object({ name: z.string(), text: z.string() })), rival: z.string() });
-const MessagesSchema = z.object({ messages: z.array(z.string()) });
 const PersonaSchema = (pack: Pack) => z.object({ rows: z.array(z.object({
   id: z.string(), name: z.string(), bio: z.string(), tell: z.string(),
   core_issues: z.array(z.enum(pack.tags as [string, ...string[]])).min(1).max(3),
@@ -199,17 +198,6 @@ export async function replies(env: Env, pack: Pack, text: string,
     `You write what people said back to the government's ${pack.vocabulary.post}. One reply per person given, at most 25 words each, in their own voice, copy the name as given. Then write the rival's answer post, at most 240 characters, sharper than the government's.${world(pack)}`,
     JSON.stringify({ post: text, people: loudest, record: state }), 240);
   return { replies: d.replies.slice(0, 3).map((r) => ({ name: clip(r.name, 60), text: clip(r.text, 220) })), rival: clip(d.rival, 240) };
-}
-
-export async function messages(env: Env, pack: Pack, state: unknown): Promise<string[]> {
-  const d = await luna(env, MessagesSchema, "messages",
-    `You write the three lines the government could run on this ${pack.vocabulary.turn} of the race, from the record given. Each at most 20 words, each a different argument: one on what was kept, one on the biggest fight, one on what the other side would do.${world(pack)}`,
-    JSON.stringify(state), 160);
-  // A blank line is not a message the player can run on, and padding with one makes a campaign unplayable.
-  const out = d.messages.map((m) => clip(m.trim(), 160)).filter(Boolean).slice(0, 3);
-  if (!out.length) throw new Error("Luna returned no campaign message");
-  while (out.length < 3) out.push(out[0]);
-  return out;
 }
 
 export async function halfTerm(env: Env, pack: Pack, state: unknown) {

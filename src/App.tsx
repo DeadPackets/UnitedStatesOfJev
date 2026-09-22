@@ -6,7 +6,6 @@ import Build from "./Build";
 import Seat from "./Seat";
 import Chamber from "./Chamber";
 import Midterm from "./Midterm";
-import Campaign from "./Campaign";
 import Test from "./Test";
 import Won from "./Won";
 import Over from "./Over";
@@ -140,7 +139,7 @@ export default function App() {
   const midtermKey = game?.midterm ? `${game.id}#${game.term}` : null;
   const showMidterm = !!game && (game.stage === "midterm" || (!!midtermKey && counted !== midtermKey));
   // The vote that ends a term flips the stage in the same answer, so the Chamber keeps the floor until
-  // the roll call that did it has been seen. The midterm, the campaign and an impeachment all wait here.
+  // the roll call that did it has been seen. The midterm, the test and an impeachment all wait here.
   const lastBill = game?.bills.at(-1);
   const rollKey = game && lastBill?.votes ? `${game.id}#${lastBill.id}` : null;
   const showRoll = !!game && !!rollKey && rolled !== rollKey && game.stage !== "session";
@@ -154,7 +153,6 @@ export default function App() {
             showRoll ? <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />
             : showTest ? <Test game={game} act={act} busy={busy} onDone={() => { setRevealed(testKey); store.set("usoj:revealed", testKey!); }} />
             : showMidterm ? <Midterm game={game} act={act} busy={busy} onDone={() => { setCounted(midtermKey); store.set("usoj:counted", midtermKey!); }} />
-            : game.stage === "campaign" ? <Campaign game={game} act={act} busy={busy} />
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
             : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} onRolled={onRolled} />)

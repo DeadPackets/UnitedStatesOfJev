@@ -219,7 +219,7 @@ test("the Director keeps 4 to 7 crises a term and never two in a row before turn
       applyVote(pack, g, bill(g, Math.random() < 0.7 ? 1 : 0));
       const out = endTurn(pack, g);
       // The dry run tests the Director, not the endings or the stages, so a run that reaches the half-term
-      // or the campaign is put straight back in session for the next iteration.
+      // or the test is put straight back in session for the next iteration.
       g.stage = "session"; g.phase = "draft";
       if (out.event) resolveEvent(pack, g, out.event, 0);
     }
@@ -515,8 +515,7 @@ test("a code that is not a string is a bad code", () => {
   expect(() => decodeCode({} as unknown as string)).toThrow("Bad code");
 });
 
-import { applyCampaign, applyMidterm, applyPost, CAMPAIGN_TURNS, forecast, holdP,
-  leverCost, leverGain, midtermUp, regionIntent, replacements, rivalTargets, runMidterm, startCampaign,
+import { applyMidterm, applyPost, holdP, midtermUp, regionIntent, replacements, runMidterm, TURNS_PER_TERM,
   type Persona, type Reaction } from "./engine";
 
 const allIntent = (p: number) => Object.fromEntries(pack.citizens.map((c) => [c.id, p]));
@@ -629,69 +628,6 @@ test("losing 40% of the class on the government's own side ends the run as a lam
   expect(g.stage).toBe("over");
   expect(g.result!.ending).toBe("lame_duck");
   expect(g.terms.length).toBe(1);
-});
-
-test("the campaign follows turn 20, not the test", () => {
-  const g = game();
-  g.turn = 20;
-  for (const r of pack.regions) g.ledgers.popularity[r.id] = 80;   // the three promises break on this vote: stay off the lame duck floor
-  applyVote(pack, g, bill(g, 0.9));
-  endTurn(pack, g);
-  expect(g.stage).toBe("campaign");
-  expect(g.campaign!.turns.length).toBe(0);
-});
-
-test("the two levers are weighted by the pack's alpha", () => {
-  const spend = { kind: "spend" as const, regions: [{ id: pack.regions[0].id, amount: 10 }] };
-  const favor = { kind: "favor" as const, memberId: "m1" };
-  const pub: Pack = { ...pack, chamber: { ...pack.chamber, alpha: 1 } };
-  const seats: Pack = { ...pack, chamber: { ...pack.chamber, alpha: 0 } };
-  expect(leverGain(pub, favor)).toBe(0);
-  expect(leverGain(pub, spend)).toBeCloseTo(pack.regions[0].weight * 0.04, 6);
-  expect(leverGain(seats, spend)).toBe(0);
-  expect(leverGain(seats, favor)).toBeCloseTo(0.3 / pack.chamber.size, 6);
-});
-
-test("a campaign turn charges its lever and records the rival's targets", () => {
-  const g = game();
-  g.turn = 21;
-  startCampaign(pack, g);
-  g.ledgers.chest = 40;
-  const before = g.ledgers.chest;
-  const t = applyCampaign(pack, g, "a message", { kind: "spend", regions: [{ id: pack.regions[0].id, amount: 10 }] }, allIntent(0.5));
-  expect(t.cost.chest).toBe(10);
-  expect(g.ledgers.chest).toBe(before - 10);
-  expect(t.rival.length).toBe(2);
-  expect(t.band[0]).toBeLessThan(t.public);
-  expect(t.band[1]).toBeGreaterThan(t.public);
-  const capital = g.ledgers.authority;
-  applyCampaign(pack, g, "m2", { kind: "favor", memberId: g.members[0].id }, allIntent(0.5));
-  expect(g.ledgers.authority).toBe(capital - leverCost(g, { kind: "favor", memberId: g.members[0].id }).capital);
-  expect(g.members[0].memory.length).toBe(1);
-  g.stageB.rival_surge = 2;
-  const surged = applyCampaign(pack, g, "m3", { kind: "spend", regions: [] }, allIntent(0.5));
-  expect(surged.rival.length).toBe(2);
-  expect(g.campaign!.rival).toEqual(surged.rival);                   // recorded, Jev prices the surge itself
-  expect(rivalTargets(pack, g, surged.intent)).toEqual(surged.rival);
-  expect(forecast(pack, surged.intent).public).toBeCloseTo(surged.public, 3);
-  applyCampaign(pack, g, "m4", { kind: "spend", regions: [] }, allIntent(0.5));
-  expect(g.campaign!.turns.length).toBe(CAMPAIGN_TURNS);
-  expect(g.stage).toBe("test");
-});
-
-test("the forecast band is the sampling error of intent, not of a single regional draw", () => {
-  const regions5 = pack.regions.slice(0, 5);
-  const mkCitizens = (n: number): Citizen[] => Array.from({ length: n }, (_, i) => ({
-    id: `c${i}`, region: regions5[i % 5].id, bloc: BLOCS[0], name: `c${i}`, age: 30, job: "harbor worker", town: "Harbor City",
-    worldview: "w", issues: ["tariffs", "dockworker-pay"] as [string, string], weight: 1,
-  }));
-  const intent = Object.fromEntries(regions5.map((r) => [r.id, 0.5]));
-  const wide = forecast({ ...pack, regions: regions5, citizens: mkCitizens(5) }, intent);
-  const narrow = forecast({ ...pack, regions: regions5, citizens: mkCitizens(250) }, intent);
-  expect(narrow.band[1] - narrow.band[0]).toBeLessThan(0.15);      // 250 citizens over 5 regions: a tight forecast
-  expect(wide.band[1] - wide.band[0]).toBeGreaterThan(0.3);        // 5 citizens total: barely a sample
-  expect(narrow.public).toBeCloseTo(0.5, 6);
-  expect(narrow.regions).toEqual(regions5.map((r) => ({ id: r.id, p: 0.5 })));   // sigmoid((0.5 - 0.5) * 12) = 0.5
 });
 
 test("each ledger has a failure line, the pack may rename it and the engine reads both", () => {
@@ -861,19 +797,16 @@ test("loyalty under its line is a revolt for one turn, and the class doubles onc
   expect(g.marks.midterm.length).toBe(cls * 2);        // and the class does not double again
 });
 
-test("the half-term still follows turn 10 and the campaign still follows turn 20", () => {
+test("the last turn of the term goes straight to the test, with no campaign stage", () => {
   const g = game();
   g.turn = 10;
   endTurn(pack, g);
   expect(g.stage).toBe("midterm");
-  for (let i = 0; i < 30; i++) {
-    const h = game();
-    h.turn = 20;
-    const out = endTurn(pack, h);
-    expect(h.stage).toBe("campaign");
-    expect(h.campaign!.turns).toEqual([]);
-    expect(out.event).toBeNull();   // no card lands on the campaign, where nothing can answer it
-  }
+  const h = game();
+  h.turn = TURNS_PER_TERM;
+  endTurn(pack, h);
+  expect(h.stage).toBe("test");
+  expect("campaign" in h).toBe(false);
 });
 
 test("popularity under its line puts the early test caller at its line, and it warns and fires", () => {

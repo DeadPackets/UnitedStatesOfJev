@@ -1,8 +1,8 @@
-import type { Bill, BillDraft, Campaign, Event, Game, HolderView, InForce, InstrumentView, Lever, LobbyAction, Member } from "../worker/engine";
+import type { Bill, BillDraft, Event, Game, HolderView, InForce, InstrumentView, LobbyAction, Member } from "../worker/engine";
 import type { Citizen, Pack, PackView, Verb } from "../worker/pack";
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
-export type { PackView, Lever };
+export type { PackView };
 type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 export type ViewBill = Omit<Bill, "amendments"> & {
   expected?: number; needed?: number;
@@ -10,10 +10,8 @@ export type ViewBill = Omit<Bill, "amendments"> & {
 };
 export type ViewMember = Omit<Member, "bio" | "tell">;
 export type ViewEvent = Event;
-/** `leverGain` priced for every step the campaign screen can offer: per region, one per SPEND_STEPS entry. */
-export type Gains = { favor: number; favorCost: number; spend: Record<string, number[]> };
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
-export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "campaign" | "ledgers" | "holders"> & {
+export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders"> & {
   ledgers: Game["ledgers"] & { approval: Record<string, number>; capital: number; party: number };
   holders: HolderView[];
   instruments: Partial<Record<Verb, InstrumentView>>;
@@ -22,7 +20,6 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "c
   shortfall: number;
   handicap: number;
   inForce: InForce[];
-  campaign?: Campaign & { gains: Gains };
   scenario: string;
   pack: PackView;
   members: ViewMember[];
@@ -72,9 +69,6 @@ export const api = {
   endTurn: (g: GameView) => call<GameView>(`/games/${g.id}/turn/end`, { turn: g.turn }),
   midterm: (g: GameView) => call<GameView>(`/games/${g.id}/midterm`, { turn: g.turn }),
   post: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/post`, { turn: g.turn, text }),
-  drafts: (g: GameView) => call<GameView>(`/games/${g.id}/campaign/drafts`, {}),
-  campaign: (g: GameView, message: string, lever: Lever) =>
-    call<GameView>(`/games/${g.id}/campaign`, { n: g.campaign?.turns.length ?? 0, message, lever }),
   resolve: (g: GameView, i: number, stance: number) => call<GameView>(`/games/${g.id}/events/${i}`, { turn: g.turn, stance }),
   test: (g: GameView) => call<GameView>(`/games/${g.id}/test`, {}),
   continue: (g: GameView) => call<GameView>(`/games/${g.id}/continue`, {}),

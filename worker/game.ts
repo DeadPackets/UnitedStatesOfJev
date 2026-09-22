@@ -1,11 +1,11 @@
 import { DurableObject } from "cloudflare:workers";
 import {
-  applyCampaign, applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, CAMPAIGN_TURNS, continueTerm,
-  earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, leverCost, leverGain, LOBBY_COSTS, lobbyCost, nationalPopularity,
-  newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, RIVAL_SPEND, rng, runMidterm, runTest, scenarioTag, score, SPEND_STEPS,
+  applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, continueTerm,
+  earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
+  newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
   pay, pushWire, REFUSAL_COST, spendCalls,
-  type Bill, type BillDraft, type Game, type Lever, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
+  type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
   agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, HOLDER_SAMPLE, holderQuestions,
@@ -14,7 +14,7 @@ import {
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
-import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
+import { amendBill, cardText, ending, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
 import { available, priceTag } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
@@ -25,28 +25,6 @@ class Reject extends Error { constructor(public status: number, message: string)
 export function pickStart(pack: Pack, f: number) {
   const faction = pack.factions[f];
   return faction && pack.starts.find((s) => s.faction === faction.id);
-}
-
-export type CampaignBody = { n?: number; message?: string; lever?: { kind: "spend"; regions?: { id: string; amount: number }[] } | { kind: "favor"; memberId?: string } };
-
-// Two levers, nothing else: up to two regions at 0, 5 or 10 from the chest, or one seat favor from capital.
-function readLever(pack: Pack, game: Game, raw: CampaignBody["lever"]): Lever {
-  if (raw?.kind === "favor") {
-    const m = game.members.find((x) => x.id === raw.memberId);
-    if (!m) throw new Reject(400, `Bad ${pack.vocabulary.member}.`);
-    return { kind: "favor", memberId: m.id };
-  }
-  const raws: unknown = raw?.kind === "spend" ? raw.regions ?? [] : [];
-  if (!Array.isArray(raws)) throw new Reject(400, "Send a list of regions.");
-  const rows = (raws as { id: string; amount: number }[]).slice(0, 3);
-  if (rows.length > 2) throw new Reject(400, "Two regions at most.");
-  // Two rows on one region would be charged twice and spent once: Jev only sees the last of them.
-  if (new Set(rows.map((r) => r?.id)).size !== rows.length) throw new Reject(400, "One row per region.");
-  for (const r of rows) {
-    if (!pack.regions.some((x) => x.id === r?.id)) throw new Reject(400, "No such region.");
-    if (!(SPEND_STEPS as readonly number[]).includes(r.amount)) throw new Reject(400, "Spend 0, 5 or 10.");
-  }
-  return { kind: "spend", regions: rows };
 }
 
 type Prose = { ending?: { title: string; body: string } };
@@ -88,9 +66,6 @@ export class GameDO extends DurableObject<Env> {
           case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
           case "midterm": await this.midterm(game, pack); break;
           case "post": await this.post(game, pack, String(body.text ?? "")); break;
-          case "campaign":
-            parts[1] === "drafts" ? await this.drafts(game, pack) : await this.campaign(game, pack, body as CampaignBody);
-            break;
           case "test": await this.term(s, pack); break;
           case "turn": if (parts[1] !== "end") throw new Reject(404, "Unknown action"); await this.end(game, pack); break;
           case "continue":
@@ -336,38 +311,6 @@ export class GameDO extends DurableObject<Env> {
     if (!said.rival) post.won = false;
   }
 
-  private async drafts(game: Game, pack: Pack) {
-    if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
-    const c = game.campaign!;
-    if (c.drafts.length === 3 && c.drafts.every((d) => d.trim())) return;
-    // Nothing is stored on a failure: the campaign screen offers "Ask for the drafts" again, and a blank
-    // draft would leave the player with three radios they cannot submit.
-    const drafts = await messages(this.env, pack, { ...record(pack, game), said_so_far: c.messages, of: CAMPAIGN_TURNS, so_far: c.turns.length })
-      .catch(() => []);
-    if (drafts.length !== 3) throw new Reject(503, "The narrator did not answer. Try again.");
-    c.drafts = drafts;
-  }
-
-  private async campaign(game: Game, pack: Pack, body: CampaignBody) {
-    if (game.stage !== "campaign") throw new Reject(409, `The ${pack.vocabulary.campaign} has not started.`);
-    const c = game.campaign!;
-    // game.turn does not move during the campaign, so the campaign turn index is this stage's stale-turn guard.
-    if (Number(body.n) !== c.turns.length) throw new Reject(409, "Stale turn. Reload the game.");
-    const message = String(body.message ?? "").trim().slice(0, 200);
-    if (!message) throw new Reject(400, "Pick a message.");
-    const lever = readLever(pack, game, body.lever);
-    const cost = leverCost(game, lever);
-    if (cost.chest > game.ledgers.chest) throw new Reject(402, "Not enough in the chest.");
-    if (cost.capital > game.ledgers.authority) throw new Reject(402, `Not enough ${pack.vocabulary.capital}.`);
-    const spend: Record<string, number> = {};
-    if (lever.kind === "spend") for (const r of lever.regions) spend[r.id] = r.amount;
-    const rivalAmount = RIVAL_SPEND * (game.stageB.rival_surge ?? 1);
-    const rivalSpend = Object.fromEntries(c.rival.map((id) => [id, rivalAmount]));
-    const r = await jev(this.env, voteState(pack, game, [...c.messages, message]),
-      voteQuestions(pack, game, pack.citizens, spend, rivalSpend));
-    applyCampaign(pack, game, message, lever, nouls(r.answers, "vote_"));
-  }
-
   private async event(game: Game, pack: Pack, i: number, stance: number): Promise<Extra> {
     if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
     const event = game.events[i];
@@ -481,14 +424,6 @@ export const streetSample = (game: Game, cs: Citizen[], n: number): Citizen[] =>
   return [...rank.keys()].sort((a, b) => rank.get(a)! - rank.get(b)!).slice(0, n);
 };
 
-// What each lever is worth, priced here so the campaign screen never reads the engine.
-const gains = (pack: Pack, game: Game) => ({
-  favor: leverGain(pack, { kind: "favor", memberId: "" }),
-  favorCost: lobbyCost(game, "favor"),
-  spend: Object.fromEntries(pack.regions.map((r) =>
-    [r.id, SPEND_STEPS.map((amount) => leverGain(pack, { kind: "spend", regions: [{ id: r.id, amount }] }))])),
-});
-
 // Priced and marked here so the Desk never reads the pack's own numbers, the same reason lobbyCosts exists.
 const room = (pack: Pack, game: Game): HolderView[] => {
   const near = nearestLine(game);
@@ -543,7 +478,6 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
       return { ...cur, whip, expected: Math.round(expectedYes(whip) * 10) / 10, needed: threshold(pack, game, cur) };
     }),
     citizens: pack.citizens.map(({ id, region, bloc, name, weight }) => ({ id, region, bloc, name, weight })),
-    campaign: game.campaign && { ...game.campaign, gains: gains(pack, game) },
     coalition: (start?.coalition ?? []).filter((f) => f !== game.faction),
     seatTitle: start?.seat_title ?? "the government",
     turnsPerTerm: TURNS_PER_TERM,

@@ -181,7 +181,7 @@ textarea, input, select { font: inherit; color: inherit; }
 /* the count is the screen: one numeral at poster scale, everything beside it a caption on its baseline */
 .count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; }
 .count .n { font: 800 clamp(64px, 12vw, 132px)/0.9 var(--display); letter-spacing: -0.03em; }
-.count > .muted:not(.n), .campaign .forecast > .muted {
+.count > .muted:not(.n) {
   font: 600 12px/1.35 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; max-width: 22ch; color: var(--ink-2);
   align-self: flex-end; padding-bottom: 8px; }
 .count .n.fail { color: var(--red); }
@@ -335,7 +335,7 @@ textarea, input, select { font: inherit; color: inherit; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 }
 
-/* the test and the campaign: the map as weighted tiles. Won is ink, lost keeps its area under a hairline hatch */
+/* the test: the map as weighted tiles. Won is ink, lost keeps its area under a hairline hatch */
 .tiles { position: relative; width: 100%; aspect-ratio: 100/62; border: 1px solid var(--ink); background: var(--paper); }
 .tile { position: absolute; border: 1px solid var(--ink); background: var(--paper); overflow: hidden;
   padding: 5px 6px; text-align: left; color: var(--ink); font: inherit; cursor: default;
@@ -383,34 +383,3 @@ button.tile { cursor: pointer; display: flex; flex-direction: column; align-item
 .rivalpost { margin-top: 12px; padding: 10px 12px; border: 1.5px solid var(--ink);
   background-image: repeating-linear-gradient(45deg, var(--ink-2) 0 1px, transparent 1px 7px); }
 .rivalpost .kicker, .rivalpost p { background: var(--paper); width: fit-content; padding-right: 4px; }
-
-/* the campaign: the forecast band over the map, the two levers side by side in the rail */
-.campaign .forecast { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.campaign .forecast .n { font: 800 clamp(56px, 10vw, 110px)/0.9 var(--display); letter-spacing: -0.03em; }
-.campaign .band { margin-bottom: 22px; }
-.campaign .band .seg { position: absolute; top: 0; bottom: 0; background: var(--ink-2); opacity: 0.45; transition: left 700ms var(--ease-expo), width 700ms var(--ease-expo); }
-.campaign .band .pt { position: absolute; top: -5px; width: 3px; height: 24px; background: var(--ink); transform: translateX(-1px); transition: left 700ms var(--ease-expo); }
-.campaign .band .tick { background: var(--ink-2); }
-/* the rival's two regions keep their area readable: a hatch inside a ruled edge, not a fill */
-.campaign .tile.lost { background-image: repeating-linear-gradient(45deg, var(--tone) 0 2px, transparent 2px 8px); outline: 2px solid var(--ink-2); outline-offset: -2px; }
-.campaign .tile.lost .nm, .campaign .tile.lost .wt { background: none; }
-.campaign .tile.on { outline: 3px solid var(--ink); outline-offset: -3px; }
-.campaign .drafts { display: grid; gap: 8px; }
-.campaign .drafts .opt2 { text-align: left; padding: 12px 14px; border: 1.5px solid var(--tone); background: var(--bg); transition: border-color var(--t-state), background var(--t-state), transform var(--t-fast) var(--ease-out); }
-.campaign .drafts .opt2:active { transform: scale(0.96); }
-.campaign .drafts .opt2:hover { border-color: var(--ink); }
-.campaign .drafts .opt2[aria-checked="true"] { border-color: var(--ink); border-width: 2px; background: var(--tone); }
-.campaign .levers { display: grid; gap: 10px; }
-.campaign .tworadio { gap: 8px; }
-.campaign .opt[aria-checked="true"] { background: var(--ink); color: var(--bg); }
-.campaign .row.step { flex-wrap: nowrap; gap: 6px; }
-.campaign .row.step span { flex: 1 1 auto; min-width: 0; }
-.campaign .row.step .opt { padding: 0 14px; min-width: 44px; }
-.campaign .seats { max-height: 320px; overflow: auto; }
-.campaign .seats .fcard { justify-content: space-between; align-items: center; }
-.campaign .seats .fcard .t { flex: 1 1 auto; text-align: left; }
-.campaign .gains { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid var(--tone); padding-top: 10px; }
-.campaign .gains > div { opacity: 0.45; transition: opacity var(--t-state); }
-.campaign .gains > div.on { opacity: 1; }
-.campaign .gains b { font: 800 30px/1 var(--display); display: block; }
-.campaign .levers .btn { width: 100%; margin-top: 4px; }

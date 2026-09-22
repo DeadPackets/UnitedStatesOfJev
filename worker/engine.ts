@@ -79,7 +79,7 @@ export interface Act {
 export interface RivalMove { turn: number; name: string; backer: string; region: string | null; line: string }
 export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
-  term: number; turn: number; stage: "session" | "midterm" | "campaign" | "test" | "won" | "over";
+  term: number; turn: number; stage: "session" | "midterm" | "test" | "won" | "over";
   phase: "draft" | "whip" | "over";
   ledgers: { treasury: number; authority: number; chest: number; loyalty: number; popularity: Record<string, number> };
   patrons: Record<string, number>;   // -2..2
@@ -112,7 +112,7 @@ export interface Game {
   extra: Storylet[];          // R20: two fresh cards per extra term
   wireTurn: number;           // the turn game.wire belongs to, so a new turn starts a clean wire
   economy?: string; terms: TermRecord[]; test?: TestResult;
-  midterm?: Midterm; campaign?: Campaign;
+  midterm?: Midterm;
   result?: { ending: Ending; score: number };
 }
 
@@ -669,9 +669,9 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   game.turn += 1;
   if (game.result) { game.stage = "over"; game.phase = "over"; }
   else if (game.stage === "test") game.phase = "over";
-  else if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; game.phase = "over"; startCampaign(pack, game); }
+  else if (game.turn > TURNS_PER_TERM) { game.stage = "test"; game.phase = "over"; }
   else { game.phase = "draft"; if (voted === 10) game.stage = "midterm"; }
-  // After the stage moves, so no card is drawn onto the campaign, where nothing can answer it.
+  // After the stage moves, so no card is drawn onto the test, where nothing can answer it.
   const event = director(game, pack);
 
   game.pending = pendingItem(pack, game, warnings, event);
@@ -919,91 +919,6 @@ export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas
   }
 }
 
-/* ---------- the campaign ---------- */
-
-export const CAMPAIGN_TURNS = 4;
-export const SPEND_STEPS = [0, 5, 10] as const;
-export const RIVAL_SPEND = 5;                      // per targeted region per campaign turn
-export const SPEND_LIFT: Record<number, number> = { 0: 0, 5: 0.02, 10: 0.04 };
-export const FAVOR_LIFT = 0.3;                     // modelled confidence lift on one seat
-
-export type Lever = { kind: "spend"; regions: { id: string; amount: number }[] } | { kind: "favor"; memberId: string };
-export interface CampaignTurn {
-  n: number; message: string; lever: Lever; cost: { chest: number; capital: number };
-  intent: Record<string, number>; public: number; band: [number, number]; regions: { id: string; p: number }[]; rival: string[];
-}
-export interface Campaign { drafts: string[]; messages: string[]; turns: CampaignTurn[]; rival: string[]; intent: Record<string, number> }
-
-export function startCampaign(pack: Pack, game: Game): void {
-  const intent = Object.fromEntries(pack.regions.map((r) => [r.id, clamp((game.ledgers.popularity[r.id] ?? 50) / 100, 0, 1)]));
-  game.campaign = { drafts: [], messages: [], turns: [], rival: rivalTargets(pack, game, intent), intent };
-}
-
-// The rival goes where the government is weakest but not yet lost: two regions, its own money, every turn.
-export function rivalTargets(pack: Pack, _game: Game, byRegion: Record<string, number>): string[] {
-  const live = pack.regions.filter((r) => (byRegion[r.id] ?? 0.5) >= 0.35);
-  const pool = live.length >= 2 ? live : pack.regions;
-  return [...pool].sort((a, b) => (byRegion[a.id] ?? 0.5) - (byRegion[b.id] ?? 0.5)).slice(0, 2).map((r) => r.id);
-}
-
-export function leverCost(game: Game, lever: Lever): { chest: number; capital: number } {
-  return lever.kind === "spend"
-    ? { chest: lever.regions.reduce((a, r) => a + r.amount, 0), capital: 0 }
-    : { chest: 0, capital: lobbyCost(game, "favor") };
-}
-
-// What the UI shows: alpha x the public move, or (1 - alpha) x the chamber move. Code's estimate, not Jev's.
-export function leverGain(pack: Pack, lever: Lever): number {
-  const a = pack.chamber.alpha;
-  if (lever.kind === "spend") {
-    return a * lever.regions.reduce((s, r) => s + (pack.regions.find((x) => x.id === r.id)?.weight ?? 0) * (SPEND_LIFT[r.amount] ?? 0), 0);
-  }
-  return (1 - a) * (FAVOR_LIFT / pack.chamber.size);
-}
-
-// A band, not a point: the standard error of the *measured intent*, not of a single Bernoulli draw per region.
-// Each region's own sample size (its citizen count) shrinks its contribution to the error.
-export function forecast(pack: Pack, byRegion: Record<string, number>): { public: number; band: [number, number]; regions: { id: string; p: number }[] } {
-  const w = pack.regions.reduce((a, r) => a + r.weight, 0) || 1;
-  const pub = pack.regions.reduce((a, r) => a + r.weight * (byRegion[r.id] ?? 0.5), 0) / w;
-  const n = new Map<string, number>();
-  for (const c of pack.citizens) n.set(c.region, (n.get(c.region) ?? 0) + 1);
-  const varr = pack.regions.reduce((a, r) => {
-    const p = byRegion[r.id] ?? 0.5;
-    return a + (r.weight / w) ** 2 * p * (1 - p) / (n.get(r.id) || 1);
-  }, 0);
-  const se = Math.sqrt(varr);
-  const regions = pack.regions.map((r) => ({ id: r.id, p: sigmoid(((byRegion[r.id] ?? 0.5) - 0.5) * 12) }));
-  return { public: pub, band: [clamp(pub - 1.96 * se, 0, 1), clamp(pub + 1.96 * se, 0, 1)], regions };
-}
-
-export function applyCampaign(pack: Pack, game: Game, message: string, lever: Lever, intent: Record<string, number>): CampaignTurn {
-  const c = game.campaign!;
-  const cost = leverCost(game, lever);
-  game.ledgers.chest = round1(clamp(game.ledgers.chest - cost.chest, 0, 9999));
-  game.ledgers.authority = clamp(game.ledgers.authority - cost.capital, 0, 200);
-  if (lever.kind === "favor") {
-    const m = game.members.find((x) => x.id === lever.memberId);
-    if (m) {
-      m.loyalty = clamp(m.loyalty + 10, 0, 100);
-      m.mood = clamp(round1(m.mood + 0.1), -1, 1);
-      m.memory = [...m.memory, "The government promised them support before the vote at the end of the term."].slice(-5);
-    }
-  }
-  const byRegion = regionIntent(pack, intent);
-  // Jev already prices rival_spend_here in the vote intent (multiplied by rival_surge); don't drag it again here.
-  const rival = rivalTargets(pack, game, byRegion);
-  const f = forecast(pack, byRegion);
-  c.messages.push(message);
-  c.intent = byRegion;
-  c.rival = rival;
-  const turn: CampaignTurn = { n: c.turns.length + 1, message, lever, cost, intent: byRegion, public: Math.round(f.public * 1000) / 1000, band: f.band, regions: f.regions, rival };
-  c.turns.push(turn);
-  c.drafts = [];
-  if (c.turns.length >= CAMPAIGN_TURNS) { game.stage = "test"; game.phase = "over"; }
-  return turn;
-}
-
 /* ---------- the Director ---------- */
 
 // The keys are the storylet effect targets (pack.ts LEDGERS), which no stored deck can rename.
@@ -1223,7 +1138,7 @@ export function endTerm(pack: Pack, game: Game, test: TestResult): void {
   // §6: only a lost early test ends the term; a won one resumes it where the fired warning stopped the turn.
   if (test.early && test.won) {
     game.earlyTest = undefined;
-    if (game.turn > TURNS_PER_TERM) { game.stage = "campaign"; startCampaign(pack, game); }
+    if (game.turn > TURNS_PER_TERM) game.stage = "test";
     else { game.stage = game.turn === 11 ? "midterm" : "session"; game.phase = "draft"; }   // 11: turn 10's half-term was skipped
     return;
   }
@@ -1242,7 +1157,7 @@ export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
   game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
   game.director.intensity = 0; game.director.lastCrisis = -1;
-  game.test = undefined; game.campaign = undefined; game.midterm = undefined; game.result = undefined;
+  game.test = undefined; game.midterm = undefined; game.result = undefined;
   game.earlyTest = undefined; game.warnings = []; game.wire = []; game.pending = null; game.revolt = null;
   game.calls = 0; game.swing = 0; game.quiet = 0; game.tag = null; game.refusal = null;
   game.rival = null; game.acts = []; game.emergency = null;

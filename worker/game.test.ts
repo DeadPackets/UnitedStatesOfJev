@@ -160,7 +160,6 @@ const canned = (name: string, user: string): unknown => {
     case "headline": case "halfterm": return { title: "The seats change hands", lede: "The council woke up smaller. Nobody in the chair slept." };
     case "quotes": return { quotes: [] };
     case "replies": return { replies: [{ name: "Citizen 1", text: "The wharf still floods." }], rival: "They promised the accounts and published nothing." };
-    case "messages": return { messages: ["We kept the levy honest.", "We won the fight over the wharf.", "They would sell the harbor."] };
     case "outcome": return { line: "It held." };
     case "card": return { title: "A storm", body: "The wharf floods.", stances: ["Hold the line"] };
     case "ending": return { title: "Out", body: "The term ends." };
@@ -368,49 +367,6 @@ test("seededSample draws a different jury each turn", () => {
   expect(Object.values(blocs)).toEqual([10, 10, 10, 10, 10]);
 });
 
-test("a campaign turn needs a draft, a lever it can pay for, and four of them reach the test", async () => {
-  stubModels(1);
-  const { game, post } = seatedGame(13);
-  await playTo(post, game, 10);
-  // Saturated approval settles every midterm roll, so the class holds and the term reaches the campaign.
-  for (const r of pack.regions) game.ledgers.popularity[r.id] = 999;
-  game.ledgers.authority = 200; game.ledgers.loyalty = 100;   // and no impeachment before the campaign starts
-  await playTo(post, game, 20);
-  expect(game.stage).toBe("campaign");
-  stubModels(0.6);
-
-  const d = (await post("campaign/drafts", {})).body;
-  expect(d.stage).toBe("campaign");
-  expect(d.campaign.drafts.length).toBe(3);
-  expect(d.campaign.gains.spend[pack.regions[0].id].length).toBe(3);
-  const three = [0, 1, 2].map((i) => ({ id: pack.regions[i % pack.regions.length].id, amount: 10 }));
-  expect((await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "spend", regions: three } })).status).toBe(400);
-  expect((await post("campaign", { n: 0, message: "", lever: { kind: "spend", regions: [] } })).status).toBe(400);
-  // The campaign does not move game.turn, so the turn index is what a repeated POST is caught by.
-  expect((await post("campaign", { n: 1, message: d.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
-
-  // The favor is the one lever that spends capital, so it is priced before it is charged.
-  const own = game.members.find((m) => m.faction === game.faction)!;
-  const authority = game.ledgers.authority;
-  let g = (await post("campaign", { n: 0, message: d.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).body;
-  expect(g.campaign.turns[0].lever.kind).toBe("favor");
-  expect(g.ledgers.capital).toBeLessThan(authority);
-  g = (await post("campaign/drafts", {})).body;
-  game.ledgers.authority = 0;
-  expect((await post("campaign", { n: 1, message: g.campaign.drafts[0], lever: { kind: "favor", memberId: own.id } })).status).toBe(402);
-  // A replayed turn is refused, and the one it replays is still there to play.
-  expect((await post("campaign", { n: 0, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).status).toBe(409);
-
-  for (let i = 1; i < 4; i++) {
-    if (!g.campaign.drafts.length) g = (await post("campaign/drafts", {})).body;
-    g = (await post("campaign", { n: g.campaign.turns.length, message: g.campaign.drafts[0], lever: { kind: "spend", regions: [] } })).body;
-  }
-  expect(g.campaign.turns.length).toBe(4);
-  expect(g.stage).toBe("test");
-  expect(g.campaign.turns[0].band[0]).toBeLessThan(g.campaign.turns[0].public);
-  expect((await post("campaign/drafts", {})).status).toBe(409);
-});
-
 test("a Jev failure mid-vote leaves the stored game exactly as the request found it", async () => {
   stubModels(0.9);
   const { do_, game, post } = seatedGame(31);
@@ -435,43 +391,9 @@ test("a Jev failure mid-vote leaves the stored game exactly as the request found
   expect(do_.saved.game.turn).toBe(1);
 });
 
-test("blank campaign drafts are a 503 the player can retry, not three lines nobody can pick", async () => {
-  stubModels(0.6);
-  const { do_, post } = seatedGame(41);
-  do_.saved.game.stage = "campaign";
-  do_.saved.game.campaign = { drafts: [], messages: [], turns: [], rival: [], intent: {} };
-
-  const ok = globalThis.fetch;
-  globalThis.fetch = (async (url: string, init: RequestInit) => {
-    const body = JSON.parse(String(init.body));
-    if (body.response_format?.json_schema?.name === "messages") {
-      return Response.json({ choices: [{ message: { content: JSON.stringify({ messages: ["", "   ", ""] }) } }] });
-    }
-    return ok(url as never, init);
-  }) as unknown as typeof fetch;
-
-  const r = await post("campaign/drafts", {});
-  expect(r.status).toBe(503);
-  expect(do_.saved.game.campaign.drafts).toEqual([]);
-
-  globalThis.fetch = ok;
-  expect((await post("campaign/drafts", {})).body.campaign.drafts).toHaveLength(3);
-});
-
 test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeError", async () => {
   stubModels(0.9);
   const { do_, game, post } = seatedGame(51);
-  game.stage = "campaign";
-  game.campaign = { drafts: ["Keep the course."], messages: [], turns: [], rival: [], intent: {} };
-  const body = (lever: unknown) => ({ n: 0, message: "Keep the course.", lever });
-  const r = pack.regions[0].id;
-
-  expect((await post("campaign", body({ kind: "spend", regions: 5 }))).status).toBe(400);
-  expect((await post("campaign", body({ kind: "spend", regions: [{ id: r, amount: 5 }, { id: r, amount: 5 }] }))).body.error)
-    .toBe("One row per region.");
-  expect(game.campaign.turns).toHaveLength(0);
-
-  game.stage = "session";
   const own = game.members[0];
   game.bills.push({ id: 1, text: "", title: "Harbor Levy", summary: "It raises the levy.", tags: ["tariffs"], offers: {} });
   game.phase = "whip";
@@ -483,7 +405,7 @@ test("a crafted body is a 400 with a plain reason, not a 502 carrying a TypeErro
   // A card left open is answered on the floor, never after the term is scored.
   game.events.push({ id: "gen-01", turn: 1, relief: false, stances: ["Hold", "Fold"] });
   expect((await post("events/0", { turn: game.turn, stance: 1.5 })).status).toBe(400);
-  game.stage = "campaign";
+  game.stage = "test";
   expect((await post("events/0", { stance: 0 })).status).toBe(409);
   expect(do_.saved.game.events[0].stance).toBeUndefined();
 });
