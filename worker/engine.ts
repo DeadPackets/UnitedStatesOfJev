@@ -163,8 +163,9 @@ export function pay(_pack: Pack, game: Game, price: Price, cause: string): WireL
   for (const l of ["authority", "treasury", "chest"] as const) {
     const d = price[l];
     if (!d) continue;
-    game.ledgers[l] = round1(clamp(game.ledgers[l] - d, 0, l === "authority" ? 200 : 9999));
-    out.push({ kind: "ledger", ledger: l, delta: -d, cause });
+    const was = game.ledgers[l];
+    game.ledgers[l] = round1(clamp(was - d, 0, l === "authority" ? 200 : 9999));
+    out.push({ kind: "ledger", ledger: l, delta: round1(game.ledgers[l] - was), cause });
   }
   return out;
 }
@@ -326,10 +327,7 @@ const moveResistance = (_pack: Pack, game: Game, ids: string[], d: number, cause
 export function movePopularity(pack: Pack, game: Game, ids: string[], delta: number, cause: string): WireLine[] {
   const rs = ids.length ? pack.regions.filter((r) => ids.includes(r.id)) : pack.regions;
   if (!delta) return [];
-  return rs.map((r) => {
-    bump(game, r.id, delta);
-    return { kind: "ledger" as const, ledger: "popularity" as const, id: r.id, delta, cause };
-  });
+  return rs.map((r) => ({ kind: "ledger" as const, ledger: "popularity" as const, id: r.id, delta: bump(game, r.id, delta), cause }));
 }
 
 export const RIVAL_HIT = 2;   // TUNE: what the rival takes out of the weakest region every turn
@@ -427,11 +425,12 @@ export function advanceWarnings(pack: Pack, game: Game): { warned: Warning[]; fi
 export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
   const wire: WireLine[] = [], L = game.ledgers, name = pack.constitution?.holders.find((h) => h.id === w.holder)?.name ?? w.holder;
   const drop = (l: "treasury" | "chest" | "loyalty", d: number) => {
-    L[l] = round1(clamp(L[l] - d, 0, l === "loyalty" ? 100 : 9999));
-    wire.push({ kind: "card", ledger: l, delta: -d, cause: name });
+    const was = L[l];
+    L[l] = round1(clamp(was - d, 0, l === "loyalty" ? 100 : 9999));
+    wire.push({ kind: "card", ledger: l, delta: round1(L[l] - was), cause: name });
   };
   switch (w.response) {
-    case "riot": for (const r of pack.regions) { bump(game, r.id, -RIOT_HIT); wire.push({ kind: "card", ledger: "popularity", id: r.id, delta: -RIOT_HIT, cause: name }); } break;
+    case "riot": for (const r of pack.regions) wire.push({ kind: "card", ledger: "popularity", id: r.id, delta: bump(game, r.id, -RIOT_HIT), cause: name }); break;
     case "refuse_levy": drop("treasury", LEVY_HIT); break;
     case "embargo": drop("treasury", EMBARGO_HIT); break;
     case "excommunicate": drop("loyalty", EXCOMMUNICATE_HIT); break;
@@ -464,7 +463,12 @@ export function nationalPopularity(pack: Pack, game: Game): number {
   return w ? sum / w : 50;
 }
 export const popularity = (pack: Pack, game: Game) => { const a = nationalPopularity(pack, game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
-const bump = (game: Game, region: string, d: number) => { game.ledgers.popularity[region] = clamp(round1((game.ledgers.popularity[region] ?? 50) + d), 0, 100); };
+// Returns the move that landed, so the wire prints a clamped move as it happened and not as it was asked.
+const bump = (game: Game, region: string, d: number) => {
+  const was = game.ledgers.popularity[region] ?? 50;
+  game.ledgers.popularity[region] = clamp(round1(was + d), 0, 100);
+  return round1(game.ledgers.popularity[region] - was);
+};
 
 // Up to 8 lines of record, for citizen and test calls and for Luna.
 export const RECORD_TOKENS = 1200;   // TUNE: largest holder read measured 14503 tokens on a 72 seat pack, 2026-09-23
@@ -633,9 +637,9 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   Object.assign(bill, { votes, yes, threshold: th, passed, struck, vetoed: Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6) });
 
   const L = game.ledgers;
+  const was = L.authority;
   L.authority = clamp(L.authority + (passed ? LAW_PASSED : -LAW_LOST) - (struck ? STRUCK_DECREE : 0), 0, 200);
-  pushWire(game, [{ kind: "ledger", ledger: "authority",
-    delta: (passed ? LAW_PASSED : -LAW_LOST) - (struck ? STRUCK_DECREE : 0), cause: bill.title }]);
+  pushWire(game, [{ kind: "ledger", ledger: "authority", delta: round1(L.authority - was), cause: bill.title }]);
   const own = game.members.filter((m) => m.faction === game.faction);
   const ownYes = own.filter((m) => votes[m.id]).length;
   L.loyalty = clamp(L.loyalty + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
@@ -704,12 +708,13 @@ export function applyRates(pack: Pack, game: Game): WireLine[] {
     for (const rate of law.perTurn) {
       if (rate.ledger === "popularity") {
         const regions = rate.id ? pack.regions.filter((r) => r.id === rate.id) : pack.regions;
-        for (const r of regions) { bump(game, r.id, rate.delta); wire.push({ kind: "ledger", ledger: "popularity", id: r.id, delta: rate.delta, cause: law.title }); }
+        for (const r of regions) wire.push({ kind: "ledger", ledger: "popularity", id: r.id, delta: bump(game, r.id, rate.delta), cause: law.title });
         continue;
       }
       const hi = rate.ledger === "authority" ? 200 : rate.ledger === "loyalty" ? 100 : 9999;
-      game.ledgers[rate.ledger] = round1(clamp(game.ledgers[rate.ledger] + rate.delta, 0, hi));
-      wire.push({ kind: "ledger", ledger: rate.ledger, delta: rate.delta, cause: law.title });
+      const was = game.ledgers[rate.ledger];
+      game.ledgers[rate.ledger] = round1(clamp(was + rate.delta, 0, hi));
+      wire.push({ kind: "ledger", ledger: rate.ledger, delta: round1(game.ledgers[rate.ledger] - was), cause: law.title });
     }
   }
   return wire;

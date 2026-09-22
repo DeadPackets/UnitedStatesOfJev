@@ -874,6 +874,18 @@ test("a law in force collects every turn until it is repealed", () => {
   expect(g.ledgers.treasury).toBe(12);
 });
 
+test("a rate an empty treasury cannot pay prints the move that landed, so the grid does not count it", () => {
+  const g = game();
+  g.ledgers.treasury = 4;
+  enact(g, { id: "l1", verb: "law", title: "Grain for the quay", perTurn: [{ ledger: "treasury", delta: -15 }], repealConsent: "chamber", sunset: null });
+  endTurn(pack, g);
+  expect(g.ledgers.treasury).toBe(0);
+  expect(g.wire.find((w) => w.cause === "Grain for the quay")!.delta).toBe(-4);
+  endTurn(pack, g);
+  expect(g.wire.find((w) => w.cause === "Grain for the quay")!.delta).toBe(0);
+  expect(g.log[1].cause).not.toBe("Grain for the quay");
+});
+
 test("an authored sunset lapses the law on its own", () => {
   const g = game();
   enact(g, { id: "l2", verb: "decree", title: "A two tide curfew", perTurn: [{ ledger: "popularity", delta: -2 }], repealConsent: "none", sunset: 2 });
