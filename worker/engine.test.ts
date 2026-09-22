@@ -460,14 +460,12 @@ test("a conditional dated card waits for a clear turn, up to two turns late", ()
   expect(director(dropped, p)).toBeNull();
 });
 
-test("the v3 test screen still gets its four numbers", () => {
+test("the test draws its two walks from the chamber's and the street's stances", () => {
   const g = game();
   const r = runTest(pack, g, { council: 0.8, street: 0.4 });
   expect(r.seats.length).toBe(pack.chamber.size);
-  expect(r.regions.length).toBe(pack.regions.length);
-  expect(r.drawnPublic).toBeGreaterThanOrEqual(0);
-  expect(r.loyalty).toBeCloseTo(0.8, 5);
-  expect(r.public).toBeCloseTo(0.4, 5);
+  expect(r.seats.every((s) => s.p === 0.8)).toBe(true);
+  expect(r.regions.map((x) => x.p)).toEqual(pack.regions.map(() => 0.4));
 });
 
 test("a hostile party shows in the whip state, and a favor comes back as capital", () => {

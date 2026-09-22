@@ -35,8 +35,6 @@ export interface Event {
 export interface HolderRow { id: string; name: string; weight: number; stance: number; counted: boolean }
 export interface TestResult {
   mandate: number; bar: number; won: boolean; holders: HolderRow[]; early?: string;
-  // The v3 Test screen reads these four and the two walks. Stage C deletes them.
-  loyalty: number; public: number; drawnLoyalty: number; drawnPublic: number;
   seats: { id: string; p: number; yes: boolean }[];
   regions: { id: string; weight: number; p: number; yes: boolean }[];
 }
@@ -1213,7 +1211,6 @@ function result(pack: Pack, game: Game, rows: HolderRow[], theBar: number, early
   return {
     mandate, bar: theBar, won: mandate >= theBar, holders: rows,
     ...(early ? { early } : {}),
-    loyalty, public: pub, drawnLoyalty: loyalty, drawnPublic: pub,
     seats: game.members.map((m) => ({ id: m.id, p: loyalty, yes: roll() < loyalty })).sort((a, b) => a.p - b.p),
     regions: regions.map((r) => ({ ...r, yes: roll() < r.p })),
   };
