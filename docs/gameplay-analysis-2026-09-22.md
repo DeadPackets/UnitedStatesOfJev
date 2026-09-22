@@ -172,3 +172,22 @@ are decoration. Nothing constrains the generator's choice.
 11. **Chamber size.** The final review already caps generated chambers at 72 seats. (a) Keep 72.
     (b) Raise it by sampling citizens for the intent half. (c) Raise it by trimming `record()`.
     **Recommend (a) now**: a 400 at the test loses a 35-minute run.
+12. **Region reveal: tiles or map?** Stage B shipped the weighted treemap (`src/Tiles.tsx`) as a
+    ruling; the two demos you asked for were tiles and a schematic map. (a) Keep tiles. (b) Replace
+    with the map: needs region geometry the pack does not carry, so Luna would have to place
+    regions on a grid at build. **Recommend (a)**: no geometry, same reveal beat, works for a
+    Senate and a city council alike.
+13. **Chamber cap: 72 seats at build, or trim the test call?** The cap protects the 64k Jev
+    request (93% at 60 seats). (a) Keep 72. (b) Drop `record()`'s headlines and streak from the
+    test state to make room for 100. (c) Sample 120 of 250 citizens at the test. **Recommend
+    (a)**; (b) is the cheapest raise if a 100-seat body matters to you.
+14. **Preview worker.** A second Worker (`wrangler.preview.jsonc`, ignored) would let a branch run
+    against production data without touching the domain. It needs its own secret and I cannot set
+    one: run `bunx wrangler secret put OPENROUTER_API_KEY --config ./wrangler.preview.jsonc` and
+    paste the key yourself, or say it is not wanted and the file goes.
+15. **Favour target.** The campaign favour may go to any member (the whip count is over every
+    seat). (a) Keep. (b) Own side only, so the lever reads as party discipline. **Recommend (a)**;
+    the weakest-first list already makes the choice legible.
+16. **Midterm class per term.** `marks.midterm` is seeded once, so "Another term" puts the same
+    third of the seats up again. (a) Keep, the replay is intended. (b) Re-seed per term. **Recommend
+    (b)**: a one-line change, and the second term should not be a rerun of the first.
