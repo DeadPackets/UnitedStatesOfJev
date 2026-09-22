@@ -41,7 +41,8 @@ export default function Chamber({ game, act, busy, onQuit, onRolled }: ChamberPr
   const [before, setBefore] = useState<number | null>(null);
   const [live, setLive] = useState("");
   const [answered, setAnswered] = useState<string | null>(null);
-  const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(-2) : []));
+  // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
+  const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
   const floor = useRef<RollHandle>(null);
 
