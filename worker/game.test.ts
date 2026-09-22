@@ -732,3 +732,29 @@ test("newGame marks a daily run with its day and starts the log empty", () => {
   expect(daily.day).toBe("2026-09-22");
   expect(daily.log).toEqual([]);
 });
+
+test("a daily run writes its grid to the play row exactly once, and a free run writes nothing", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 11 });
+  const writes: unknown[][] = [];
+  const env = { DB: { prepare: (sql: string) => ({ bind: (...a: unknown[]) => ({ run: async () => { writes.push([sql, ...a]); return { meta: { changes: 1 } }; } }) }) } } as never;
+
+  const run = async (mode: "daily" | "free") => {
+    const game: Game = newGame("g-" + mode, code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar,
+      mode === "daily" ? { day: "2026-09-22" } : undefined);
+    game.log = [{ turn: 1, ledger: "authority", delta: 6, cause: "a decree" }, { turn: 2, ledger: "treasury", delta: 9, cause: "the works" }];
+    game.result = { ending: "reelected", score: 10 };
+    game.test = { won: true } as never;
+    const do_ = new (GameDO as any)({ storage: {} }, env);
+    do_.env = env;
+    // The prose is already written, so `epilogue` closes the play row and returns before it calls Luna.
+    await do_.epilogue({ game, prose: { ending: { title: "t", body: "b" } } }, pack);
+  };
+
+  await run("free");
+  expect(writes).toHaveLength(0);
+  await run("daily");
+  expect(writes).toHaveLength(1);
+  expect(String(writes[0][0])).toContain("UPDATE daily_plays");
+  expect(JSON.parse(String(writes[0][1])).map((r: { ledger: string }) => r.ledger)).toEqual(["authority", "treasury"]);
+  expect(writes[0][2]).toBe(1);
+});

@@ -12,7 +12,7 @@ import {
   holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
-import { getScenario } from "./db";
+import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
 import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
@@ -441,7 +441,10 @@ export class GameDO extends DurableObject<Env> {
   // Luna's last page, written once: after the test, and after a term impeachment or a lame duck cuts short.
   private async epilogue(s: Saved, pack: Pack) {
     const { game } = s;
-    if (!game.result || s.prose.ending) return;
+    if (!game.result) return;
+    // The row exists from the moment the seat was taken; this is the write that closes it. Idempotent.
+    if (game.mode === "daily") await endPlay(this.env, game.id, JSON.stringify(runStyle(pack, game).grid), game.test?.won ?? false);
+    if (s.prose.ending) return;
     const state = { ...record(pack, game), mandate: game.test ? Math.round(game.test.mandate * 100) : null, score: game.result.score, terms: game.terms };
     s.prose.ending = await ending(this.env, pack, game.result.ending, state).catch(() => undefined);
   }
