@@ -19,7 +19,7 @@ const last = (n: string) => n.toLowerCase().trim().split(/\s+/).pop() ?? "";
 export async function facts(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   if (ctx.fiction) return { facts: { people: [], bodies: [], groupings: [], dated_events: [], anchor: -1 } };
   const sheet = await luna(env, FactsSchema, "facts",
-    `Extract a facts sheet from the sources for the scenario "${ctx.prompt}". people: every named person with role, born, died (YYYY-MM-DD or year, BC negative, null if unknown) and whether alive on the scenario's start date. bodies: assemblies or councils with size and how chosen. groupings: parties, factions or blocs with leader and named members. dated_events: every dated event with date and title. anchor: the index in dated_events of the event this scenario builds toward, the one a contemporary would be waiting for, or -1 when there is none. Use only what the sources state.`,
+    `Extract a facts sheet from the sources. The scenario is named in the user block under "Scenario". people: every named person with role, born, died (YYYY-MM-DD or year, BC negative, null if unknown) and whether alive on the scenario's start date. bodies: assemblies or councils with size and how chosen. groupings: parties, factions or blocs with leader and named members. dated_events: every dated event with date and title. anchor: the index in dated_events of the event this scenario builds toward, the one a contemporary would be waiting for, or -1 when there is none. Use only what the sources state.`,
     sourceBlock(ctx), 4000);
   return { facts: mergeWikidata(sheet, ctx.sources?.people ?? []) };
 }

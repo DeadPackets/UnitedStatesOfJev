@@ -461,7 +461,8 @@ test("a region where shares lead goes hot and its seats remember the post", () =
   expect(p.hot).toEqual(pack.regions.map((r) => r.id));
   expect(p.regions[pack.regions[0].id]).toBeGreaterThan(0);
   const seat = g.members.find((m) => m.region === pack.regions[0].id)!;
-  expect(seat.memory.some((l) => l.includes("the harbor tolls"))).toBe(true);
+  expect(seat.memory.join(" ")).not.toContain("the harbor tolls");
+  expect(seat.memory.join(" ")).toContain("passing it on");
 });
 
 test("losing the post duel is recorded on the post", () => {

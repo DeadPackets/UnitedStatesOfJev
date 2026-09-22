@@ -365,7 +365,7 @@ export interface Post {
   won: boolean;
 }
 
-export const feedMemory = (region: string, text: string) => `Constituents in ${region} are loud about "${text}".`;
+export const feedMemory = (region: string, reaction: string) => `Constituents in ${region} were loud about the government's last notice: mostly ${reaction}.`;
 
 // v2 §12 counts one region's own citizens, so the denominator is that region's sample, not the 250.
 export function applyPost(pack: Pack, game: Game, turn: number, text: string,
@@ -390,7 +390,7 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
     if (d !== 0) bump(game, r.id, d);
     if (g.share > g.like && g.share > g.boo) {
       hot.push(r.id);
-      const line = feedMemory(r.name, text.slice(0, 60));
+      const line = feedMemory(r.name, g.share > g.boo ? "passing it on" : "booing");
       for (const m of game.members) if (m.region === r.id) m.memory = [...m.memory, line].slice(-5);
     }
   }
