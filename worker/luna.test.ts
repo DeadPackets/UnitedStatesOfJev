@@ -64,3 +64,24 @@ test("credibility is clamped, a runaway rate is clamped and a refusal keeps its 
   expect(no.power).toBe(false);
   expect(no.refusal).toContain("cannot try a citizen");
 });
+
+import { freshCards, REVENUE_CAP } from "./luna";
+
+test("a new term gets two fresh cards, each with a decision and bounded results", async () => {
+  globalThis.fetch = (async () => Response.json({ choices: [{ message: { content: JSON.stringify({
+    cards: [
+      { title_hint: "The mole cracks", stances: ["Rebuild it", "Let it go"], results: [{ ledger: "capital", id: null, delta: -99 }] },
+      { title_hint: "A rival fleet calls", stances: ["Open the port", "Close it"], results: [{ ledger: "approval", id: null, delta: 3 }] },
+      { title_hint: "A third card nobody asked for", stances: ["One", "Two"], results: [] },
+    ],
+  }) } }] })) as unknown as typeof fetch;
+  const g = game();
+  g.term = 2;
+  const cards = await freshCards({ OPENROUTER_API_KEY: "t" } as never, pack, g);
+  expect(cards).toHaveLength(2);
+  expect(cards[0].id).toBe("new-2-1");
+  expect(cards[0].kind).toBe("generic");
+  expect(cards[0].stances).toHaveLength(2);
+  expect(cards[0].results[0].delta).toBe(-REVENUE_CAP);
+  expect(cards[1].id).toBe("new-2-2");
+});

@@ -170,6 +170,10 @@ const canned = (name: string, user: string): unknown => {
     case "outcome": return { line: "It held." };
     case "card": return { title: "A storm", body: "The wharf floods.", stances: ["Hold the line"] };
     case "ending": return { title: "Out", body: "The term ends." };
+    case "freshcards": return { cards: [
+      { title_hint: "The mole cracks", stances: ["Rebuild it", "Let it go"], results: [{ ledger: "capital", id: null, delta: -4 }] },
+      { title_hint: "A rival fleet calls", stances: ["Open the port", "Close it"], results: [{ ledger: "approval", id: null, delta: 2 }] },
+    ] };
     case "newmembers": return {
       rows: (JSON.parse(user).rows as { id: string }[]).map((r, i) => ({
         id: r.id, name: `Newcomer ${i + 1}`, bio: "Won the seat in the swing.", tell: "Reads the roll twice.", core_issues: ["tariffs"],
@@ -567,4 +571,15 @@ test("force is refused while the army will not carry it", async () => {
   const { game, post } = seatedGame(64);
   game.holders.guard.stance = 0.2;
   expect((await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." })).status).toBe(400);
+});
+
+test("another term comes with two cards the last term never saw", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(66);
+  game.stage = "won";
+  game.result = { ending: "reelected", score: 100 };
+  const r = await post("continue", {});
+  expect(r.status).toBe(200);
+  expect(r.body.term).toBe(2);
+  expect(game.extra.filter((s) => s.id.startsWith("new-2-"))).toHaveLength(2);
 });

@@ -14,7 +14,7 @@ import {
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
-import { amendBill, cardText, ending, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
+import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
 import { available, commit, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
@@ -70,6 +70,7 @@ export class GameDO extends DurableObject<Env> {
           case "continue":
             if (game.stage !== "won") throw new Reject(409, "The term is not won.");
             continueTerm(pack, game); s.prose = {};
+            game.extra.push(...await freshCards(this.env, pack, game).catch(() => []));
             break;
           case "stop":
             if (game.stage !== "won") throw new Reject(409, "There is nothing to stop.");

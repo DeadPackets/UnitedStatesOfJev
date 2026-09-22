@@ -218,3 +218,24 @@ export async function newMembers(env: Env, pack: Pack, slots: { id: string; seat
     }), Math.min(4000, 400 + slots.length * 160));
   return d.rows.slice(0, slots.length).map((r) => ({ id: r.id, name: clip(r.name, 60), bio: clip(r.bio, 400), tell: clip(r.tell, 200), core_issues: r.core_issues }));
 }
+
+// Strict json_schema needs every property required, so these are nullable where pack.ts's EffectSchema is optional.
+const FreshEffectSchema = z.object({
+  ledger: z.enum(["approval", "capital", "party", "chest"]), id: z.string().nullable(), delta: z.number().nullable(),
+});
+const CardsSchema = z.object({ cards: z.array(z.object({
+  title_hint: z.string(), stances: z.array(z.string()).min(2).max(3), results: z.array(FreshEffectSchema),
+})) });
+
+// R20: a card that fired in an earlier term never returns, so an extra term needs cards of its own.
+export async function freshCards(env: Env, pack: Pack, game: Game): Promise<Storylet[]> {
+  const d = await luna(env, CardsSchema, "freshcards",
+    `You write two new cards for a ruler who has just won another term in ${pack.title}. Each is something that could plausibly happen next in this place, each is bounded, and each is a real decision with a cost either way. Never repeat what the record says has already happened. title_hint is at most 10 words. Two or three stances, each at most 6 words. results are the ledger moves the card causes whatever is chosen, between ${-REVENUE_CAP} and ${REVENUE_CAP}, ledger one of approval, capital, party or chest, id null.${CONTENT_RULE}${world(pack)}`,
+    JSON.stringify({ term: game.term, record: record(pack, game), problems: pack.problems }), 700);
+  return d.cards.slice(0, 2).map((c, i) => ({
+    id: `new-${game.term}-${i + 1}`, kind: "generic" as const, weight: 1,
+    title_hint: clip(c.title_hint, 80), stances: c.stances.map((s) => clip(s, 40)),
+    scored: ["blocs" as const], needs: [], memory: null,
+    results: c.results.slice(0, 3).map((e) => ({ ledger: e.ledger, id: e.id, delta: clamp(e.delta ?? 0, -REVENUE_CAP, REVENUE_CAP) })),
+  }));
+}
