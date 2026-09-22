@@ -5,6 +5,7 @@ export type Env = {
   GAME: DurableObjectNamespace; RL: RateLimit; OPENROUTER_API_KEY: string;
   DB: D1Database; VEC: VectorizeIndex; ART: R2Bucket; AI: Ai; BUILD: Workflow;
   BUILDS: DurableObjectNamespace<import("./db").BuildsDO>; DAILY_BUILD_CAP: string; DAILY_GAME_CAP: string;
+  DAILY_SECRET: string;
   MODEL?: string;
 };
 export class UpstreamError extends Error { constructor(public status: number, message: string) { super(message); } }
