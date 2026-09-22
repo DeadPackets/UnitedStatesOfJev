@@ -20,14 +20,14 @@ export function useSheet(onClose: () => void) {
     if (!d.open) d.showModal();
     const watch = new MutationObserver(() => {
       if (d.open || timer.current) return;
-      // A sheet that opened itself can outlive its opener, and the browser then restores focus to
-      // <body>. Read that here, at the close: a click on empty space during the exit window also
-      // leaves <body> focused, and must not be taken for a failed restore. The wait is still needed
-      // in case the restore lands after this mutation; the screen's one primary action is where
-      // the player is going next, so send it there.
-      const adrift = document.activeElement === document.body || d.contains(document.activeElement);
+      // A self-opened sheet can outlive its opener and leave <body> focused; a click during the exit
+      // does the same, so the fallback to the primary action runs only when the window passed untouched.
+      let touched = false;
+      const touch = () => { touched = true; };
+      document.addEventListener("pointerdown", touch, { capture: true, once: true });
       timer.current = setTimeout(() => {
-        if (adrift && document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
+        document.removeEventListener("pointerdown", touch, { capture: true });
+        if (!touched && document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
         onClose();
       }, UNMOUNT) as unknown as number;
     });

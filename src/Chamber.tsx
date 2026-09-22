@@ -91,7 +91,7 @@ export default function Chamber({ game, act, busy, onQuit }: { game: GameView; a
     : !voted && Object.keys(bill.offers).length === 0 ? steps.lobby
     : !voted ? steps.vote : null;
   const hotSeat = useMemo(() => (step?.id === "lobby" && weakest ? [weakest.id] : undefined), [step?.id, weakest?.id]);
-  const endTour =() => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
+  const endTour = () => { setTour(false); try { localStorage.setItem("usoj:tour", "done"); } catch {} };
   const wasVoted = useRef(voted);
   useEffect(() => { if (tour && voted && !wasVoted.current) endTour(); wasVoted.current = voted; }, [voted]); // eslint-disable-line
 
