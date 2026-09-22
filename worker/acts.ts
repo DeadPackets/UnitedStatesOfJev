@@ -99,10 +99,14 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const wire = pay(pack, game, tag.charge, tag.title);
   wire.push(...touch(pack, game, tag));
   wire.push(...applyVerb(pack, game, tag));
-  if (tag.revenue.length) {
+  // R11: an appointment holds until another names the same post, so its row carries the holder's own id.
+  const post = tag.verb === "appoint" ? tag.serves[0] ?? tag.hits[0] ?? null : null;
+  const id = post ? `appoint-${post}` : `act-${game.term}-${game.turn}-${game.acts.length}`;
+  if (post) repeal(game, id);
+  if (tag.revenue.length || tag.verb === "appoint") {
     enact(game, {
-      id: `act-${game.term}-${game.turn}-${game.acts.length}`, verb: tag.verb, title: tag.title,
-      perTurn: tag.revenue, repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
+      id, verb: tag.verb, title: tag.title, perTurn: tag.revenue,
+      repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
     });
   }
   for (const t of tag.keeps) keepPromise(pack, game, t);

@@ -187,3 +187,21 @@ test("the campaign discount cuts a price and never what the money buys", () => {
   commit(pack, h, late);
   expect(h.ledgers.popularity[one]).toBeCloseTo(g.ledgers.popularity[one], 5);
 });
+
+test("an appointment lowers the post's resistance and a second one replaces the first", () => {
+  const g = game();
+  g.holders.guard.resistance = 40;
+  commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", title: "A captain of the watch", serves: ["guard"] })));
+  expect(g.holders.guard.resistance).toBe(30);           // RESIST_SERVE
+  expect(g.inForce.map((l) => l.id)).toEqual(["appoint-guard"]);
+  expect(g.inForce[0].verb).toBe("appoint");
+
+  g.turn = 4;
+  commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", title: "A new captain", serves: ["guard"] })));
+  expect(g.inForce.map((l) => l.id)).toEqual(["appoint-guard"]);   // replaced, not stacked
+  expect(g.inForce[0].title).toBe("A new captain");
+  expect(g.inForce[0].turn).toBe(4);
+
+  commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", title: "A clerk of the roll", serves: ["council"] })));
+  expect(g.inForce.map((l) => l.id).sort()).toEqual(["appoint-council", "appoint-guard"]);
+});
