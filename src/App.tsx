@@ -17,7 +17,9 @@ export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
 type Screen = "write" | "match" | "build" | "seat";
 
 const SCENARIO = /^\/s\/([a-z0-9]+)$/i;
-const go = (path: string) => { if (location.pathname !== path) history.pushState(null, "", path); };
+const go = (path: string, replace = false) => {
+  if (location.pathname !== path) history[replace ? "replaceState" : "pushState"](null, "", path);
+};
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("write");
@@ -104,6 +106,13 @@ export default function App() {
     finally { setBusy(false); }
   };
 
+  // The seat is taken once: the deep link is replaced so a reload finds the saved game, not the Seat screen.
+  const takeSeat = async (faction: string, promises: number[], seed: number) => {
+    const ok = await act(() => api.seat(scenario!, faction, promises, seed));
+    if (ok) go("/", true);
+    return ok;
+  };
+
   const restart = useCallback(() => { setPack(null); setScenario(null); setScreen("write"); go("/"); }, []);
   const quit = () => { localStorage.removeItem("usoj:game"); setGame(null); restart(); };
   const ready = useCallback((p: PackView) => { setPack(p); setScreen("seat"); }, []);
@@ -126,7 +135,7 @@ export default function App() {
             : game.stage === "won" ? <Won game={game} act={act} busy={busy} />
             : game.stage === "over" ? <Over game={game} act={act} busy={busy} onNew={quit} />
             : <Chamber key={game.term} game={game} act={act} busy={busy} onQuit={quit} />)
-        : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={(f, p, s) => act(() => api.seat(scenario, f, p, s))} />
+        : screen === "seat" && pack && scenario ? <Seat pack={pack} busy={busy} onSeat={takeSeat} />
         : screen === "build" && scenario ? <Build id={scenario} onReady={ready} onRestart={restart} />
         : screen === "match" ? <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
         : <Write busy={busy} onSubmit={find} />}
