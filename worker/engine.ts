@@ -1,6 +1,6 @@
 import type { Pack, Member as PackMember, Storylet } from "./pack";
 import { TEMPLATES } from "./gen/templates";
-import { turnOf, type Calendar } from "./gen/validate";
+import { turnOf, type Calendar } from "./gen/calendar-math";
 
 // Kept here because pack.ts and gen/assign.ts read it; the pack fills names, never rules.
 export const TEMPERAMENTS = ["loyalist", "deal-maker", "populist", "ideologue", "institutionalist", "maverick"] as const;
