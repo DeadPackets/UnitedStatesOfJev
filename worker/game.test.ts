@@ -3,7 +3,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 // only workerd resolves either module.
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
-const { view, pickStart, GameDO, seededSample } = await import("./game");
+const { view, pickStart, GameDO, seededSample, streetSample } = await import("./game");
 import { encodeCode, hash, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -345,6 +345,10 @@ test("seededSample draws a different jury each turn", () => {
   game.turn = 4;
   const four = seededSample(game, pack.citizens, 50).map((c) => c.id);
   expect(three).not.toEqual(four);
+  // The street's sample holds each of the five blocs in its share of the roll, whatever the seed drew.
+  const blocs: Record<string, number> = {};
+  for (const c of streetSample(game, pack.citizens, 50)) blocs[c.bloc] = (blocs[c.bloc] ?? 0) + 1;
+  expect(Object.values(blocs)).toEqual([10, 10, 10, 10, 10]);
 });
 
 test("a campaign turn needs a draft, a lever it can pay for, and four of them reach the test", async () => {

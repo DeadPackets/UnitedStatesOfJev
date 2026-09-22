@@ -12,7 +12,7 @@ import {
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
-import { packView, VERBS, type Pack, type Verb } from "./pack";
+import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, halfTerm, messages, narrate, newMembers, outcome, parseBill, quotes, replies } from "./luna";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
@@ -388,7 +388,7 @@ export class GameDO extends DurableObject<Env> {
     const reads = await Promise.all(hs.map(async (h) => {
       const rows = {
         seats: h.members === "seats" ? game.members : [],
-        citizens: h.members === "citizens" ? seededSample(game, pack.citizens, HOLDER_SAMPLE) : [],
+        citizens: h.members === "citizens" ? streetSample(game, pack.citizens, HOLDER_SAMPLE) : [],
       };
       const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, rows));
       return [h.id, holderStance(pack, h, r.answers)] as const;
@@ -431,6 +431,18 @@ export function migrate(game: Game): void {
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {
   const r = rng(game.seed ^ 0xfeed ^ game.turn);
   return [...xs].sort(() => r() - 0.5).slice(0, n);
+};
+
+// Every bloc in its share of the roll: a plain draw of 50 can put 15 of one bloc on the street and tilt the test.
+export const streetSample = (game: Game, cs: Citizen[], n: number): Citizen[] => {
+  const size = new Map<string, number>(), seen = new Map<string, number>(), rank = new Map<Citizen, number>();
+  for (const c of cs) size.set(c.bloc, (size.get(c.bloc) ?? 0) + 1);
+  for (const c of seededSample(game, cs, cs.length)) {
+    const i = seen.get(c.bloc) ?? 0;
+    seen.set(c.bloc, i + 1);
+    rank.set(c, (i + 0.5) / size.get(c.bloc)!);
+  }
+  return [...rank.keys()].sort((a, b) => rank.get(a)! - rank.get(b)!).slice(0, n);
 };
 
 // What each lever is worth, priced here so the campaign screen never reads the engine.
