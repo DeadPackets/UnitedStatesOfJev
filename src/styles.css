@@ -195,6 +195,22 @@ body:has(.desk) { height: 100dvh; overflow: hidden; }
   display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
 .desk .mast { min-height: var(--head); padding: 7px 0; }
 .striprow { position: relative; }
+.strip { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 2px solid var(--ink); }
+.led { text-align: left; padding: 9px 14px 11px; border-right: 1px solid var(--tone); display: grid; gap: 2px;
+  min-height: 44px; transition: background var(--t-fast); }
+.led:first-child { padding-left: 0; } .led:last-child { border-right: 0; padding-right: 0; }
+.led:hover, .led[aria-expanded="true"] { background: color-mix(in oklab, var(--c) 9%, transparent); }
+.ledk { display: flex; align-items: center; gap: 6px; }
+.ledk .kicker { color: var(--ink-2); }
+.led .top { display: flex; align-items: baseline; gap: var(--s2); }
+.led .v { font: 800 38px/1 var(--display); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.led .d { font: 800 15px/1 var(--display); }
+.track { position: relative; display: block; height: 9px; background: color-mix(in oklab, var(--c) 20%, var(--bg)); margin-top: 5px; }
+.track i { position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--c); transition: width 700ms var(--ease-expo); }
+.track .fail { position: absolute; top: -4px; left: var(--x); width: 2px; height: 17px; background: var(--danger); }
+.room { font: 600 11px/1.3 var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); margin-top: 4px; }
+.led.danger .room, .led.danger .v { color: var(--danger); }
+.led.danger { box-shadow: inset 0 -3px 0 var(--danger); }
 .main { display: grid; grid-template-columns: 330px minmax(0, 1fr) 320px; gap: var(--s5); padding-top: var(--s3); min-height: 0; }
 .col { min-height: 0; display: flex; flex-direction: column; }
 .deskcol, .floorcol { gap: var(--s2); }

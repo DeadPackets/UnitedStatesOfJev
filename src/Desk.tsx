@@ -10,6 +10,8 @@ import Card, { Announce } from "./Card";
 import Tour, { type TourStep } from "./Tour";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
+import Strip from "./Strip";
+import type { LedgerKey } from "./rules";
 
 type Vocab = GameView["pack"]["vocabulary"];
 const TABS = ["turn", "feed"] as const;
@@ -40,6 +42,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
   const [before, setBefore] = useState<number | null>(null);
   const [live, setLive] = useState("");
   const [answered, setAnswered] = useState<string | null>(null);
+  const [peek, setPeek] = useState<LedgerKey | null>(null);
   // Only what this term brought: past the pack's twenty the list stops growing and there is nothing to announce.
   const [notice, setNotice] = useState(() => (game.term > 1 && game.turn === 1 ? game.escalations.slice(2 * (game.term - 2)) : []));
   const [tour, setTour] = useState(() => { try { return localStorage.getItem("usoj:tour") !== "done"; } catch { return false; } });
@@ -128,7 +131,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         </nav>
       </header>
 
-      <div className="striprow"><div className="strip" role="group" aria-label="The ledgers" /></div>
+      <div className="striprow"><Strip game={game} open={peek} onOpen={setPeek} /></div>
 
       <div className="main">
         <section className="col deskcol" aria-label="The desk">{/* the composer lands here in Task 9 */}</section>
