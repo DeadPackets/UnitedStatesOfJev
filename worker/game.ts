@@ -145,7 +145,7 @@ export class GameDO extends DurableObject<Env> {
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
     const saved = row ? JSON.parse(row.v as string) as Saved : null;
     if (!saved?.game) throw new Reject(404, "No such game.");
-    saved.game.posts ??= [];   // a game saved before Stage B has no feed
+    migrate(saved.game);
     return (this.saved = saved);
   }
 
@@ -388,6 +388,17 @@ export class GameDO extends DurableObject<Env> {
     const state = { ...record(pack, game), mandate: game.test ? Math.round(game.test.mandate * 100) : null, score: game.result.score, terms: game.terms };
     s.prose.ending = await ending(this.env, pack, game.result.ending, state).catch(() => undefined);
   }
+}
+
+// Every v3 save reaches v4 through here: the four old ledgers become five.
+export function migrate(game: Game): void {
+  const g = game as unknown as Record<string, unknown>;
+  const L = g.ledgers as Record<string, unknown>;
+  if (L && L.capital !== undefined) {
+    g.ledgers = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
+  }
+  game.posts ??= [];
+  game.revolt ??= null;
 }
 
 export const seededSample = <T>(game: Game, xs: T[], n: number): T[] => {

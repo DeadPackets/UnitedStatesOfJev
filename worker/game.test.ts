@@ -58,9 +58,10 @@ test("create() picks the start by faction id, not array position, when starts ar
   expect(pickStart(shuffled, 99)).toBeUndefined();
 });
 
-test("a game stored before the feed existed still loads and ships an empty feed", async () => {
+test("a game stored before the feed or the v4 ledgers existed still loads", async () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 7 });
-  const { posts: _none, ...old } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const { posts: _none, ledgers, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const old = { ...rest, ledgers: { approval: ledgers.popularity, capital: 40, party: 55, chest: 3 } };
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any) as any;
@@ -68,7 +69,21 @@ test("a game stored before the feed existed still loads and ships an empty feed"
   doInstance.pack = pack;
   const r = await doInstance.fetch(new Request("https://do/state"));
   expect(r.status).toBe(200);
-  expect((await r.json() as any).posts).toEqual([]);
+  const v = await r.json() as any;
+  expect(v.posts).toEqual([]);
+  expect(v.ledgers.authority).toBe(40);
+  expect(v.ledgers.loyalty).toBe(55);
+  expect(v.ledgers.treasury).toBe(0);
+  expect(v.ledgers.capital).toBe(40);
+});
+
+test("the view still answers to the v3 ledger names until Stage C", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
+  const game: Game = newGame("g-compat", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const v = view(pack, { game, prose: {} });
+  expect(v.ledgers.capital).toBe(game.ledgers.authority);
+  expect(v.ledgers.party).toBe(game.ledgers.loyalty);
+  expect(v.ledgers.approval).toEqual(game.ledgers.popularity);
 });
 
 test("a second request while one is in flight gets 409 one move at a time", async () => {
