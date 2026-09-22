@@ -50,7 +50,7 @@ These close ambiguities the maps flagged. Later stages consume them as written.
 | `pack.test` vs the new test | `pack.test` is untouched (`name`, `win`, `lose`, `reveal`). The new object is `constitution.retention`. `pack.chamber.alpha` becomes dead but stays. |
 | The bar | A formula `{start, step, cap}`, not an array. `bar(pack, term) = min(cap, start + step * (term - 1))`. |
 | The campaign | Unchanged in Stage A. `endTurn` still switches to `stage: "campaign"` after turn 20 and `applyCampaign` still reaches `stage: "test"`. The 25% campaign discount is Stage B. |
-| Authored promises | The engine exposes `authorPromise()`; no route reads a platform sentence in Stage A. Stage B's proclaim route and Stage C's Seat call it. |
+| Authored promises | The engine exposes `authorPromise()`; no route reads a platform sentence in Stage A. Stage B calls it, from the proclaim route and from the Seat's platform sentence in its Task 21. |
 | Early test weights | The firing holder joins the counted set at `max(its weight, EARLY_WEIGHT)` and every weight is renormalised to sum 1. `EARLY_WEIGHT = 0.3   // TUNE`. |
 
 ---
@@ -714,7 +714,66 @@ export async function constitution(env: Env, ctx: GenCtx): Promise<Partial<GenCt
 
 Move the three imports already at the top of the file into this block so the file has one import section.
 
-- [ ] **Step 4: Carry it through the build context**
+- [ ] **Step 4: The ruler's faction must be one of the starts**
+
+`ConstitutionSchema` types `ruler.faction` as a bare string, and `constitution(c, chamberExists)` in
+`worker/gen/validate.ts` never sees the frame, so the rule cannot live in the validator without changing
+a signature the later stages treat as fixed. The build step has the list in hand instead: the starts are
+`ctx.frame.starts` and each row's id is its `faction` field (`worker/gen/frame.ts:43-46`), not
+`ctx.facts`, which carries no starts at all. Push the violation into the retry round the step already runs.
+
+In `constitution()`, replace the whole block from `let c = await luna(` down to the `return`:
+
+```ts
+  const startIds = f.starts.map((s) => s.faction);
+  // ruler.faction is a bare string in the schema, so the frame's own start list is the only check there is.
+  const wrongFaction = (x: Constitution) =>
+    startIds.includes(x.ruler.faction) ? [] : [`ruler.faction must be one of: ${startIds.join(", ")}`];
+
+  let c = await luna(env, ConstitutionSchema, "constitution", SYSTEM, user, BUDGET);
+  let settled = settleConstitution(c, chamberExists);
+  let violations = [...settled.violations, ...wrongFaction(c)];
+  if (violations.length) {
+    const retry = `${user}\n\nAn earlier attempt returned this constitution:\n${JSON.stringify(c)}\n\nValidation found these violations:\n- ${violations.join("\n- ")}\n\nReturn the corrected full constitution. Keep everything else the same.`;
+    c = await luna(env, ConstitutionSchema, "constitution", SYSTEM, retry, BUDGET);
+    settled = settleConstitution(c, chamberExists);
+    violations = [...settled.violations, ...wrongFaction(c)];
+  }
+  if (violations.length) throw new NeedsRepair(violations, JSON.stringify(c));
+  return { constitution: settled.constitution };
+```
+
+Add `type Constitution` to the `../pack` import.
+
+`mkConstitution()` names `harborites`, which `mkFrame()` has no start for, so Step 1's first test would
+now spend a second call and throw. Give its stub answer a faction the frame knows:
+
+```ts
+  const seen = stub({ ...CONSTITUTION, ruler: { role: "Consul", faction: "reds" },
+    retention: { ...CONSTITUTION.retention, weights: [{ id: "council", value: 0.9 }, { id: "street", value: 0.9 }] } });
+```
+
+Then append the case for the rule itself to `worker/gen/constitution.test.ts`:
+
+```ts
+test("a ruler faction that is not a start id goes back for one repair round", async () => {
+  const real = globalThis.fetch;
+  const seen = stub({ ...CONSTITUTION, ruler: { role: "Consul", faction: "Harbour Party" } });
+  try {
+    await expect(constitution({ OPENROUTER_API_KEY: "t" } as never, ctx())).rejects.toThrow(/ruler\.faction/);
+    expect(seen.length).toBe(2);
+    expect(seen[1].user).toContain("ruler.faction must be one of:");
+  } finally { globalThis.fetch = real; }
+});
+```
+
+Run: `bun test worker/gen/constitution.test.ts`
+Expected: `2 pass`.
+
+Stage C's Task 17 keeps its `?? pack.starts[0]` fallback, which after this step only covers a pack built
+before v4.
+
+- [ ] **Step 5: Carry it through the build context**
 
 In `worker/gen/prompts.ts`, add to `GenCtx` (line 7):
 
@@ -729,7 +788,7 @@ export type GenCtx = {
 
 and add `Constitution` to the `../pack` import on line 1.
 
-- [ ] **Step 5: Wire the step into the Workflow**
+- [ ] **Step 6: Wire the step into the Workflow**
 
 In `worker/build.ts`, add the import:
 
@@ -756,7 +815,7 @@ In `assemble` (line 214), pass it through:
     constitution: ctx.constitution ?? undefined,
 ```
 
-- [ ] **Step 6: Add the step to the build ticker**
+- [ ] **Step 7: Add the step to the build ticker**
 
 In `src/Build.tsx`, add `"constitution"` to `STEPS` between `"frame"` and `"assign"`, and to `PLAIN`:
 
@@ -768,12 +827,12 @@ const STEPS = ["plan", "fetch", "facts", "calendar", "frame", "constitution", "a
   frame: "Draw the chamber", constitution: "Write the constitution", assign: "Fill the seats",
 ```
 
-- [ ] **Step 7: Run the tests and the build**
+- [ ] **Step 8: Run the tests and the build**
 
 Run: `bun test worker src && bunx tsc -b --force && bun run build`
 Expected: `0 fail`, `tsc` silent, vite prints `built in`.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add worker/gen/constitution.ts worker/gen/constitution.test.ts worker/gen/prompts.ts worker/build.ts src/Build.tsx

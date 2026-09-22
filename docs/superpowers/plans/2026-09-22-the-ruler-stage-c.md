@@ -25,7 +25,7 @@ The first ten are Stage A's, carried verbatim. They hold for every stage.
 - **Stored packs must keep parsing:** `parseRow` (`worker/db.ts:11`) re-validates every stored pack on read, so **every new pack field is `.optional()` or `.default()`** and no existing required field changes shape.
 - **Never reuse these identifiers:** `LEDGERS` (`worker/pack.ts:25`, storylet effect targets), `pack.test`, `vocabulary.midterm`. Add new names beside them.
 - **Player text is data, never in a system prompt.**
-- **Numbers to tune carry the literal tag `TUNE` with a default**, for example `export const REGION_MS = 14000;   // TUNE`.
+- **Numbers to tune carry the literal tag `TUNE` with a default**, for example `export const RESIST_DECAY = 1;   // TUNE`.
 
 Stage C adds these.
 
@@ -239,7 +239,7 @@ In `src/api.ts`, replace Stage B's `GameView` with the same type minus that inte
 
 ```ts
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
-export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra"> & {
+export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra" | "calls"> & {
   ledgers: Game["ledgers"];
   scenario: string;
   pack: PackView;
@@ -1529,7 +1529,7 @@ git commit -m "Every act prints its price tag, and the turn ends under it"
 - Modify: `src/Desk.tsx`, `src/styles.css`
 
 **Interfaces:**
-- Consumes: the bill block Task 4 carried across from `Chamber.tsx`, `game.bills`, `api.whip`, `api.amend`, `api.adopt`, `api.vote`, `FeedLine`.
+- Consumes: the bill block Task 4 carried across from `Chamber.tsx`, `game.bills`, `api.whip`, `api.amend`, `api.adopt`, `api.vote`, `FeedLine`. `POST /acts` counts a fresh bill in the same call (Stage B Task 7), so a tabled law always arrives with `expected` and `band` set and the whip control never renders; `api.whip` stays wired where it was, unreached.
 - Produces: `.tabled` in the desk column, the only home a tabled law has once the rail becomes the five spec §9 tabs in Task 12.
 
 A law tabled by `POST /acts` is counted, amended, whipped and voted through four routes Stage B keeps and the term script still drives. The two-tab rail is their only screen today, and Task 12 replaces that rail with Feed, Country, Room, Record and Pinned, none of which can hold them. The spec fixes those five tabs, so the count moves to the desk column, under the price tag, where the act that tabled it was written. This task runs before Task 12 so the controls are never orphaned, not even between two commits.
@@ -1569,7 +1569,7 @@ Expected: `0 fail`, `tsc` silent, vite prints `built in`.
 
 - [ ] **Step 4: Visual check**
 
-Open a saved game with a law on the floor. Under the price tag the desk column must carry the bill card with its title, summary and tags, then the count controls in this order as the state moves: the whip button, then Call the vote with Amend beside it, then the pass or fail stamp with Next. The floor in the middle column must still count, still roll seat by seat and still land its gavel. Adopt an amendment from the desk column and watch the expected yes on the floor move. Call the vote and watch the roll call. Then end the turn with no law tabled and confirm the desk column is only the composer, the tag and End turn, with nothing left behind.
+Open a saved game with a law on the floor. Under the price tag the desk column must carry the bill card with its title, summary and tags, then the count controls in this order as the state moves: Call the vote with Amend beside it, then the pass or fail stamp with Next. The whip button does not appear, because `POST /acts` already counted the bill. The floor in the middle column must still count, still roll seat by seat and still land its gavel. Adopt an amendment from the desk column and watch the expected yes on the floor move. Call the vote and watch the roll call. Then end the turn with no law tabled and confirm the desk column is only the composer, the tag and End turn, with nothing left behind.
 
 - [ ] **Step 5: Commit**
 
@@ -2331,6 +2331,10 @@ git commit -m "The landing offers today's term, any polity, resume and a friend'
 
 `radioKeys` went with the faction picker. `src/Campaign.tsx` was its only other caller and Stage B deleted that file, so `src/keys.ts` is dead code the moment this task lands and goes with it.
 
+The platform sentence this task collects is read by Stage B's Task 21: `GameDO.create()` sends `body.platform` to `platformPromises` and authors up to three promises from what comes back. No Stage C file calls it.
+
+Step 5 keeps the `?? pack.starts[0]` fallback on `pack.constitution.ruler.faction`. Stage A's constitution build step now pushes a violation when that faction is not one of `ctx.frame.starts`'s ids, so a v4 pack always carries a start id there and the fallback only covers a pack built before v4.
+
 - [ ] **Step 1: Write the failing test**
 
 Append to `src/rules.test.ts`:
@@ -2710,7 +2714,7 @@ git commit -m "The half-term walks whichever holder the pack draws"
 
 Stage B already deleted `src/Campaign.tsx`, the two campaign routes, `stage: "campaign"` and the App branch, and put C4's discount on the last turns of the ordinary session. This task only writes the §14 readout, on the stage the Desk already owns. Nothing is deleted here.
 
-No turn number crosses into the client. The panel opens when `game.discount < 1` and prints the discount out of that same field, so retuning `CAMPAIGN_FROM` or `CAMPAIGN_DISCOUNT` in `worker/acts.ts` moves the screen with it and nothing in `src/rules.ts` has to follow.
+No turn number crosses into the client. The panel opens when `game.discount < 1` and prints the discount out of that same field, so retuning `CAMPAIGN_FROM` in `worker/engine.ts` or `CAMPAIGN_DISCOUNT` in `worker/acts.ts` moves the screen with it and nothing in `src/rules.ts` has to follow.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -3027,14 +3031,14 @@ git commit -m "Won prints the next bar and what another term carries"
 In `src/api.ts`, after the `Daily` type, add:
 
 ```ts
-/** R22: both are engine facts. The client prints them and never derives them. */
-export type RunStyle = { line: string; decisive: { turn: number; line: string }[] };
+/** R22 and the share grid: all three are engine facts (Stage D's `runStyle`). The client prints them and never derives them. */
+export type RunStyle = { line: string; decisive: { turn: number; line: string }[]; grid: { ledger: string; won?: boolean }[] };
 ```
 
 and widen the result on `GameView`:
 
 ```ts
-  result?: NonNullable<Game["result"]> & Partial<RunStyle> & { grid?: { ledger: string; won?: boolean }[] };
+  result?: NonNullable<Game["result"]> & Partial<RunStyle>;
 ```
 
 - [ ] **Step 2: Print the three new blocks**
@@ -3223,6 +3227,7 @@ git commit -m "The Desk on a phone, and every motion path honours the setting"
 | Era palette on paper, rules and motif; five FIXED hues outside `applyTheme` | 3, 4 |
 | Glance, peek, keep; the unread as a mark on a tab; peeks are never dialogs | 5, 6, 12 |
 | Landing (§14): daily card, any polity, resume, a friend's code, the result grid | 16 |
+| Match (§14): an archive hit opens the Seat, two near hits show both mastheads, none starts the build | none: `src/Match.tsx` already does all three and no task touches it |
 | Build gains the constitution step and the content note | 16 |
 | Seat (R17): three pages, back and forth, oath on every page, the platform sentence | 17 |
 | Oath: the press wipe, the pack's stamp, the gavel | 18 |
@@ -3275,7 +3280,7 @@ export function difficulty(gap: number): string;           // "Comfortable" | "M
 export function mandateOf(holders: { weight: number; stance: number }[]): number;
 ```
 
-No worker constant is mirrored here. `CAMPAIGN_FROM` stays in `worker/acts.ts` alone: the campaign panel opens on `game.discount < 1`.
+No worker constant is mirrored here. `CAMPAIGN_FROM` stays in `worker/engine.ts` alone (Stage B Task 3, beside `ARMY_STANCE`): the campaign panel opens on `game.discount < 1`.
 
 ### `src/motion.ts`
 
@@ -3355,10 +3360,10 @@ Not touched by this stage: `scripts/term.ts`, which Stage B's last task rewrote 
 
 ```ts
 export type Daily = { day: string; scenario: string; title: string; era: string; place: string; played: boolean; streak: number; plays: number; grid?: { ledger: string; won?: boolean }[] };
-/** R22: both are engine facts. The client prints them and never derives them. */
-export type RunStyle = { line: string; decisive: { turn: number; line: string }[] };
+/** R22 and the share grid: all three are engine facts (Stage D's `runStyle`). The client prints them and never derives them. */
+export type RunStyle = { line: string; decisive: { turn: number; line: string }[]; grid: { ledger: string; won?: boolean }[] };
 
-export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra"> & {
+export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "ledgers" | "holders" | "extra" | "calls"> & {
   ledgers: Game["ledgers"];                  // the five v4 names only: approval, capital and party are gone
   scenario: string; pack: PackView; members: ViewMember[]; bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];
@@ -3370,7 +3375,7 @@ export type GameView = Omit<Game, "pack" | "director" | "members" | "bills" | "l
   warnings: Warning[]; inForce: InForce[]; wire: WireLine[]; pending: string | null;
   tag: PriceTag | null; refusal: Refusal | null; acts: Act[]; rival: RivalMove | null;
   test?: TestResult;
-  result?: NonNullable<Game["result"]> & Partial<RunStyle> & { grid?: { ledger: string; won?: boolean }[] };
+  result?: NonNullable<Game["result"]> & Partial<RunStyle>;
 };
 
 export const api: {
@@ -3428,7 +3433,7 @@ Two smaller reconciliations for the cross-check, both one-line fixes if they com
 
 ## Open questions
 
-- Stage A's `ConstitutionSchema` types `ruler.faction` as a bare string. Task 17 resolves it against `pack.starts` and falls back to `pack.starts[0]`, but a pack whose generator wrote a display name there will always start the player in the first faction. The cross-plan reconcile asks Stage A's validator to require a `pack.starts` id; until it does, the fallback stands.
+- Stage A's `ConstitutionSchema` types `ruler.faction` as a bare string. Task 17 resolves it against `pack.starts` and falls back to `pack.starts[0]`, but a pack whose generator wrote a display name there will always start the player in the first faction. Stage A's build step now rejects that faction against the frame's start ids, so the fallback only covers a pack built before v4.
 - Brief ruling 10 puts spec §6's minority start fields on the Stage A view, and Task 17 reads `game.shortfall` and `game.handicap` there for the label after the oath. Before the oath no game exists, so the Seat computes `threshold - ownSeats` from the pack. The two can disagree only if Stage A's `shortfall` is not that same subtraction, which its interface block says it is.
 - `ledgerValue` sums the weighted national popularity in the client, which is the same arithmetic as Stage A's `nationalPopularity`. It prints a view field rather than deciding anything, but it is two formulas to keep in step. A `popularity: number` scalar on the view would let the client sum go.
 - Stage B leaves `pack.chamber.alpha`, `pack.test.reveal` and `pack.test.win` and `lose` in place. Task 21 stops reading `alpha` and `reveal` and keeps `win` and `lose` as the verdict sentence. Both dead fields stay in the pack, unread, which the stage review may want to call.

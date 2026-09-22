@@ -20,10 +20,15 @@
 - **Tests green per commit:** every task ends with `bun test worker src` green and `bunx tsc -b --force` silent.
 - **Comments: default none, cap two lines.** Write one only for a constraint the code cannot show.
 - **No em dashes in copy** (`worker/luna.ts` `STYLE`): plain words, short sentences, no three-item lists, sentence case titles, straight quotes.
-- **Stored packs must keep parsing:** `parseRow` (`worker/db.ts:11`) re-validates every stored pack on read, so **every new pack field is `.optional()` or `.default()`** and no existing required field changes shape. Stage D adds no pack field at all.
+- **Stored packs must keep parsing:** `parseRow` (`worker/db.ts:11`) re-validates every stored pack on read, so **every new pack field is `.optional()` or `.default()`** and no existing required field changes shape.
 - **Never reuse these identifiers:** `LEDGERS` (`worker/pack.ts:25`, storylet effect targets), `pack.test`, `vocabulary.midterm`. Add new names beside them.
 - **Player text is data, never in a system prompt.**
-- **Numbers to tune carry the literal tag `TUNE` with a default**, for example `export const BUDGET_USD = 25;   // TUNE`.
+- **Numbers to tune carry the literal tag `TUNE` with a default**, for example `export const RESIST_DECAY = 1;   // TUNE`.
+
+Stage D adds these three, which no earlier stage needed:
+
+- **Stage D adds no pack field at all**, so the stored-pack rule above costs this stage nothing.
+- **Unread function parameters are written `_name`.** `noUnusedLocals` and `noUnusedParameters` are on in both tsconfigs, and in `tsconfig.scripts.json` from Task 12 onward.
 - **Every bot term costs real money.** One measured v3 Rome term is **$0.2153** (`docs/experiments.md`, "Seconds and cost per route, one full Rome term"); a v4 term is measured in Task 16 before any pass is budgeted. No script in this stage may run unbounded: each one carries a term or call cap and aborts when it is reached.
 
 ## Decisions taken before the tasks
@@ -460,7 +465,7 @@ In `worker/game.ts`, in `migrate(game)`, beside the defaults Stage A and Stage B
 
 `load()` is not touched: `migrate(game)` is the one save-migration site, which is where Stage A put it.
 
-In `create()`, change the `newGame` call to pass the day the edge sent:
+In `create()`, change the `newGame` call to pass the day the edge sent. `create()` already reads `body.platform` and authors its promises after `newGame`, which Stage B's Task 21 added; keep that edit and add the day beside it:
 
 ```ts
     const day = typeof body.day === "string" ? body.day : null;
