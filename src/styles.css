@@ -95,6 +95,7 @@ textarea, input, select { font: inherit; color: inherit; }
 @keyframes coinpulse { 40% { r: calc(var(--r) * 1.45); } }
 .seats .ini { font-family: var(--display); font-weight: 800; }
 .seats .edge { pointer-events: none; }
+.seats .hit { pointer-events: fill; }
 .seats .coin { opacity: 0; transition: opacity var(--t-state) var(--ease-out); }
 .seats .coin.on { opacity: 1; }
 .seats .seatg[data-vote] .well, .seats .seatg[data-vote] .ini, .seats .seatg[data-vote] .coin { opacity: 0; }

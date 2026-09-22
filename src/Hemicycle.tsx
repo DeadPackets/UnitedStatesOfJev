@@ -38,7 +38,10 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
 ) {
   const ordered = useMemo(() => orderMembers(members, own, coalition, whip), [members, own, coalition, whip]);
   const seats = useMemo(() => points(pack.theme.layout, members.length), [pack.theme.layout, members.length]);
-  const r = useMemo(() => Math.min(20, minGap(seats) * 0.4), [seats]);
+  const gap = useMemo(() => minGap(seats), [seats]);
+  const r = Math.min(20, gap * 0.4);
+  // A 9 px circle is a 28 px target. Half the gap is the largest target two seats can hold without overlapping.
+  const hit = gap / 2;
   const factions = useMemo(() => new Map(pack.factions.map((f) => [f.id, f])), [pack.factions]);
   const regions = useMemo(() => new Map(pack.regions.map((g) => [g.id, g.name])), [pack.regions]);
   const [hover, setHover] = useState<number | null>(null);
@@ -94,6 +97,7 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
             data-tour={hotSet.has(m.id) ? "seat" : undefined}
             onClick={() => onPick(m.id)} onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(m.id); } }}
             onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
+            <circle className="hit" cx={s.x} cy={s.y} r={hit} fill="transparent" />
             <circle className="focus" cx={s.x} cy={s.y} r={r + 6} fill="none" stroke="var(--red)" strokeWidth={2} />
             {hotSet.has(m.id) ? <circle cx={s.x} cy={s.y} r={r + 5} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.9}>
               <animate attributeName="r" values={`${r + 1};${r + 8};${r + 1}`} dur="1.4s" repeatCount="indefinite" /></circle> : null}
