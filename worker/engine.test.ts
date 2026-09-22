@@ -152,11 +152,11 @@ test("a missed promise decays popularity by a share a turn, never a cliff", () =
   expect(Object.values(g.promises).every((p) => p.state === "broken")).toBe(true);
   // Three pending promises, each taking PROMISE_SHARE 0.02 of what the one before it left, rounded to one
   // decimal: 50 - round1(1.00) = 49, 49 - round1(0.98) = 48, 48 - round1(0.96) = 47.
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(47);
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(r === g.rival!.region ? 47 - RIVAL_HIT : 47);
   endTurn(pack, g);
   // Past the window it keeps taking a share, it does not cliff again:
   // 47 - round1(0.94) = 46.1, 46.1 - round1(0.922) = 45.2, 45.2 - round1(0.904) = 44.3.
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBeCloseTo(44.3, 5);
+  for (const r of REGIONS.filter((x) => x !== g.rival!.region)) expect(g.ledgers.popularity[r]).toBeCloseTo(44.3, 5);
 });
 
 test("fickle base shortens the window instead of moving a cliff", () => {
@@ -887,7 +887,7 @@ test("a per region rate moves every region", () => {
   const before = { ...g.ledgers.popularity };
   enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }], repealConsent: "chamber", sunset: null });
   endTurn(pack, g);
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] + 1);
+  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] + 1 - (r === g.rival!.region ? RIVAL_HIT : 0));
 });
 
 test("a court that strikes takes the newest law in force with it", () => {
@@ -1053,4 +1053,31 @@ test("a continue turns the calendar's unfired cards into ordinary ones", () => {
   for (const id of dated) expect(g.director.seen).toContain(id);
   expect(g.extra.filter((s) => s.kind === "generic").length).toBe(dated.length);
   expect(deckOf(pack, g).length).toBe(pack.deck.length + dated.length);
+});
+
+import { RIVAL_HIT, rivalMove } from "./engine";
+
+test("the rival is a named person backed by a holder, and works the weakest region", () => {
+  const g = game();
+  g.holders.council.resistance = 44;
+  const weakest = [...pack.regions].sort((a, b) => g.ledgers.popularity[a.id] - g.ledgers.popularity[b.id])[0];
+  const before = g.ledgers.popularity[weakest.id];
+  const out = rivalMove(pack, g)!;
+  expect(out.move.name).toBe("Warden Ossin Drell");   // the keelwrights hold 8 seats, the tidebound 6
+  expect(out.move.backer).toBe("council");             // the home holder nearest its own line
+  expect(out.move.region).toBe(weakest.id);
+  expect(out.move.line).toContain(out.move.name);
+  expect(g.ledgers.popularity[weakest.id]).toBeCloseTo(before - RIVAL_HIT, 1);
+  expect(out.wire.every((w) => w.kind === "ledger")).toBe(true);
+});
+
+test("the boundary records the rival's move and prints it when nothing louder is waiting", () => {
+  const g = game();
+  // The Director must draw nothing, or "A card is on the desk." wins the pending line: the turn after a
+  // crisis is never clear, and an exogenous dated card lands whatever the gap, so the deck is spent.
+  g.director.lastCrisis = g.turn + 1;
+  g.director.seen = pack.deck.map((s) => s.id);
+  const out = endTurn(pack, g);
+  expect(g.rival!.turn).toBe(1);                 // the turn that just ended, not the one about to be played
+  expect(out.pending).toContain(g.rival!.name);
 });

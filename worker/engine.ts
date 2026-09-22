@@ -324,6 +324,31 @@ export function movePopularity(pack: Pack, game: Game, ids: string[], delta: num
   });
 }
 
+export const RIVAL_HIT = 2;   // TUNE: what the rival takes out of the weakest region every turn
+
+// R10 and §5: the rival is a person with a backer, not a number. Its move is printed at the boundary,
+// before the player commits anything on the next turn.
+export function rivalMove(pack: Pack, game: Game): { move: RivalMove; wire: WireLine[] } | null {
+  const start = pack.starts.find((s) => s.faction === game.faction);
+  const mine = new Set([game.faction, ...(start?.coalition ?? [])]);
+  const seats = new Map<string, number>();
+  for (const m of game.members) if (!mine.has(m.faction)) seats.set(m.faction, (seats.get(m.faction) ?? 0) + 1);
+  // A pack whose start coalition holds every faction still has a rival: the largest bench that is not the
+  // ruler's own. mini.json is one, so without this line every test here reads a null rival.
+  if (!seats.size) for (const m of game.members) if (m.faction !== game.faction) seats.set(m.faction, (seats.get(m.faction) ?? 0) + 1);
+  const id = [...seats.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? pack.factions.find((f) => f.id !== game.faction)?.id;
+  const f = id ? pack.factions.find((x) => x.id === id) : undefined;
+  if (!f) return null;
+  const home = holdersOf(pack).filter((h) => h.where === "home");
+  const backer = [...home].sort((a, b) =>
+    (game.holders[b.id]?.resistance ?? 0) / (b.line || 1) - (game.holders[a.id]?.resistance ?? 0) / (a.line || 1))[0];
+  const weakest = [...pack.regions].sort((a, b) => (game.ledgers.popularity[a.id] ?? 50) - (game.ledgers.popularity[b.id] ?? 50))[0];
+  const where = weakest?.name ?? pack.place;
+  const line = `${f.leader}, backed by ${backer?.name ?? f.name}, worked ${where} this ${pack.vocabulary.turn}.`;
+  const wire = movePopularity(pack, game, weakest ? [weakest.id] : [], -RIVAL_HIT, `${f.leader} in ${where}`);
+  return { move: { turn: game.turn, name: f.leader, backer: backer?.id ?? "", region: weakest?.id ?? null, line }, wire };
+}
+
 export const JEV_SWING = 12;   // TUNE, §8: the popularity points one turn's model answers may move
 
 // Measured region-weighted, like the national number, so one heavy region cannot spend the whole budget.
@@ -693,6 +718,10 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
 
   const voted = game.turn;
   game.quiet = [...game.wire, ...wire].some((w) => w.kind === "ledger") ? 0 : game.quiet + 1;
+  // After the quiet count: the rival moves every turn, so counting it would keep the FicMachine floor from firing.
+  const rival = game.stage === "session" || game.stage === "midterm" ? rivalMove(pack, game) : null;
+  game.rival = rival?.move ?? null;
+  if (rival) wire.push(...rival.wire);
   pushWire(game, wire);
   game.calls = 0; game.swing = 0; game.tag = null; game.refusal = null;
   game.turn += 1;
@@ -716,7 +745,7 @@ function pendingItem(pack: Pack, game: Game, w: { warned: Warning[]; fired: Warn
   if (event) return "A card is on the desk.";
   if (game.turn === 10) return "The half of the term falls at the end of this turn.";
   if (game.turn === TURNS_PER_TERM) return "This is the last turn of the term.";
-  return null;
+  return game.rival?.line ?? null;
 }
 
 export function keepPromise(pack: Pack, game: Game, tag: string) {
