@@ -4,7 +4,7 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
+  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -535,6 +535,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
+    // R22 and the share grid are read off the run log, because five places write game.result and none of them own this.
+    ...(game.result ? { result: { ...game.result, ...runStyle(pack, game) } } : {}),
     // Stage C replaces the screens; until then the v3 names ride beside the v4 ones.
     ledgers: { ...game.ledgers, approval: game.ledgers.popularity, capital: game.ledgers.authority, party: game.ledgers.loyalty },
     scenario: game.pack, pack: pv,

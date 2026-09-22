@@ -493,6 +493,51 @@ export function record(pack: Pack, game: Game, budget = RECORD_TOKENS): Record<s
   return out;
 }
 
+export type RunStyle = { line: string; decisive: { turn: number; line: string }[]; grid: { ledger: Square; won?: boolean }[] };
+
+export const DECISIVE = 2;   // TUNE: turns R22 prints back
+
+// R22: one sentence for the ledger that led the most turns. The engine states it; the client prints it.
+export const STYLE_LINES: Record<Square, string> = {
+  treasury: "You ruled from the treasury. The money decided more turns than anything else did.",
+  authority: "You ruled by authority. You spent standing to get your way, turn after turn.",
+  chest: "You ruled from the private chest. What you paid for quietly moved more than the budget did.",
+  loyalty: "You ruled by loyalty. You kept the people around you close and paid for it elsewhere.",
+  popularity: "You ruled by popularity. The country's mood led and the rest of it followed.",
+  quiet: "You ruled quietly. Very little moved far in either direction.",
+};
+
+/** The row for one finished turn: the ledger whose absolute movement was largest across the turn's wire. */
+export function biggestMove(wire: WireLine[], turn: number): RunRow {
+  const sums = new Map<LedgerV4, { delta: number; cause: string; top: number }>();
+  for (const l of wire) {
+    if (l.kind !== "ledger" || !l.ledger) continue;
+    const size = Math.abs(l.delta);
+    const cur = sums.get(l.ledger) ?? { delta: 0, cause: l.cause, top: 0 };
+    cur.delta += size;
+    if (size > cur.top) { cur.top = size; cur.cause = l.cause; }
+    sums.set(l.ledger, cur);
+  }
+  let row: RunRow = { turn, ledger: "quiet", delta: 0, cause: "a still turn" };
+  for (const [ledger, v] of sums) if (v.delta > row.delta) row = { turn, ledger, delta: v.delta, cause: v.cause };
+  return row;
+}
+
+/** R22 and spec §10, read off the run log. Pure, so `view()` may call it on every read of a finished run. */
+export function runStyle(pack: Pack, game: Game): RunStyle {
+  const log = game.log ?? [];
+  const counts = new Map<Square, number>();
+  for (const r of log) counts.set(r.ledger, (counts.get(r.ledger) ?? 0) + 1);
+  let lead: Square = "quiet", most = 0;
+  for (const [s, n] of counts) if (n > most) { most = n; lead = s; }
+  const name = (s: Square) => (s === "quiet" ? "nothing" : pack.constitution?.ledgers[s].name ?? s);
+  const decisive = [...log].sort((a, b) => b.delta - a.delta).slice(0, DECISIVE).sort((a, b) => a.turn - b.turn)
+    .map((r) => ({ turn: r.turn, line: `${r.cause}. ${name(r.ledger)} moved ${Math.round(r.delta)}.` }));
+  const grid: RunStyle["grid"] = log.map((r) => ({ ledger: r.ledger }));
+  if (grid.length && typeof game.test?.won === "boolean") grid[grid.length - 1].won = game.test.won;
+  return { line: STYLE_LINES[lead], decisive, grid };
+}
+
 /* ---------- escalations: spec §7's twenty, each a few lines at its own hook ---------- */
 
 export type EscalationEffects = {
@@ -751,7 +796,9 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   const event = director(game, pack);
 
   game.pending = pendingItem(pack, game, warnings, event);
-  return { wire: game.wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
+  const out: TurnEnd = { wire: game.wire, warned: warnings.warned, fired: warnings.fired, event, pending: game.pending };
+  game.log.push(biggestMove(out.wire, game.log.length + 1));
+  return out;
 }
 
 // The one more turn hook: the next thing that will happen, printed at the boundary.
@@ -1294,6 +1341,7 @@ export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
 export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
   game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
+  game.log = [];
   game.director.intensity = 0; game.director.lastCrisis = -1;
   game.test = undefined; game.midterm = undefined; game.result = undefined;
   game.earlyTest = undefined; game.warnings = []; game.wire = []; game.pending = null; game.revolt = null;
