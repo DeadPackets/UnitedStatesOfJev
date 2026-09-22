@@ -412,6 +412,7 @@ export interface MidtermDraw {
   up: { seat: string; memberId: string; faction: string; p: number }[];
   forced: string[];                                // seat ids split_chamber took before any draw
   lost: { seat: string; memberId: string; from: string; to: string }[];
+  lostOwn: number;
   wipeout: boolean;
 }
 export interface Replacement {
@@ -420,7 +421,7 @@ export interface Replacement {
   flags: Member["flags"]; patrons: string[];
 }
 export interface Persona { id: string; name: string; bio: string; tell: string; core_issues: string[] }
-export interface Midterm { up: string[]; lost: MidtermDraw["lost"]; wipeout: boolean; headline?: { title: string; lede: string } }
+export interface Midterm { up: string[]; lost: MidtermDraw["lost"]; lostOwn: number; wipeout: boolean; headline?: { title: string; lede: string } }
 
 const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 // A partner is on the government's side only where neither start calls the other hostile.
@@ -480,7 +481,8 @@ export function runMidterm(pack: Pack, game: Game, intent: Record<string, number
     const held = roll() < holdP(pack, game, m, byRegion);
     if (!held) lost.push({ seat: m.seat, memberId: m.id, from: m.faction, to: winnerOf(pack, game, m.region, m.faction, false)! });
   }
-  return { up, forced: [...forcedTo.keys()], lost, wipeout: lost.length * 3 >= cls.length && cls.length > 0 };
+  const lostOwn = lost.filter((l) => ownSide(pack, game, l.from) && !ownSide(pack, game, l.to)).length;
+  return { up, forced: [...forcedTo.keys()], lost, lostOwn, wipeout: lostOwn * 5 >= cls.length * 2 && cls.length > 0 };
 }
 
 // Identity is code's: the seat, the region, the winning faction, a cycled temperament, the seat's own flags.
@@ -511,7 +513,7 @@ export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas
       memory: [], loyalty: loyaltyFor(start, slot.faction, game.faction), mood: 0,
     };
   }
-  game.midterm = { up: draw.up.map((u) => u.seat), lost: draw.lost, wipeout: draw.wipeout };
+  game.midterm = { up: draw.up.map((u) => u.seat), lost: draw.lost, lostOwn: draw.lostOwn, wipeout: draw.wipeout };
   if (draw.wipeout) {
     game.stage = "over"; game.phase = "over";
     game.terms.push(termPoints(game, 0));

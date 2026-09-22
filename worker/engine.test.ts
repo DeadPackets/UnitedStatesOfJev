@@ -480,12 +480,26 @@ test("the midterm swaps only the seats it lost, and the new members start empty"
   expect(g.midterm!.lost.length).toBe(draw.lost.length);
 });
 
-test("losing a third of the class ends the run as a lame duck with a scored term", () => {
+test("opposition seats swapping among themselves never end a run", () => {
   const g = game();
   g.turn = 11;
-  const draw = runMidterm(pack, g, midtermWorld(g, false));
-  expect(draw.wipeout).toBe(true);
+  const draw = runMidterm(pack, g, midtermWorld(g, false));           // every up-seat changes hands
+  expect(draw.lost.length).toBe(8);
+  expect(draw.lostOwn).toBe(2);                                       // only the 2 harborite seats in the class are ownSide
+  expect(draw.wipeout).toBe(false);
   applyMidterm(pack, g, draw, replacements(pack, g, draw).map((s) => ({ id: s.id, name: "n", bio: "b", tell: "t", core_issues: [pack.tags[0]] })));
+  expect(g.stage).toBe("session");
+});
+
+test("losing 40% of the class on the government's own side ends the run as a lame duck with a scored term", () => {
+  const friendly: Pack = { ...pack, starts: pack.starts.map((s) => (s.faction === "tidebound" ? { ...s, hostile: [] } : s)) };
+  const g = game();
+  g.turn = 11;
+  g.stageB.split_chamber = 4;                                         // forces every ownSide seat (harborites + tidebound) in the class
+  const draw = runMidterm(friendly, g, {});
+  expect(draw.lostOwn).toBe(4);
+  expect(draw.wipeout).toBe(true);
+  applyMidterm(friendly, g, draw, replacements(friendly, g, draw).map((s) => ({ id: s.id, name: "n", bio: "b", tell: "t", core_issues: [friendly.tags[0]] })));
   expect(g.stage).toBe("over");
   expect(g.result!.ending).toBe("lame_duck");
   expect(g.terms.length).toBe(1);
