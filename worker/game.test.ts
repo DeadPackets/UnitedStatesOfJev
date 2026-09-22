@@ -55,7 +55,7 @@ test("a pack with no constitution ships the v3 room of chamber and street", () =
   const game: Game = newGame("g-bare", code, bare, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], bare.calendar);
   const v = view(bare, { game, prose: {} });
   expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street"]);
-  expect(v.instruments).toEqual({});
+  expect(Object.keys(v.instruments)).toEqual(["law", "proclaim"]);   // the two doors v3 had, so its screens still work
   expect(v.bar).toBeCloseTo(0.5, 5);
   expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
 });

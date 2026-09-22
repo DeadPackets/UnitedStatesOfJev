@@ -9,7 +9,14 @@ export const CAMPAIGN_DISCOUNT = 0.25;  // TUNE, C4
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
-export const instrumentOf = (pack: Pack, verb: Verb): Instrument | null => pack.constitution?.instruments[verb] ?? null;
+// A pack built before v4 has no constitution: it keeps the two doors v3 had, the bill and the post, free as they were.
+const v3Instrument = (pack: Pack, verb: Verb): Instrument | null => verb === "law" || verb === "proclaim"
+  ? { name: verb === "law" ? pack.vocabulary.bill : pack.vocabulary.post, consent: verb === "law" ? "chamber" : "none",
+      price: { authority: 0, treasury: 0, chest: 0 }, available: true }
+  : null;
+
+export const instrumentOf = (pack: Pack, verb: Verb): Instrument | null =>
+  pack.constitution ? pack.constitution.instruments[verb] ?? null : v3Instrument(pack, verb);
 
 export function consentOf(pack: Pack, game: Game, verb: Verb): Consent {
   const c = instrumentOf(pack, verb)?.consent ?? "none";
@@ -188,18 +195,23 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const post = tag.verb === "appoint" ? tag.serves[0] ?? tag.hits[0] ?? null : null;
   const id = post ? `appoint-${post}` : `act-${game.term}-${game.turn}-${game.acts.length}`;
   if (post) repeal(game, id);
-  if (tag.revenue.length || tag.verb === "appoint") {
-    enact(game, {
-      id, verb: tag.verb, title: tag.title, perTurn: tag.revenue,
-      repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
-    });
-  }
-  for (const t of tag.keeps) keepPromise(pack, game, t);
-  for (const p of tag.promises) authorPromise(game, p.tag, p.label, game.turn + p.window);
+  // A law's rates and kept promises wait for the vote: applyVote enacts them only when it passes.
   if (tag.verb === "law") {
-    game.bills.push({ id: game.turn, text: tag.reading, title: tag.title, summary: tag.reading, tags: tag.tags, offers: {} });
+    game.bills.push({
+      id: game.turn, text: tag.reading, title: tag.title, summary: tag.reading, tags: tag.tags, offers: {},
+      rates: tag.revenue, keeps: tag.keeps, sunset: tag.sunset,
+    });
     game.phase = "whip";
+  } else {
+    if (tag.revenue.length || tag.verb === "appoint") {
+      enact(game, {
+        id, verb: tag.verb, title: tag.title, perTurn: tag.revenue,
+        repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
+      });
+    }
+    for (const t of tag.keeps) keepPromise(pack, game, t);
   }
+  for (const p of tag.promises) authorPromise(game, p.tag, p.label, game.turn + p.window);
   game.acts.push({
     term: game.term, turn: game.turn, verb: tag.verb, title: tag.title,
     reading: tag.reading, credibility: tag.credibility, charge: tag.charge,

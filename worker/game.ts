@@ -15,7 +15,7 @@ import {
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, commit, discountOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -514,8 +514,8 @@ const room = (pack: Pack, game: Game): HolderView[] => {
 const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, InstrumentView>> => {
   const out: Partial<Record<Verb, InstrumentView>> = {};
   for (const v of VERBS) {
-    const i = pack.constitution?.instruments[v];
-    if (i) out[v] = { ...i, affordable: i.available && canAfford(pack, game, i.price) };
+    const i = instrumentOf(pack, v);
+    if (i) out[v] = { ...i, affordable: available(pack, game, v) && canAfford(pack, game, i.price) };
   }
   return out;
 };

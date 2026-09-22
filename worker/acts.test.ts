@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
 import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
-import { CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
+import { applyVote, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -127,15 +127,22 @@ test("an authored promise from the act's own words starts its window", () => {
   expect(g.promises["new-quay"]).toMatchObject({ label: "A new quay by winter", window: 7, authored: true, state: "pending" });
 });
 
-test("a law tag puts a bill on the floor with the act's own tags", () => {
+test("a law tag puts a bill on the floor, and its rate and promise wait for the vote", () => {
   const g = game();
-  commit(pack, g, priceTag(pack, g, quote({ verb: "law", keeps: ["tariffs"], tags: ["tariffs"] })));
+  commit(pack, g, priceTag(pack, g, quote({ verb: "law", keeps: ["tariffs"], tags: ["tariffs"], revenue: [{ ledger: "treasury", id: null, delta: 5 }] })));
   expect(g.bills).toHaveLength(1);
   expect(g.bills[0].id).toBe(g.turn);
   expect(g.bills[0].tags).toEqual(["tariffs"]);
   expect(g.bills[0].title).toBe("Raise the harbour levy");
   expect(g.phase).toBe("whip");
   expect(g.holders.council.resistance).toBe(0);   // a law is the chamber's own door, so no bypass rise
+  expect(g.inForce).toEqual([]);
+  expect(g.promises.tariffs.passed).toBe(0);
+  g.bills[0].whip = Object.fromEntries(g.members.map((m) => [m.id, 1]));
+  applyVote(pack, g, g.bills[0]);
+  expect(g.bills[0].passed).toBe(true);
+  expect(g.inForce.map((l) => l.perTurn)).toEqual([[{ ledger: "treasury", id: null, delta: 5 }]]);
+  expect(g.promises.tariffs.passed).toBe(1);   // counted once, though it is both a tag and a keep
 });
 
 test("the band is the 95% spread of the yes count, not a point", () => {

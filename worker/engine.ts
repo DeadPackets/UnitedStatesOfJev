@@ -23,6 +23,7 @@ export interface Bill extends BillDraft {
   amendments?: BillDraft[]; votes?: Record<string, boolean>; yes?: number; threshold?: number;
   passed?: boolean; struck?: boolean; vetoed?: boolean;
   headline?: { title: string; lede: string }; quotes?: { name: string; text: string }[];
+  rates?: InForce["perTurn"]; keeps?: string[]; sunset?: number | null;   // the price tag's, applied on a pass
 }
 export interface Event {
   id: string; turn: number; relief: boolean; stances: string[];
@@ -595,7 +596,13 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   // §4: the patrons pay each verdict, capped a turn, so a wall of happy patrons is not an infinite chest.
   L.chest = round1(L.chest + Math.min(CHEST_CAP, Object.values(game.patrons).reduce((a, b) => a + Math.max(0, b), 0) * (first(game, "chest") ?? 1)));
 
-  if (passed && !struck) for (const t of bill.tags) keepPromise(pack, game, t);
+  if (passed && !struck) {
+    for (const t of new Set([...bill.tags, ...(bill.keeps ?? [])])) keepPromise(pack, game, t);
+    if (bill.rates?.length) enact(game, {
+      id: `law-${game.term}-${bill.id}`, verb: "law", title: bill.title, perTurn: bill.rates,
+      repealConsent: pack.constitution?.instruments.law.consent ?? "chamber", sunset: bill.sunset ?? null,
+    });
+  }
   for (const e of on(game)) e.verdict?.(pack, game, bill);
 
   for (const m of game.members) {
