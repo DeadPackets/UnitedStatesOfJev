@@ -198,7 +198,8 @@ textarea, input, select { font: inherit; color: inherit; }
 .stampsm.pass { color: var(--ink); } .stampsm.fail { color: var(--red); }
 .stampin { animation: stampin 450ms var(--ease-expo) both; }
 @keyframes stampin { from { opacity: 0; transform: rotate(-8deg) scale(1.6); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
-.stampsm.tiny { font-size: 13px; padding: 3px 8px; border-width: 2px; }
+/* a pledge stamp is wide and stacks: at 4 degrees its corners cross the row above, so it sits nearly straight */
+.stampsm.tiny { font-size: 13px; padding: 3px 8px; border-width: 2px; transform: rotate(-2deg); }
 .stampsm.wait { color: var(--ink-2); border-style: dashed; }
 .stampsm.shake { animation: stampin 450ms var(--ease-expo) both, shake 240ms var(--ease-out) 450ms 2; }
 @keyframes shake { 25% { transform: translateX(calc(var(--sh, 2px) * -1)) rotate(-4deg); } 75% { transform: translateX(var(--sh, 2px)) rotate(-4deg); } }
@@ -209,7 +210,13 @@ textarea, input, select { font: inherit; color: inherit; }
 .meter .v { font: 700 26px/1 var(--display); }
 .meter .bar { grid-column: 1 / -1; position: relative; height: 8px; background: var(--tone); overflow: hidden; }
 .meter .bar i { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width 700ms var(--ease-expo); }
-.pledges { display: flex; flex-wrap: wrap; gap: 8px; }
+/* not five of the same row: approval is the half the test scores, so the ledger leads with it */
+.meters.panel { gap: 14px; }
+.meters.panel > .meter:first-child { margin-bottom: 4px; }
+.meters.panel > .meter:first-child .k { color: var(--ink); }
+.meters.panel > .meter:first-child .v { font-size: clamp(40px, 4.2vw, 54px); line-height: 0.88; }
+.meters.panel > .meter:first-child .bar { height: 14px; }
+.pledges { display: flex; flex-wrap: wrap; gap: 12px 8px; }
 .quotes { display: grid; gap: 10px; }
 .pull { margin: 0; border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; font: 700 19px/1.25 var(--display); text-wrap: balance; }
 .pull cite { display: block; margin-top: 4px; font: 500 12px/1 var(--sans); font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
