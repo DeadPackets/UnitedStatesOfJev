@@ -666,3 +666,35 @@ test("the clerks stop at six calls a turn, whichever route asks", async () => {
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
   expect(game.calls).toBe(1);
 });
+
+test("the platform sentence is authored onto the new game", async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = (async () => Response.json({ choices: [{ message: { content: JSON.stringify({
+    promises: [{ tag: "temple-funding", label: "Restore the temple stipend", window: 6 }],
+  }) } }] })) as unknown as typeof fetch;
+  try {
+    const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
+    const do_ = new GameDO(ctx, {} as any) as any;
+    do_.ctx = ctx; do_.env = { OPENROUTER_API_KEY: "test" };
+    do_.pack = pack;    // loadPack answers from the cache, so the test needs no D1
+    const s = await do_.create({ id: "g-platform", scenario: pack.id, faction: 0, promises: [0, 1, 2], platform: "I will restore the temple stipend." });
+    expect(Object.keys(s.game.promises)).toHaveLength(4);
+    // window is absolute: six turns from turn 1
+    expect(s.game.promises["temple-funding"]).toMatchObject({ label: "Restore the temple stipend", window: 7, authored: true });
+  } finally { globalThis.fetch = real; }
+});
+
+test("a seat with no platform sentence reaches no model at all", async () => {
+  const real = globalThis.fetch;
+  let called = false;   // platformPromises swallows a throw, so the throw alone proves nothing
+  globalThis.fetch = (async () => { called = true; throw new Error("the seat called a model"); }) as unknown as typeof fetch;
+  try {
+    const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
+    const do_ = new GameDO(ctx, {} as any) as any;
+    do_.ctx = ctx; do_.env = { OPENROUTER_API_KEY: "test" };
+    do_.pack = pack;
+    const s = await do_.create({ id: "g-bare", scenario: pack.id, faction: 0, promises: [0, 1, 2] });
+    expect(Object.keys(s.game.promises)).toHaveLength(3);
+    expect(called).toBe(false);
+  } finally { globalThis.fetch = real; }
+});

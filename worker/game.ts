@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 import {
-  applyCitizens, applyLobby, applyMidterm, applyPost, applyVote, continueTerm,
+  applyCitizens, applyLobby, authorPromise, applyMidterm, applyPost, applyVote, continueTerm,
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
@@ -14,7 +14,7 @@ import {
 } from "./jev";
 import { getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
-import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, priceAct, quotes, replies } from "./luna";
+import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
 import { available, commit, discountOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
@@ -116,6 +116,8 @@ export class GameDO extends DurableObject<Env> {
     const seed = Number.isInteger(body.seed) ? Number(body.seed) & 0x7fffffff : crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
     const code = encodeCode({ scenario: scenarioTag(pack.id), faction: f, promises: promises as [number, number, number], seed });
     const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar);
+    const platform = typeof body.platform === "string" ? body.platform.slice(0, 240) : "";
+    if (platform.trim()) for (const p of await platformPromises(this.env, pack, platform)) authorPromise(game, p.tag, p.label, game.turn + p.window);
     const s: Saved = { game, prose: {} };
     this.save(s);
     return s;
