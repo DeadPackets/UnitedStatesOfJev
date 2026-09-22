@@ -146,3 +146,44 @@ test("the band is the 95% spread of the yes count, not a point", () => {
   expect(hi).toBeCloseTo(30 + 1.96 * Math.sqrt(15), 0);
   expect(lo).toBeGreaterThanOrEqual(0);
 });
+
+import { SPEND_LIFT } from "./acts";
+
+test("spending on two regions lifts only those two, scaled by credibility", () => {
+  const g = game();
+  g.ledgers.treasury = 40;
+  const before = { ...g.ledgers.popularity };
+  const two = [pack.regions[0].id, pack.regions[1].id];
+  const tag = priceTag(pack, g, quote({
+    verb: "spend", credibility: 0.8, regions: two, serves: ["street"],
+    cost: { authority: 0, treasury: 20, chest: 0 },
+  }));
+  commit(pack, g, tag);
+  expect(g.ledgers.treasury).toBe(20);
+  const lift = Math.round((20 * SPEND_LIFT * 0.8) / 2 * 10) / 10;
+  expect(g.ledgers.popularity[two[0]]).toBeCloseTo(before[two[0]] + lift, 1);
+  expect(g.ledgers.popularity[two[1]]).toBeCloseTo(before[two[1]] + lift, 1);
+  expect(g.ledgers.popularity[pack.regions[2].id]).toBeCloseTo(before[pack.regions[2].id], 5);
+});
+
+test("a spend that names no region is spread over the whole polity", () => {
+  const g = game();
+  g.ledgers.chest = 30;
+  const before = { ...g.ledgers.popularity };
+  commit(pack, g, priceTag(pack, g, quote({ verb: "spend", cost: { authority: 0, treasury: 0, chest: 12 } })));
+  for (const r of pack.regions) expect(g.ledgers.popularity[r.id]).toBeGreaterThan(before[r.id]);
+});
+
+test("the campaign discount cuts a price and never what the money buys", () => {
+  const g = game(), h = game();
+  h.turn = CAMPAIGN_FROM;
+  g.ledgers.treasury = 40; h.ledgers.treasury = 40;
+  const one = pack.regions[0].id;
+  const q = quote({ verb: "spend", serves: ["council"], regions: [one], cost: { authority: 0, treasury: 20, chest: 0 } });
+  const early = priceTag(pack, g, q), late = priceTag(pack, h, q);
+  expect(late.discounted).toBe(true);
+  expect(late.charge.treasury).toBe(early.charge.treasury);   // a spend's own sum is outside the discount
+  commit(pack, g, early);
+  commit(pack, h, late);
+  expect(h.ledgers.popularity[one]).toBeCloseTo(g.ledgers.popularity[one], 5);
+});

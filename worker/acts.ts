@@ -1,5 +1,5 @@
 import {
-  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, holdersOf, keepPromise, pay,
+  authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, holdersOf, keepPromise, movePopularity, pay,
   pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
   type Game, type PriceTag, type Quote, type WireLine,
 } from "./engine";
@@ -77,10 +77,28 @@ function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   return wire;
 }
 
+export const SPEND_LIFT = 0.4;   // TUNE: popularity points per unit of treasury or chest handed out
+
+// The lift reads the quoted sum, never tag.charge, so the campaign discount cannot shrink what a spend buys.
+function applySpend(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  const spent = tag.quoted.treasury + tag.quoted.chest;
+  const rs = tag.regions.length ? tag.regions : pack.regions.map((r) => r.id);
+  const d = Math.round((spent * SPEND_LIFT * tag.credibility) / rs.length * 10) / 10;
+  return movePopularity(pack, game, tag.regions, d, tag.title);
+}
+
+function applyVerb(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  switch (tag.verb) {
+    case "spend": return applySpend(pack, game, tag);
+    default: return [];
+  }
+}
+
 export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (!canAfford(pack, game, tag.charge)) throw new Error("The ledgers cannot afford that act.");
   const wire = pay(pack, game, tag.charge, tag.title);
   wire.push(...touch(pack, game, tag));
+  wire.push(...applyVerb(pack, game, tag));
   if (tag.revenue.length) {
     enact(game, {
       id: `act-${game.term}-${game.turn}-${game.acts.length}`, verb: tag.verb, title: tag.title,

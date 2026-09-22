@@ -312,6 +312,16 @@ const moveResistance = (_pack: Pack, game: Game, ids: string[], d: number, cause
   }
   return out;
 };
+// The only public popularity writer: an empty list moves every region. bump stays private beneath it.
+export function movePopularity(pack: Pack, game: Game, ids: string[], delta: number, cause: string): WireLine[] {
+  const rs = ids.length ? pack.regions.filter((r) => ids.includes(r.id)) : pack.regions;
+  if (!delta) return [];
+  return rs.map((r) => {
+    bump(game, r.id, delta);
+    return { kind: "ledger" as const, ledger: "popularity" as const, id: r.id, delta, cause };
+  });
+}
+
 export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
   moveResistance(pack, game, ids, Math.abs(amount), cause);
 export const easeResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
