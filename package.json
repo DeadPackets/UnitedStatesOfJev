@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "deploy": "vite build && wrangler deploy",
-    "test": "bun test worker src",
+    "test": "bun test worker src scripts",
     "types": "wrangler types"
   },
   "dependencies": {

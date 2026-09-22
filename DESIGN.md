@@ -163,3 +163,23 @@ same component with `onPick`, so the map you spent money on is the map that decl
 | `split_chamber` | midterm night: a forced seat must leave the government's own side |
 | `rival_surge` | the canvass: the rival's money in its two regions, and so the forecast |
 | `apathy` | the test: the weight of your own two strongest blocs is thinned |
+
+## The share grid
+
+One square a turn, in the hue of the ledger that moved most that turn, five to a row, and the test as
+a final row of four. The hues are the five fixed resource hues, so a grid reads the same on every pack:
+
+| Square | Light | Copied as |
+|---|---|---|
+| Treasury | `#227f53` | 🟩 |
+| Authority | `#623e96` | 🟪 |
+| Chest | `#a98738` | 🟨 |
+| Loyalty | `#2b7592` | 🟦 |
+| Popularity | `#a5417f` | 🟧 |
+| A still turn | transparent | ⬜ |
+| The test, kept | `#227f53` | ✅ |
+| The test, lost | `#bb0916` | 🟥 |
+
+The verdict row is not a green square: a copied 🟩 row would read as four treasury turns. The card draws
+the hues from the CSS tokens, which carry a dark variant, and the copy button writes the characters,
+because a message box carries characters and not CSS. A run that ended before its test has no final row.
