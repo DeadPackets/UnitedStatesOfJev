@@ -30,8 +30,12 @@ const forwardBody = async (c: Ctx, path: string): Promise<Response> => {
 const readPrompt = async (c: Ctx): Promise<string | Response> => {
   const body = await c.req.json<{ prompt?: string }>().catch(() => null);
   if (body === null) return c.json(badJson, 400);
-  if (typeof body.prompt !== "string" || body.prompt.trim().length < 3) return c.json({ error: "Name a place and a time." }, 400);
-  return body.prompt.trim();
+  const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
+  if (prompt.length < 3) return c.json({ error: "Name a place and a time." }, 400);
+  // The prompt is embedded, put in Jev state and repeated in every Luna call of a build, so its length
+  // multiplies what one build costs.
+  if (prompt.length > 500) return c.json({ error: "500 characters at most." }, 400);
+  return prompt;
 };
 
 app.use("/api/*", async (c, next) => {

@@ -86,8 +86,10 @@ export function frame(f: Frame, sheet?: Facts | null, expectStart?: string | nul
     else if (died !== null && start !== null && died < start) e.push(`leader "${x.leader}" (${x.id}) died ${p?.died}, before the start date ${f.start_date}`);
   }
 
+  // A code-fixed calendar already puts the anchor on turn 16, which with a month or a season turn is well
+  // past a year after the start date. Only a start date the model chose has to prove itself this way.
   if (!ymd(f.start_date)) e.push(`start_date ${f.start_date} is not a full date`);
-  else if (facts.dated_events.length && !calendarHasAnchor(f.start_date, facts)) {
+  else if (!expectStart && facts.dated_events.length && !calendarHasAnchor(f.start_date, facts)) {
     e.push(`no dated event from the facts sheet falls within a year after the start date ${f.start_date}`);
   }
   return e;
