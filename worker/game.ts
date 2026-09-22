@@ -115,7 +115,8 @@ export class GameDO extends DurableObject<Env> {
     if (promises.length !== 3 || new Set(promises).size !== 3) throw new Reject(400, `Pick three different ${pack.vocabulary.promise}s.`);
     const seed = Number.isInteger(body.seed) ? Number(body.seed) & 0x7fffffff : crypto.getRandomValues(new Uint32Array(1))[0] & 0x7fffffff;
     const code = encodeCode({ scenario: scenarioTag(pack.id), faction: f, promises: promises as [number, number, number], seed });
-    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar);
+    const day = typeof body.day === "string" ? body.day : null;
+    const game = newGame(id, code, pack, start.faction, promises.map((p) => pack.promises[p].tag), pack.calendar, day ? { day } : undefined);
     const platform = typeof body.platform === "string" ? body.platform.slice(0, 240) : "";
     if (platform.trim()) for (const p of await platformPromises(this.env, pack, platform)) authorPromise(game, p.tag, p.label, game.turn + p.window);
     const s: Saved = { game, prose: {} };
@@ -476,6 +477,9 @@ export function migrate(game: Game): void {
   game.emergency ??= null;
   game.extra ??= [];
   game.wireTurn ??= game.turn;
+  game.mode ??= "free";       // a game saved before the daily existed is free play
+  game.day ??= null;
+  game.log ??= [];
   game.director.swan ??= null;
   for (const p of Object.values(game.promises)) {
     p.window ??= PROMISE_WINDOW;

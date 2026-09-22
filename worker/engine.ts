@@ -80,6 +80,8 @@ export interface Act {
   term: number; turn: number; verb: Verb; title: string; reading: string; credibility: number; charge: Price;
 }
 export interface RivalMove { turn: number; name: string; backer: string; region: string | null; line: string }
+export type Square = LedgerV4 | "quiet";
+export type RunRow = { turn: number; ledger: Square; delta: number; cause: string };
 export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
   term: number; turn: number; stage: "session" | "midterm" | "test" | "won" | "over";
@@ -95,6 +97,9 @@ export interface Game {
   members: Member[]; bills: Bill[]; posts: Post[]; events: Event[];
   director: { intensity: number; lastCrisis: number; seen: string[]; swan: string | null };
   streak: number; bestStreak: number;
+  mode: "daily" | "free";
+  day: string | null;          // the daily's day key; null in free play and in an archive replay
+  log: RunRow[];               // one row a finished turn: the share grid, the style line, the decisive turns
   escalations: EscalationKey[]; stageB: Partial<Record<EscalationKey, number>>;
   marks: Record<string, string[]>;   // seeded id lists: famine, meddling, midterm
   lastApprove: Record<string, number>;   // previous citizen mean per region, the 0.05 gate
@@ -245,7 +250,7 @@ export function decodeCode(code: string): Code {
 export const leanOf = (pack: Pack, region: string, faction: string) =>
   pack.regions.find((r) => r.id === region)?.lean.find((l) => l.id === faction)?.value ?? 0;
 
-export function newGame(id: string, code: string, pack: Pack, faction: string, promises: string[], calendar: Calendar): Game {
+export function newGame(id: string, code: string, pack: Pack, faction: string, promises: string[], calendar: Calendar, daily?: { day: string }): Game {
   const c = decodeCode(code);
   const start = pack.starts.find((s) => s.faction === faction) ?? pack.starts[0];
   const r = rng(c.seed);
@@ -268,7 +273,9 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     }])),
     members: pack.members.map((m) => ({ ...m, memory: [], loyalty: loyaltyFor(start, m.faction, start.faction), mood: 0 })),
     bills: [], posts: [], events: [], director: { intensity: 0, lastCrisis: -1, seen: [], swan: null },
-    streak: 0, bestStreak: 0, escalations: [], stageB: {}, marks: {},
+    streak: 0, bestStreak: 0,
+    mode: daily ? "daily" : "free", day: daily?.day ?? null, log: [],
+    escalations: [], stageB: {}, marks: {},
     lastApprove: {}, terms: [], revolt: null, wire: [], pending: null,
     tag: null, refusal: null, acts: [], rival: null,
     calls: 0, swing: 0, quiet: 0, drift: {}, media: 0, trust: 1, emergency: null, extra: [], wireTurn: 1,

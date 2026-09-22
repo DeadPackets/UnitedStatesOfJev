@@ -705,3 +705,30 @@ test("a seat with no platform sentence reaches no model at all", async () => {
     expect(called).toBe(false);
   } finally { globalThis.fetch = real; }
 });
+
+test("a game saved before the daily existed loads as free play with an empty log", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
+  const game: Game = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  delete (game as Partial<Game>).mode;
+  delete (game as Partial<Game>).day;
+  delete (game as Partial<Game>).log;
+  const rows = [{ v: JSON.stringify({ game, prose: {} }) }];
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => rows }) } } };
+  const do_ = new (GameDO as any)(ctx, {});
+  do_.ctx = ctx;
+  const loaded = await do_.load();
+  expect(loaded.game.mode).toBe("free");
+  expect(loaded.game.day).toBeNull();
+  expect(loaded.game.log).toEqual([]);
+});
+
+test("newGame marks a daily run with its day and starts the log empty", () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 9 });
+  const free = newGame("g-f", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  expect(free.mode).toBe("free");
+  expect(free.day).toBeNull();
+  const daily = newGame("g-d", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar, { day: "2026-09-22" });
+  expect(daily.mode).toBe("daily");
+  expect(daily.day).toBe("2026-09-22");
+  expect(daily.log).toEqual([]);
+});
