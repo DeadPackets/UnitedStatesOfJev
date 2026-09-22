@@ -8,7 +8,7 @@ import { PackSchema, type Member, type Pack } from "./pack";
 import { fetchWikipedia, lookupParty, lookupPerson } from "./sources";
 import { plan, type Plan } from "./gen/plan";
 import { facts } from "./gen/facts";
-import { FrameSchema, frame } from "./gen/frame";
+import { FrameSchema, frame, settle } from "./gen/frame";
 import { assign } from "./gen/assign";
 import { membersStep, citizensStep, names } from "./gen/personas";
 import { dedupe } from "./gen/dedupe";
@@ -25,6 +25,8 @@ const GROK = "x-ai/grok-4.7";
 const NO_TEXT = "no text, no captions, no labels, no borders, no watermark";
 // timeout: an OpenRouter call can stall with no answer; without it the step, and the build, hang forever.
 const RETRY = { retries: { limit: 2, delay: "5 seconds", backoff: "exponential" }, timeout: "4 minutes" } as const;
+// A generation step already retries inside luna() and post(); a third layer multiplies the paid calls.
+const GEN_RETRY = { ...RETRY, retries: { ...RETRY.retries, limit: 1 } } as const;
 const PAGES = 6, PEOPLE = 12, PARTIES = 12, SHEET = 16;
 
 const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
@@ -96,7 +98,9 @@ async function frameStep(env: Env, id: string, ctx: GenCtx, repaired: { done: bo
     ].join("\n\n");
     const f = await luna(env, FrameSchema, "frame", FRAME_SYSTEM, user, 9000, ASTRA);
     const cal = ctx.calendar ?? { start_date: f.start_date, unit: "week" as const };
-    out = { frame: { ...f, start_date: cal.start_date }, calendar: cal };
+    const fixed = settle({ ...f, start_date: cal.start_date }, ctx.facts, cal.start_date);
+    if (fixed.violations.length) throw new NonRetryableError(`The repair still broke the period: ${fixed.violations.slice(0, 2).join("; ")}`);
+    out = { frame: fixed.frame, calendar: cal };
   }
   const f = out.frame!;
   await putMeta(env, id, { lang: ctx.lang, title: f.title, era: f.era, place: f.place, description: f.description });
@@ -228,7 +232,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
         return r as never;
       }) as Promise<T>;
     const gen = <T>(name: string, fn: (env: Env) => Promise<T>, fragment?: (r: T) => unknown) =>
-      stage(name, (e) => onRefusal(e, name, fn), fragment);
+      stage(name, (e) => onRefusal(e, name, fn), fragment, GEN_RETRY);
 
     let pack: Pack;
     try {
@@ -246,7 +250,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           factions: f.factions.map((x) => ({ id: x.id, name: x.name, short: x.short, color: x.color })),
           problems: f.problems.slice(0, 3),
         };
-      }, { ...RETRY, retries: { limit: 1, delay: "5 seconds", backoff: "exponential" } }));
+      }, GEN_RETRY));
       merge(await stage("assign", (e) => assign(e, ctx)));
       merge(await gen("names", (e) => names(e, ctx)));
       merge(await gen("personas", (e) => personasStep(e, ctx),

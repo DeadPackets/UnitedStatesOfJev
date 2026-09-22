@@ -80,6 +80,14 @@ function clampChamber(f: Frame, size: number): Frame {
   };
 }
 
+// Validate, then clamp. The Astra repair path in build.ts lands here too, so a repaired frame gets the
+// same treatment as one Luna wrote.
+export function settle(f: Frame, facts: GenCtx["facts"], expectStart?: string | null): { frame: Frame; violations: string[] } {
+  const violations = check(f, facts, expectStart);
+  const real = realChamberSize(facts);
+  return { frame: real != null ? clampChamber(f, clampChamberSize(real)) : f, violations };
+}
+
 export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   // The calendar step has already fixed the term from the sheet's anchor, so the model is told the start date
   // rather than asked for one. Only a scenario with no dated anchor leaves the choice to the model.
@@ -88,14 +96,12 @@ export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
     cal ? `The term begins on ${cal.start_date} and one turn is one ${cal.unit}. Use exactly that start_date.` : ""]
     .filter(Boolean).join("\n\n");
   let f = await luna(env, FrameSchema, "frame", SYSTEM, user, 9000);
-  let violations = check(f, ctx.facts, cal?.start_date);
+  const violations = check(f, ctx.facts, cal?.start_date);
   if (violations.length) {
     const retry = `${user}\n\nAn earlier attempt returned this pack:\n${JSON.stringify(f)}\n\nValidation found these violations:\n- ${violations.join("\n- ")}\n\nReturn the corrected full pack. Keep everything else the same.`;
     f = await luna(env, FrameSchema, "frame", SYSTEM, retry, 9000);
-    violations = check(f, ctx.facts, cal?.start_date);
-    if (violations.length) throw new NeedsRepair(violations, JSON.stringify(f));
   }
-  const real = realChamberSize(ctx.facts);
-  if (real != null) f = clampChamber(f, clampChamberSize(real));
-  return { frame: f, calendar: cal ?? { start_date: f.start_date, unit: "week" } };
+  const settled = settle(f, ctx.facts, cal?.start_date);
+  if (settled.violations.length) throw new NeedsRepair(settled.violations, JSON.stringify(f));
+  return { frame: settled.frame, calendar: cal ?? { start_date: settled.frame.start_date, unit: "week" } };
 }

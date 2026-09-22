@@ -52,7 +52,8 @@ async function rewrite<T extends { id: string }>(
   rows: T[], pairs: [string, string][], rank: (r: T) => string, regen: (row: T, other: T) => Promise<T>,
 ): Promise<T[]> {
   const byId = new Map(rows.map((r) => [r.id, r]));
-  const jobs = pairs.flatMap(([a, b]) => {
+  // 12 rewrites at once: a 100-seat chamber can flag dozens of pairs, and each is a paid persona call.
+  const jobs = pairs.slice(0, 12).flatMap(([a, b]) => {
     const x = byId.get(a), y = byId.get(b);
     if (!x || !y) return [];
     const loser = rank(x) > rank(y) ? x : y, keeper = loser === x ? y : x;

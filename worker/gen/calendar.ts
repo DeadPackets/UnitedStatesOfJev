@@ -3,9 +3,8 @@ import type { Facts } from "./facts";
 import type { GenCtx } from "./prompts";
 import { UNIT, UNITS, days, fromDays, turnOf, ymd, type Calendar } from "./validate";
 
-// The sheet's anchor event lands on turn 16, and the unit is the one that fits the most sheet events inside the
-// term. Ties go to the shorter unit. Measured 2026-09-22: with the model's own start date the Ides missed the
-// term in 12 of 12 Rome runs.
+// The anchor event lands on turn 16 and the unit is the one fitting the most sheet events in the term.
+// Measured 2026-09-22: with the model's own start date the Ides missed the term in 12 of 12 Rome runs.
 export function pickCalendar(facts?: Facts | null): Calendar | null {
   const event = facts && facts.anchor >= 0 ? facts.dated_events[facts.anchor] : undefined;
   const a = ymd(event?.date);
