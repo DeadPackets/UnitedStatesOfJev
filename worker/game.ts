@@ -104,8 +104,9 @@ export class GameDO extends DurableObject<Env> {
   private async load(): Promise<Saved> {
     if (this.saved) return this.saved;
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
-    if (!row) throw new Reject(404, "No such game.");
-    return (this.saved = JSON.parse(row.v as string) as Saved);
+    const saved = row ? JSON.parse(row.v as string) as Saved : null;
+    if (!saved?.game) throw new Reject(404, "No such game.");
+    return (this.saved = saved);
   }
 
   private save(s: Saved) {
@@ -186,7 +187,7 @@ export class GameDO extends DurableObject<Env> {
 
   private async amend(game: Game, pack: Pack, bill: Bill) {
     if (!bill.whip) throw new Reject(409, `Run the ${pack.vocabulary.whip} first.`);
-    if (bill.amendments?.length) throw new Reject(409, "Already amended once.");
+    if (bill.amendments) throw new Reject(409, "Already amended once.");
     const whip = bill.whip;
     const opponents = game.members.filter((m) => (whip[m.id] ?? 0) < 0.5).sort((a, b) => (whip[b.id] ?? 0) - (whip[a.id] ?? 0)).slice(0, 5);
     const loudest = Object.entries(bill.blocs ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] ?? pack.blocs[0].id;
@@ -284,7 +285,7 @@ export class GameDO extends DurableObject<Env> {
 // Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
 export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const { director: _hidden, members, bills, ...rest } = game;
-  const { deck: _weights, ...pv } = packView(pack);
+  const pv = packView(pack);
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,

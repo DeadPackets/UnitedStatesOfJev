@@ -13,7 +13,7 @@ export type ViewEvent = Event;
 /** What every `/api/games` route sends. The deck, the Director and every persona stay in the Worker. */
 export type GameView = Omit<Game, "pack" | "director" | "members" | "bills"> & {
   scenario: string;
-  pack: Omit<PackView, "deck">;
+  pack: PackView;
   members: ViewMember[];
   bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];

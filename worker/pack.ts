@@ -55,9 +55,11 @@ const EffectSchema = z.object({
   ledger: z.enum([...LEDGERS, "seat"]), id: z.string().nullable().optional(), delta: z.number().nullable().optional(),
   set: z.string().nullable().optional(), chance: z.number().nullable().optional(),
 });
+// Signed ISO day: a BC year is negative and every part is zero-padded, e.g. -0044-03-15.
+export const DATE_RE = /^-?\d{1,6}-\d{2}-\d{2}$/;
 const StoryletSchema = z.object({
   id: z.string(), kind: z.enum(["generic", "dated"]), turn: z.number().nullable().optional(),
-  date: z.string().regex(/^-?\d{1,6}-\d{2}-\d{2}$/).nullable().optional(),
+  date: z.string().regex(DATE_RE).nullable().optional(),
   exogenous: z.boolean().nullable().optional(), needs: z.array(ConditionSchema).nullable().optional(),
   weight: z.number(), title_hint: z.string(), stances: z.array(z.string()),
   scored: z.array(z.enum(["blocs", "patrons", "none"])), results: z.array(EffectSchema), memory: z.string().nullable().optional(),
@@ -139,9 +141,9 @@ export function scaleSeats(shares: Record<string, number>, size: number): Record
   return Object.fromEntries(seats);
 }
 
-// Client-facing view: drops citizens and member personas (bio, tell) so a build in progress carries no spoilers.
+// Client-facing view: drops citizens, the deck and member personas (bio, tell) so no spoilers leave the Worker.
 export function packView(pack: Pack) {
-  const { citizens, ...rest } = pack;
+  const { citizens, deck, ...rest } = pack;
   return { ...rest, members: rest.members.map(({ bio, tell, ...m }) => m) };
 }
 

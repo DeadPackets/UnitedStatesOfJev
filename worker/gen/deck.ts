@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
-import type { Storylet } from "../pack";
+import { DATE_RE, type Storylet } from "../pack";
 import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
 import { TEMPLATES, TEMPLATE_IDS } from "./templates";
 import { turnOf } from "./validate";
@@ -13,12 +13,12 @@ const Effect = z.object({
   set: z.string().nullable(), chance: z.number().min(0).max(1).nullable(),
 });
 
-const DeckSchema = z.object({
+export const DeckSchema = z.object({
   generic: z.array(z.object({
     template: z.enum(TEMPLATE_IDS), title_hint: z.string(), stances: z.array(z.string()).min(1).max(3), memory: z.string().nullable(),
   })).length(20),
   dated: z.array(z.object({
-    date: z.string(), exogenous: z.boolean(), title_hint: z.string(), stances: z.array(z.string()).min(1).max(3),
+    date: z.string().regex(DATE_RE), exogenous: z.boolean(), title_hint: z.string(), stances: z.array(z.string()).min(1).max(3),
     scored: z.array(z.enum(["blocs", "patrons", "none"])).min(1), needs: z.array(Condition), results: z.array(Effect), memory: z.string().nullable(),
   })).min(5).max(8),
 });

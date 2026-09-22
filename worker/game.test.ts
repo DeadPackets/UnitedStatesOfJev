@@ -63,3 +63,20 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
   const r1 = await p1;
   expect(r1.status).toBe(200);
 });
+
+test("amend after adopt is refused: adopt leaves an empty amendments array, not an absent one", async () => {
+  const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 2 });
+  const game: Game = newGame("g-amend", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  const ctx = { storage: { sql: { exec: () => ({ toArray: () => [] }) } } } as any;
+  const doInstance = new GameDO(ctx, {} as any) as any;
+  const count = { whip: {}, blocs: {}, patrons: {}, vetoes: {}, filibuster: 0, constitutional: 0 };
+  const bill: any = {
+    id: game.turn, text: "raise the harbor levy", title: "Old", summary: "s", tags: [], offers: {}, whip: {},
+    amendments: [{ title: "New", summary: "s2", tags: [], count, expected: 1 }],
+  };
+
+  doInstance.adopt(bill, 0);
+  expect(bill.title).toBe("New");
+  expect(bill.amendments).toEqual([]);
+  await expect(doInstance.amend(game, pack, bill)).rejects.toMatchObject({ status: 409 });
+});
