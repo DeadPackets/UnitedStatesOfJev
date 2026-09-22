@@ -232,7 +232,7 @@ test("a favour lifts the member and leaves a favour owed", () => {
 });
 
 import { FORCE_ARMY_EASE, FORCE_ARMY_RISE, FORCE_POP_HIT, FORCE_RESENT } from "./acts";
-import { armyAllows } from "./engine";
+import { armyAllows, endTurn } from "./engine";
 
 test("force needs the army's stance, and the army is paid in resistance either way", () => {
   const g = game();
@@ -256,4 +256,37 @@ test("an unwilling army is turned out anyway and resents it", () => {
   expect(pack.constitution!.instruments.force.consent).toBe("army");
   commit(pack, h, priceTag(pack, h, quote({ verb: "force", title: "A curfew" })));
   expect(h.holders.guard.resistance).toBe(FORCE_ARMY_RISE);
+});
+
+import { DRIFT_GAIN, DRIFT_LOSS, EMERGENCY_COST, EMERGENCY_TURNS, MEDIA_STEP, TRUST_STEP } from "./acts";
+
+test("bloc drift grows the base the post speaks to and empties the middle", () => {
+  const g = game();
+  g.ledgers.chest = 10;                       // newGame opens the chest at 0 and a notice costs 2
+  const [one, two] = pack.blocs.map((b) => b.id);
+  commit(pack, g, priceTag(pack, g, quote({ verb: "proclaim", template: "bloc_drift", targets: [one] })));
+  expect(g.drift[one]).toBeCloseTo(DRIFT_GAIN, 5);
+  expect(g.drift[two]).toBeCloseTo(-DRIFT_LOSS, 5);
+});
+
+test("state media damps the feed and costs it trust", () => {
+  const g = game();
+  commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", template: "state_media", serves: ["council"] })));
+  expect(g.media).toBeCloseTo(MEDIA_STEP, 5);
+  expect(g.trust).toBeCloseTo(1 - TRUST_STEP, 5);
+});
+
+test("emergency powers cost a lot, set the chamber aside, and lapse when the army turns", () => {
+  const g = game();
+  g.ledgers.authority = 60;
+  const tag = priceTag(pack, g, quote({ verb: "decree", template: "emergency_powers" }));
+  expect(tag.charge.authority).toBe(3 + EMERGENCY_COST);
+  commit(pack, g, tag);
+  expect(g.emergency).toBe(g.turn + EMERGENCY_TURNS);
+  expect(consentOf(pack, g, "law")).toBe("none");
+  g.holders.guard.stance = 0.2;
+  expect(armyAllows(pack, g)).toBe(false);
+  endTurn(pack, g);
+  expect(g.emergency).toBeNull();
+  expect(consentOf(pack, g, "law")).toBe("chamber");
 });

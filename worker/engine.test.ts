@@ -1081,3 +1081,12 @@ test("the boundary records the rival's move and prints it when nothing louder is
   expect(g.rival!.turn).toBe(1);                 // the turn that just ended, not the one about to be played
   expect(out.pending).toContain(g.rival!.name);
 });
+
+test("drift rides on top of every citizen read, so a hardened base stays hardened", () => {
+  const g = game();
+  const b = pack.blocs[0].id;
+  g.drift[b] = 0.2;
+  applyCitizens(pack, g, Object.fromEntries(pack.citizens.map((c) => [c.id, 0.5])));
+  expect(g.blocs[b]).toBeCloseTo(0.7, 5);
+  expect(g.blocs[pack.blocs[1].id]).toBeCloseTo(0.5, 5);
+});

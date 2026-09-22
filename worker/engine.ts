@@ -692,6 +692,8 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   wire.push(...applyRates(pack, game));
 
   for (const h of Object.values(game.holders)) h.resistance = clamp(round1(h.resistance - RESIST_DECAY), 0, 100);
+  // R19: the powers are held only while the turns last and the army's stance allows them.
+  if (game.emergency !== null && (game.turn > game.emergency || !armyAllows(pack, game))) game.emergency = null;
   // After the decay, so the pushed holder is still at its line when the warnings read it.
   if (belowLine(pack, game).includes("popularity")) {
     const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
@@ -800,7 +802,7 @@ export function applyCitizens(pack: Pack, game: Game, approve: Record<string, nu
   }
   const deltas = capSwing(pack, game, raw);
   for (const [id, d] of Object.entries(deltas)) if (d) bump(game, id, d);
-  for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(mean(xs));
+  for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(clamp(mean(xs) + (game.drift[id] ?? 0), 0, 1));
   return deltas;
 }
 

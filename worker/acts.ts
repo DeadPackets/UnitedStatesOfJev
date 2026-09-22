@@ -48,6 +48,8 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     treasury: Math.round(base.treasury * d) + q.cost.treasury,
     chest: Math.round(base.chest * d) + q.cost.chest,
   };
+  // A power grab is never cheapened by the campaign, so the surcharge lands after the discount.
+  if (q.template === "emergency_powers") charge.authority += EMERGENCY_COST;
   // §7: credibility multiplies what the act wins, never what it costs.
   const revenue = q.revenue.map((r) => ({ ...r, delta: r.delta > 0 ? round1(r.delta * q.credibility) : r.delta }));
   const named = [...q.serves, ...q.hits.filter((id) => !q.serves.includes(id))];
@@ -142,11 +144,46 @@ function applyVerb(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   }
 }
 
+export const DRIFT_GAIN = 0.06;     // TUNE, R19: what a partisan notice adds to the base it speaks to
+export const DRIFT_LOSS = 0.03;     // TUNE, R19: what it takes from the middle
+export const MEDIA_STEP = 0.2;      // TUNE, R19: how much of the boo wave one step of state media damps
+export const TRUST_STEP = 0.05;     // TUNE, R19: what the Feed stops believing in return
+export const EMERGENCY_TURNS = 4;   // TUNE, R19
+export const EMERGENCY_COST = 12;   // TUNE, R19: the authority a power grab costs on top of the decree
+export const DRIFT_CAP = 0.5;       // TUNE, R19: how far a bloc can be pushed off its own read
+
+const round2 = (x: number) => Math.round(x * 100) / 100;
+
+// R19: three named paths, each priced inside a verb the ruler already has.
+function applyTemplate(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
+  switch (tag.template) {
+    case "bloc_drift": {
+      const aimed = new Set(tag.targets ?? []);
+      for (const b of pack.blocs) {
+        const d = aimed.has(b.id) ? DRIFT_GAIN : -DRIFT_LOSS;
+        game.drift[b.id] = round2(clamp((game.drift[b.id] ?? 0) + d, -DRIFT_CAP, DRIFT_CAP));
+      }
+      return [];
+    }
+    case "state_media": {
+      game.media = round2(clamp(game.media + MEDIA_STEP, 0, 1));
+      game.trust = round2(clamp(game.trust - TRUST_STEP, 0, 1));
+      const pushed = holdersOf(pack).filter((h) => h.response === "strike" || h.members === "patrons").map((h) => h.id);
+      return raiseResistance(pack, game, pushed, RESIST_HIT, tag.title);
+    }
+    case "emergency_powers":
+      game.emergency = game.turn + EMERGENCY_TURNS;
+      return [];
+    default: return [];
+  }
+}
+
 export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (!canAfford(pack, game, tag.charge)) throw new Error("The ledgers cannot afford that act.");
   const wire = pay(pack, game, tag.charge, tag.title);
   wire.push(...touch(pack, game, tag));
   wire.push(...applyVerb(pack, game, tag));
+  wire.push(...applyTemplate(pack, game, tag));
   // R11: an appointment holds until another names the same post, so its row carries the holder's own id.
   const post = tag.verb === "appoint" ? tag.serves[0] ?? tag.hits[0] ?? null : null;
   const id = post ? `appoint-${post}` : `act-${game.term}-${game.turn}-${game.acts.length}`;
