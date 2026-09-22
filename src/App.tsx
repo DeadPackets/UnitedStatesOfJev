@@ -91,7 +91,12 @@ export default function App() {
   const act: Act = async (fn) => {
     setBusy(true);
     try { const g = await fn(); setGame(g); localStorage.setItem("usoj:game", g.id); return true; }
-    catch (e) { fail(e); return false; }
+    catch (e) {
+      fail(e);
+      // A 409 means the screen is arguing with a game that has already moved: take the server's word for it.
+      if (e instanceof ApiError && e.status === 409 && game) await api.load(game.id).then(setGame).catch(() => {});
+      return false;
+    }
     finally { setBusy(false); }
   };
 
