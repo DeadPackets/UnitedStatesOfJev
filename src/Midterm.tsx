@@ -3,6 +3,7 @@ import { useReduced } from "./motion";
 import { api, type GameView, type ViewMember } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
+import { TileReveal, type RevealRegion } from "./Tiles";
 import { Ornament } from "./theme";
 import { sound } from "./sound";
 
@@ -18,6 +19,9 @@ const NO_WHIP: Record<string, number> = {};
 export default function Midterm({ game, act, busy, onDone }: Props) {
   const pack = game.pack;
   const v = pack.vocabulary;
+  const half = pack.constitution?.halfTerm;
+  const holder = game.holders.find((h) => h.id === half?.holder);
+  const name = half?.name ?? v.midterm;
   const reduced = useReduced();
   const result = game.midterm;
   const called = useRef(false);
@@ -97,21 +101,31 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   const mine = members.filter((m) => m.faction === game.faction || game.coalition.includes(m.faction)).length;
   const lost = result?.lost.length ?? 0;
 
+  const regions = useMemo(() => new Map(pack.regions.map((r) => [r.id, r.name])), [pack.regions]);
+  // Stage D's region draw for a non-chamber holder; not on the Midterm type yet
+  const regionWalk = (result as { regions?: RevealRegion[] } | undefined)?.regions ?? [];
+  const total = regionWalk.length || n;
+
   return (
     <main className="chamber press midtermnight" onPointerDown={sound.unlock}>
       <header className="topbar">
         <h1>{pack.title}</h1>
-        <nav aria-label={v.midterm}>
+        <nav aria-label={name}>
           <Ornament kind={pack.theme.ornament} />
-          <span className="num" style={{ padding: "0 8px" }}>{shown} of {n || (game.marks.midterm ?? []).length}</span>
-          {replay && result && !done ? <button className="link" onClick={() => { setShown(n); setDone(true); }}>Skip the count</button> : null}
+          <span className="num" style={{ padding: "0 8px" }}>{shown} of {total || (game.marks.midterm ?? []).length}</span>
+          {replay && result && !done ? <button className="link" onClick={() => { setShown(total); setDone(true); }}>Skip the count</button> : null}
         </nav>
       </header>
 
       <section className="stage" aria-label={v.chamber}>
         <div className="kicker">Government seats</div>
-        <ChamberFloor pack={pack} members={members} own={game.faction} coalition={game.coalition}
-          whip={done ? NO_WHIP : undefined} votes={result && !done ? votes : undefined} hot={hot} />
+        {regionWalk.length ? (
+          <TileReveal regions={regionWalk} names={regions} label={name} ms={40000} skip={done}
+            onProgress={(i) => setShown(i)} onDone={() => setDone(true)} />
+        ) : (
+          <ChamberFloor pack={pack} members={members} own={game.faction} coalition={game.coalition}
+            whip={done ? NO_WHIP : undefined} votes={result && !done ? votes : undefined} hot={hot} />
+        )}
         <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={size} aria-valuenow={mine} aria-label="Government seats">
           <div className={`fill ${done && mine < need ? "fail" : ""}`} style={{ width: `${(mine / size) * 100}%` }} />
           <div className="tick" style={{ left: `${(need / size) * 100}%` }}><span className="num">{need}</span></div>
@@ -119,21 +133,21 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
         <p className="num">{mine} of {size}</p>
       </section>
 
-      <aside className="rail" aria-label={v.midterm}>
+      <aside className="rail" aria-label={name}>
         {!result ? (
           <div className="panel">
-            <div className="kicker">{v.midterm}</div>
+            <div className="kicker">{name}</div>
             <p className="lede">{failed ? "The count did not come back." : "A third of the seats are up."}</p>
             {failed ? <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={run}>Count the vote</button> : null}
           </div>
         ) : (
           <div className="panel">
-            <div className="kicker">{v.midterm}</div>
+            <div className="kicker">{name}</div>
             <p className="lede">{n} up, {lost} changed hands</p>
             {done ? (
               <div className="verdict rise">
                 {result.headline ? <><h2>{result.headline.title}</h2><p className="muted">{result.headline.lede}</p></> : null}
-                {result.wipeout ? <p className="lede fail">The class is gone. The rest of the term is borrowed time.</p> : null}
+                {result.wipeout ? <p className="lede fail">{holder?.name ?? name} turned against its own side. The rest of the term is borrowed time.</p> : null}
                 <button className="btn" onClick={onDone}>{result.wipeout ? "See the ending" : "Back to the floor"}</button>
               </div>
             ) : null}
@@ -142,7 +156,7 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
       </aside>
 
       <div className="sr" role="status" aria-live="polite">
-        {done && result ? `${n} seats up, ${lost} changed hands. ${result.headline?.title ?? ""}` : ""}
+        {done && result ? `${name}: ${n} seats up, ${lost} changed hands. ${result.headline?.title ?? ""}` : ""}
       </div>
     </main>
   );
