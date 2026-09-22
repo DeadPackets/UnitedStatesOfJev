@@ -62,8 +62,11 @@ while (g.stage === "session") {
     }
   }
 
-  // Offers to the likeliest holdouts while the count is short. v4 has no impeachment rule, so no reserve is kept.
-  for (let n = 0; n < 2 && short() && g.ledgers.capital >= g.lobbyCosts.pork; n++) {
+  // v4 ends a turn without a vote, so a bill more than two short is left on the table, not lost on the floor.
+  const reach = () => { const b = g.bills.at(-1)!; return (b.expected ?? 0) >= (b.needed ?? Infinity) - 2; };
+
+  // Offers to the likeliest holdouts while the count is short but in reach. v4 has no impeachment reserve to keep.
+  for (let n = 0; n < 2 && short() && reach() && g.ledgers.capital >= g.lobbyCosts.pork; n++) {
     const bill = g.bills.at(-1)!, whip = bill.whip ?? {};
     const target = g.members.filter((m) => (whip[m.id] ?? 0) < 0.5 && !bill.offers[m.id])
       .sort((a, b) => (whip[b.id] ?? 0) - (whip[a.id] ?? 0))[0];
@@ -76,14 +79,15 @@ while (g.stage === "session") {
   console.log(`     ${V.post}: ${p.likes} like ${p.boos} boo ${p.shares} share ${p.ignores} ignore` +
     ` | duel ${p.agree.mine}/${p.agree.rival} -> ${p.won ? "won" : "lost"} | "${p.rival.slice(0, 80)}"`);
 
-  g = await api(`/games/${g.id}/bills/${turn}/vote`, { turn });
+  const tabled = !reach();
+  if (!tabled) g = await api(`/games/${g.id}/bills/${turn}/vote`, { turn });
   const voted = g.bills.find((b) => b.id === turn)!;
 
   const L = g.ledgers;
   const approval = g.pack.regions.reduce((a, r) => a + r.weight * (L.approval[r.id] ?? 50), 0) / g.pack.regions.reduce((a, r) => a + r.weight, 0);
   console.log(
-    `${String(turn).padStart(2)} ${voted.passed ? (voted.struck ? "STRUCK" : V.pass.slice(0, 8).padEnd(8)) : V.fail.slice(0, 8).padEnd(8)}` +
-    ` ${String(voted.yes).padStart(3)}/${voted.threshold}` +
+    `${String(turn).padStart(2)} ${tabled ? "tabled  " : voted.passed ? (voted.struck ? "STRUCK" : V.pass.slice(0, 8).padEnd(8)) : V.fail.slice(0, 8).padEnd(8)}` +
+    ` ${tabled ? `${voted.expected}`.padStart(3) : String(voted.yes).padStart(3)}/${tabled ? voted.needed : voted.threshold}` +
     ` | ${V.approval} ${approval.toFixed(1)} ${V.capital} ${L.capital} party ${L.party} chest ${L.chest}` +
     ` | streak ${g.streak} | ${voted.headline?.title ?? "(no headline)"}`,
   );
