@@ -19,7 +19,7 @@
     { "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" },
     { "name": "daily", "binding": "DAILY", "class_name": "DailyBuild" }
   ],
-  // 03:07 UTC: a build takes 1 to 20 minutes and the first players of the day are hours away.
+  // 03:07 UTC builds tomorrow's daily; a build takes 1 to 20 minutes.
   "triggers": { "crons": ["7 3 * * *"] },
   "vars": { "DAILY_BUILD_CAP": "50", "DAILY_GAME_CAP": "200" }
 }

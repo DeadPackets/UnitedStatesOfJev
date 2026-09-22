@@ -1137,6 +1137,8 @@ test("the style line names the ledger that led the most turns, and the decisive 
 test("a run with no finished turn has a grid with no rows and no decisive turn", () => {
   const g = game();
   expect(runStyle(pack, g)).toEqual({ line: STYLE_LINES.quiet, decisive: [], grid: [] });
+  g.log = [{ turn: 1, ledger: "quiet", delta: 0, cause: "a still turn" }];
+  expect(runStyle(pack, g).decisive).toEqual([]);
 });
 
 test("every finished turn adds one row to the log, and a new term starts an empty one", () => {

@@ -18,7 +18,7 @@ const env = (rows: Record<string, unknown>) => ({
   DB: {
     prepare: (sql: string) => ({
       bind: () => ({
-        first: async () => (sql.includes("FROM dailies d") ? rows.daily : sql.includes("COUNT(*)") ? { n: rows.plays ?? 0 } : sql.includes("daily_plays") ? rows.play : null),
+        first: async () => (sql.includes("FROM dailies") ? rows.daily : sql.includes("COUNT(*)") ? { n: rows.plays ?? 0 } : sql.includes("daily_plays") ? rows.play : null),
         all: async () => ({ results: sql.includes("ORDER BY d.day") ? rows.archive ?? [] : rows.days ?? [] }),
         run: async () => ({ meta: { changes: 1 } }),
       }),
@@ -52,6 +52,13 @@ test("a played daily ships the grid rows the Over screen and the landing both re
   expect(body.streak).toBe(1);
   expect(body.grid.map((g: { ledger: string }) => g.ledger)).toEqual(["authority", "treasury"]);
   expect(body.grid[1].won).toBe(true);
+});
+
+test("a second daily seat from the same player is refused with the link back to the first", async () => {
+  const e = env({ daily: ready, play: { id: "p", day: "2026-09-22", game: "g1", grid: null, won: null, ended: 0 } });
+  const r = await app.fetch(new Request("https://x/api/games", { method: "POST", body: JSON.stringify({ mode: "daily", faction: 0, promises: [0, 1, 2] }) }), e);
+  expect(r.status).toBe(409);
+  expect(await r.json()).toEqual({ error: "You have played today's term.", game: "g1" });
 });
 
 test("a day with no ready term says so and answers no half-empty card", async () => {

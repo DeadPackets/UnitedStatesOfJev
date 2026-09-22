@@ -738,12 +738,13 @@ test("a daily run writes its grid to the play row exactly once, and a free run w
   const writes: unknown[][] = [];
   const env = { DB: { prepare: (sql: string) => ({ bind: (...a: unknown[]) => ({ run: async () => { writes.push([sql, ...a]); return { meta: { changes: 1 } }; } }) }) } } as never;
 
-  const run = async (mode: "daily" | "free") => {
+  const run = async (mode: "daily" | "free", term = 1) => {
     const game: Game = newGame("g-" + mode, code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar,
       mode === "daily" ? { day: "2026-09-22" } : undefined);
     game.log = [{ turn: 1, ledger: "authority", delta: 6, cause: "a decree" }, { turn: 2, ledger: "treasury", delta: 9, cause: "the works" }];
     game.result = { ending: "reelected", score: 10 };
     game.test = { won: true } as never;
+    game.term = term;
     const do_ = new (GameDO as any)({ storage: {} }, env);
     do_.env = env;
     // The prose is already written, so `epilogue` closes the play row and returns before it calls Luna.
@@ -757,4 +758,6 @@ test("a daily run writes its grid to the play row exactly once, and a free run w
   expect(String(writes[0][0])).toContain("UPDATE daily_plays");
   expect(JSON.parse(String(writes[0][1])).map((r: { ledger: string }) => r.ledger)).toEqual(["authority", "treasury"]);
   expect(writes[0][2]).toBe(1);
+  await run("daily", 2);
+  expect(writes).toHaveLength(1);
 });

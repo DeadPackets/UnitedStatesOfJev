@@ -535,7 +535,7 @@ export function runStyle(pack: Pack, game: Game): RunStyle {
   let lead: Square = "quiet", most = 0;
   for (const [s, n] of counts) if (n > most) { most = n; lead = s; }
   const name = (s: Square) => (s === "quiet" ? "nothing" : pack.constitution?.ledgers[s].name ?? s);
-  const decisive = [...log].sort((a, b) => b.delta - a.delta).slice(0, DECISIVE).sort((a, b) => a.turn - b.turn)
+  const decisive = log.filter((r) => r.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, DECISIVE).sort((a, b) => a.turn - b.turn)
     .map((r) => ({ turn: r.turn, line: `${r.cause}. ${name(r.ledger)} moved ${Math.round(r.delta)}.` }));
   const grid: RunStyle["grid"] = log.map((r) => ({ ledger: r.ledger }));
   if (grid.length && typeof game.test?.won === "boolean") grid[grid.length - 1].won = game.test.won;

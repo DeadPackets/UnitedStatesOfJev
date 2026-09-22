@@ -446,7 +446,8 @@ export class GameDO extends DurableObject<Env> {
     const { game } = s;
     if (!game.result) return;
     // The row exists from the moment the seat was taken; this is the write that closes it. Idempotent.
-    if (game.mode === "daily") await endPlay(this.env, game.id, JSON.stringify(runStyle(pack, game).grid), game.test?.won ?? false);
+    // Only term 1 is the daily: a won run played on is practice and keeps the first term's grid.
+    if (game.mode === "daily" && game.term === 1) await endPlay(this.env, game.id, JSON.stringify(runStyle(pack, game).grid), game.test?.won ?? false);
     if (s.prose.ending) return;
     const state = { ...record(pack, game), mandate: game.test ? Math.round(game.test.mandate * 100) : null, score: game.result.score, terms: game.terms };
     s.prose.ending = await ending(this.env, pack, game.result.ending, state).catch(() => undefined);

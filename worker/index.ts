@@ -101,7 +101,8 @@ app.post("/api/games", async (c) => {
     return c.json({ error: "You have played today's term.", game: raced?.game ?? null }, 409,
       attempt.header ? { "set-cookie": attempt.header } : undefined);
   }
-  const r = await forward(c, id, "new", { id, ...seat, day: attempt?.day ?? null });
+  const r = await forward(c, id, "new", { id, ...seat, day: attempt?.day ?? null })
+    .catch(async (e) => { if (attempt) await dropAttempt(c.env, attempt.id, attempt.day); throw e; });
   if (r.ok) await c.env.DB.prepare("UPDATE scenarios SET builds = builds + 1 WHERE id = ?").bind(seat.scenario).run();
   else if (attempt) await dropAttempt(c.env, attempt.id, attempt.day);
   if (r.ok && attempt?.header) {
@@ -202,8 +203,9 @@ for (const action of ["test", "continue", "stop"]) {
 }
 
 // The instance id is the day, so a cron that fires twice for one minute starts one Workflow.
+// It builds tomorrow's term, so a day's daily is ready from its first minute.
 const scheduled: ExportedHandlerScheduledHandler<Env> = async (event, env, ctx) => {
-  const day = dayKey(event.scheduledTime);
+  const day = dayKey(event.scheduledTime + 86_400_000);
   ctx.waitUntil(env.DAILY.create({ id: `daily-${day}`, params: { day } }).then(() => {}, (e) => console.error("daily", day, e)));
 };
 

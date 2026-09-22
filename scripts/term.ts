@@ -1,5 +1,5 @@
 // Live check: one full term, end to end, against a running Worker.
-// Run: bunx wrangler dev --config ./wrangler.bots.jsonc --port 8799
+// Run: bunx wrangler dev --config ./wrangler.dev.jsonc --port 8799
 //      bun scripts/term.ts http://127.0.0.1:8799 [scenario] [faction] [p,p,p]
 import type { GameView } from "../src/api";
 
