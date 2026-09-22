@@ -379,6 +379,8 @@ export function migrate(game: Game): void {
   if (L && L.capital !== undefined) {
     g.ledgers = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
   }
+  // The campaign stage is gone: a save caught in it goes to the test it was heading for.
+  if (g.stage === "campaign") { game.stage = "test"; delete g.campaign; }
   game.posts ??= [];
   game.revolt ??= null;
   game.holders ??= {};

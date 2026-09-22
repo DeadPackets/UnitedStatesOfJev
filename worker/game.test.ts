@@ -90,7 +90,8 @@ test("create() picks the start by faction id, not array position, when starts ar
 test("a game stored before the feed or the v4 ledgers existed still loads", async () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 7 });
   const { posts: _none, ledgers, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  const old = { ...rest, ledgers: { approval: ledgers.popularity, capital: 40, party: 55, chest: 3 } };
+  const old = { ...rest, ledgers: { approval: ledgers.popularity, capital: 40, party: 55, chest: 3 },
+    stage: "campaign", campaign: { drafts: [], messages: [], turns: [], rival: [], intent: {} } };
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
   const doInstance = new GameDO(ctx, {} as any) as any;
@@ -104,6 +105,8 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   expect(v.ledgers.loyalty).toBe(55);
   expect(v.ledgers.treasury).toBe(0);
   expect(v.ledgers.capital).toBe(40);
+  expect(v.stage).toBe("test");
+  expect("campaign" in v).toBe(false);
 });
 
 test("the view still answers to the v3 ledger names until Stage C", () => {
