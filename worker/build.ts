@@ -177,8 +177,10 @@ export async function portraitSheet(env: Env, scenario: string, pack: Pack, grou
     await Promise.all(group.map(async (m, i) => {
       const cell = cut[i];
       if (!cell) return;
-      await put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell));
-      await put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper));
+      await Promise.all([
+        put(env, `scenarios/${scenario}/members/${m.id}.png`, face(cell)),
+        put(env, `scenarios/${scenario}/members/${m.id}-plate.png`, plate(cell, ink, paper)),
+      ]);
     }));
     return true;
   } catch (e) {
