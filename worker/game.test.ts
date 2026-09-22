@@ -4,7 +4,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { view, pickStart, GameDO, seededSample } = await import("./game");
-import { encodeCode, newGame, scenarioTag, type Game } from "./engine";
+import { encodeCode, hash, newGame, scenarioTag, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -172,11 +172,11 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
   for (const l of g.midterm.lost) {
     const seat = g.members.find((m: any) => m.seat === l.seat)!;
     expect(before).not.toContain(seat.id);
-    expect(seat.id).toBe(`r1-${l.seat}`);
+    expect(seat.id).toBe(`r${hash("g-mid").toString(36)}-1-${l.seat}`);
     expect(seat.faction).toBe(l.to);
     expect(seat.name.length).toBeGreaterThan(0);
     expect(seat.memory).toEqual([]);
-    expect(seat.portrait).toBe(`members/r1-${l.seat}.png`);
+    expect(seat.portrait).toBe(`members/r${hash("g-mid").toString(36)}-1-${l.seat}.png`);
     expect("bio" in seat || "tell" in seat).toBe(false);
   }
   expect(background.length).toBe(1);        // the portrait sheet runs after the answer, never before it
@@ -196,7 +196,7 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   expect(body.phase).toBe("draft");
   expect(body.midterm.lost.map((l: any) => l.seat)).toEqual(["seat-01"]);
   expect(body.members).toHaveLength(pack.chamber.size);
-  expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe("r1-seat-01");
+  expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe(`r${hash("g-mid").toString(36)}-1-seat-01`);
   await Promise.all(background);
 });
 

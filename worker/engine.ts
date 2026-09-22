@@ -489,7 +489,9 @@ export function replacements(_pack: Pack, game: Game, draw: MidtermDraw): Replac
   return draw.lost.map((l, i) => {
     const old = game.members.find((m) => m.seat === l.seat)!;
     return {
-      id: `r${game.term}-${l.seat}`, seat: l.seat, region: old.region, faction: l.to,
+      // The game id is in the member id because the portrait is written under the scenario's R2 prefix and
+      // served immutable: two games of one scenario would otherwise overwrite each other's faces.
+      id: `r${hash(game.id).toString(36)}-${game.term}-${l.seat}`, seat: l.seat, region: old.region, faction: l.to,
       temperament: TEMPERAMENTS[(hash(l.seat) + i) % TEMPERAMENTS.length],
       years: "new" as const, flags: old.flags, patrons: [],
     };
@@ -653,8 +655,11 @@ export function director(game: Game, pack: Pack): Event | null {
 
   // A flood or a comet lands on its turn whatever else happened; a conditional dated card waits for a clear
   // turn like any crisis, up to two turns late, then drops.
-  const pending = pack.deck.filter((s) => s.kind === "dated" && !game.events.some((e) => e.id === s.id));
-  const exo = pending.find((s) => s.exogenous && dueAt(game, s, 0));
+  // `seen` carries across terms, so a dated card that fired in term 1 does not fire again on the same
+  // calendar date of term 2. One turn late is the slack that lets a second card due the same turn still fire,
+  // and that lets a card dated turn 1 fire at all: the Director first runs after the turn-1 vote.
+  const pending = pack.deck.filter((s) => s.kind === "dated" && !game.director.seen.includes(s.id));
+  const exo = pending.find((s) => s.exogenous && dueAt(game, s, 1));
   if (exo) return fire(game, exo, false);
   if (clear) {
     const due = pending.find((s) => !s.exogenous && dueAt(game, s, 2) && (s.needs ?? []).every((c) => meets(pack, game, c)));
@@ -708,7 +713,8 @@ const SEAT_MARK: Record<string, { mood: number; loyalty: number }> = {
 };
 function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) {
   if (e.chance != null && roll() >= e.chance) return;
-  const d = e.delta ?? 0, L = game.ledgers;
+  // The deck prompt asks for -15..15; a stored pack that ignored it may not zero a ledger from one card.
+  const d = clamp(e.delta ?? 0, -15, 15), L = game.ledgers;
   switch (e.ledger) {
     case "approval": for (const r of pack.regions) bump(game, r.id, d); break;
     case "capital": L.capital = clamp(L.capital + d, 0, 200); break;
