@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Faction, Pack } from "../worker/pack";
 
 type Fill = Faction["fill"];
@@ -25,21 +26,22 @@ function marks(fill: Fill, ink: string) {
 /**
  * One 6x6 pattern per faction: the faction colour with its marks in ink, so the fill reads
  * without colour. `solid` factions get no pattern; `fillFor` hands back their flat colour.
+ * `scope` keeps the ids to one chamber: two floors on a page own separate defs.
  */
-export function FILL_DEFS({ factions, ink = "var(--ink)" }: { factions: Faction[]; ink?: string }) {
+export const FILL_DEFS = memo(function FILL_DEFS({ factions, scope, ink = "var(--ink)" }: { factions: Faction[]; scope: string; ink?: string }) {
   return (
     <>
       {factions.filter((f) => f.fill !== "solid").map((f) => (
-        <pattern key={f.id} id={`fill-${f.id}`} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform={TILT[f.fill]}>
+        <pattern key={f.id} id={`${scope}fill-${f.id}`} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform={TILT[f.fill]}>
           <rect width={6} height={6} fill={f.color} />
           {marks(f.fill, ink)}
         </pattern>
       ))}
     </>
   );
-}
+});
 
-export const fillFor = (f: Faction) => (f.fill === "solid" ? f.color : `url(#fill-${f.id})`);
+export const fillFor = (f: Faction, scope: string) => (f.fill === "solid" ? f.color : `url(#${scope}fill-${f.id})`);
 
 /** R2 art, served by the Worker: `members/<id>.png`, `members/<id>-plate.png`, `masthead.png`, `crests/<id>.png`. */
 export const art = (packId: string, file: string) => `/api/scenarios/${packId}/art/${file}`;

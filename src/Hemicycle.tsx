@@ -1,4 +1,4 @@
-import { forwardRef, memo, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { forwardRef, memo, useId, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { Member } from "../worker/pack";
 import type { GamePack } from "./api";
 import { BOX, minGap, points } from "./layouts";
@@ -46,6 +46,9 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
   const hit = gap / 2;
   const factions = useMemo(() => new Map(pack.factions.map((f) => [f.id, f])), [pack.factions]);
   const regions = useMemo(() => new Map(pack.regions.map((g) => [g.id, g.name])), [pack.regions]);
+  // SVG ids are document-wide: the reveal and the drawer can hold a chamber each.
+  const scope = useId();
+  const clip = `url(#${scope}coinclip)`;
   const [hover, setHover] = useState<number | null>(null);
   const groups = useRef(new Map<string, SVGGElement>());
   // Below 5 units a face is mud; the 4-unit band outside it keeps the pattern readable at every chamber size.
@@ -78,8 +81,8 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
     <svg className={`hemi seats ${whip || votes ? "" : "gather"}`} viewBox={`0 0 ${BOX.w} ${BOX.h}`} role="group"
       aria-label={`${vocab.chamber}, ${members.length} ${vocab.seat}`}>
       <defs>
-        <clipPath id="coinclip" clipPathUnits="objectBoundingBox"><circle cx={0.5} cy={0.5} r={0.5} /></clipPath>
-        <FILL_DEFS factions={pack.factions} />
+        <clipPath id={`${scope}coinclip`} clipPathUnits="objectBoundingBox"><circle cx={0.5} cy={0.5} r={0.5} /></clipPath>
+        <FILL_DEFS factions={pack.factions} scope={scope} />
       </defs>
       {ordered.map((m, i) => {
         const s = seats[i];
@@ -106,13 +109,13 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
             {hotSet.has(m.id) ? <circle cx={s.x} cy={s.y} r={r + 5} fill="none" stroke="var(--accent)" strokeWidth={2} opacity={0.9}>
               <animate attributeName="r" values={`${r + 1};${r + 8};${r + 1}`} dur="1.4s" repeatCount="indefinite" /></circle> : null}
             <circle className={`seatc ${pulse === m.id ? "pulse" : ""}`} cx={s.x} cy={s.y} r={r}
-              fill={f ? fillFor(f) : "var(--ink)"} stroke={color} strokeWidth={selected === m.id ? 3 : 1.4}
+              fill={f ? fillFor(f, scope) : "var(--ink)"} stroke={color} strokeWidth={selected === m.id ? 3 : 1.4}
               opacity={p === undefined ? 1 : 0.4 + 0.6 * p} />
             {face >= 5 ? <g opacity={p === undefined ? 1 : 0.4 + 0.6 * p}>
               <circle className="well" cx={s.x} cy={s.y} r={face} fill="var(--paper)" />
               {face >= 6 ? <text className="ini" x={s.x} y={s.y + face * 0.36} textAnchor="middle" style={{ fill: color, fontSize: face }}>{initials(m.name)}</text> : null}
               <image className="coin" href={art(pack.id, `members/${m.id}.png`)} x={s.x - face} y={s.y - face} width={face * 2} height={face * 2}
-                clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideBroken} />
+                clipPath={clip} preserveAspectRatio="xMidYMid slice" onLoad={showImg} onError={hideBroken} />
             </g> : null}
             <circle className="edge" cx={s.x} cy={s.y} r={r + 1.2} fill="none" stroke="var(--ink)" strokeWidth={1} />
           </g>
@@ -128,11 +131,11 @@ export const Chamber = memo(forwardRef<RollHandle, ChamberProps>(function Chambe
           // the rise keyframe ends on `transform: none`, which would beat a transform attribute on the same node
           <g className="seatlabel" transform={`translate(${lx} ${ly})`}><g className="rise">
             <rect width={w} height={46} />
-            <circle cx={27} cy={23} r={17} fill={f ? fillFor(f) : "var(--ink)"} stroke={f?.color ?? "var(--paper)"} strokeWidth={1.4} />
+            <circle cx={27} cy={23} r={17} fill={f ? fillFor(f, scope) : "var(--ink)"} stroke={f?.color ?? "var(--paper)"} strokeWidth={1.4} />
             <circle cx={27} cy={23} r={13} fill="var(--paper)" />
             <text className="ini" x={27} y={28} textAnchor="middle" style={{ fill: f?.color, fontSize: 13 }}>{initials(h.name)}</text>
             <image className="coin on" href={art(pack.id, `members/${h.id}.png`)} x={14} y={10} width={26} height={26}
-              clipPath="url(#coinclip)" preserveAspectRatio="xMidYMid slice" onError={hideBroken} />
+              clipPath={clip} preserveAspectRatio="xMidYMid slice" onError={hideBroken} />
             <text x={54} y={20}>{h.name}</text>
             <text className="sub" x={54} y={36}>{sub}</text>
           </g></g>
