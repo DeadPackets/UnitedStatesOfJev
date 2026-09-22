@@ -70,7 +70,6 @@ export const api = {
   vote: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/vote`, { turn: g.turn }),
   endTurn: (g: GameView) => call<GameView>(`/games/${g.id}/turn/end`, { turn: g.turn }),
   midterm: (g: GameView) => call<GameView>(`/games/${g.id}/midterm`, { turn: g.turn }),
-  post: (g: GameView, text: string) => call<GameView>(`/games/${g.id}/post`, { turn: g.turn, text }),
   resolve: (g: GameView, i: number, stance: number) => call<GameView>(`/games/${g.id}/events/${i}`, { turn: g.turn, stance }),
   test: (g: GameView) => call<GameView>(`/games/${g.id}/test`, {}),
   continue: (g: GameView) => call<GameView>(`/games/${g.id}/continue`, {}),

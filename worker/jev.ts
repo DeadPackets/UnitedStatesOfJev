@@ -1,4 +1,4 @@
-import { popularity, record, threshold, type Bill, type Game, type Member } from "./engine";
+import { popularity, record, threshold, type Bill, type Game, type Member, type Reaction } from "./engine";
 import type { Citizen, Holder, Pack, Storylet } from "./pack";
 
 export type Env = {
@@ -223,12 +223,17 @@ export const choices = (answers: Answers, prefix: string): Record<string, string
     .filter(([k, v]) => k.startsWith(prefix) && v.probabilities)
     .map(([k, v]) => [k.slice(prefix.length), Object.entries(v.probabilities!).sort((a, b) => b[1] - a[1])[0][0]]));
 
+// Measured: 0 of 5,000 chose "share" over "like", which a reader does not see as exclusive; this wording is (analysis §5).
+export const REACTIONS: Record<string, Reaction> = {
+  "pass it on": "share", "like it and move on": "like", "boo it": "boo", "scroll past": "ignore",
+};
+
 export function reactQuestions(pack: Pack, citizens: Citizen[]): Record<string, Question> {
   const qs: Record<string, Question> = {};
   for (const c of citizens) qs[`react_${c.id}`] = {
     type: "choice",
     instructions: { citizen: citizenPersona(pack, c), question: "How does this person react to `post` from the government?" },
-    options: ["like", "boo", "share", "ignore"],
+    options: Object.keys(REACTIONS),
   };
   return qs;
 }

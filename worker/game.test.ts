@@ -147,6 +147,7 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
 
 let refuse = false;
 let lawTag = false;
+let postTag = false;
 
 // Every model call goes out through one fetch: `systemone` is Jev, `chat/completions` is Luna, keyed by schema name.
 const canned = (name: string, user: string): unknown => {
@@ -156,11 +157,11 @@ const canned = (name: string, user: string): unknown => {
           power: true, era: false, refusal: "This age cannot lift anything over the harbour.", credibility: 0.6,
           cost: { authority: 0, treasury: 0, chest: 0 }, revenue: [], serves: [], hits: [], keeps: [],
           targets: null, tags: [], regions: [], promises: [], sunset: null, template: null }
-      : { verb: lawTag ? "law" : "decree", title: "Raise the harbour levy", reading: "You raise the levy on the wharf.",
+      : { verb: postTag ? "proclaim" : lawTag ? "law" : "decree", title: "Raise the harbour levy", reading: "You raise the levy on the wharf.",
           power: true, era: true, refusal: null, credibility: 0.9,
           cost: { authority: 0, treasury: 0, chest: 0 },
           revenue: [{ ledger: "treasury", id: null, delta: 6 }],
-          serves: ["guard"], hits: ["league"], keeps: ["tariffs"], targets: null,
+          serves: ["guard"], hits: ["league"], keeps: ["tariffs"], targets: postTag ? [pack.blocs[0].id] : null,
           tags: ["tariffs"], regions: [], promises: [], sunset: null, template: null };
     case "bill": return { title: "Harbor Levy", summary: "It raises the levy on the wharf.", tags: ["tariffs"] };
     case "headline": case "halfterm": return { title: "The seats change hands", lede: "The council woke up smaller. Nobody in the chair slept." };
@@ -318,18 +319,24 @@ test("amend after adopt is refused: adopt leaves an empty amendments array, not 
   await expect(doInstance.amend(game, pack, bill)).rejects.toMatchObject({ status: 409 });
 });
 
-test("one post a turn, 240 characters, and the view carries the reactions", async () => {
-  stubModels(0.5);
-  const { post } = seatedGame(12);
-  const ok = await post("post", { turn: 1, text: "Tolls come down at the harbour." });
-  expect(ok.status).toBe(200);
-  const p = ok.body.posts.at(-1)!;
+test("one proclamation a turn, and the view carries the reactions", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(65);
+  game.ledgers.chest = 10;                       // newGame opens the chest at 0 and a notice costs 2
+  postTag = true;
+  expect((await post("acts/price", { turn: 1, text: "The accounts of every work go up in public each month." })).status).toBe(200);
+  const r = await post("acts", { turn: 1 });
+  expect(r.status).toBe(200);
+  const p = r.body.posts.at(-1);
   expect(p.likes + p.boos + p.shares + p.ignores).toBe(250);
-  expect(p.replies.length).toBeGreaterThan(0);
-  expect(typeof p.rival).toBe("string");
-  expect(typeof p.won).toBe("boolean");
-  expect((await post("post", { turn: 1, text: "Twice." })).status).toBe(409);
-  expect((await post("post", { turn: 1, text: "x".repeat(241) })).status).toBe(400);
+  expect(p.targets).toEqual([pack.blocs[0].id]);
+  expect(game.ledgers.chest).toBe(8);
+  expect((await post("acts/price", { turn: 1, text: "A second notice this turn about the wharf." })).status).toBe(200);
+  expect((await post("acts", { turn: 1 })).status).toBe(409);
+  postTag = false;
+  expect(game.posts).toHaveLength(1);
+  expect(game.acts).toHaveLength(1);              // the refused second notice paid nothing
+  expect(game.ledgers.chest).toBe(8);
 });
 
 test("a rival post that never lands is a loss, not a free win, and skips the agree call", async () => {
@@ -350,10 +357,14 @@ test("a rival post that never lands is a loss, not a free win, and skips the agr
     return Response.json({ choices: [{ message: { content: JSON.stringify(canned(name, body.messages[1].content)) } }] });
   }) as unknown as typeof fetch;
 
-  const { post } = seatedGame(21);
-  const ok = await post("post", { turn: 1, text: "Tolls come down at the harbour." });
-  expect(ok.status).toBe(200);
-  const p = ok.body.posts.at(-1)!;
+  const { game, post } = seatedGame(21);
+  game.ledgers.chest = 10;
+  postTag = true;
+  await post("acts/price", { turn: 1, text: "The accounts of every work go up in public each month." });
+  const r = await post("acts", { turn: 1 });
+  postTag = false;
+  expect(r.status).toBe(200);
+  const p = r.body.posts.at(-1)!;
   expect(p.rival).toBe("");
   expect(p.won).toBe(false);
   expect(agreeCalled).toBe(false);

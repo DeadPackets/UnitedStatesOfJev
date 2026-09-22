@@ -516,7 +516,7 @@ test("a code that is not a string is a bad code", () => {
 });
 
 import { applyMidterm, applyPost, holdP, midtermUp, regionIntent, replacements, runMidterm, TURNS_PER_TERM,
-  type Persona, type Reaction } from "./engine";
+  type Persona, type PriceTag, type Reaction } from "./engine";
 
 const allIntent = (p: number) => Object.fromEntries(pack.citizens.map((c) => [c.id, p]));
 const react = (r: Reaction) => Object.fromEntries(pack.citizens.map((c) => [c.id, r]));
@@ -529,21 +529,58 @@ const midtermWorld = (g: Game, hold: boolean) => {
   return Object.fromEntries(pack.citizens.map((c) => [c.id, own.has(c.region) === hold ? 1 : 0]));
 };
 
-test("boos cost approval, and loud opposition makes them cost half again as much", () => {
-  const a = game(), b = game();
-  b.stageB.loud_opposition = 1.5;
-  const pa = applyPost(pack, a, 1, "a post", react("boo"), said, agreeAll("government"));
-  const pb = applyPost(pack, b, 1, "a post", react("boo"), said, agreeAll("government"));
-  const one = pack.regions[0].id;
-  expect(pa.boos).toBe(250);
-  expect(pa.regions[one]).toBeLessThan(0);
-  expect(pb.regions[one]).toBeLessThan(pa.regions[one]);
-  expect(a.ledgers.popularity[one]).toBeGreaterThan(b.ledgers.popularity[one]);
+import { POST_BASELINE, POST_GAIN } from "./engine";
+
+const tagFor = (over: Partial<PriceTag> = {}): PriceTag => ({
+  verb: "proclaim", title: "A notice", reading: "You put up a notice.", credibility: 1,
+  quoted: { authority: 0, treasury: 0, chest: 0 }, charge: { authority: 0, treasury: 0, chest: 2 },
+  discounted: false, revenue: [], serves: [], hits: [], keeps: [], targets: [], tags: [], regions: [],
+  member: null, promises: [], sunset: null, template: null, stances: [], ...over,
+});
+const reactMix = (like: number, boo: number) => {
+  const out: Record<string, Reaction> = {};
+  const pct = (i: number) => (i * 100) / pack.citizens.length;   // 250 citizens: i % 100 would give the last 50 all likes
+  pack.citizens.forEach((c, i) => { out[c.id] = pct(i) < like ? "like" : pct(i) < like + boo ? "boo" : "ignore"; });
+  return out;
+};
+const saidNothing = { replies: [], rival: "They said nothing new." };
+
+const national = (g: Game) => {
+  const w = pack.regions.reduce((a, r) => a + r.weight, 0);
+  return pack.regions.reduce((a, r) => a + r.weight * g.ledgers.popularity[r.id], 0) / w;
+};
+
+test("an average post is worth nothing, a loud one is punished and a strong one pays", () => {
+  const g = game();
+  const before = { ...g.ledgers.popularity };
+  const was = national(g);
+  applyPost(pack, g, 1, "a bland notice", reactMix(76, 5), saidNothing, {}, tagFor());
+  expect(Math.abs(national(g) - was)).toBeLessThanOrEqual(0.4);
+
+  const bad = game();
+  applyPost(pack, bad, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
+  expect(bad.ledgers.popularity[REGIONS[0]]).toBeLessThan(before[REGIONS[0]] - 3);
+
+  const good = game();
+  applyPost(pack, good, 1, "a sharp notice", reactMix(88, 6), saidNothing, {}, tagFor());
+  expect(good.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(before[REGIONS[0]]);
+  expect(good.posts[0].targets).toEqual([]);
+  expect(POST_BASELINE).toBeCloseTo(0.65, 2);
+  expect(POST_GAIN).toBe(10);
+});
+
+test("state media damps the boos a post takes", () => {
+  const g = game();
+  const h = game();
+  h.media = 1;
+  applyPost(pack, g, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
+  applyPost(pack, h, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
+  expect(h.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(g.ledgers.popularity[REGIONS[0]]);
 });
 
 test("a region where shares lead goes hot and its seats remember the post", () => {
   const g = game();
-  const p = applyPost(pack, g, 1, "the harbor tolls", react("share"), said, agreeAll("government"));
+  const p = applyPost(pack, g, 1, "the harbor tolls", react("share"), said, agreeAll("government"), tagFor());
   expect(p.hot).toEqual(pack.regions.map((r) => r.id));
   expect(p.regions[pack.regions[0].id]).toBeGreaterThan(0);
   const seat = g.members.find((m) => m.region === pack.regions[0].id)!;
@@ -553,8 +590,8 @@ test("a region where shares lead goes hot and its seats remember the post", () =
 
 test("losing the post duel is recorded on the post", () => {
   const g = game();
-  expect(applyPost(pack, g, 1, "x", react("ignore"), said, agreeAll("rival")).won).toBe(false);
-  expect(applyPost(pack, g, 2, "x", react("ignore"), said, agreeAll("government")).won).toBe(true);
+  expect(applyPost(pack, g, 1, "x", react("ignore"), said, agreeAll("rival"), tagFor()).won).toBe(false);
+  expect(applyPost(pack, g, 2, "x", react("ignore"), said, agreeAll("government"), tagFor()).won).toBe(true);
 });
 
 test("a seat holds on approval and intent, and the odds flip for the opposition", () => {

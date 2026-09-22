@@ -50,7 +50,9 @@ export default function Feed({ game, bill, act, busy }: { game: GameView; bill?:
   const left = LIMIT - text.length;
   const region = (id: string) => game.pack.regions.find((r) => r.id === id)?.name ?? id;
   const home = (name: string) => { const c = game.citizens.find((x) => x.name === name); return c ? `${name}, ${region(c.region)}` : name; };
-  const send = async () => { if (await act(() => api.post(game, text.trim()))) setText(""); };
+  const send = async () => {
+    if (await act(() => api.price(game, text.trim(), "proclaim").then(() => api.act(game)))) setText("");
+  };
 
   return (
     <div className="feed">

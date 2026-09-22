@@ -137,7 +137,7 @@ app.post("/api/games/:id/bills/:b/:action/:i?", (c) => {
   return forwardBody(c, `bills/${b}/${action}${i !== undefined ? "/" + i : ""}`);
 });
 app.post("/api/games/:id/events/:i", (c) => forwardBody(c, `events/${c.req.param("i")}`));
-for (const action of ["midterm", "post", "turn/end", "acts", "acts/price", "acts/withdraw"]) {
+for (const action of ["midterm", "turn/end", "acts", "acts/price", "acts/withdraw"]) {
   app.post(`/api/games/:id/${action}`, (c) => forwardBody(c, action));
 }
 // test, continue and stop take no turn: the term is already over when they are legal.

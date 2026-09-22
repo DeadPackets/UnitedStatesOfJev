@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { agreeQuestions, choices, reactQuestions, voteQuestions } from "./jev";
+import { agreeQuestions, choices, REACTIONS, reactQuestions, voteQuestions } from "./jev";
 import { newGame, encodeCode, scenarioTag } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -19,7 +19,7 @@ test("every citizen gets one reaction choice with four options", () => {
   expect(Object.keys(qs).length).toBe(250);
   const q = qs[`react_${pack.citizens[0].id}`] as { type: string; options: string[] };
   expect(q.type).toBe("choice");
-  expect(q.options).toEqual(["like", "boo", "share", "ignore"]);
+  expect(q.options.map((o) => REACTIONS[o]).sort()).toEqual(["boo", "ignore", "like", "share"]);
 });
 
 test("the duel asks the sample which post it agrees with", () => {

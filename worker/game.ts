@@ -4,12 +4,12 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, bar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, REFUSAL_COST, spendCalls,
+  pay, pushWire, REFUSAL_COST, spendCalls, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
   agreeQuestions, agreeState, choices, citizenQuestions, citizenState, eventQuestions, HOLDER_SAMPLE, holderQuestions,
-  holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, scores, UpstreamError, voteQuestions,
+  holderStance, holderState, jev, memberQuestion, nouls, reactQuestions, reactState, REACTIONS, scores, UpstreamError, voteQuestions,
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { getScenario } from "./db";
@@ -65,7 +65,6 @@ export class GameDO extends DurableObject<Env> {
           case "acts": extra = await this.acts(game, pack, parts, body); break;
           case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
           case "midterm": await this.midterm(game, pack); break;
-          case "post": await this.post(game, pack, String(body.text ?? "")); break;
           case "test": await this.term(s, pack); break;
           case "turn": if (parts[1] !== "end") throw new Reject(404, "Unknown action"); await this.end(game, pack); break;
           case "continue":
@@ -184,7 +183,10 @@ export class GameDO extends DurableObject<Env> {
     if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
     if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    if (tag.verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
+    if (tag.verb === "proclaim" && !spendCalls(game, 2)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);
+    if (tag.verb === "proclaim") await this.proclaim(game, pack, tag);
     if (tag.verb === "favour" && tag.member && game.phase === "whip") {
       const bill = game.bills.at(-1);
       if (bill?.whip && spendCalls(game)) {
@@ -323,14 +325,12 @@ export class GameDO extends DurableObject<Env> {
     if (head && game.midterm) game.midterm.headline = head;
   }
 
-  private async post(game: Game, pack: Pack, raw: string) {
-    if (game.stage !== "session") throw new Reject(409, "Not now.");
-    const text = raw.trim();
-    if (!text.length || text.length > 240) throw new Reject(400, "240 characters at most.");
-    if (game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
+  private async proclaim(game: Game, pack: Pack, tag: PriceTag) {
+    const text = tag.reading;
     const sample = seededSample(game, pack.citizens, 50);
     const r = await jev(this.env, reactState(pack, game, text), reactQuestions(pack, pack.citizens));
-    const reactions = choices(r.answers, "react_") as Record<string, Reaction>;
+    const raw = choices(r.answers, "react_");
+    const reactions = Object.fromEntries(Object.entries(raw).map(([id, o]) => [id, REACTIONS[o] ?? "ignore"])) as Record<string, Reaction>;
     const loudest = [...pack.citizens]
       .filter((c) => reactions[c.id] === "share" || reactions[c.id] === "boo")
       .sort((a, b) => b.weight - a.weight).slice(0, 3)
@@ -339,7 +339,7 @@ export class GameDO extends DurableObject<Env> {
     const duel = said.rival
       ? choices((await jev(this.env, agreeState(pack, text, said.rival), agreeQuestions(pack, sample))).answers, "agree_")
       : {};
-    const post = applyPost(pack, game, game.turn, text, reactions, said, duel as Record<string, "government" | "rival">);
+    const post = applyPost(pack, game, game.turn, text, reactions, said, duel as Record<string, "government" | "rival">, tag);
     if (!said.rival) post.won = false;
   }
 
@@ -414,6 +414,7 @@ export function migrate(game: Game): void {
   // The campaign stage is gone: a save caught in it goes to the test it was heading for.
   if (g.stage === "campaign") { game.stage = "test"; delete g.campaign; }
   game.posts ??= [];
+  for (const p of game.posts) p.targets ??= [];
   game.revolt ??= null;
   game.holders ??= {};
   game.warnings ??= [];

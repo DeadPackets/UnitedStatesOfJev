@@ -765,17 +765,23 @@ export interface Post {
   regions: Record<string, number>;                 // approval delta applied, per region
   hot: string[];                                   // regions where shares led
   replies: { name: string; text: string }[];
+  targets: string[];
   rival: string;
   agree: { mine: number; rival: number };
   won: boolean;
 }
+
+// Measured over 5,000 reactions (analysis §4): 0.76 likes - 2 x 0.054 boos = 0.65, what an average notice earns.
+export const POST_BASELINE = 0.65;   // TUNE, re-measure in Stage D: Task 12 rewords the four reactions
+export const POST_GAIN = 10;         // TUNE
+export const BOO_WEIGHT = 2;         // TUNE: a boo costs this many times what a like pays
 
 export const feedMemory = (region: string, reaction: string) => `Constituents in ${region} were loud about the government's last notice: mostly ${reaction}.`;
 
 // v2 §12 counts one region's own citizens, so the denominator is that region's sample, not the 250.
 export function applyPost(pack: Pack, game: Game, turn: number, text: string,
   reactions: Record<string, Reaction>, said: { replies: { name: string; text: string }[]; rival: string },
-  agree: Record<string, "government" | "rival">): Post {
+  agree: Record<string, "government" | "rival">, tag: PriceTag): Post {
   const loud = game.stageB.loud_opposition ?? 1;
   const tally = { like: 0, boo: 0, share: 0, ignore: 0 };
   const per = new Map(pack.regions.map((r) => [r.id, { like: 0, boo: 0, share: 0, ignore: 0, n: 0 }]));
@@ -790,7 +796,8 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
   for (const r of pack.regions) {
     const g = per.get(r.id)!;
     if (!g.n) continue;
-    const d = round1(clamp(((g.like + 2 * g.share - 2 * g.boo * loud) / g.n) * 2, -6, 6));
+    const boos = (BOO_WEIGHT * g.boo * loud * (1 - game.media)) / g.n;
+    const d = round1(clamp((((g.like + g.share) / g.n - boos - POST_BASELINE) * POST_GAIN) * game.trust, -6, 6));
     regions[r.id] = d;
     if (d !== 0) bump(game, r.id, d);
     if (g.share > g.like && g.share > g.boo) {
@@ -803,7 +810,7 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
   const mine = votes.filter((v) => v === "government").length;
   const post: Post = {
     turn, text, likes: tally.like, boos: tally.boo, shares: tally.share, ignores: tally.ignore,
-    regions, hot, replies: said.replies.slice(0, 3), rival: said.rival,
+    regions, hot, targets: tag.targets ?? [], replies: said.replies.slice(0, 3), rival: said.rival,
     agree: { mine, rival: votes.length - mine }, won: mine >= votes.length - mine,
   };
   game.posts.push(post);
