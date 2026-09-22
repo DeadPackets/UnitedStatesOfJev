@@ -90,6 +90,9 @@ while (g.stage === "session") {
   );
   if (voted.quotes?.length) console.log(`     "${voted.quotes[0].text}" — ${voted.quotes[0].name}`);
 
+  // The vote no longer moves the clock: End turn does, and the Director draws its card at that boundary.
+  g = await api(`/games/${g.id}/turn/end`, { turn });
+  console.log(`     end turn: ${g.wire.length} wire lines | ${g.pending ?? "(nothing pending)"}`);
   const open = g.events.findIndex((e) => e.stance === undefined);
   if (open >= 0) {
     const e = g.events[open];
@@ -137,11 +140,17 @@ if (g.stage === "test") {
   console.log(`\n${V.test} in ${ms(t0)}`);
   const t = g.test!;
   console.log(`  loyalty ${t.loyalty.toFixed(3)} (drawn ${t.drawnLoyalty.toFixed(3)}) public ${t.public.toFixed(3)} (drawn ${t.drawnPublic.toFixed(3)})`);
-  console.log(`  mandate ${t.mandate.toFixed(3)} alpha ${g.pack.chamber.alpha} -> ${t.won ? "WON" : "LOST"}`);
+  console.log(`  mandate ${t.mandate.toFixed(3)} bar ${t.bar.toFixed(2)}${t.early ? ` early, called by ${t.early}` : ""} -> ${t.won ? "WON" : "LOST"}`);
+  console.log(`  ${t.holders.map((h) => `${h.name} ${h.stance.toFixed(2)} x ${h.weight.toFixed(2)}`).join(" | ")}`);
 }
 const term = g.terms.at(-1);
 console.log(`\nending ${g.result?.ending} score ${g.result?.score}`);
 if (term) console.log(`term ${term.term}: passed ${term.passed} kept ${term.kept} broken ${term.broken} mandate ${term.mandate.toFixed(3)} points ${term.points}`);
 if (g.ending) console.log(`"${g.ending.title}" — ${g.ending.body}`);
+if (g.stage === "won") {
+  g = await api(`/games/${g.id}/continue`, {});
+  console.log(`\ncontinue: term ${g.term} ${V.turn} ${g.turn} stage ${g.stage}, ${g.escalations.length} escalations, ${g.inForce.length} laws in force`);
+  if (g.term !== 2 || g.turn !== 1 || g.stage !== "session") { console.error("FAIL: continue did not open term 2"); process.exit(1); }
+}
 console.log(`\n${calls} requests, ${ms(started)} total`);
 if (performance.now() - started > 480_000) { console.error("FAIL: over 8 minutes"); process.exit(1); }
