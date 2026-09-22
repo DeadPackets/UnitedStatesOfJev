@@ -21,9 +21,12 @@ export function useSheet(onClose: () => void) {
     const watch = new MutationObserver(() => {
       if (d.open || timer.current) return;
       // A sheet that opened itself can outlive its opener, and the browser then restores focus to
-      // <body>. The screen's one primary action is where the player is going next, so send it there.
-      if (document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
-      timer.current = setTimeout(onClose, UNMOUNT) as unknown as number;
+      // <body>. That restore lands after this mutation, so the check waits for the exit to finish;
+      // the screen's one primary action is where the player is going next, so send it there.
+      timer.current = setTimeout(() => {
+        if (document.activeElement === document.body) document.querySelector<HTMLElement>("[data-primary]")?.focus();
+        onClose();
+      }, UNMOUNT) as unknown as number;
     });
     watch.observe(d, { attributeFilter: ["open"] });
     return () => { watch.disconnect(); clearTimeout(timer.current); };
