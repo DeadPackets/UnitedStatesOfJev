@@ -93,3 +93,21 @@ Ablation on Rome 44 BC (two runs each) and Egypt 2012 (one run), Luna only, fixe
 Findings: L4 removed every dead leader (Pompey, Crassus) and was the only single lever that produced Wikidata party colors for Egypt, for $0.0006. L2 removed dead leaders too and made Egypt name Morsi in the start. L5 made things worse: 32 to 52 claims per review, mostly seat counts the sources cannot confirm, and the repair hedged into disclaimers (11 in one ALL run) and duplicated leaders. L1's calendar chosen by the model put the Ides on turn 6 or 15; code must set the calendar. L3's "leader appears in sources" check rejected two real Egyptian leaders the lead sections never name. Wikidata label search needs a disambiguation guard: it returned a Lepidus who died in 152 BC and a 1996-born Octavian, which Luna ignored.
 
 Decision: fetch full sections, not leads; L4 plus L2 in the pipeline; L3 reduced to alive-on-start-date, seated-leader, and reference checks; code sets the calendar from the facts sheet's dated events so the last one lands near turn 18; no self-review; Astra only when the validators still fail after one retry. Expected cost per build about $0.01 for the frame path.
+
+## Jev duplicate detection, 2026-09-22
+
+95 v1 senators plus 5 planted twins (Luna paraphrase of bio and tell under a new name, same state, party, issues, donors), two shuffles. Spend $0.03.
+
+| Step | Shape | Tokens | Cost | Wall |
+|---|---|---|---|---|
+| 1 | Choice per member, "which other member is most like this one, ignoring the name", 99 options; 2 calls of 50 because 100 × 99 options exceed the 64k request cap | 55k each | $0.0023 each | 1.2 s each |
+| 2, by id | Noul "are members a and b the same person" referencing the state | 17k | $0.0007 | 0.6 s |
+| 2, inline | same Noul with both records pasted into the question | 30k | $0.0013 | 0.7 s |
+
+| Variant | Sample 1 | Sample 2 | False pairs | Controls flagged |
+|---|---|---|---|---|
+| step 1 alone at 0.5 | 5 of 5 | 5 of 5 | 18 to 22 | some |
+| step 1 then Noul by id | 4 of 5 | 2 of 5 | 0 | 0 |
+| step 1 then Noul inline | **5 of 5** | **5 of 5** | 0 | 0 |
+
+Twins were the top choice in 19 of 20 directions. By-id Noul ranks right but calibrates low (twins 0.34 to 0.70). Inline Noul puts twins at 0.83 to 0.93 and the worst non-twin at 0.24, so 0.5 has margin both ways. Same finding as the lobby-offer calibration: put the thing to judge inside the question, not in the state. Decision: step 1 Choice at 0.5, union of both directions, step 2 inline Noul at 0.5, never step 1 alone. About $0.006 and 4.5 s per 100 personas. Bound: 10 planted pairs and 2 seeds, recall at least 0.7 at 95%; twins with a changed region or edited issues untested.

@@ -149,7 +149,7 @@ written to D1 after every step for the build screen.
 | names | Luna | one call: `chamber.size` member names and 250 citizen names for the era; code dedupes and tops up collisions with one small call. One call, so uniqueness is a set check, not model memory | 6 s |
 | members | Luna | 25 assigned rows per call in parallel (name, seat, region, faction, temperament, years given); Luna writes bio, core issues, tell, patrons | 15 s |
 | citizens | Luna | 50 assigned rows per call in parallel; Luna writes job, town, worldview, issues | 15 s |
-| dedupe | none | exact-duplicate tells or bios across calls regenerate that row only. v1 measured 33 duplicate names in 200 from per-state calls without this | 0 s |
+| dedupe | Jev | semantic twins across parallel calls: one Choice per persona, "which other is most like this one, ignoring the name", pairs with top probability ≥ 0.5 in either direction go to an inline Noul "same person under two names" at ≥ 0.5; the lower seat of each confirmed pair is regenerated with a must-differ line. Measured 2026-09-22: 10 of 10 planted twins found, 0 false pairs, $0.006 and 4.5 s per 100. Citizens in batches of 50 per Choice call | 5 s |
 | deck | Luna | 20 generic themed plus 5 to 8 dated storylets | 20 s |
 | repair | Astra | only when validation still fails after the retry: rerun frame with the violation list and the rule "never mention the game, its design, or that anything is fictional". Measured 2026-09-22: self-review by Luna adds disclaimers and hedged leaders, so there is no review step on the happy path | 0 s, 100 s when it runs |
 | art | muse-image | masthead and one crest per faction, in parallel with members and deck; dithered, R2 | 10 s |
