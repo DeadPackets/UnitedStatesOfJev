@@ -135,7 +135,13 @@ test("the difficulty label comes from the seats you are short", () => {
   expect(difficulty(18)).toBe("Survival");
 });
 
-import { mandateOf } from "./rules";
+import { allRead, mandateOf } from "./rules";
+
+test("the oath waits until every page has been shown, in any order", () => {
+  expect(allRead(new Set([0]), 3)).toBe(false);
+  expect(allRead(new Set([0, 2]), 3)).toBe(false);
+  expect(allRead(new Set([2, 0, 1]), 3)).toBe(true);
+});
 
 test("the mandate is the weighted sum over the counted holders only", () => {
   const holders = [

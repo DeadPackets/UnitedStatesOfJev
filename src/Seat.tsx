@@ -3,7 +3,7 @@ import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
 import Tiles, { shortNames, type TileDatum } from "./Tiles";
 import { Ornament, applyTheme } from "./theme";
-import { barAt, difficulty, LEDGER_KEYS } from "./rules";
+import { allRead, barAt, difficulty, LEDGER_KEYS } from "./rules";
 import { sound } from "./sound";
 
 const b36 = (n: number) => n.toString(36);
@@ -14,6 +14,8 @@ export default function Seat({ pack, busy, onSeat }: {
   onSeat: (faction: string, promises: number[], seed: number, platform: string) => Promise<boolean>;
 }) {
   const [page, setPage] = useState(0);
+  const [read, setRead] = useState<ReadonlySet<number>>(() => new Set([0]));
+  const go = (p: number) => { setPage(p); setRead((r) => new Set(r).add(p)); };
   const [picks, setPicks] = useState<number[]>([]);
   const [platform, setPlatform] = useState("");
   const [stamped, setStamped] = useState(false);
@@ -27,6 +29,7 @@ export default function Seat({ pack, busy, onSeat }: {
   const gap = pack.chamber.threshold - own;
   const v = pack.vocabulary;
   const full = picks.length === 3;
+  const readAll = allRead(read, PAGES.length);
   const code = `J3-${pack.id.slice(0, 6)}-${b36(pack.factions.findIndex((f) => f.id === start.faction))}-${[0, 1, 2].map((i) => (picks[i] === undefined ? "_" : b36(picks[i]))).join("")}-${b36(seed).padStart(6, "0")}`;
   const toggle = (i: number) => setPicks((p) => (p.includes(i) ? p.filter((x) => x !== i) : p.length < 3 ? [...p, i] : p));
 
@@ -111,10 +114,17 @@ export default function Seat({ pack, busy, onSeat }: {
           <span className="small muted">{full ? "Same code, same room." : "Pick 3 to finish the code."}</span>
         </div>
         <div className="row">
-          <button className="btn ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>Back</button>
-          <button className="btn ghost" disabled={page === 2} onClick={() => setPage(page + 1)}>Next</button>
+          <button className="btn ghost" disabled={page === 0} onClick={() => go(page - 1)}>Back</button>
+          <button className="btn ghost" disabled={page === 2} onClick={() => go(page + 1)}>Next</button>
         </div>
-        <button className={`btn ${busy ? "busy" : ""}`} disabled={!full || busy || stamped} onClick={take}>
+        <div className="pagedots" role="list" aria-label="Pages read">
+          {PAGES.map((t, i) => (
+            <span key={t} role="listitem" title={t} aria-current={page === i ? "page" : undefined}
+              className={`${read.has(i) ? "on" : ""} ${page === i ? "here" : ""}`} aria-label={`${t}, ${read.has(i) ? "read" : "not read"}`} />
+          ))}
+        </div>
+        {readAll ? null : <span className="small muted">Read all three pages first.</span>}
+        <button className={`btn ${busy ? "busy" : ""}`} disabled={!full || !readAll || busy || stamped} onClick={take}>
           {busy ? "Taking the oath" : `Take the oath${c?.ruler.role ? ` as ${c.ruler.role}` : ""}`}
         </button>
       </aside>
