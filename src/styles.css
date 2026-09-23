@@ -308,6 +308,7 @@ button.w:hover, button.w:focus-visible { border-bottom-color: var(--c-on); }
 .plateh .ph { display: flex; align-items: center; gap: 5px; }
 .plateh b { font: 800 14px/1.05 var(--display); text-transform: uppercase; letter-spacing: 0.02em; }
 .plateh .mood { font: 800 26px/1 var(--display); font-variant-numeric: tabular-nums; }
+.plateh .mood small { font: 600 12px/1 var(--sans); text-transform: none; }
 .plateh .res { position: relative; display: block; height: 7px; background: var(--tone); }
 .plateh .res i { position: absolute; inset: 0 auto 0 0; background: var(--ink); transition: width 700ms var(--ease-expo); }
 .plateh .res b { position: absolute; top: -3px; width: 2px; height: 13px; background: var(--danger); }
