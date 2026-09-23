@@ -165,9 +165,9 @@ async function artStep(env: Env, id: string, ctx: GenCtx): Promise<Pack["art"]> 
 
 const AGE: Record<Member["years"], string> = { new: "young", mid: "middle-aged", long: "old" };
 
-const sheetPrompt = (pack: Pack, group: Member[]) =>
+export const sheetPrompt = (pack: Pack, group: Member[]) =>
   `4x4 grid of 16 different ${pack.era} ${pack.vocabulary.member}, passport framing, head and shoulders, same face size, eyes on one horizontal line, plain wall. ` +
-  `Faces in reading order: ${group.map((m) => `${AGE[m.years]} and ${m.temperament}`).join("; ")}. ${NO_TEXT}`;
+  `Faces in reading order: ${group.map((m) => m.gender && m.look ? `${AGE[m.years]} ${m.gender}, ${m.look}, ${m.temperament}` : `${AGE[m.years]} and ${m.temperament}`).join("; ")}. ${NO_TEXT}`;
 
 // One sheet of at most 16 faces. The GameDO reuses it for the members a midterm puts in the chamber.
 export async function portraitSheet(env: Env, scenario: string, pack: Pack, group: Member[]): Promise<boolean> {

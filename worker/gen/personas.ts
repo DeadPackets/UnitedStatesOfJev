@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
-import type { Citizen, Member } from "../pack";
+import { GENDERS, type Citizen, type Member } from "../pack";
 import { CONTENT_RULE, HISTORIAN, chunk, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, matchName, members as checkMembers, realNames } from "./validate";
 
-const NamesSchema = z.object({ members: z.array(z.string()), citizens: z.array(z.string()) });
+const NamesSchema = z.object({
+  members: z.array(z.object({ name: z.string(), gender: z.enum(GENDERS), look: z.string() })), citizens: z.array(z.string()),
+});
 const MemberProse = z.object({ rows: z.array(z.object({
   id: z.string(), bio: z.string(), core_issues: z.array(z.string()).min(1).max(3), tell: z.string(), patrons: z.array(z.string()).max(2),
 })) });
@@ -24,6 +26,8 @@ type Prose = { id: string; name?: string; bio: string; core_issues: string[]; te
 
 const NAMES_SYSTEM = `${HISTORIAN}
 You invent names for people of one period and place. Every name is plausible for that period, place and language, written the way the period writes names. No name of a real person, living or dead. No repeats, and no two names that differ only in the given name.
+Draw the names from the real mix of peoples of that place and period, in proportion: for the United States in the 2020s that means Latino, Black, Asian, Middle Eastern and white names; for Rome in 44 BC it means Roman names.
+Each member is an object: name; gender, woman or man; look, a short heritage or appearance phrase true to the name, such as "Korean American", "Mexican American", "Irish American" or "Lebanese American". Each citizen is the name only.
 ${CONTENT_RULE}`;
 
 const NAMES_CHUNK = 80;
@@ -31,11 +35,12 @@ const NAMES_CHUNK = 80;
 export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
   const needM = ctx.members.length, needC = ctx.citizens.length;
   const seen = new Set<string>();
-  const memberPool: string[] = [];
-  const citizenPool: string[] = [];
-  const addTo = (pool: string[], list: string[]) => {
-    for (const raw of list) { const n = raw.trim(); const k = n.toLowerCase(); if (n && !seen.has(k)) { seen.add(k); pool.push(n); } }
+  const memberPool: z.infer<typeof NamesSchema>["members"] = [];
+  const citizenPool: { name: string }[] = [];
+  const addTo = <T extends { name: string }>(pool: T[], list: T[]) => {
+    for (const x of list) { const n = x.name.trim(); const k = n.toLowerCase(); if (n && !seen.has(k)) { seen.add(k); pool.push({ ...x, name: n }); } }
   };
+  const asNames = (list: string[]) => list.map((name) => ({ name }));
   const brief = frameBrief(ctx);
   const ask = (m: number, c: number, extra: Record<string, unknown>, avoid: string[]) => luna(env, NamesSchema, "names", NAMES_SYSTEM,
     JSON.stringify({ ...brief, lang: ctx.lang, need: { members: m, citizens: c },
@@ -53,29 +58,29 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
     ...citizenChunks.map((rows) => ask(0, rows.length, { citizen_age_range: ageRange(rows) }, [])),
   ]);
   addTo(memberPool, memberRes.members);
-  for (const r of citizenRes) addTo(citizenPool, r.citizens);
+  for (const r of citizenRes) addTo(citizenPool, asNames(r.citizens));
 
   // Top up until both pools are full: a pool one name short puts the internal id, "m12", in the chamber.
   const short = () => [needM - memberPool.length, needC - citizenPool.length];
   for (let i = 0; i < 3 && short().some((n) => n > 0); i++) {
     const [m, c] = short();
-    const r = await ask(Math.max(m, 0), Math.max(c, 0), {}, [...memberPool, ...citizenPool]);
+    const r = await ask(Math.max(m, 0), Math.max(c, 0), {}, [...memberPool, ...citizenPool].map((x) => x.name));
     addTo(memberPool, r.members);
-    addTo(citizenPool, r.citizens);
+    addTo(citizenPool, asNames(r.citizens));
   }
   const [m, c] = short();
   // Citizens are ordinary people, and a place with few names repeats them (a live Zanzibar build came back 79 short).
   if (m > 0 || (c > 0 && !citizenPool.length)) throw new NeedsRepair([`the name pools are short by ${Math.max(m, 0)} members and ${Math.max(c, 0)} citizens`], "");
   return {
-    members: ctx.members.map((m, i) => ({ ...m, name: memberPool[i] })),
-    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i % citizenPool.length] })),
+    members: ctx.members.map((m, i) => ({ ...m, ...memberPool[i] })),
+    citizens: ctx.citizens.map((c, i) => ({ ...c, name: citizenPool[i % citizenPool.length].name })),
   };
 }
 
 // ---- personas: the identity fields are already fixed, the model only writes prose ----
 
 const MEMBER_SYSTEM = `${HISTORIAN}
-You write the people of the chamber. Each row already has its name, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell and patrons.
+You write the people of the chamber. Each row already has its name, gender, look, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell and patrons.
 - bio: at most 40 words. Where they are from, what they did before the seat, and the one thing they want. Concrete work and places of the period.
 - core_issues: 1 to 3 ids from the tags list.
 - tell: one visible habit a whip would read, at most 18 words.
@@ -100,7 +105,7 @@ export async function members(env: Env, ctx: GenCtx, rows: Member[], opts?: { mu
   await Promise.all(chunk(rows, 25).map(async (part) => {
     const r = await luna(env, rewrite ? MemberRewrite : MemberProse, "members", rewrite ? MEMBER_SYSTEM + REWRITE_RULE : MEMBER_SYSTEM,
       JSON.stringify({ ...brief, ...(rewrite ? { must_differ_from: opts!.must_differ_from } : {}),
-        rows: part.map((m) => ({ id: m.id, name: m.name, faction: m.faction, region: m.region, temperament: m.temperament, years: m.years, flags: m.flags })) }),
+        rows: part.map((m) => ({ id: m.id, name: m.name, gender: m.gender, look: m.look, faction: m.faction, region: m.region, temperament: m.temperament, years: m.years, flags: m.flags })) }),
       Math.min(9000, 600 + part.length * 160));
     const by = new Map<string, Prose>(r.rows.map((x) => [x.id, x as Prose]));
     for (const m of part) {
@@ -114,7 +119,7 @@ export async function members(env: Env, ctx: GenCtx, rows: Member[], opts?: { mu
 }
 
 const REWRITE_RULE = `
-This row read as one of the people under must_differ_from. Give it a different invented name, plausible for the period and never the name of a real person, and a life that no reader would confuse with theirs.`;
+This row read as one of the people under must_differ_from. Give it a different invented name true to its gender and look, plausible for the period and never the name of a real person, and a life that no reader would confuse with theirs.`;
 
 export async function citizens(env: Env, ctx: GenCtx, rows: Citizen[], opts?: { must_differ_from?: string[] }): Promise<Citizen[]> {
   const tags = ctx.frame.tags, known = new Set(tags);

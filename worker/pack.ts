@@ -27,6 +27,7 @@ export const LEDGERS_V4 = ["treasury", "authority", "chest", "loyalty", "popular
 
 const SEAT_FLAGS = ["veto", "army", "clergy", "court", "crown"] as const;
 const YEARS = ["new", "mid", "long"] as const;
+export const GENDERS = ["woman", "man"] as const;
 const LEDGERS = ["approval", "capital", "party", "chest", "bloc", "patron", "streak", "turn"] as const;
 
 const IdNum = z.object({ id: z.string(), value: z.number() });
@@ -88,6 +89,8 @@ const MemberSchema = z.object({
   id: z.string(), seat: z.string(), region: z.string(), faction: z.string(), name: z.string(), bio: z.string(),
   core_issues: z.array(z.string()), temperament: z.enum(TEMPERAMENTS), tell: z.string(), patrons: z.array(z.string()),
   years: z.enum(YEARS), flags: z.array(z.enum(SEAT_FLAGS)), portrait: z.string(),
+  // Optional: packs stored before names carried them are re-validated on read.
+  gender: z.enum(GENDERS).optional(), look: z.string().optional(),
 });
 const CitizenSchema = z.object({
   id: z.string(), region: z.string(), bloc: z.string(), name: z.string(), age: z.number(), job: z.string(), town: z.string(),
