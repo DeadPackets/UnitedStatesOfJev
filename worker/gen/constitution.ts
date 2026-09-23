@@ -3,12 +3,11 @@ import type { Env } from "../jev";
 import { ConstitutionSchema, HOLDER_RESPONSES, VERBS, type Constitution } from "../pack";
 import { CONTENT_RULE, HISTORIAN, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, constitution as check } from "./validate";
+import { STANCE_HI, STANCE_LO } from "../engine";
 
 // Scale, then clamp to the 0.15 to 0.6 band, with the scale found by bisection: the sum rises with the scale,
 // so it lands on 1 whenever 2 to 6 holders vote. The live model gave minor holders 0.1 and repeated it on retry.
 const LO = 0.15, HI = 0.6;
-// Every holder opens near even: the live Biden pack came back with every stance 0, which no ruler can pass the test from.
-const STANCE_LO = 0.3, STANCE_HI = 0.7;   // TUNE
 function band(vs: number[]): number[] {
   if (vs.length * LO > 1 || vs.length * HI < 1) { const t = vs.reduce((a, b) => a + b, 0); return vs.map((v) => v / t); }
   const at = (k: number) => vs.map((v) => Math.min(HI, Math.max(LO, v * k)));

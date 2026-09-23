@@ -1153,3 +1153,9 @@ test("every finished turn adds one row to the log, and a new term starts an empt
   continueTerm(pack, g);
   expect(g.log).toEqual([]);
 });
+
+test("a stored pack whose holders say stance 0 still opens every holder inside the band", () => {
+  const zeroed = PackSchema.parse({ ...pack, constitution: { ...pack.constitution!, holders: pack.constitution!.holders.map((h) => ({ ...h, stance: 0 })) } });
+  const g = newGame("z", CODE, zeroed, "harborites", PROMISES, CAL);
+  for (const h of Object.values(g.holders)) expect(h.stance).toBe(0.3);
+});

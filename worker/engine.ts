@@ -305,9 +305,12 @@ export const weightOf = (pack: Pack, id: string): number => pack.constitution
   ? pack.constitution.retention.weights.find((w) => w.id === id)?.value ?? 0
   : id === "chamber" ? 1 - pack.chamber.alpha : id === "street" ? pack.chamber.alpha : 0;
 
+// Every holder opens near even: the live Biden pack stored every stance at 0, which no ruler can pass the test from.
+export const STANCE_LO = 0.3, STANCE_HI = 0.7;   // TUNE
+
 export function seedHolders(pack: Pack): Record<string, HolderState> {
   return Object.fromEntries(holdersOf(pack).map((h) => [h.id, {
-    id: h.id, stance: h.stance, resistance: 0, line: h.line, response: h.response,
+    id: h.id, stance: clamp(h.stance, STANCE_LO, STANCE_HI), resistance: 0, line: h.line, response: h.response,
     weight: weightOf(pack, h.id), warnedAt: null,
   }]));
 }
