@@ -5,7 +5,7 @@ import {
   termPoints, threshold, type Bill, type Game,
   easeResistance, holdersOf, nearestLine, raiseResistance, weightOf, advanceWarnings, fireResponse, WARN_TURNS,
   endTurn, enact, inForceAge, repeal, STRIKE_HIT, authorPromise, PROMISE_WINDOW, record, RECORD_TOKENS,
-  bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR, biggestMove, runStyle, STYLE_LINES,
+  bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR, biggestMove, runStyle, STYLE_LINES, TREASURY_START, CHEST_START,
 } from "./engine";
 import { whipState } from "./jev";
 import { PackSchema, type Citizen, type Pack } from "./pack";
@@ -60,7 +60,8 @@ test("a new game opens the five ledgers under their v4 names", () => {
   expect(Object.keys(g.ledgers).sort()).toEqual(["authority", "chest", "loyalty", "popularity", "treasury"]);
   expect(g.ledgers.authority).toBe(pack.starts[0].capital);
   expect(g.ledgers.loyalty).toBe(pack.starts[0].party);
-  expect(g.ledgers.treasury).toBe(0);
+  expect(g.ledgers.treasury).toBe(TREASURY_START);
+  expect(g.ledgers.chest).toBe(CHEST_START);
   expect(Object.keys(g.ledgers.popularity).sort()).toEqual([...REGIONS].sort());
 });
 
@@ -103,7 +104,7 @@ test("a passed bill moves the five ledgers", () => {
   expect(g.streak).toBe(1);
   expect(g.patrons["grand-exchange"]).toBe(1);
   expect(g.patrons["keelwright-hall"]).toBe(-1);
-  expect(g.ledgers.chest).toBe(1);               // sum of the positive patron moods
+  expect(g.ledgers.chest).toBe(CHEST_START + 1);   // sum of the positive patron moods
   expect(g.blocs.dockworkers).toBe(1);
   expect(g.blocs.merchants).toBe(0);
   expect(g.promises.tariffs.passed).toBe(1);
@@ -673,7 +674,8 @@ test("each ledger has a failure line, the pack may rename it and the engine read
   expect(ledgerLine(pack, "popularity")).toBe(30);
   expect(ledgerValue(pack, g, "authority")).toBe(g.ledgers.authority);
   expect(ledgerValue(pack, g, "popularity")).toBeCloseTo(nationalPopularity(pack, g), 5);
-  // A new game opens treasury 0 and chest 0, and both lines are 0, so both are already at the line.
+  expect(belowLine(pack, g)).toEqual([]);
+  g.ledgers.treasury = 0; g.ledgers.chest = 0;   // both lines are 0, so empty is already at the line
   expect(belowLine(pack, g)).toEqual(["treasury", "chest"]);
   g.ledgers.loyalty = 10;
   expect(belowLine(pack, g)).toEqual(["treasury", "chest", "loyalty"]);   // LEDGERS_V4 order, no sort
@@ -708,6 +710,7 @@ test("spec section 4's sources pay: a kept promise, and the chest capped per ver
 
   const h = game();
   for (const p of pack.patrons) h.patrons[p.id] = 2;   // every one of the pack's ten patrons at its ceiling
+  h.ledgers.chest = 0;
   applyVote(pack, h, bill(h, 0, { whip: Object.fromEntries(h.members.map((m) => [m.id, back(m)])) }));
   // 10 patrons x 2 = 20, which is exactly CHEST_CAP: the cap is the ceiling a ten-patron pack already sits
   // at, and it binds only where Stage B raises a patron's payout above 2.
@@ -860,6 +863,7 @@ test("popularity under its line puts the early test caller at its line, and it w
 
 test("a law in force collects every turn until it is repealed", () => {
   const g = game();
+  g.ledgers.treasury = 0;
   enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
   endTurn(pack, g);
   expect(g.ledgers.treasury).toBe(6);

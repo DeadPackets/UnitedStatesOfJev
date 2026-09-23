@@ -128,6 +128,9 @@ export interface WireLine { kind: "ledger" | "resistance" | "promise" | "card"; 
 
 // Spec §4. The pack may move a line; these are the defaults the generator is told to use.
 export const LEDGER_LINES: Record<LedgerV4, number> = { treasury: 0, authority: 0, chest: 0, loyalty: 20, popularity: 30 };   // TUNE
+// TUNE: treasury matches the 40 authority a start holds (four levies deep); chest is one turn's patron cap, ten notices at 2
+export const TREASURY_START = 40;
+export const CHEST_START = 20;
 export const REVOLT_WHIP = 0.15;   // TUNE, spec §4: under its line the faction votes as opposition
 // Spec §4's table, as numbers. v2 paid ±5 a vote and +10 a favour, which made authority the only ledger
 // that mattered; §4 prices a law at 2 and a kept promise at 3, so promises and holders carry the run.
@@ -257,8 +260,8 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     id, code, pack: pack.id, faction: start.faction, seed: c.seed, calendar,
     term: 1, turn: 1, stage: "session", phase: "draft",
     ledgers: {
-      treasury: 0,
-      authority: start.capital, chest: 0, loyalty: start.party,
+      treasury: TREASURY_START,
+      authority: start.capital, chest: CHEST_START, loyalty: start.party,
       popularity: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
     },
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),

@@ -60,6 +60,7 @@ test("consent and availability come from the constitution and the failure lines"
   expect(consentOf(pack, g, "force")).toBe("army");
   expect(available(pack, g, "force")).toBe(true);
   g.ledgers.authority = 0;
+  g.ledgers.treasury = 0;
   expect(available(pack, g, "force")).toBe(false);          // authority at its line leaves proclaim and spend
   expect(available(pack, g, "proclaim")).toBe(true);
   expect(available(pack, g, "spend")).toBe(false);          // treasury is also at 0, which blocks spending
@@ -269,7 +270,6 @@ import { DRIFT_GAIN, DRIFT_LOSS, EMERGENCY_COST, EMERGENCY_TURNS, MEDIA_STEP, TR
 
 test("bloc drift grows the base the post speaks to and empties the middle", () => {
   const g = game();
-  g.ledgers.chest = 10;                       // newGame opens the chest at 0 and a notice costs 2
   const [one, two] = pack.blocs.map((b) => b.id);
   commit(pack, g, priceTag(pack, g, quote({ verb: "proclaim", template: "bloc_drift", targets: [one] })));
   expect(g.drift[one]).toBeCloseTo(DRIFT_GAIN, 5);

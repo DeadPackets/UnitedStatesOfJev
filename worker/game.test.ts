@@ -4,7 +4,7 @@ import { test, expect, mock, afterEach } from "bun:test";
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { view, pickStart, GameDO, seededSample, streetSample } = await import("./game");
-import { encodeCode, hash, newGame, scenarioTag, SURVIVAL_BAR, type Game } from "./engine";
+import { CHEST_START, encodeCode, hash, newGame, scenarioTag, SURVIVAL_BAR, type Game } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -323,7 +323,6 @@ test("amend after adopt is refused: adopt leaves an empty amendments array, not 
 test("one proclamation a turn, and the view carries the reactions", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(65);
-  game.ledgers.chest = 10;                       // newGame opens the chest at 0 and a notice costs 2
   postTag = true;
   expect((await post("acts/price", { turn: 1, text: "The accounts of every work go up in public each month." })).status).toBe(200);
   const r = await post("acts", { turn: 1 });
@@ -331,7 +330,7 @@ test("one proclamation a turn, and the view carries the reactions", async () => 
   const p = r.body.posts.at(-1);
   expect(p.likes + p.boos + p.shares + p.ignores).toBe(250);
   expect(p.targets).toEqual([pack.blocs[0].id]);
-  expect(game.ledgers.chest).toBe(8);
+  expect(game.ledgers.chest).toBe(CHEST_START - 2);
   expect((await post("acts/price", { turn: 1, text: "A second notice this turn about the wharf." })).status).toBe(200);
   expect((await post("acts", { turn: 1 })).status).toBe(409);
   const calls = game.calls;
@@ -340,7 +339,7 @@ test("one proclamation a turn, and the view carries the reactions", async () => 
   postTag = false;
   expect(game.posts).toHaveLength(1);
   expect(game.acts).toHaveLength(1);              // the refused second notice paid nothing
-  expect(game.ledgers.chest).toBe(8);
+  expect(game.ledgers.chest).toBe(CHEST_START - 2);
 });
 
 test("a rival post that never lands is a loss, not a free win, and skips the agree call", async () => {
