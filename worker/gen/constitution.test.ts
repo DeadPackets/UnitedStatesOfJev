@@ -19,14 +19,16 @@ function stub(body: unknown) {
   return seen;
 }
 
-test("the step writes a constitution and code fixes the weights", async () => {
+test("the step writes a constitution and code fixes the weights and the stances", async () => {
   const real = globalThis.fetch;
   const seen = stub({ ...CONSTITUTION, ruler: { role: "Consul", faction: "reds" },
+    holders: CONSTITUTION.holders.map((h) => ({ ...h, stance: 0 })),
     retention: { ...CONSTITUTION.retention, weights: [{ id: "council", value: 0.9 }, { id: "street", value: 0.9 }] } });
   try {
     const out = await constitution({ OPENROUTER_API_KEY: "t" } as never, ctx());
     const w = out.constitution!.retention.weights.map((x) => x.value);
     expect(w.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 5);
+    expect(out.constitution!.holders.every((h) => h.stance === 0.3)).toBe(true);   // a model's stance 0 opens at the floor
     expect(out.constitution!.briefing.situation.length).toBeGreaterThan(0);
     expect(seen[0].system).toContain("executive head");
     expect(seen[0].system).not.toContain("harbour city");   // the player's prompt never reaches the instructions
