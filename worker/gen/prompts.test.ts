@@ -8,8 +8,10 @@ test("the historian seats the player as the executive head, not a legislator", (
   expect(HISTORIAN).toContain("power holders");
 });
 
-test("the content rule keeps force at the strategic level", () => {
-  expect(CONTENT_RULE).toContain("Force is strategic only");
+test("the content rule seats the real office and bars only atrocities as play", () => {
+  expect(CONTENT_RULE).toContain("real office of that year");
+  expect(CONTENT_RULE).toContain("mass violence against civilians");
+  expect(CONTENT_RULE).not.toContain("nearest governing seat");
 });
 
 // Bun's mock.module leaks across files and three earlier gen tests mock ../luna, so this test mocks it too.

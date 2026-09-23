@@ -50,7 +50,7 @@ export type VerbKey = (typeof VERBS)[number];
 
 // Most specific first: "pay the troops" is spend, "send the troops" is force.
 const CUES: [VerbKey, RegExp][] = [
-  ["force", /\b(deploy|curfew|martial|arrest|troops|soldiers|garrison|police|seal|occupy)\b/i],
+  ["force", /\b(deploy|curfew|martial|arrest|troops|soldiers|garrison|police|seal|occupy|war|invade|invasion|purge|mobili[sz]e)\b/i],
   ["appoint", /\b(appoint|install|promote|dismiss|replace|name .* as|make .* (the|my))\b/i],
   ["favour", /\b(favou?r|promise|gift|pardon|owe|grant .* to \w+ personally)\b/i],
   ["spend", /\b(spend|pay|fund|subsid|relief|build|buy|wages|rations)\b/i],
