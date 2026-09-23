@@ -10,7 +10,9 @@ test("the historian seats the player as the executive head, not a legislator", (
 
 test("the content rule seats the real office and bars only atrocities as play", () => {
   expect(CONTENT_RULE).toContain("real office of that year");
-  expect(CONTENT_RULE).toContain("mass violence against civilians");
+  expect(CONTENT_RULE).toContain("mass killing of civilians");
+  expect(CONTENT_RULE).toContain("never soften or moralise a reaction");
+  expect(CONTENT_RULE).not.toContain("persecution");
   expect(CONTENT_RULE).not.toContain("nearest governing seat");
 });
 

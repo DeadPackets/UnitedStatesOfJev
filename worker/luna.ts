@@ -61,7 +61,7 @@ Return one object:
 - verb: which of the seven instruments this is. decree is the ruler acting alone. law is a ${pack.vocabulary.bill} to ${pack.vocabulary.chamber}. appoint puts a named person in a post. spend moves money to a power holder or a region. proclaim is a ${pack.vocabulary.post} to ${pack.vocabulary.feed}. favour is a promise or a gift to one named ${pack.vocabulary.member}. force is military or police action: a war, an invasion, a deployment, a curfew, martial law, a purge of rivals or the arrest of a named ${pack.vocabulary.member}.
 - title: the act's own name in this era's words, 3 to 7 words.
 - reading: one sentence, at most 30 words, restating exactly what the ruler will do. The ruler commits to this sentence, so it may add nothing they did not say.
-- power: true when this ruler and this body may do this at all, false when the office does not hold that power in this polity, and false for mass violence against civilians or the persecution of a people.
+- power: true when this ruler and this body may do this at all, false when the office does not hold that power in this polity, and false when the act orders the mass killing of civilians, ethnic cleansing or the expulsion of a population.
 - era: true when the mechanism existed in this period, false when it needs something that did not exist yet.
 - refusal: null when power and era are both true. Otherwise one sentence in the clerk's voice, at most 25 words, saying plainly why it cannot be done here.
 - credibility: ${CRED_LO} to ${CRED_HI}. ${CRED_HI} when the act is the size this polity can carry, ${CRED_LO} when it is written far larger than the treasury or the officials could deliver. Scale, never merit.
