@@ -245,11 +245,11 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
 
     let pack: Pack;
     try {
-      const p = await gen("plan", (e) => plan(e, ctx));
+      const p = await gen("plan", (e) => plan(e, ctx), (r) => ({ kind: "plan", year: r.year, lookups: r.lookups, people: r.people, parties: r.parties, keywords: r.keywords }));
       merge({ fiction: p.fiction, lang: p.lang });
-      merge(await stage("fetch", () => fetchStep(p)));
-      merge(await gen("facts", (e) => facts(e, ctx)));
-      merge(await stage("calendar", (e) => calendarStep(e, ctx)));
+      merge(await stage("fetch", () => fetchStep(p), (r) => ({ kind: "sources", pages: r.sources!.wikipedia.map((w) => w.title), people: r.sources!.people.map((x) => x.label), parties: r.sources!.parties.map((x) => x.label) })));
+      merge(await gen("facts", (e) => facts(e, ctx), (r) => ({ kind: "facts", people: r.facts!.people.length, bodies: r.facts!.bodies.map((b) => b.name), events: r.facts!.dated_events.slice(0, 6) })));
+      merge(await stage("calendar", (e) => calendarStep(e, ctx), (r) => ({ kind: "calendar", start: r.calendar?.start_date ?? null, unit: r.calendar?.unit ?? null })));
       const frameRepaired = { done: false };
       merge(await stage("frame", (e) => frameStep(e, id, ctx, frameRepaired), (r) => {
         const f = r.frame!;
@@ -267,14 +267,14 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           weight: r.constitution!.retention.weights.find((w) => w.id === h.id)?.value ?? 0,
         })),
       })));
-      merge(await stage("assign", (e) => assign(e, ctx)));
-      merge(await gen("names", (e) => names(e, ctx)));
+      merge(await stage("assign", (e) => assign(e, ctx), (r) => ({ kind: "seats", members: r.members!.length, citizens: r.citizens!.length, byFaction: ctx.frame.factions.map((f) => ({ id: f.id, seats: r.members!.filter((m) => m.faction === f.id).length })) })));
+      merge(await gen("names", (e) => names(e, ctx), (r) => ({ kind: "names", sample: r.members!.slice(0, 12).map((m) => m.name) })));
       merge(await gen("personas", (e) => personasStep(e, ctx),
         (r) => ({ kind: "members", names: r.members!.slice(0, 8).map((m) => m.name) })));
-      merge(await gen("dedupe", (e) => dedupe(e, ctx)));
+      merge(await gen("dedupe", (e) => dedupe(e, ctx), (r) => ({ kind: "dedupe", members: r.members!.length, citizens: r.citizens!.length })));
       // A dedupe rewrite hands out a new name after membersStep's real-name check has already run.
       merge({ members: renameClashes(ctx.members, realNames(ctx.frame, ctx.facts)) });
-      merge(await gen("deck", (e) => deck(e, ctx)));
+      merge(await gen("deck", (e) => deck(e, ctx), (r) => ({ kind: "deck", cards: r.deck!.length, titles: r.deck!.slice(0, 5).map((c) => c.title_hint) })));
       const art = await stage("art", (e) => artStep(e, id, ctx), (r) => ({ kind: "art", masthead: r.masthead, crests: r.crests.length }));
       await stage("index", (e) => indexStep(e, id, ctx));
       // putPack writes status 'ready', so it is the last write of the build.
