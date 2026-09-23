@@ -3,12 +3,13 @@ import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
   applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, ledgerLine, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
-  holdersOf, moveSupport, movePopularity, nearestLine, weightOf, advanceWarnings, fireResponse, WARN_TURNS, EXCOMMUNICATE_HIT, RIOT_HIT,
+  holdersOf, moveSupport, movePopularity, nearestLine, weightOf, advanceWarnings, fireResponse, WARN_TURNS, RIOT_HIT,
+  declineEvent, IDLE_COST, DECLINE_COST,
   endTurn, enact, inForceAge, repeal, STRIKE_HIT, authorPromise, PROMISE_WINDOW, record, RECORD_TOKENS,
   bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR, biggestMove, runStyle, STYLE_LINES, TREASURY_START, CHEST_START,
 } from "./engine";
 import { whipState } from "./jev";
-import { PackSchema, type Citizen, type Pack } from "./pack";
+import { PackSchema, type Citizen, type HolderResponse, type Pack } from "./pack";
 import type { Calendar } from "./gen/validate";
 import mini from "./fixtures/mini.json";
 
@@ -29,6 +30,8 @@ const pack: Pack = PackSchema.parse({ ...mini, citizens: citizens() });
 const game = () => newGame("g", CODE, pack, "harborites", PROMISES, CAL);
 // The public group's support is its regions' mean, so a test sets it through the regions.
 const setPublic = (g: Game, v: number) => { for (const r of REGIONS) movePopularity(pack, g, [r], v - g.regions[r], "set"); };
+// An act signed this turn, so End turn charges no idle cost (R33).
+const busy = (g: Game) => g.acts.push({ term: g.term, turn: g.turn, verb: "decree", title: "an edict", reading: "", credibility: 1, charge: { authority: 0, treasury: 0, chest: 0 } });
 const setSupport = (g: Game, s: Record<string, number>) => {
   for (const [id, v] of Object.entries(s)) if (id === "street") setPublic(g, v); else g.holders[id].support = v;
 };
@@ -165,12 +168,12 @@ test("a missed promise decays popularity by a share a turn, never a cliff", () =
   const g = game();
   setPublic(g, 50);   // a flat start so the arithmetic is exact
   g.turn = PROMISE_WINDOW;
-  endTurn(pack, g);                                  // the window closes on this boundary
+  busy(g); endTurn(pack, g);                         // the window closes on this boundary
   expect(Object.values(g.promises).every((p) => p.state === "broken")).toBe(true);
   // Three pending promises, each taking PROMISE_SHARE 0.02 of what the one before it left, rounded to one
   // decimal: 50 - round1(1.00) = 49, 49 - round1(0.98) = 48, 48 - round1(0.96) = 47.
   for (const r of REGIONS) expect(g.regions[r]).toBe(r === g.rival!.region ? 47 - RIVAL_HIT : 47);
-  endTurn(pack, g);
+  busy(g); endTurn(pack, g);
   // Past the window it keeps taking a share, it does not cliff again:
   // 47 - round1(0.94) = 46.1, 46.1 - round1(0.922) = 45.2, 45.2 - round1(0.904) = 44.3.
   for (const r of REGIONS.filter((x) => x !== g.rival!.region)) expect(g.regions[r]).toBeCloseTo(44.3, 5);
@@ -805,20 +808,29 @@ test("a warning drops when the holder comes back up to its line", () => {
   expect(g.holders.guard.warnedAt).toBeNull();
 });
 
+// R33: what a strike that does not end the run costs, read off the numbers it moves.
+const STRIKES: [HolderResponse, (g: Game) => number, number][] = [
+  ["riot", (g) => g.regions[REGIONS[0]], -8],                // 8 support in every region
+  ["refuse_levy", (g) => g.ledgers.treasury, -10],
+  ["embargo", (g) => g.ledgers.treasury, -8],
+  ["excommunicate", (g) => g.holders.own.support, -25],       // 25 support on your own side
+  ["strike", (g) => g.ledgers.authority, -3],                 // and the latest act in force is void
+];
+for (const [response, read, cost] of STRIKES) {
+  test(`a ${response} strike costs ${-cost} and the run goes on`, () => {
+    const g = game();
+    enact(g, { id: "l9", verb: "decree", title: "The curfew", perTurn: [], repealConsent: "none", sunset: null });
+    const was = read(g);
+    const wire = fireResponse(pack, g, { holder: "guard", response, at: 1, fires: 3, number: 20 });
+    expect(read(g)).toBe(was + cost);
+    expect(wire.every((w) => w.kind === "card")).toBe(true);
+    expect([g.stage, g.result]).toEqual(["session", undefined]);
+    expect(g.inForce.length).toBe(response === "strike" ? 0 : 1);
+  });
+}
+
 test("each response does its own thing and a coup ends the run", () => {
   const g = game();
-  const before = { ...g.regions };
-  fireResponse(pack, g, { holder: "street", response: "riot", at: 1, fires: 3, number: 20 });
-  for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] - RIOT_HIT);   // R33: 8 in every region
-
-  const own = g.holders.own.support;
-  expect(fireResponse(pack, g, { holder: "guard", response: "excommunicate", at: 1, fires: 3, number: 20 })[0].kind).toBe("card");
-  expect(g.holders.own.support).toBe(own - EXCOMMUNICATE_HIT);                // R33: 25 on your own side
-
-  g.ledgers.treasury = 20;
-  fireResponse(pack, g, { holder: "league", response: "embargo", at: 1, fires: 3, number: 60 });
-  expect(g.ledgers.treasury).toBeLessThan(20);
-
   fireResponse(pack, g, { holder: "council", response: "early_test", at: 1, fires: 3, number: 70 });
   expect(g.earlyTest).toBe("council");
   expect(g.stage).toBe("test");
@@ -866,6 +878,35 @@ test("your own side under its line is a revolt for one turn, and the class doubl
   endTurn(pack, g);
   expect(g.revolt).toBe(g.turn);                       // still under the line, still in revolt
   expect(g.marks.midterm.length).toBe(cls * 2);        // and the class does not double again
+});
+
+test("End turn costs the public 2 when no act was signed that turn, and nothing when one was (R33)", () => {
+  for (const acted of [false, true]) {
+    const g = game();
+    if (acted) busy(g);
+    const before = { ...g.regions };
+    endTurn(pack, g);
+    const r = REGIONS.find((x) => x !== g.rival!.region)!;
+    expect(g.regions[r]).toBe(before[r] - (acted ? 0 : IDLE_COST));
+  }
+});
+
+test("a card is declined for 3 support with the group its answers would please most (R33)", () => {
+  const g = game();
+  g.holders.league.support = 45;
+  const foreign = { id: "foreign-league-1", turn: 1, relief: false, kind: "foreign" as const, holder: "league", stances: ["Give", "Refuse"] };
+  declineEvent(pack, g, foreign);
+  expect([foreign.stance, foreign.declined, g.holders.league.support]).toEqual([-1, true, 45 - DECLINE_COST]);
+  // A deck card is declined against the group its fixed results raise most: here your own side.
+  const card = (results: Pack["deck"][number]["results"]): Pack =>
+    ({ ...pack, deck: pack.deck.map((s) => (s.id === "gen-01" ? { ...s, results } : s)) });
+  const own = g.holders.own.support, street = { ...g.regions };
+  declineEvent(card([{ ledger: "party", delta: 5 }, { ledger: "approval", delta: 2 }]), g, { id: "gen-01", turn: 1, relief: false, kind: "crisis", stances: ["a", "b"] });
+  expect(g.holders.own.support).toBe(own - DECLINE_COST);
+  expect(g.regions).toEqual(street);
+  // A card whose results please no group lands on the public.
+  declineEvent(card([{ ledger: "chest", delta: 5 }]), g, { id: "gen-01", turn: 1, relief: false, kind: "swan", stances: ["a", "b"] });
+  expect(g.regions[REGIONS[0]]).toBe(street[REGIONS[0]] - DECLINE_COST);
 });
 
 test("the last turn of the term goes straight to the test, with no campaign stage", () => {
@@ -935,7 +976,7 @@ test("a popularity rate moves the public's regions and a loyalty rate your own s
   const g = game();
   const before = { ...g.regions }, own = g.holders.own.support;
   enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }, { ledger: "loyalty", delta: 2 }], repealConsent: "chamber", sunset: null });
-  endTurn(pack, g);
+  busy(g); endTurn(pack, g);
   for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] + 1 - (r === g.rival!.region ? RIVAL_HIT : 0));
   expect(g.holders.own.support).toBe(own + 2);
 });

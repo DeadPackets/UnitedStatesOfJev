@@ -465,6 +465,19 @@ test("a card on the desk holds the boundary", async () => {
   expect(r.body.error).toContain("card");
 });
 
+test("a card may be declined with no clerk's time and no act; a relief card may not (R33)", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(24);
+  game.events.push({ id: "gen-01", turn: 1, relief: false, kind: "crisis", stances: ["Hold", "Pay"] });
+  const r = await post("events/0/decline", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(r.body.events[0]).toMatchObject({ stance: -1, declined: true });
+  expect([game.calls, game.acts.length]).toEqual([0, 0]);
+  expect((await post("events/0/decline", { turn: 1 })).status).toBe(409);
+  game.events.push({ id: "relief-x", turn: 1, relief: true, kind: "relief", stances: ["Take it"] });
+  expect((await post("events/1/decline", { turn: 1 })).status).toBe(409);
+});
+
 test("the final vote reads the support on the board and calls no model; an early test names its caller", async () => {
   for (const early of [undefined, "guard"]) {
     stubModels(0.9);
@@ -627,7 +640,7 @@ test("the holders an act moved are read again before the turn ends", async () =>
   expect(game.holders.league.support).toBe(42);
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.support).toBe(90);             // the stub answers 0.9 to every stance question
+  expect(game.holders.league.support).toBe(45);             // Jev reads 90, and the re-read moves it at most 3 (R33)
   const read = r.body.wire.filter((w: { cause: string }) => w.cause === "read again at the turn's end").map((w: { id: string }) => w.id);
   expect(read).not.toContain("street");                     // the street never moved, so it was never asked
   expect(game.turn).toBe(2);

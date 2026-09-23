@@ -4,7 +4,8 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, moveSupport, publicHolder, seedHolders, type PriceTag,
+  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, declineEvent, foreignStorylet, moveSupport, publicHolder,
+  REREAD_MAX, seedHolders, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -64,7 +65,9 @@ export class GameDO extends DurableObject<Env> {
         switch (parts[0]) {
           case "bills": extra = await this.bill(game, pack, parts, body); break;
           case "acts": extra = await this.acts(game, pack, parts, body); break;
-          case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+          case "events":
+            if (parts[2] === "decline") { this.decline(game, pack, Number(parts[1])); break; }
+            extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
           case "midterm": await this.midterm(game, pack); break;
           case "test": await this.term(s, pack); break;
           case "turn": if (parts[1] !== "end") throw new Reject(404, "Unknown action"); await this.end(game, pack); break;
@@ -390,6 +393,16 @@ export class GameDO extends DurableObject<Env> {
     return { deltas: applyCitizens(pack, game, nouls(citizens.answers, "")) };
   }
 
+  // R33: no answer, no clerk's time, no act; only the relief card, which asks nothing, cannot be declined.
+  private decline(game: Game, pack: Pack, i: number) {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    const event = game.events[i];
+    if (!event) throw new Reject(404, "No such card.");
+    if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
+    if (event.kind === "relief") throw new Reject(409, "There is nothing to decline.");
+    pushWire(game, declineEvent(pack, game, event));
+  }
+
   // §8: one call per holder, each with that holder's own numbers, and only the ones this turn moved.
   private async readHolders(game: Game, pack: Pack) {
     // The wire still holds last turn's tick until this turn's first push.
@@ -406,9 +419,10 @@ export class GameDO extends DurableObject<Env> {
       const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, sample));
       return [h.id, holderStance(pack, h, r.answers)] as const;
     }));
+    // R33: a nudge toward Jev's read, at most 3 either way, never an overwrite (the chamber still moves in whole seats).
     for (const [id, s] of reads) {
       const h = game.holders[id];
-      if (h) pushWire(game, moveSupport(pack, game, [id], clamp(s, 0, 1) * 100 - h.support, "read again at the turn's end"));
+      if (h) pushWire(game, moveSupport(pack, game, [id], clamp(clamp(s, 0, 1) * 100 - h.support, -REREAD_MAX, REREAD_MAX), "read again at the turn's end"));
     }
   }
 

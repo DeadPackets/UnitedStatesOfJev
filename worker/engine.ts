@@ -31,6 +31,7 @@ export interface Event {
   holder?: string;
   card?: { title: string; body: string; stances: string[] };
   stance?: number; scores?: Record<string, number>; outcome?: string;
+  declined?: boolean;   // R33: closed with no answer; stance is -1
 }
 export interface HolderRow { id: string; name: string; weight: number; support: number; counted: boolean }
 export interface TestResult {
@@ -201,6 +202,9 @@ export function pushWire(game: Game, lines: WireLine[]): void {
   game.wire = [...game.wire, ...lines];
 }
 export const WARN_TURNS = 2;   // TUNE, R4
+export const IDLE_COST = 2;        // R33: End turn with no act signed
+export const REREAD_MAX = 3;       // R33: how far End turn's re-read may move a group an act moved
+export const DECLINE_COST = 3;     // R33: declining a card, with the group its answers would please most
 export const RIOT_HIT = 8;         // TUNE, R33: public support in every region
 export const LEVY_HIT = 10;        // TUNE, treasury
 export const EMBARGO_HIT = 8;      // TUNE, treasury
@@ -804,6 +808,10 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   const wire: WireLine[] = [];
   game.revolt = null;
   wire.push(...applyRates(pack, game));
+  // R33: a turn with no signed act costs the public group (else your own side) 2; a turn with one gives nothing.
+  // Kept out of the quiet count below, so idle turns still owe the player a card.
+  const idle = game.acts.some((a) => a.term === game.term && a.turn === game.turn) ? []
+    : moveSupport(pack, game, [publicHolder(pack)?.id ?? ownHolder(pack).id], -IDLE_COST, "no act was signed this turn");
 
   // R19: the powers are held only while the turns last and the army's stance allows them.
   if (game.emergency !== null && (game.turn > game.emergency || !armyAllows(pack, game))) game.emergency = null;
@@ -835,7 +843,7 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   const rival = game.stage === "session" || game.stage === "midterm" ? rivalMove(pack, game) : null;
   game.rival = rival?.move ?? null;
   if (rival) wire.push(...rival.wire);
-  pushWire(game, wire);
+  pushWire(game, [...idle, ...wire]);
   game.calls = 0; game.swing = 0; game.tag = null; game.refusal = null;
   game.turn += 1;
   if (game.result) { game.stage = "over"; game.phase = "over"; }
@@ -1253,6 +1261,27 @@ export function resolveEvent(pack: Pack, game: Game, event: Event, stance: numbe
   }
   const card = deckOf(pack, game).find((s) => s.id === event.id);
   for (const e of card?.results ?? []) applyEffect(pack, game, e, card?.memory);
+}
+
+// R33: the group a card's answers would please most. A foreign move pleases its own power; a deck card, the group
+// its fixed results raise most, else the patrons where it scores them, else the public.
+export function declineTarget(pack: Pack, game: Game, event: Event): string | null {
+  if (event.kind === "foreign" && event.holder) return event.holder;
+  const pub = publicHolder(pack)?.id ?? null;
+  const patrons = holdersOf(pack).find((h) => h.members === "patrons")?.id ?? null;
+  const groupOf = (l: Effect["ledger"]) =>
+    l === "approval" || l === "bloc" ? pub : l === "party" ? ownHolder(pack).id : l === "patron" ? patrons ?? pub : l === "seat" ? chamberHolder(pack)?.id ?? null : null;
+  const card = deckOf(pack, game).find((s) => s.id === event.id);
+  const best = (card?.results ?? []).filter((e) => (e.delta ?? 0) > 0 && groupOf(e.ledger)).sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
+  return (best && groupOf(best.ledger)) || (card?.scored.includes("patrons") ? patrons : null) || pub || ownHolder(pack).id;
+}
+
+// R33: every crisis, foreign move and black swan can be declined: no answer and no resource, 3 support with that group.
+export function declineEvent(pack: Pack, game: Game, event: Event): WireLine[] {
+  event.stance = -1;
+  event.declined = true;
+  const id = declineTarget(pack, game, event);
+  return id ? moveSupport(pack, game, [id], -DECLINE_COST, "declined to act") : [];
 }
 
 const SEAT_MARK: Record<string, { mood: number; loyalty: number }> = {
