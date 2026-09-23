@@ -115,7 +115,7 @@ export default function Seat({ pack, busy, onSeat }: {
           <button className="btn ghost" disabled={page === 2} onClick={() => setPage(page + 1)}>Next</button>
         </div>
         <button className={`btn ${busy ? "busy" : ""}`} disabled={!full || busy || stamped} onClick={take}>
-          {busy ? `Taking the ${v.seat}` : `Take the ${v.seat}`}
+          {busy ? "Taking the oath" : `Take the oath${c?.ruler.role ? ` as ${c.ruler.role}` : ""}`}
         </button>
       </aside>
     </main>
