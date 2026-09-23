@@ -59,7 +59,7 @@ export default function Tag({ game, act, busy, onDone }: {
         {t.stances.length ? (
           <div className="tagr"><span className="k">Room</span><span className="vs">
             {t.stances.map((r) => (
-              <span key={r.id} className="chip red num">{r.name} at {Math.round(r.stance * 100)}, resistance {Math.round(r.resistance)} of {r.line}</span>
+              <span key={r.id} className="chip red num">{r.name} at {Math.round(r.support)}, line {r.line}</span>
             ))}
           </span></div>
         ) : null}

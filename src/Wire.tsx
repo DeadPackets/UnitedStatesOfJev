@@ -5,12 +5,12 @@ import { wireHue, wireLabel, type LedgerKey } from "./rules";
 import { useReduced } from "./motion";
 
 const sign = (n: number) => `${n > 0 ? "+" : ""}${Math.round(n * 10) / 10}`;
-const GLYPH: Record<string, IconName> = { ledger: "act", resistance: "seat", promise: "act", card: "crisis" };
+const GLYPH: Record<string, IconName> = { ledger: "act", support: "seat", promise: "act", card: "crisis" };
 
 /** One line per move with its cause, in its hue, and a ledger line is clickable to peek (spec §9). */
 export default function Wire({ game, onPick }: { game: GameView; onPick: (k: LedgerKey, cause: string) => void }) {
   const reduced = useReduced();
-  // one map for both id kinds: a ledger line's id is a region, a resistance line's is a holder
+  // one map for both id kinds: a ledger line's id is a region, a support line's is a holder
   const names = useMemo(() => new Map([
     ...game.pack.regions.map((r) => [r.id, r.name] as [string, string]),
     ...game.holders.map((h) => [h.id, h.name] as [string, string]),

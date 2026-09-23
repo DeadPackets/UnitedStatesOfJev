@@ -49,14 +49,14 @@ test("a holder is read with its own numbers, and only its own", () => {
   const qs = holderQuestions(pack, game, h, rows);
   expect(Object.keys(qs).length).toBe(HOLDER_SAMPLE);
   const one = qs[`stance_${pack.citizens[0].id}`] as { instructions: Record<string, unknown> };
-  expect(one.instructions.popularity_here).toBe(Math.round(game.ledgers.popularity[pack.citizens[0].region]));
+  expect(one.instructions.popularity_here).toBe(Math.round(game.regions[pack.citizens[0].region]));
   const chamber = pack.constitution!.holders.find((x) => x.id === "council")!;
   const cq = holderQuestions(pack, game, chamber, { seats: game.members, citizens: [] });
   expect(Object.keys(cq).length).toBe(game.members.length);
   const guard = pack.constitution!.holders.find((x) => x.id === "guard")!;
   const gq = holderQuestions(pack, game, guard, { seats: [], citizens: [] });
   expect(Object.keys(gq)).toEqual([`stance_${guard.id}`]);
-  expect((holderState(pack, game, guard) as { resistance: number }).resistance).toBe(0);
+  expect(holderState(pack, game, guard)).toMatchObject({ support: 50, line: 40 });
   expect(holderStance(pack, guard, { [`stance_${guard.id}`]: { noul: 0.7 } })).toBeCloseTo(0.7, 5);
 });
 

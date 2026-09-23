@@ -1,9 +1,9 @@
 import {
-  ARMY_STANCE, armyAllows, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, clamp, easeResistance, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, pay,
-  pushWire, raiseResistance, repeal, RESIST_BYPASS, RESIST_HIT, RESIST_SERVE, weightOf,
+  ARMY_STANCE, armyAllows, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
+  publicHolder, pushWire, repeal, SUPPORT_BYPASS, SUPPORT_HIT, SUPPORT_SERVE, weightOf,
   type Game, type Member, type PriceTag, type Quote, type WireLine,
 } from "./engine";
-import type { Consent, Holder, Instrument, Pack, Price, Verb } from "./pack";
+import type { Consent, Instrument, Pack, Price, Verb } from "./pack";
 
 export const CAMPAIGN_DISCOUNT = 0.25;  // TUNE, C4
 
@@ -63,7 +63,7 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
   const stances = named.flatMap((id) => {
     const h = holdersOf(pack).find((x) => x.id === id);
     const s = game.holders[id];
-    return h ? [{ id, name: h.name, stance: s?.stance ?? h.stance, resistance: s?.resistance ?? 0, line: s?.line ?? h.line }] : [];
+    return h && s ? [{ id, name: h.name, support: s.support, line: s.line }] : [];
   });
   return {
     verb: q.verb, title: q.title, reading: q.reading, credibility: q.credibility,
@@ -76,16 +76,14 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
 
 export const WITHDRAW_COST = 2;   // TUNE, R11: a decree can be taken back for authority
 
-const chamberHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h) => h.members === "seats") ?? null;
-
-// Spec §2: a hit holder gains resistance, a served one eases, and a decree bypasses the chamber on top.
+// Spec §2: a hit holder loses support, a served one gains it, and a decree bypasses the chamber on top.
 function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const wire: WireLine[] = [];
-  wire.push(...raiseResistance(pack, game, tag.hits, RESIST_HIT, tag.title));
-  wire.push(...easeResistance(pack, game, tag.serves, RESIST_SERVE, tag.title));
+  wire.push(...moveSupport(pack, game, tag.hits, -SUPPORT_HIT, tag.title));
+  wire.push(...moveSupport(pack, game, tag.serves, SUPPORT_SERVE, tag.title));
   if (tag.verb === "decree") {
     const ch = chamberHolder(pack);
-    if (ch) wire.push(...raiseResistance(pack, game, [ch.id], RESIST_BYPASS, `${tag.title}, made without the chamber`));
+    if (ch) wire.push(...moveSupport(pack, game, [ch.id], -SUPPORT_BYPASS, `${tag.title}, made without the chamber`));
   }
   return wire;
 }
@@ -123,21 +121,19 @@ function applyFavour(_pack: Pack, game: Game, tag: PriceTag): WireLine[] {
 export const FORCE_ARMY_EASE = 5;      // TUNE, §2: they like being used
 export const FORCE_ARMY_RISE = 10;     // TUNE, §2: they do not
 export const FORCE_POP_HIT = 4;        // TUNE: what the region and the street pay
-// Resistance, not stance: the holder read rewrites stance every turn, so a stance drop here would not last.
 export const FORCE_RESENT = 6;         // TUNE: what the holders it fell on go on resenting
 
 function applyForce(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const wire: WireLine[] = [];
   const a = armyHolder(pack);
   if (a) {
-    const willing = (game.holders[a.id]?.stance ?? a.stance) >= ARMY_STANCE;
-    wire.push(...(willing
-      ? easeResistance(pack, game, [a.id], FORCE_ARMY_EASE, tag.title)
-      : raiseResistance(pack, game, [a.id], FORCE_ARMY_RISE, tag.title)));
+    const willing = (game.holders[a.id]?.support ?? 50) >= ARMY_STANCE;
+    wire.push(...moveSupport(pack, game, [a.id], willing ? FORCE_ARMY_EASE : -FORCE_ARMY_RISE, tag.title));
   }
-  const street = holdersOf(pack).find((h) => h.members === "citizens");
-  if (street) wire.push(...raiseResistance(pack, game, [street.id], FORCE_POP_HIT, tag.title));
-  wire.push(...raiseResistance(pack, game, tag.hits, FORCE_RESENT, tag.title));
+  // R24 folds the street's resistance and the region's popularity into one number, so both hits land on it.
+  const street = publicHolder(pack);
+  if (street) wire.push(...moveSupport(pack, game, [street.id], -FORCE_POP_HIT, tag.title));
+  wire.push(...moveSupport(pack, game, tag.hits, -FORCE_RESENT, tag.title));
   wire.push(...movePopularity(pack, game, tag.regions, -FORCE_POP_HIT, tag.title));
   return wire;
 }
@@ -176,7 +172,7 @@ function applyTemplate(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
       game.media = round2(clamp(game.media + MEDIA_STEP, 0, 1));
       game.trust = round2(clamp(game.trust - TRUST_STEP, 0, 1));
       const pushed = holdersOf(pack).filter((h) => h.response === "strike" || h.members === "patrons").map((h) => h.id);
-      return raiseResistance(pack, game, pushed, RESIST_HIT, tag.title);
+      return moveSupport(pack, game, pushed, -SUPPORT_HIT, tag.title);
     }
     case "emergency_powers":
       game.emergency = game.turn + EMERGENCY_TURNS;

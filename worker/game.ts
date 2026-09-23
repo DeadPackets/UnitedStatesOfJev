@@ -4,7 +4,7 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
+  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, moveSupport, publicHolder, seedHolders, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -13,7 +13,7 @@ import {
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { endPlay, getScenario } from "./db";
-import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
+import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
 import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
@@ -132,7 +132,7 @@ export class GameDO extends DurableObject<Env> {
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
     const saved = row ? JSON.parse(row.v as string) as Saved : null;
     if (!saved?.game) throw new Reject(404, "No such game.");
-    migrate(saved.game);
+    migrate(saved.game, await this.loadPack(saved.game.pack));
     return (this.saved = saved);
   }
 
@@ -394,7 +394,7 @@ export class GameDO extends DurableObject<Env> {
   private async readHolders(game: Game, pack: Pack) {
     // The wire still holds last turn's tick until this turn's first push.
     const wire = game.wireTurn === game.turn ? game.wire : [];
-    const moved = new Set(wire.filter((w) => w.kind === "resistance" && w.id).map((w) => w.id!));
+    const moved = new Set(wire.filter((w) => w.kind === "support" && w.id).map((w) => w.id!));
     const rows = holdersOf(pack).filter((h) => moved.has(h.id)).slice(0, callsLeft(game));
     if (!rows.length) return;
     spendCalls(game, rows.length);
@@ -406,7 +406,10 @@ export class GameDO extends DurableObject<Env> {
       const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, sample));
       return [h.id, holderStance(pack, h, r.answers)] as const;
     }));
-    for (const [id, s] of reads) if (game.holders[id]) game.holders[id].stance = clamp(s, 0, 1);
+    for (const [id, s] of reads) {
+      const h = game.holders[id];
+      if (h) pushWire(game, moveSupport(pack, game, [id], clamp(s, 0, 1) * 100 - h.support, "read again at the turn's end"));
+    }
   }
 
   private async end(game: Game, pack: Pack) {
@@ -427,19 +430,8 @@ export class GameDO extends DurableObject<Env> {
   private async term(s: Saved, pack: Pack) {
     const { game } = s;
     if (game.stage !== "test") throw new Reject(409, `The ${pack.vocabulary.test} is not due yet.`);
-    const hs = holdersOf(pack);
-    // One call per holder, each with that holder's own numbers: the v3 single call measured 93% of the cap.
-    const reads = await Promise.all(hs.map(async (h) => {
-      const rows = {
-        seats: h.members === "seats" ? game.members : [],
-        citizens: h.members === "citizens" ? streetSample(game, pack.citizens, HOLDER_SAMPLE) : [],
-      };
-      const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, rows));
-      return [h.id, holderStance(pack, h, r.answers)] as const;
-    }));
-    const stances = Object.fromEntries(reads);
-    const result = game.earlyTest ? earlyTest(pack, game, game.earlyTest, stances) : runTest(pack, game, stances);
-    endTerm(pack, game, result);
+    // R24: the final vote is the support each group already shows, so it calls no model.
+    endTerm(pack, game, game.earlyTest ? earlyTest(pack, game, game.earlyTest) : runTest(pack, game));
   }
 
   // Luna's last page, written once: after the test, and after a term impeachment or a lame duck cuts short.
@@ -455,12 +447,24 @@ export class GameDO extends DurableObject<Env> {
   }
 }
 
-// Every v3 save reaches v4 through here: the four old ledgers become five.
-export function migrate(game: Game): void {
+// Every v3 save reaches v4 through here: the four old ledgers become five, and R24 makes the five three.
+export function migrate(game: Game, pack: Pack): void {
   const g = game as unknown as Record<string, unknown>;
-  const L = g.ledgers as Record<string, unknown>;
+  let L = g.ledgers as Record<string, unknown>;
   if (L && L.capital !== undefined) {
-    g.ledgers = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
+    L = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
+  }
+  // R24: popularity becomes the public group's regions, loyalty your own group's support, stance 0..1 support 0..100.
+  if (L && (L.loyalty !== undefined || L.popularity !== undefined)) {
+    game.ledgers = { treasury: Number(L.treasury ?? 0), authority: Number(L.authority ?? 0), chest: Number(L.chest ?? 0) };
+    game.regions = (L.popularity as Record<string, number>) ?? {};
+    const seeded = seedHolders(pack, game, Number(L.loyalty ?? 50));
+    const old = (game.holders ?? {}) as Record<string, { stance?: number; warnedAt?: number | null }>;
+    const kept = (h: Holder) => h.members !== "seats" && h.id !== publicHolder(pack)?.id && old[h.id]?.stance !== undefined;
+    game.holders = Object.fromEntries(holdersOf(pack).map((h) => [h.id, {
+      ...seeded[h.id], ...(kept(h) ? { support: Math.round(old[h.id].stance! * 100) } : {}),
+    }]));
+    game.warnings = [];   // a warning over resistance is not a warning under support
   }
   // The campaign stage is gone: a save caught in it goes to the test it was heading for.
   if (g.stage === "campaign") { game.stage = "test"; delete g.campaign; }
@@ -519,8 +523,7 @@ const room = (pack: Pack, game: Game): HolderView[] => {
   return holdersOf(pack).map((h) => {
     const s = game.holders[h.id];
     return {
-      id: h.id, name: h.name, where: h.where, stance: s?.stance ?? h.stance, resistance: s?.resistance ?? 0,
-      line: s?.line ?? h.line, response: s?.response ?? h.response, weight: s?.weight ?? weightOf(pack, h.id),
+      id: h.id, name: h.name, where: h.where, support: s?.support ?? 50, line: s?.line ?? h.line, response: s?.response ?? h.response, weight: s?.weight ?? weightOf(pack, h.id),
       levers: h.levers, warnedAt: s?.warnedAt ?? null, nearest: h.id === near,
       persona: { name: h.persona.name, role: h.persona.role },
     };

@@ -34,11 +34,13 @@ test("the view strips personas, citizens and the deck", () => {
 test("the view carries the room, the instruments and the bar", () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 55 });
   const game: Game = newGame("g-view", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  game.holders.guard.resistance = 50;
+  game.holders.council.support = 33;
   const v = view(pack, { game, prose: {} });
-  expect(v.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league"]);
+  expect(v.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league", "own"]);
   expect(v.holders.find((h) => h.id === "council")!.weight).toBe(0.4);
-  expect(v.holders.find((h) => h.id === "guard")!.nearest).toBe(true);   // 50 of 55 against 0 of 60, 70 and 50
+  expect(v.holders.find((h) => h.id === "council")!).toMatchObject({ support: 33, line: 32, nearest: true });   // 1 over its line
+  expect(Object.keys(v.ledgers).sort()).toEqual(["authority", "chest", "treasury"]);
+  expect(Object.keys(v.regions)).toHaveLength(pack.regions.length);
   expect(v.instruments.law!.name).toBe("a decree of the council");
   expect(v.instruments.force!.affordable).toBe(true);
   expect(v.bar).toBeCloseTo(0.5, 5);
@@ -54,7 +56,7 @@ test("a pack with no constitution ships the v3 room of chamber and street", () =
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 56 });
   const game: Game = newGame("g-bare", code, bare, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], bare.calendar);
   const v = view(bare, { game, prose: {} });
-  expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street"]);
+  expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street", "own"]);   // R24: loyalty lives on your own side
   expect(Object.keys(v.instruments)).toEqual(["law", "proclaim"]);   // the two doors v3 had, so its screens still work
   expect(v.bar).toBeCloseTo(0.5, 5);
   expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
@@ -96,10 +98,12 @@ test("create() picks the start by faction id, not array position, when starts ar
   expect(pickStart(shuffled, 99)).toBeUndefined();
 });
 
-test("a game stored before the feed or the v4 ledgers existed still loads", async () => {
+test("a game stored before the feed, the v4 ledgers or R24 existed still loads", async () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 7 });
-  const { posts: _none, ledgers, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  const old = { ...rest, ledgers: { approval: ledgers.popularity, capital: 40, party: 55, chest: 3 },
+  const { posts: _none, ledgers: _l, regions, holders: _h, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  // A stored holder read the old way: stance 0..1 and resistance against a resistance line.
+  const holders = { guard: { id: "guard", stance: 0.62, resistance: 30, line: 55, response: "coup", weight: 0, warnedAt: null } };
+  const old = { ...rest, holders, ledgers: { approval: regions, capital: 40, party: 45, chest: 3 },
     stage: "campaign", campaign: { drafts: [], messages: [], turns: [], rival: [], intent: {} } };
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
@@ -110,9 +114,12 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   expect(r.status).toBe(200);
   const v = await r.json() as any;
   expect(v.posts).toEqual([]);
-  expect(v.ledgers.authority).toBe(40);
-  expect(v.ledgers.loyalty).toBe(55);
-  expect(v.ledgers.treasury).toBe(0);
+  expect(v.ledgers).toEqual({ treasury: 0, authority: 40, chest: 3 });
+  expect(v.regions).toEqual(regions);                                         // popularity is the public's regions
+  const holder = (id: string) => v.holders.find((h: { id: string }) => h.id === id);
+  expect(holder("own").support).toBe(45);                                     // loyalty is your own side's support
+  expect(holder("guard")).toMatchObject({ support: 62, line: 40 });           // stance 0.62 is support 62
+  expect(holder("council").support).toBe(41.7);                               // the chamber counts its seats
   expect(v.stage).toBe("test");
   expect("campaign" in v).toBe(false);
 });
@@ -251,7 +258,7 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
   await playTo(post, game, 10);
   expect(game.stage).toBe("midterm");
   // A tanked ledger settles the draw before the roll: the government's seats fall, the opposition's hold.
-  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
+  for (const r of pack.regions) game.regions[r.id] = -999;
   const before = current().members.map((m) => m.id);
 
   const r = await post("midterm", { turn: 11 });
@@ -281,7 +288,7 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   const { game, background, post } = seatedGame(9);
   game.stage = "midterm";
   game.marks.midterm = ["seat-01", "seat-11", "seat-12", "seat-13", "seat-19", "seat-20"];   // one government seat in six
-  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
+  for (const r of pack.regions) game.regions[r.id] = -999;
 
   const { status, body } = await post("midterm", { turn: game.turn });
   expect(status).toBe(200);
@@ -458,24 +465,28 @@ test("a card on the desk holds the boundary", async () => {
   expect(r.body.error).toContain("card");
 });
 
-test("the test reads each holder in its own Jev call, and an early test names its caller", async () => {
+test("the final vote reads the support on the board and calls no model; an early test names its caller", async () => {
   for (const early of [undefined, "guard"]) {
     stubModels(0.9);
-    const sizes: number[] = [];
+    let questions = 0;
     const stub = globalThis.fetch;
     globalThis.fetch = (async (url: string, init: RequestInit) => {
-      const q = JSON.parse(String(init.body)).questions;
-      if (q) sizes.push(Object.keys(q).length);
+      if (JSON.parse(String(init.body)).questions) questions++;
       return stub(url, init);
     }) as unknown as typeof fetch;
     const { game, post } = seatedGame(23);
     game.stage = "test";
     game.earlyTest = early;
+    game.holders.council.support = 100;
     const r = await post("test", {});
     expect(r.status).toBe(200);
-    expect(sizes.sort((a, b) => a - b)).toEqual([1, 1, pack.chamber.size, 50]);   // guard, league, council, street sample
+    expect(questions).toBe(0);
     if (early) expect([r.body.stage, r.body.test, r.body.result]).toEqual(["session", undefined, undefined]);   // survived: the term goes on
-    else expect(r.body.test.holders.length).toBe(4);
+    else {
+      expect(r.body.test.holders.length).toBe(5);
+      const street = r.body.test.holders.find((h: { id: string }) => h.id === "street");
+      expect(r.body.test.mandate).toBeCloseTo(0.4 + (0.6 * street.support) / 100, 5);
+    }
   }
 });
 
@@ -573,7 +584,7 @@ test("a favour names a seat, and a body that names none is a 400", async () => {
 test("force is refused while the army will not carry it", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(64);
-  game.holders.guard.stance = 0.2;
+  game.holders.guard.support = 20;
   expect((await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." })).status).toBe(400);
 });
 
@@ -613,11 +624,12 @@ test("the holders an act moved are read again before the turn ends", async () =>
   const { game, post } = seatedGame(68);
   expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
   await post("acts", { turn: 1 });               // serves guard, hits league, bypasses the council
-  expect(game.holders.league.stance).toBe(0.5);
+  expect(game.holders.league.support).toBe(42);
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.stance).toBeCloseTo(0.9, 5);   // the stub answers 0.9 to every stance question
-  expect(game.holders.street.stance).toBe(0.5);             // the street never moved, so it was never asked
+  expect(game.holders.league.support).toBe(90);             // the stub answers 0.9 to every stance question
+  const read = r.body.wire.filter((w: { cause: string }) => w.cause === "read again at the turn's end").map((w: { id: string }) => w.id);
+  expect(read).not.toContain("street");                     // the street never moved, so it was never asked
   expect(game.turn).toBe(2);
 });
 
@@ -629,7 +641,7 @@ test("the read never spends more than the turn has left", async () => {
   game.calls = 6;
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.stance).toBe(0.5);             // nothing left to spend, so nothing was asked
+  expect(game.holders.league.support).toBe(42);             // nothing left to spend, so nothing was asked
 });
 
 test("last turn's wire moves no holder into this turn's read", async () => {
@@ -638,10 +650,10 @@ test("last turn's wire moves no holder into this turn's read", async () => {
   await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
   await post("acts", { turn: 1 });
   await post("turn/end", { turn: 1 });
-  game.holders.league.stance = 0.5;
+  game.holders.league.support = 50;
   game.events = [];
   expect((await post("turn/end", { turn: 2 })).status).toBe(200);
-  expect(game.holders.league.stance).toBe(0.5);
+  expect(game.holders.league.support).toBe(50);
 });
 
 test("the clerks stop at six calls a turn, whichever route asks", async () => {
@@ -713,6 +725,7 @@ test("a game saved before the daily existed loads as free play with an empty log
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => rows }) } } };
   const do_ = new (GameDO as any)(ctx, {});
   do_.ctx = ctx;
+  do_.pack = pack;
   const loaded = await do_.load();
   expect(loaded.game.mode).toBe("free");
   expect(loaded.game.day).toBeNull();

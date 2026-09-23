@@ -18,13 +18,13 @@ export function Country({ game }: { game: GameView }) {
   const shorts = useMemo(() => shortNames(regions.map((r) => r.name)), [regions]);
   const items: TileDatum[] = regions.map((r, i) => ({
     id: r.id, name: r.name, short: shorts[i], weight: r.weight / wsum,
-    p: (game.ledgers.popularity[r.id] ?? 50) / 100,
+    p: (game.regions[r.id] ?? 50) / 100,
   }));
-  const low = [...regions].sort((a, b) => (game.ledgers.popularity[a.id] ?? 50) - (game.ledgers.popularity[b.id] ?? 50))[0];
+  const low = [...regions].sort((a, b) => (game.regions[a.id] ?? 50) - (game.regions[b.id] ?? 50))[0];
   return (
     <>
       <Tiles items={items} label="The country by weight" foot={(d) => `${Math.round(d.p * 100)}`} />
-      {low ? <p className="note">{low.name} at {Math.round(game.ledgers.popularity[low.id] ?? 50)} is the drag.</p> : null}
+      {low ? <p className="note">{low.name} at {Math.round(game.regions[low.id] ?? 50)} is the drag.</p> : null}
     </>
   );
 }
@@ -41,8 +41,8 @@ export function Room({ game, selected, onPick, onPin }: {
         {game.holders.map((x) => (
           <li key={x.id}>
             <button className="rowbtn" aria-current={x.id === selected} onClick={() => onPick(x.id)}>
-              <b className="num">{Math.round(x.stance * 100)}</b>
-              <span>{x.name}, {x.where === "abroad" ? "abroad" : "at home"}, resistance {Math.round(x.resistance)} of {x.line}</span>
+              <b className="num">{Math.round(x.support)}</b>
+              <span>{x.name}, {x.where === "abroad" ? "abroad" : "at home"}, line {x.line}</span>
             </button>
           </li>
         ))}
@@ -61,7 +61,7 @@ export function Room({ game, selected, onPick, onPin }: {
           ) : null}
           <button className="btn sm" onClick={() => onPin({
             key: `holder:${h.id}`, title: h.name, hue: "",
-            lines: [["Mood", String(Math.round(h.stance * 100))], ["Resistance", `${Math.round(h.resistance)} of ${h.line}`], ["Weight", h.weight.toFixed(2)]],
+            lines: [["Support", String(Math.round(h.support))], ["Line", String(h.line)], ["Weight", h.weight.toFixed(2)]],
           })}>Pin</button>
         </div>
       ) : null}

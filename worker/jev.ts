@@ -1,4 +1,4 @@
-import { popularity, record, threshold, type Bill, type Game, type Member, type Reaction } from "./engine";
+import { ownHolder, popularity, record, threshold, type Bill, type Game, type Member, type Reaction } from "./engine";
 import type { Citizen, Holder, Pack, Storylet } from "./pack";
 import { recordGolden } from "./golden";
 
@@ -142,7 +142,7 @@ export function whipState(pack: Pack, game: Game, bill: Bill) {
     government: {
       title: start?.seat_title ?? "the government", faction: name(game.faction), popularity: popularity(pack, game),
       // Measured -6 to -10 on co-factionals (v2 §4): the whip count must see a leadership that has turned.
-      ...(game.ledgers.loyalty < 30 ? { party_leadership: "hostile" } : {}),
+      ...((game.holders[ownHolder(pack).id]?.support ?? 50) < 30 ? { party_leadership: "hostile" } : {}),
     },
     [pack.vocabulary.chamber]: { largest_faction: name(largest), needed_to_pass: threshold(pack, game, bill), of: pack.chamber.size },
     record: record(pack, game),
@@ -179,7 +179,7 @@ export function holderState(pack: Pack, game: Game, h: Holder): unknown {
   const s = game.holders[h.id];
   return {
     holder: { name: h.name, role: h.persona.role, wants: h.wants, red_lines: h.redLines },
-    resistance: s?.resistance ?? 0, line: s?.line ?? h.line,
+    support: s?.support ?? 50, line: s?.line ?? h.line,
     [pack.vocabulary.test]: pack.constitution?.retention.name ?? pack.test.name,
     record: record(pack, game),
   };
@@ -205,7 +205,7 @@ export function holderQuestions(pack: Pack, game: Game, h: Holder, rows: { seats
       type: "noul",
       instructions: {
         citizen: citizenPersona(pack, c),
-        popularity_here: Math.round(game.ledgers.popularity[c.region] ?? 50),
+        popularity_here: Math.round(game.regions[c.region] ?? 50),
         question: `Would this person keep the ${title} in power?`,
       },
       criteria,
@@ -216,7 +216,7 @@ export function holderQuestions(pack: Pack, game: Game, h: Holder, rows: { seats
     type: "noul",
     instructions: {
       holder: { name: h.persona.name, role: h.persona.role, bio: h.persona.bio, tell: h.persona.tell, wants: h.wants, red_lines: h.redLines },
-      resistance: game.holders[h.id]?.resistance ?? 0,
+      support: game.holders[h.id]?.support ?? 50,
       question: `Would ${h.name} keep the ${title} in power?`,
     },
     criteria,

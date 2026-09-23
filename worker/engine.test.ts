@@ -1,9 +1,9 @@
 import { test, expect } from "bun:test";
 import {
   applyCitizens, applyLobby, applyVote, continueTerm, decodeCode, director, effectiveWhip, encodeCode, endTerm,
-  applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, ledgerLine, ledgerValue, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
+  applyEscalation, belowLine, canAfford, CHEST_CAP, ESCALATION_EFFECTS, FAVOR_OWED, ledgerLine, pay, PROMISE_AUTHORITY, nationalPopularity, newGame, resolveEvent, runTest, scenarioTag,
   termPoints, threshold, type Bill, type Game,
-  easeResistance, holdersOf, nearestLine, raiseResistance, weightOf, advanceWarnings, fireResponse, WARN_TURNS,
+  holdersOf, moveSupport, movePopularity, nearestLine, weightOf, advanceWarnings, fireResponse, WARN_TURNS, EXCOMMUNICATE_HIT, RIOT_HIT,
   endTurn, enact, inForceAge, repeal, STRIKE_HIT, authorPromise, PROMISE_WINDOW, record, RECORD_TOKENS,
   bar, earlyTest, EARLY_WEIGHT, HANDICAP, shortfall, SURVIVAL_BAR, biggestMove, runStyle, STYLE_LINES, TREASURY_START, CHEST_START,
 } from "./engine";
@@ -27,6 +27,11 @@ function citizens(): Citizen[] {
 }
 const pack: Pack = PackSchema.parse({ ...mini, citizens: citizens() });
 const game = () => newGame("g", CODE, pack, "harborites", PROMISES, CAL);
+// The public group's support is its regions' mean, so a test sets it through the regions.
+const setPublic = (g: Game, v: number) => { for (const r of REGIONS) movePopularity(pack, g, [r], v - g.regions[r], "set"); };
+const setSupport = (g: Game, s: Record<string, number>) => {
+  for (const [id, v] of Object.entries(s)) if (id === "street") setPublic(g, v); else g.holders[id].support = v;
+};
 const bill = (g: Game, p: number, extra: Partial<Bill> = {}): Bill => {
   const b: Bill = {
     id: g.turn, text: "", title: `Decree ${g.turn}`, summary: "", tags: ["tariffs"], offers: {},
@@ -46,23 +51,34 @@ test("the code round-trips", () => {
 test("a new game reads the pack, not the roster", () => {
   const g = game();
   expect(g.members.length).toBe(pack.chamber.size);
-  expect(g.ledgers.loyalty).toBe(pack.starts[0].party);
-  expect(Object.keys(g.ledgers.popularity).sort()).toEqual([...REGIONS].sort());
+  expect(g.holders.own.support).toBe(pack.starts[0].party);
+  expect(Object.keys(g.regions).sort()).toEqual([...REGIONS].sort());
   expect(g.members.filter((m) => m.situation).length).toBe(Math.round(pack.chamber.size * 0.15));
   expect(g.marks.midterm.length).toBe(Math.round(pack.chamber.size / 3));
   expect(g.members.find((m) => m.faction === "harborites")!.loyalty).toBe(100);
   expect(g.members.find((m) => m.faction === "keelwrights")!.loyalty).toBe(25);   // hostile coalition partner
-  expect(newGame("g", CODE, pack, "harborites", PROMISES, CAL).ledgers.popularity).toEqual(g.ledgers.popularity);
+  expect(newGame("g", CODE, pack, "harborites", PROMISES, CAL).regions).toEqual(g.regions);
 });
 
-test("a new game opens the five ledgers under their v4 names", () => {
+test("a new game opens three resources and one number per group (R24)", () => {
   const g = game();
-  expect(Object.keys(g.ledgers).sort()).toEqual(["authority", "chest", "loyalty", "popularity", "treasury"]);
+  expect(Object.keys(g.ledgers).sort()).toEqual(["authority", "chest", "treasury"]);
   expect(g.ledgers.authority).toBe(pack.starts[0].capital);
-  expect(g.ledgers.loyalty).toBe(pack.starts[0].party);
   expect(g.ledgers.treasury).toBe(TREASURY_START);
   expect(g.ledgers.chest).toBe(CHEST_START);
-  expect(Object.keys(g.ledgers.popularity).sort()).toEqual([...REGIONS].sort());
+  // mini.json predates R24: stance 0.5 opens at 50, a resistance line L becomes 100 - L, kept 10 under day one.
+  expect(g.holders.council.support).toBe(41.7);                          // 10 of 24 seats are the government's side
+  expect(g.holders.street.support).toBe(Math.round(nationalPopularity(pack, g) * 10) / 10);
+  expect([g.holders.guard.support, g.holders.guard.line]).toEqual([50, 40]);   // min(100 - 55, 50 - 10)
+  expect([g.holders.league.support, g.holders.league.line]).toEqual([50, 40]); // min(100 - 50, 50 - 10)
+  expect(g.holders.council.line).toBe(32);                               // min(100 - 60, 42 - 10)
+  expect([g.holders.own.support, g.holders.own.line]).toEqual([55, 20]); // the start's loyalty and the loyalty line
+  // A pack written after R24 says support, and its line is a support line as written.
+  const v2 = PackSchema.parse({ ...pack, constitution: { ...pack.constitution!, ownGroup: "guard",
+    holders: pack.constitution!.holders.map((h) => (h.id === "guard" ? { ...h, support: 62, line: 45 } : h)) } });
+  const h = newGame("g2", CODE, v2, "harborites", PROMISES, CAL);
+  expect([h.holders.guard.support, h.holders.guard.line]).toEqual([62, 45]);
+  expect(Object.keys(h.holders)).not.toContain("own");                  // the pack named its own group
 });
 
 test("the threshold comes from the pack, and rises on a filibuster, a veto or escalation 2", () => {
@@ -91,7 +107,7 @@ test("a hostile partner votes as opposition and grudges stick", () => {
 
 test("a passed bill moves the five ledgers", () => {
   const g = game();
-  const before = { ...g.ledgers };
+  const before = { ...g.ledgers, loyalty: g.holders.own.support };
   const back = (m: { faction: string }) => (m.faction === "keelwrights" ? 0 : 1);   // 16 of 24, own faction leads the yes votes
   const b = bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])), blocs: { dockworkers: 0, merchants: 2 }, patrons: { "grand-exchange": 0, "keelwright-hall": 2 } });
   applyVote(pack, g, b);
@@ -100,7 +116,7 @@ test("a passed bill moves the five ledgers", () => {
   expect(b.yes).toBe(16);
   expect(b.threshold).toBe(pack.chamber.threshold);
   expect(g.ledgers.authority).toBe(before.authority + 2);
-  expect(g.ledgers.loyalty).toBe(before.loyalty + 3);
+  expect(g.holders.own.support).toBe(before.loyalty + 3);
   expect(g.streak).toBe(1);
   expect(g.patrons["grand-exchange"]).toBe(1);
   expect(g.patrons["keelwright-hall"]).toBe(-1);
@@ -112,27 +128,27 @@ test("a passed bill moves the five ledgers", () => {
 
   applyVote(pack, g, bill(g, 0, { whip: Object.fromEntries(g.members.map((m) => [m.id, back(m)])) }));
   expect(g.promises.tariffs.state).toBe("kept");
-  expect(g.ledgers.loyalty).toBe(before.loyalty + 3 + 3 + 5);
+  expect(g.holders.own.support).toBe(before.loyalty + 3 + 3 + 5);
   expect(nationalPopularity(pack, g)).toBeGreaterThan(nationalPopularity(pack, game()));
 });
 
 test("passing on the other side's votes costs party mood", () => {
   const g = game();
   for (const m of g.members) m.loyalty = 100;
-  const before = g.ledgers.loyalty;
+  const before = g.holders.own.support;
   applyVote(pack, g, bill(g, 1));
   expect(g.bills[0].yes).toBe(pack.chamber.size);
-  expect(g.ledgers.loyalty).toBe(before - 6);
+  expect(g.holders.own.support).toBe(before - 6);
 });
 
 test("a failed bill costs capital and party mood", () => {
   const g = game();
-  const before = { ...g.ledgers };
+  const before = { ...g.ledgers, loyalty: g.holders.own.support };
   const b = bill(g, 0);
   applyVote(pack, g, b);
   expect(b.passed).toBe(false);
   expect(g.ledgers.authority).toBe(before.authority - 2);
-  expect(g.ledgers.loyalty).toBe(before.loyalty - 2);
+  expect(g.holders.own.support).toBe(before.loyalty - 2);
   expect(g.streak).toBe(0);
 });
 
@@ -147,17 +163,17 @@ test("a struck bill needs 0.7, or 0.5 under a hostile court", () => {
 
 test("a missed promise decays popularity by a share a turn, never a cliff", () => {
   const g = game();
-  for (const r of REGIONS) g.ledgers.popularity[r] = 50;   // a flat start so the arithmetic is exact
+  setPublic(g, 50);   // a flat start so the arithmetic is exact
   g.turn = PROMISE_WINDOW;
   endTurn(pack, g);                                  // the window closes on this boundary
   expect(Object.values(g.promises).every((p) => p.state === "broken")).toBe(true);
   // Three pending promises, each taking PROMISE_SHARE 0.02 of what the one before it left, rounded to one
   // decimal: 50 - round1(1.00) = 49, 49 - round1(0.98) = 48, 48 - round1(0.96) = 47.
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(r === g.rival!.region ? 47 - RIVAL_HIT : 47);
+  for (const r of REGIONS) expect(g.regions[r]).toBe(r === g.rival!.region ? 47 - RIVAL_HIT : 47);
   endTurn(pack, g);
   // Past the window it keeps taking a share, it does not cliff again:
   // 47 - round1(0.94) = 46.1, 46.1 - round1(0.922) = 45.2, 45.2 - round1(0.904) = 44.3.
-  for (const r of REGIONS.filter((x) => x !== g.rival!.region)) expect(g.ledgers.popularity[r]).toBeCloseTo(44.3, 5);
+  for (const r of REGIONS.filter((x) => x !== g.rival!.region)) expect(g.regions[r]).toBeCloseTo(44.3, 5);
 });
 
 test("fickle base shortens the window instead of moving a cliff", () => {
@@ -180,9 +196,9 @@ test("an authored promise carries its own window and share", () => {
 test("hostile press costs a point in every region on every verdict", () => {
   const g = game();
   g.escalations = ["hostile_press"];
-  const before = { ...g.ledgers.popularity };
+  const before = { ...g.regions };
   applyVote(pack, g, bill(g, 0));
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] - 1);
+  for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] - 1);
 });
 
 test("lobby costs the v1 table, rises 1.5x under costly favors, and a broken threat leaves a grudge", () => {
@@ -244,17 +260,19 @@ test("the bar climbs per term and stops at its cap", () => {
   expect(bar(pack, 30)).toBeCloseTo(0.7, 5);
 });
 
-test("the mandate is the weighted mean of the counted holders' stances", () => {
+test("the final vote is each voting group's support times its weight (R24)", () => {
   const g = game();
-  // council weighs 0.4 and street 0.6 in mini.json; guard and league weigh 0, so their stances are ignored.
-  // 0.4 x 0.8 + 0.6 x 0.2 = 0.32 + 0.12 = 0.44, under the term-1 bar of 0.50.
-  const r = runTest(pack, g, { council: 0.8, street: 0.2, guard: 1, league: 1 });
+  // council weighs 0.4 and street 0.6 in mini.json; guard, league and your own side weigh 0, so they are ignored.
+  // 0.4 x 80 + 0.6 x 20 = 32 + 12 = 44 of 100, under the term-1 bar of 0.50.
+  setSupport(g, { council: 80, street: 20, guard: 100, league: 100, own: 100 });
+  const r = runTest(pack, g);
   expect(r.mandate).toBeCloseTo(0.44, 5);
   expect(r.bar).toBeCloseTo(0.5, 5);
   expect(r.won).toBe(false);
-  expect(r.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league"]);   // pack order
+  expect(r.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league", "own"]);   // pack order, your own side last
   expect(r.holders.find((h) => h.id === "guard")!.counted).toBe(false);
-  expect(runTest(pack, g, { council: 1, street: 1 }).won).toBe(true);                     // 1.0 clears 0.50
+  setSupport(g, { council: 100, street: 100 });
+  expect(runTest(pack, g).won).toBe(true);                                                // 1.0 clears 0.50
 });
 
 test("a minority start prints its shortfall, is handicapped over 6 and wins on survival over 15", () => {
@@ -274,15 +292,20 @@ test("a minority start prints its shortfall, is handicapped over 6 and wins on s
 
   const alone = thin(20, 2);                                             // 20 - 2 = 18, over SURVIVAL_SHORTFALL
   const a = newGame("g-alone", CODE, alone, "harborites", PROMISES, CAL);
-  const r = runTest(alone, a, { council: 0.45, street: 0.45 });
+  a.holders.council.support = 45;
+  for (const r of REGIONS) movePopularity(alone, a, [r], 45 - a.regions[r], "set");
+  const r = runTest(alone, a);
   expect(r.bar).toBeCloseTo(SURVIVAL_BAR, 5);                            // its own bar, not bar(term) 0.50
   expect(r.won).toBe(true);                                              // mandate 0.45 clears 0.40
-  expect(runTest(pack, game(), { council: 0.45, street: 0.45 }).won).toBe(false);   // the same room, normal bar
+  const same = game();
+  setSupport(same, { council: 45, street: 45 });
+  expect(runTest(pack, same).won).toBe(false);                           // the same room, normal bar
 });
 
 test("an early test brings its caller in and renormalises the weights", () => {
   const g = game();
-  const r = earlyTest(pack, g, "guard", { council: 1, street: 1, guard: 0 });
+  setSupport(g, { council: 100, street: 100, guard: 0 });
+  const r = earlyTest(pack, g, "guard");
   expect(r.early).toBe("guard");
   const total = r.holders.filter((h) => h.counted).reduce((a, h) => a + h.weight, 0);
   expect(total).toBeCloseTo(1, 5);
@@ -290,18 +313,19 @@ test("an early test brings its caller in and renormalises the weights", () => {
   expect(r.mandate).toBeCloseTo(1 / (1 + EARLY_WEIGHT), 5);
 
   Object.assign(g, { stage: "test", phase: "over", earlyTest: "guard", turn: 11 });
-  g.holders.guard.resistance = g.holders.guard.line + 5;
   endTerm(pack, g, r);                                   // won: the term goes on, into the half-term it cut off
   expect([g.stage, g.earlyTest, g.result, g.terms.length]).toEqual(["midterm", undefined, undefined, 0]);
-  expect(g.holders.guard.resistance).toBe(g.holders.guard.line - 1);   // under its line, so it does not call again next turn
-  endTerm(pack, g, earlyTest(pack, g, "guard", { council: 0, street: 0, guard: 0 }));
+  expect(g.holders.guard.support).toBeGreaterThanOrEqual(g.holders.guard.line);   // back to its line, so it does not call again next turn
+  setSupport(g, { council: 0, street: 0, guard: 0 });
+  endTerm(pack, g, earlyTest(pack, g, "guard"));
   expect(g.stage).toBe("over");                          // lost: the term ends
 });
 
 test("a term ends with a score, and another term stacks two escalations", () => {
   const g = game();
   for (let i = 0; i < 4; i++) applyVote(pack, g, bill(g, 1));
-  const won = runTest(pack, g, { council: 1, street: 1 });
+  setSupport(g, { council: 100, street: 100 });
+  const won = runTest(pack, g);
   endTerm(pack, g, won);
   expect(won.won).toBe(true);                // 0.4 x 1 + 0.6 x 1 = 1.0, over the term-1 bar of 0.50
   expect(g.stage).toBe("won");
@@ -310,36 +334,36 @@ test("a term ends with a score, and another term stacks two escalations", () => 
   expect(g.terms[0].passed).toBe(4);
 
   const memory = g.members.map((m) => m.memory.length);
-  const popularity = { ...g.ledgers.popularity };
+  const popularity = { ...g.regions };
   continueTerm(pack, g);
   expect(g.term).toBe(2);
   expect(g.turn).toBe(1);
   expect(g.escalations).toEqual(["hostile_press", "supermajority_era"]);
   expect(g.members.map((m) => m.memory.length)).toEqual(memory);
-  expect(g.ledgers.popularity).toEqual(popularity);
+  expect(g.regions).toEqual(popularity);
   expect(g.bills.length).toBe(0);
   expect(g.terms.length).toBe(1);
 });
 
-test("another term carries the laws and the resistance, and reseeds the half-term class", () => {
+test("another term carries the laws and every group's support, and reseeds the half-term class", () => {
   const g = game();
   enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
-  g.holders.council.resistance = 40;
-  g.holders.street.resistance = 80;
+  setSupport(g, { council: 100, street: 100, guard: 20 });
   advanceWarnings(pack, g);
+  expect(g.holders.guard.warnedAt).toBe(1);
   authorPromise(g, "new-quay", "A new quay", 30);
   authorPromise(g, "old-quay", "An old quay", 6);
   g.promises["old-quay"].state = "broken";
   const first = [...g.marks.midterm];
-  endTerm(pack, g, runTest(pack, g, { council: 1, street: 1 }));
+  endTerm(pack, g, runTest(pack, g));
   continueTerm(pack, g);
   expect(g.term).toBe(2);
   expect(g.inForce.length).toBe(1);
   expect(g.promises["new-quay"]).toMatchObject({ state: "pending", window: 10, authored: true });   // 10 turns left carry over
   expect(g.promises["old-quay"]).toBeUndefined();
-  expect(g.holders.council.resistance).toBe(20);
+  expect(g.holders.guard.support).toBe(20);
+  expect(g.holders.guard.warnedAt).toBeNull();
   expect(g.warnings).toEqual([]);
-  expect(g.holders.street.warnedAt).toBeNull();
   expect(g.marks.midterm).not.toEqual(first);
   expect(g.marks.midterm.length).toBe(Math.round(pack.chamber.size / 3));
   expect(g.earlyTest).toBeUndefined();
@@ -354,7 +378,7 @@ test("every escalation of the twenty has a hook or a stored number", () => {
   g.escalations = pack.escalations.map((e) => e.key);
   for (const e of pack.escalations) applyEscalation(pack, g, e.key);
   expect(g.economy).toBe("recession");
-  expect(g.ledgers.loyalty).toBe(35);
+  expect(g.holders.own.support).toBe(35);
   expect(g.marks.famine.length).toBe(REGIONS.length);   // the pack has fewer than 10 regions
   expect(g.marks.meddling.length).toBe(2);
   expect(g.members.filter((m) => m.situation === "is under investigation for corruption").length).toBeGreaterThanOrEqual(4);
@@ -461,18 +485,20 @@ test("a conditional dated card waits for a clear turn, up to two turns late", ()
   expect(director(dropped, p)).toBeNull();
 });
 
-test("the test draws its two walks from the chamber's and the street's stances", () => {
+test("the walk shows exactly the chamber's backing seats, and each region at its own support", () => {
   const g = game();
-  const r = runTest(pack, g, { council: 0.8, street: 0.4 });
+  setSupport(g, { council: 75, street: 40 });
+  const r = runTest(pack, g);
   expect(r.seats.length).toBe(pack.chamber.size);
-  expect(r.seats.every((s) => s.p === 0.8)).toBe(true);
+  expect(r.seats.filter((s) => s.yes).length).toBe(18);        // 75 of 100 is 18 of 24 seats, so seats and share agree
+  expect(r.seats.at(-1)!.yes).toBe(true);                      // the loyalest seats are the yes seats, walked last
   expect(r.regions.map((x) => x.p)).toEqual(pack.regions.map(() => 0.4));
 });
 
 test("a hostile party shows in the whip state, and a favor comes back as capital", () => {
   const g = game();
   expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).not.toContain("party_leadership");
-  g.ledgers.loyalty = 20;
+  g.holders.own.support = 20;
   expect(JSON.stringify(whipState(pack, g, bill(g, 0)))).toContain('"party_leadership":"hostile"');
 
   const h = game();
@@ -526,7 +552,7 @@ const agreeAll = (who: "government" | "rival") => Object.fromEntries(pack.citize
 // holdP reads the approval ledger raw, so 999 and -999 saturate the sigmoid and settle every draw before it rolls.
 const midtermWorld = (g: Game, hold: boolean) => {
   const own = new Set(midtermUp(g).filter((m) => m.faction === "harborites").map((m) => m.region));
-  for (const r of pack.regions) g.ledgers.popularity[r.id] = own.has(r.id) === hold ? 999 : -999;
+  for (const r of pack.regions) g.regions[r.id] = own.has(r.id) === hold ? 999 : -999;
   return Object.fromEntries(pack.citizens.map((c) => [c.id, own.has(c.region) === hold ? 1 : 0]));
 };
 
@@ -548,23 +574,23 @@ const saidNothing = { replies: [], rival: "They said nothing new." };
 
 const national = (g: Game) => {
   const w = pack.regions.reduce((a, r) => a + r.weight, 0);
-  return pack.regions.reduce((a, r) => a + r.weight * g.ledgers.popularity[r.id], 0) / w;
+  return pack.regions.reduce((a, r) => a + r.weight * g.regions[r.id], 0) / w;
 };
 
 test("an average post is worth nothing, a loud one is punished and a strong one pays", () => {
   const g = game();
-  const before = { ...g.ledgers.popularity };
+  const before = { ...g.regions };
   const was = national(g);
   applyPost(pack, g, 1, "a bland notice", reactMix(76, 5), saidNothing, {}, tagFor());
   expect(Math.abs(national(g) - was)).toBeLessThanOrEqual(0.4);
 
   const bad = game();
   applyPost(pack, bad, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
-  expect(bad.ledgers.popularity[REGIONS[0]]).toBeLessThan(before[REGIONS[0]] - 3);
+  expect(bad.regions[REGIONS[0]]).toBeLessThan(before[REGIONS[0]] - 3);
 
   const good = game();
   applyPost(pack, good, 1, "a sharp notice", reactMix(88, 6), saidNothing, {}, tagFor());
-  expect(good.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(before[REGIONS[0]]);
+  expect(good.regions[REGIONS[0]]).toBeGreaterThan(before[REGIONS[0]]);
   expect(good.posts[0].targets).toEqual([]);
   expect(POST_BASELINE).toBeCloseTo(0.67, 2);
   expect(POST_GAIN).toBe(10);
@@ -576,7 +602,7 @@ test("state media damps the boos a post takes", () => {
   h.media = 1;
   applyPost(pack, g, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
   applyPost(pack, h, 1, "a hated notice", reactMix(40, 30), saidNothing, {}, tagFor());
-  expect(h.ledgers.popularity[REGIONS[0]]).toBeGreaterThan(g.ledgers.popularity[REGIONS[0]]);
+  expect(h.regions[REGIONS[0]]).toBeGreaterThan(g.regions[REGIONS[0]]);
 });
 
 test("a region where shares lead goes hot and its seats remember the post", () => {
@@ -597,7 +623,7 @@ test("losing the post duel is recorded on the post", () => {
 
 test("a seat holds on approval and intent, and the odds flip for the opposition", () => {
   const g = game();
-  for (const r of pack.regions) g.ledgers.popularity[r.id] = 66;      // (66 - 50) / 8 = 2, sigmoid 0.8808
+  for (const r of pack.regions) g.regions[r.id] = 66;      // (66 - 50) / 8 = 2, sigmoid 0.8808
   const byRegion = regionIntent(pack, allIntent(0.7));
   const own = g.members.find((m) => m.faction === "harborites")!;
   const opp = g.members.find((m) => m.faction === "tidebound")!;
@@ -650,8 +676,11 @@ test("opposition seats swapping among themselves never end a run", () => {
   expect(draw.lost.length).toBe(8);
   expect(draw.lostOwn).toBe(2);                                       // only the 2 harborite seats in the class are ownSide
   expect(draw.wipeout).toBe(false);
+  const crossed = draw.lost.reduce((a, l) => a + Number(l.to === "harborites") - Number(l.from === "harborites"), 0);
   applyMidterm(pack, g, draw, replacements(pack, g, draw).map((s) => ({ id: s.id, name: "n", bio: "b", tell: "t", core_issues: [pack.tags[0]] })));
   expect(g.stage).toBe("session");
+  // R24: the council's support is its seats on the government's side, so the seats that crossed move it.
+  expect(g.holders.council.support).toBe(Math.round(((10 + crossed) / 24) * 1000) / 10);
 });
 
 test("losing 40% of the class on the government's own side ends the run as a lame duck with a scored term", () => {
@@ -668,22 +697,15 @@ test("losing 40% of the class on the government's own side ends the run as a lam
   expect(g.terms.length).toBe(1);
 });
 
-test("each ledger has a failure line, the pack may rename it and the engine reads both", () => {
+test("each resource has a failure line, and support is no resource", () => {
   const g = game();
-  expect(ledgerLine(pack, "loyalty")).toBe(20);
-  expect(ledgerLine(pack, "popularity")).toBe(30);
-  expect(ledgerValue(pack, g, "authority")).toBe(g.ledgers.authority);
-  expect(ledgerValue(pack, g, "popularity")).toBeCloseTo(nationalPopularity(pack, g), 5);
+  expect(ledgerLine(pack, "treasury")).toBe(0);
   expect(belowLine(pack, g)).toEqual([]);
   g.ledgers.treasury = 0; g.ledgers.chest = 0;   // both lines are 0, so empty is already at the line
   expect(belowLine(pack, g)).toEqual(["treasury", "chest"]);
-  g.ledgers.loyalty = 10;
-  expect(belowLine(pack, g)).toEqual(["treasury", "chest", "loyalty"]);   // LEDGERS_V4 order, no sort
-  g.ledgers.treasury = 5; g.ledgers.chest = 5; g.ledgers.loyalty = 55;
-  expect(belowLine(pack, g)).toEqual([]);
-  g.ledgers.loyalty = 20;
-  for (const r of REGIONS) g.ledgers.popularity[r] = 30;
-  expect(belowLine(pack, g)).toEqual([]);   // §4 is strict: < 20 and < 30, so at the line is not under it
+  g.ledgers.treasury = 5; g.ledgers.chest = 5; g.holders.own.support = 0;
+  setPublic(g, 0);
+  expect(belowLine(pack, g)).toEqual([]);        // a group under its line warns; it never blocks an act
 });
 
 test("an act is paid from three ledgers and refused when one is short", () => {
@@ -721,69 +743,77 @@ test("spec section 4's sources pay: a kept promise, and the chest capped per ver
 
 test("a new game opens one holder state per holder in the constitution", () => {
   const g = game();
-  expect(Object.keys(g.holders).sort()).toEqual(["council", "guard", "league", "street"]);
+  expect(Object.keys(g.holders).sort()).toEqual(["council", "guard", "league", "own", "street"]);
   expect(g.holders.council.weight).toBe(0.4);
   expect(g.holders.guard.weight).toBe(0);
-  expect(g.holders.street.resistance).toBe(0);
-  expect(g.holders.street.line).toBe(70);
   expect(g.holders.guard.response).toBe("coup");
   expect(weightOf(pack, "street")).toBe(0.6);
   const v3: Pack = { ...pack, constitution: undefined };
-  expect(holdersOf(v3).map((h) => h.id)).toEqual(["chamber", "street"]);
+  expect(holdersOf(v3).map((h) => h.id)).toEqual(["chamber", "street", "own"]);
   expect(weightOf(v3, "street")).toBe(pack.chamber.alpha);
   // A stored v3 pack keeps a winnable test: the chamber and the street, mixed by alpha as in v3.
-  expect(runTest(v3, newGame("g-v3", CODE, v3, "harborites", PROMISES, CAL), { chamber: 1, street: 1 }).won).toBe(true);
+  const g3 = newGame("g-v3", CODE, v3, "harborites", PROMISES, CAL);
+  g3.holders.chamber.support = 100;
+  for (const r of REGIONS) movePopularity(v3, g3, [r], 100, "set");
+  expect(runTest(v3, g3).won).toBe(true);
 });
 
-test("a bypass raises resistance, a favour lowers it and the nearest to its line is named", () => {
+test("support moves one way for every group: the chamber in whole seats, the public by region", () => {
   const g = game();
-  const up = raiseResistance(pack, g, ["council", "guard"], 12, "ruled by edict");
-  expect(g.holders.council.resistance).toBe(12);
-  expect(up[0].cause).toBe("ruled by edict");
-  expect(up[0]).toEqual({ kind: "resistance", id: "council", delta: 12, cause: "ruled by edict" });   // no ledger
-  easeResistance(pack, g, ["council"], 10, "a petition granted");
-  expect(g.holders.council.resistance).toBe(2);
-  expect(nearestLine(g)).toBe("guard");   // 12 of 55 against 2 of 60 and 0 of 70
-  g.holders.league.resistance = 12.3;
-  expect(easeResistance(pack, g, ["league"], 0.1, "a small gift")[0].delta).toBe(-0.1);   // the wire prints no float noise
-  raiseResistance(pack, g, ["council"], 999, "everything at once");
-  expect(g.holders.council.resistance).toBe(100);
+  const down = moveSupport(pack, g, ["council", "guard"], -12, "ruled by edict");
+  expect(g.holders.guard.support).toBe(38);
+  expect(g.holders.council.support).toBe(29.2);              // 41.7 is 10 of 24 seats; 12 of 100 is 3 seats, so 7 of 24
+  expect(down[0]).toEqual({ kind: "support", id: "council", delta: -12.5, cause: "ruled by edict" });
+  moveSupport(pack, g, ["council"], 1, "a nod");
+  expect(g.holders.council.support).toBe(29.2);              // a quarter of a seat moves no seat
+  expect(nearestLine(g)).toBe("council");                     // 2.8 under its line of 32; the guard is 2 under its 40
+  expect(moveSupport(pack, g, ["own"], 3, "a kept word")[0]).toMatchObject({ id: "own", ledger: "loyalty", delta: 3 });
+  const street = moveSupport(pack, g, ["street"], -2, "a bad week");
+  expect(street.map((w) => w.region)).toEqual(REGIONS);        // the public moves region by region
+  expect(street.every((w) => w.ledger === "popularity")).toBe(true);
+  expect(g.holders.street.support).toBe(Math.round(nationalPopularity(pack, g) * 10) / 10);
+  moveSupport(pack, g, ["guard"], -999, "everything at once");
+  expect(g.holders.guard.support).toBe(0);
 });
 
-test("a holder over its line warns once and fires two turns later", () => {
+test("a holder under its line warns once and strikes two turns later", () => {
   const g = game();
-  g.holders.street.resistance = 80;         // over its line of 70
+  g.holders.guard.support = 30;             // under its line of 40
   const first = advanceWarnings(pack, g);
-  expect(first.warned.map((w) => w.holder)).toEqual(["street"]);
+  expect(first.warned.map((w) => w.holder)).toEqual(["guard"]);
   expect(first.fired).toEqual([]);
   expect(g.warnings[0].fires).toBe(g.turn + WARN_TURNS);
-  expect(g.warnings[0].number).toBe(80);
+  expect(g.warnings[0].number).toBe(30);
 
   g.turn += 1;
-  expect(advanceWarnings(pack, g).fired).toEqual([]);   // still over, still waiting
+  expect(advanceWarnings(pack, g).fired).toEqual([]);   // still under, still waiting
   g.turn += 1;
   const third = advanceWarnings(pack, g);
-  expect(third.fired.map((w) => w.holder)).toEqual(["street"]);
+  expect(third.fired.map((w) => w.holder)).toEqual(["guard"]);
   expect(g.warnings).toEqual([]);
 });
 
-test("a warning drops when the holder comes back under its line", () => {
+test("a warning drops when the holder comes back up to its line", () => {
   const g = game();
-  g.holders.street.resistance = 80;
+  g.holders.guard.support = 30;
   advanceWarnings(pack, g);
-  g.holders.street.resistance = 10;
+  g.holders.guard.support = 40;             // at the line is not under it
   g.turn += 2;
   const r = advanceWarnings(pack, g);
   expect(r.fired).toEqual([]);
   expect(g.warnings).toEqual([]);
-  expect(g.holders.street.warnedAt).toBeNull();
+  expect(g.holders.guard.warnedAt).toBeNull();
 });
 
 test("each response does its own thing and a coup ends the run", () => {
   const g = game();
-  const before = nationalPopularity(pack, g);
-  fireResponse(pack, g, { holder: "street", response: "riot", at: 1, fires: 3, number: 80 });
-  expect(nationalPopularity(pack, g)).toBeLessThan(before);
+  const before = { ...g.regions };
+  fireResponse(pack, g, { holder: "street", response: "riot", at: 1, fires: 3, number: 20 });
+  for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] - RIOT_HIT);   // R33: 8 in every region
+
+  const own = g.holders.own.support;
+  expect(fireResponse(pack, g, { holder: "guard", response: "excommunicate", at: 1, fires: 3, number: 20 })[0].kind).toBe("card");
+  expect(g.holders.own.support).toBe(own - EXCOMMUNICATE_HIT);                // R33: 25 on your own side
 
   g.ledgers.treasury = 20;
   fireResponse(pack, g, { holder: "league", response: "embargo", at: 1, fires: 3, number: 60 });
@@ -811,24 +841,25 @@ test("a vote no longer moves the clock; End turn does", () => {
   expect(out.wire.every((w) => typeof w.cause === "string")).toBe(true);
 });
 
-test("the boundary decays resistance, advances warnings and prints the pending item", () => {
+test("the boundary advances warnings and prints the pending item, and support does not decay", () => {
   const g = game();
-  g.holders.council.resistance = 20;
-  g.holders.street.resistance = 80;
+  g.holders.league.support = 45;
+  g.holders.guard.support = 30;
+  g.director.seen = pack.deck.map((s) => s.id);   // no card, so the warning is the pending line
   const out = endTurn(pack, g);
-  expect(g.holders.council.resistance).toBe(19);
-  expect(out.warned.map((w) => w.holder)).toEqual(["street"]);
-  expect(g.pending).toContain("70");
+  expect(g.holders.league.support).toBe(45);
+  expect(out.warned.map((w) => w.holder)).toEqual(["guard"]);
+  expect(g.pending).toContain("line of 40");
 });
 
-test("loyalty under its line is a revolt for one turn, and the class doubles once", () => {
+test("your own side under its line is a revolt for one turn, and the class doubles once", () => {
   const g = game();
   const cls = Math.round(pack.chamber.size / 3);       // 24 / 3 = 8
   expect(g.marks.midterm.length).toBe(cls);
-  g.ledgers.loyalty = 20;
+  g.holders.own.support = 20;
   endTurn(pack, g);
   expect(g.revolt).toBeNull();                         // at the line is not under it
-  g.ledgers.loyalty = 10;
+  g.holders.own.support = 10;
   endTurn(pack, g);
   expect(g.revolt).toBe(g.turn);                       // the turn about to be played, not the one just ended
   expect(g.marks.midterm.length).toBe(cls * 2);        // 16
@@ -849,16 +880,18 @@ test("the last turn of the term goes straight to the test, with no campaign stag
   expect("campaign" in h).toBe(false);
 });
 
-test("popularity under its line puts the early test caller at its line, and it warns and fires", () => {
+test("the public under its line warns and riots itself; it no longer pushes another group to call a vote", () => {
   const g = game();
-  for (const r of REGIONS) g.ledgers.popularity[r] = 20;   // under the line of 30
+  setPublic(g, g.holders.street.line - 5);
   const out = endTurn(pack, g);
-  expect(out.warned.map((w) => w.holder)).toEqual(["council"]);
+  expect(out.warned.map((w) => w.holder)).toEqual(["street"]);
   endTurn(pack, g);
+  const before = nationalPopularity(pack, g);
   const fired = endTurn(pack, g);
-  expect(fired.fired.map((w) => w.holder)).toEqual(["council"]);
-  expect(g.stage).toBe("test");
-  expect(g.earlyTest).toBe("council");
+  expect(fired.fired.map((w) => w.holder)).toEqual(["street"]);
+  expect(nationalPopularity(pack, g)).toBeLessThan(before - RIOT_HIT + 1);
+  expect(g.stage).toBe("session");
+  expect(g.earlyTest).toBeUndefined();
 });
 
 test("a law in force collects every turn until it is repealed", () => {
@@ -898,12 +931,13 @@ test("an authored sunset lapses the law on its own", () => {
   expect(g.inForce).toEqual([]);
 });
 
-test("a per region rate moves every region", () => {
+test("a popularity rate moves the public's regions and a loyalty rate your own side", () => {
   const g = game();
-  const before = { ...g.ledgers.popularity };
-  enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }], repealConsent: "chamber", sunset: null });
+  const before = { ...g.regions }, own = g.holders.own.support;
+  enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }, { ledger: "loyalty", delta: 2 }], repealConsent: "chamber", sunset: null });
   endTurn(pack, g);
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBe(before[r] + 1 - (r === g.rival!.region ? RIVAL_HIT : 0));
+  for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] + 1 - (r === g.rival!.region ? RIVAL_HIT : 0));
+  expect(g.holders.own.support).toBe(own + 2);
 });
 
 test("a court that strikes takes the newest law in force with it", () => {
@@ -994,17 +1028,17 @@ test("one turn's Jev answers can only move the country so far", () => {
 test("the citizens' read is capped like every other Jev answer", () => {
   const g = game();
   g.swing = JEV_SWING;
-  const before = { ...g.ledgers.popularity };
+  const before = { ...g.regions };
   applyCitizens(pack, g, Object.fromEntries(pack.citizens.map((c) => [c.id, 0])));
-  for (const r of REGIONS) expect(g.ledgers.popularity[r]).toBeCloseTo(before[r], 5);
+  for (const r of REGIONS) expect(g.regions[r]).toBeCloseTo(before[r], 5);
 });
 
 import { deckOf, FIC_TURNS, foreignPending, FOREIGN_PRICE, resolveForeign } from "./engine";
 
-test("an abroad holder over half its line puts a foreign move on the desk, and only once a term", () => {
+test("an abroad holder near its line puts a foreign move on the desk, and only once a term", () => {
   const g = game();
   expect(foreignPending(pack, g)).toBeNull();
-  g.holders.league.resistance = 30;                 // its line is 50
+  g.holders.league.support = 44;                    // its line is 40
   expect(foreignPending(pack, g)!.id).toBe("league");
   const card = director(g, pack)!;
   expect(card.kind).toBe("foreign");
@@ -1016,17 +1050,17 @@ test("an abroad holder over half its line puts a foreign move on the desk, and o
 test("giving a foreign power what it asks costs treasury and starts its payments", () => {
   const g = game();
   g.ledgers.treasury = 30;
-  g.holders.league.resistance = 40;
+  g.holders.league.support = 42;
   const e = { id: "foreign-league-1", turn: 1, relief: false, kind: "foreign" as const, holder: "league", stances: ["Give", "Refuse"] };
   resolveForeign(pack, g, e, 0);
   expect(g.ledgers.treasury).toBe(30 - FOREIGN_PRICE);
-  expect(g.holders.league.resistance).toBe(30);
+  expect(g.holders.league.support).toBe(52);         // SUPPORT_SERVE
   expect(g.inForce.find((l) => l.id === "gives-league")!.perTurn[0]).toEqual({ ledger: "treasury", delta: 4 });
 
   const h = game();
-  h.holders.league.resistance = 40;
+  h.holders.league.support = 42;
   resolveForeign(pack, h, { ...e }, 1);
-  expect(h.holders.league.resistance).toBe(52);      // RESIST_BYPASS
+  expect(h.holders.league.support).toBe(30);         // SUPPORT_BYPASS
   expect(h.inForce).toEqual([]);
 });
 
@@ -1066,7 +1100,8 @@ test("a black swan waits for a clear turn and fires at most once a term", () => 
 test("a continue turns the calendar's unfired cards into ordinary ones", () => {
   const g = game();
   const dated = pack.deck.filter((s) => s.kind === "dated").map((s) => s.id);
-  endTerm(pack, g, runTest(pack, g, { council: 1, street: 1 }));
+  setSupport(g, { council: 100, street: 100 });
+  endTerm(pack, g, runTest(pack, g));
   continueTerm(pack, g);
   for (const id of dated) expect(g.director.seen).toContain(id);
   expect(g.extra.filter((s) => s.kind === "generic").length).toBe(dated.length);
@@ -1077,16 +1112,16 @@ import { RIVAL_HIT, rivalMove } from "./engine";
 
 test("the rival is a named person backed by a holder, and works the weakest region", () => {
   const g = game();
-  g.holders.council.resistance = 44;
-  const weakest = [...pack.regions].sort((a, b) => g.ledgers.popularity[a.id] - g.ledgers.popularity[b.id])[0];
-  const before = g.ledgers.popularity[weakest.id];
+  g.holders.council.support = 33;
+  const weakest = [...pack.regions].sort((a, b) => g.regions[a.id] - g.regions[b.id])[0];
+  const before = g.regions[weakest.id];
   const out = rivalMove(pack, g)!;
   expect(out.move.name).toBe("Warden Ossin Drell");   // the keelwrights hold 8 seats, the tidebound 6
   expect(out.move.backer).toBe("council");             // the home holder nearest its own line
   expect(out.move.region).toBe(weakest.id);
   expect(out.move.line).toContain(out.move.name);
-  expect(g.ledgers.popularity[weakest.id]).toBeCloseTo(before - RIVAL_HIT, 1);
-  expect(out.wire.every((w) => w.kind === "ledger")).toBe(true);
+  expect(g.regions[weakest.id]).toBeCloseTo(before - RIVAL_HIT, 1);
+  expect(out.wire.every((w) => w.kind === "support" && w.ledger === "popularity")).toBe(true);
 });
 
 test("the boundary records the rival's move and prints it when nothing louder is waiting", () => {
@@ -1109,13 +1144,13 @@ test("drift rides on top of every citizen read, so a hardened base stays hardene
   expect(g.blocs[pack.blocs[1].id]).toBeCloseTo(0.5, 5);
 });
 
-test("the turn's row is the ledger that moved most, and a resistance line is not a ledger move", () => {
+test("the turn's row is the resource or public or own support that moved most; other groups do not count", () => {
   expect(biggestMove([
     { kind: "ledger", ledger: "treasury", delta: -4, cause: "upkeep" },
-    { kind: "ledger", ledger: "popularity", id: "r1", delta: 6, cause: "relief" },
-    { kind: "ledger", ledger: "popularity", id: "r2", delta: 3, cause: "relief" },
+    { kind: "support", id: "street", ledger: "popularity", region: "r1", delta: 6, cause: "relief" },
+    { kind: "support", id: "street", ledger: "popularity", region: "r2", delta: 3, cause: "relief" },
   ], 4)).toEqual({ turn: 4, ledger: "popularity", delta: 9, cause: "relief" });
-  expect(biggestMove([{ kind: "resistance", id: "army", delta: 30, cause: "the curfew" }], 2).ledger).toBe("quiet");
+  expect(biggestMove([{ kind: "support", id: "army", delta: 30, cause: "the curfew" }], 2).ledger).toBe("quiet");
   expect(biggestMove([], 1)).toEqual({ turn: 1, ledger: "quiet", delta: 0, cause: "a still turn" });
 });
 
@@ -1157,5 +1192,6 @@ test("every finished turn adds one row to the log, and a new term starts an empt
 test("a stored pack whose holders say stance 0 still opens every holder inside the band", () => {
   const zeroed = PackSchema.parse({ ...pack, constitution: { ...pack.constitution!, holders: pack.constitution!.holders.map((h) => ({ ...h, stance: 0 })) } });
   const g = newGame("z", CODE, zeroed, "harborites", PROMISES, CAL);
-  for (const h of Object.values(g.holders)) expect(h.stance).toBe(0.3);
+  // The chamber counts seats and the public its regions, so only the groups read from a stance open at the floor.
+  for (const id of ["guard", "league"]) expect(g.holders[id].support).toBe(30);
 });

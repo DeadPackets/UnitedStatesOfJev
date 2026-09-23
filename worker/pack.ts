@@ -60,6 +60,11 @@ const HolderSchema = z.object({
   gives: z.object({ ledger: z.enum(["treasury", "chest"]), amount: z.number(), per: z.enum(["turn", "once"]) }).nullable().default(null),
   responses: z.array(z.string()).default([]),
 });
+// R24: what a pack stores beyond what the generator writes. A holder with `support` has a support line; one
+// without it is a pack from before R24, whose stance and resistance line the engine maps on load.
+const HolderReadSchema = HolderSchema.extend({
+  support: z.number().min(0).max(100).optional(),
+});
 const LedgerNameSchema = z.object({ name: z.string(), line: z.number() });
 
 export const ConstitutionSchema = z.object({
@@ -84,6 +89,16 @@ export const ConstitutionSchema = z.object({
     loyalty: LedgerNameSchema, popularity: LedgerNameSchema,
   }),
   briefing: z.object({ situation: z.string(), room: z.string(), you: z.string() }),
+});
+// What the engine reads. ConstitutionSchema above stays the generator's strict output shape (every key required).
+const PackConstitutionSchema = ConstitutionSchema.extend({
+  holders: z.array(HolderReadSchema).min(3).max(10),
+  publicGroup: z.string().optional(),   // R24: the holder whose support by region was popularity
+  ownGroup: z.string().optional(),      // R24: the holder whose support was loyalty
+  ledgers: z.object({
+    treasury: LedgerNameSchema, authority: LedgerNameSchema, chest: LedgerNameSchema,
+    loyalty: LedgerNameSchema.optional(), popularity: LedgerNameSchema.optional(),
+  }),
 });
 const MemberSchema = z.object({
   id: z.string(), seat: z.string(), region: z.string(), faction: z.string(), name: z.string(), bio: z.string(),
@@ -159,7 +174,7 @@ export const PackSchema = z.object({
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
   // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
   art: z.object({ masthead: z.string(), crests: z.array(IdStr), portraits: z.array(IdStr).default([]) }),
-  constitution: ConstitutionSchema.optional(),
+  constitution: PackConstitutionSchema.optional(),
 }).refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
   .refine((p) => p.starts.length === p.factions.length, "one start per faction")
   .refine((p) => p.starts.every((s, i) => s.faction === p.factions[i].id), "starts must follow factions order");
@@ -175,7 +190,7 @@ export type HolderResponse = (typeof HOLDER_RESPONSES)[number];
 export type Consent = (typeof CONSENTS)[number];
 export type LedgerV4 = (typeof LEDGERS_V4)[number];
 export type Constitution = z.infer<typeof ConstitutionSchema>;
-export type Holder = z.infer<typeof HolderSchema>;
+export type Holder = z.infer<typeof HolderReadSchema>;
 export type Instrument = z.infer<typeof InstrumentSchema>;
 export type Price = z.infer<typeof PriceSchema>;
 
