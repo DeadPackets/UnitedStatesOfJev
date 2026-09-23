@@ -1,4 +1,4 @@
-import type { Consent, Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
+import type { Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -75,7 +75,9 @@ export interface PriceTag {
   promises: { tag: string; label: string; window: number }[];
   sunset: number | null; template: ActTemplate | null;
   stances: { id: string; name: string; support: number; line: number }[];
+  vetoes?: Veto[];
 }
+export interface Veto { id: string; name: string; agrees: boolean; reason: string }
 export interface Refusal { line: string; test: "power" | "era"; cost: number }
 export interface Act {
   term: number; turn: number; verb: Verb; title: string; reading: string; credibility: number; charge: Price;
@@ -424,15 +426,16 @@ export function capSwing(pack: Pack, game: Game, deltas: Record<string, number>)
 }
 
 export const CAMPAIGN_FROM = 17;  // TUNE, C4: the turn the last stretch of the term starts on
-export const ARMY_STANCE = 50;    // spec §2: force needs the army's support at or over this
+// R29: the army is whoever force moves, never whoever can end the run: a palace with coup or dismiss is not an army.
+export const armyHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h) => h.levers.includes("force")) ?? null;
 
-// The army is whoever can end the run by force, else whoever force moves.
-export const armyHolder = (pack: Pack): Holder | null =>
-  holdersOf(pack).find((h) => h.response === "coup") ?? holdersOf(pack).find((h) => h.levers.includes("force")) ?? null;
+// R29: a group agrees while its support is at or over its line. The army's agreement is what force and
+// emergency powers need.
+export const agrees = (game: Game, id: string): boolean => !game.holders[id] || game.holders[id].support >= game.holders[id].line;
 
 export function armyAllows(pack: Pack, game: Game): boolean {
   const a = armyHolder(pack);
-  return !a || (game.holders[a.id]?.support ?? 50) >= ARMY_STANCE;
+  return !a || agrees(game, a.id);
 }
 
 // The plate the Desk marks: the holder closest to its own line.
@@ -493,10 +496,11 @@ export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
       break;
     }
     case "early_test": game.earlyTest = w.holder; game.stage = "test"; game.phase = "over"; break;
-    case "coup": {
+    case "coup":
+    case "dismiss": {
       game.stage = "over"; game.phase = "over";
       game.terms.push(termPoints(game, 0));
-      game.result = { ending: "coup", score: score(game) };
+      game.result = { ending: w.response === "coup" ? "coup" : "dismissed", score: score(game) };
       break;
     }
     case "none": break;
@@ -665,7 +669,8 @@ export function applyEscalation(pack: Pack, game: Game, key: EscalationKey): voi
 export function threshold(pack: Pack, game: Game, bill: Bill): number {
   const forced = on(game).some((e) => e.supermajority?.(bill));
   const veto = Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6);
-  return forced || veto || (bill.filibuster ?? 0) >= 0.5 ? pack.chamber.supermajority : pack.chamber.threshold;
+  const written = pack.constitution?.instruments.law.vetoes.includes("chamber_supermajority") ?? false;   // R29
+  return forced || veto || written || (bill.filibuster ?? 0) >= 0.5 ? pack.chamber.supermajority : pack.chamber.threshold;
 }
 
 export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
@@ -711,7 +716,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     for (const t of new Set([...bill.tags, ...(bill.keeps ?? [])])) keepPromise(pack, game, t);
     if (bill.rates?.length) enact(game, {
       id: `law-${game.term}-${bill.id}`, verb: "law", title: bill.title, perTurn: bill.rates,
-      repealConsent: pack.constitution?.instruments.law.consent ?? "chamber", sunset: bill.sunset ?? null,
+      repealVetoes: pack.constitution?.instruments.law.vetoes ?? ["chamber"], sunset: bill.sunset ?? null,
     });
   }
   for (const e of on(game)) e.verdict?.(pack, game, bill);
@@ -738,7 +743,7 @@ export interface TurnEnd { wire: WireLine[]; warned: Warning[]; fired: Warning[]
 export interface InForce {
   id: string; verb: Verb; title: string; term: number; turn: number;
   perTurn: { ledger: LedgerV4; id?: string | null; delta: number }[];
-  repealConsent: Consent; sunset: number | null;   // turns of life, authored into the text
+  repealVetoes: string[]; sunset: number | null;   // R29: who must agree to repeal it (none: it can be withdrawn); turns of life
 }
 
 export const inForceAge = (game: Game, law: InForce) => (game.term - law.term) * TURNS_PER_TERM + (game.turn - law.turn);
@@ -830,6 +835,16 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
       game.marks.midterm = [...cls];
       game.marks.doubled = ["1"];
     }
+  }
+
+  // R29: a home group pays what it gives (a levy, a tithe, a company's grant) while it agrees; "once" pays once a run.
+  for (const h of holdersOf(pack)) {
+    if (h.where !== "home" || !h.gives || !agrees(game, h.id)) continue;
+    const gave = game.marks.gave ?? [];
+    if (h.gives.per === "once") { if (gave.includes(h.id)) continue; game.marks.gave = [...gave, h.id]; }
+    const l = h.gives.ledger, was = game.ledgers[l];
+    game.ledgers[l] = round1(clamp(was + h.gives.amount, 0, 9999));
+    wire.push({ kind: "ledger", ledger: l, delta: round1(game.ledgers[l] - was), cause: h.name });
   }
 
   wire.push(...decayPromises(pack, game));
@@ -1179,7 +1194,7 @@ export function resolveForeign(pack: Pack, game: Game, event: Event, stance: num
   const wire = pay(pack, game, { authority: 0, treasury: FOREIGN_PRICE, chest: 0 }, `${h.name} was given what it asked`);
   wire.push(...moveSupport(pack, game, [h.id], SUPPORT_SERVE, h.name));
   if (h.gives && h.gives.per === "turn" && !game.inForce.some((l) => l.id === id)) {
-    enact(game, { id, verb: "favour", title: `${h.name} pays`, perTurn: [{ ledger: h.gives.ledger, delta: h.gives.amount }], repealConsent: "none", sunset: null });
+    enact(game, { id, verb: "favour", title: `${h.name} pays`, perTurn: [{ ledger: h.gives.ledger, delta: h.gives.amount }], repealVetoes: [], sunset: null });
   }
   return wire;
 }
@@ -1460,4 +1475,4 @@ export type HolderView = {
   response: HolderResponse; weight: number; levers: Verb[]; warnedAt: number | null; nearest: boolean;
   persona: { name: string; role: string };
 };
-export type InstrumentView = { name: string; consent: Consent; price: Price; available: boolean; affordable: boolean };
+export type InstrumentView = { name: string; vetoes: string[]; price: Price; available: boolean; affordable: boolean };

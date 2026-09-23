@@ -103,7 +103,8 @@ test("a game stored before the feed, the v4 ledgers or R24 existed still loads",
   const { posts: _none, ledgers: _l, regions, holders: _h, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
   // A stored holder read the old way: stance 0..1 and resistance against a resistance line.
   const holders = { guard: { id: "guard", stance: 0.62, resistance: 30, line: 55, response: "coup", weight: 0, warnedAt: null } };
-  const old = { ...rest, holders, ledgers: { approval: regions, capital: 40, party: 45, chest: 3 },
+  const inForce = [{ id: "l1", verb: "law", title: "The levy", perTurn: [], term: 1, turn: 1, repealConsent: "chamber", sunset: null }];
+  const old = { ...rest, holders, inForce, ledgers: { approval: regions, capital: 40, party: 45, chest: 3 },
     stage: "campaign", campaign: { drafts: [], messages: [], turns: [], rival: [], intent: {} } };
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
@@ -120,6 +121,7 @@ test("a game stored before the feed, the v4 ledgers or R24 existed still loads",
   expect(holder("own").support).toBe(45);                                     // loyalty is your own side's support
   expect(holder("guard")).toMatchObject({ support: 62, line: 40 });           // stance 0.62 is support 62
   expect(holder("council").support).toBe(41.7);                               // the chamber counts its seats
+  expect(v.inForce[0].repealVetoes).toEqual(["chamber"]);                     // R29: repealConsent is now repealVetoes
   expect(v.stage).toBe("test");
   expect("campaign" in v).toBe(false);
 });
@@ -598,7 +600,9 @@ test("force is refused while the army will not carry it", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(64);
   game.holders.guard.support = 20;
-  expect((await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." })).status).toBe(400);
+  const r = await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." });
+  expect(r.status).toBe(409);
+  expect(r.body.error).toContain("will not agree");
 });
 
 test("another term comes with two cards the last term never saw", async () => {

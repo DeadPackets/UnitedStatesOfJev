@@ -16,7 +16,7 @@ import {
 import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, blocker, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -202,6 +202,7 @@ export class GameDO extends DurableObject<Env> {
     if (!tag) throw new Reject(409, "Nothing is priced.");
     if (tag.verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
+    refuse(pack, game, tag.verb);
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
     if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     if (tag.verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
@@ -226,7 +227,7 @@ export class GameDO extends DurableObject<Env> {
   private undoAct(game: Game, pack: Pack, id: string): Extra {
     const law = game.inForce.find((l) => l.id === id);
     if (!law) throw new Reject(404, "No such act.");
-    if (law.repealConsent !== "none") throw new Reject(409, "That one needs a repeal.");
+    if (law.repealVetoes.length) throw new Reject(409, "That one needs a repeal.");
     if (!canAfford(pack, game, { authority: WITHDRAW_COST, treasury: 0, chest: 0 })) throw new Reject(402, "There is not enough to pay for that.");
     withdraw(pack, game, id);
     return {};
@@ -237,6 +238,7 @@ export class GameDO extends DurableObject<Env> {
     const text = raw.trim().slice(0, 1200);
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
+    if (verb) refuse(pack, game, verb);
     if (verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
     const seat = memberId ? game.members.find((m) => m.id === memberId) : undefined;
@@ -488,6 +490,11 @@ export function migrate(game: Game, pack: Pack): void {
   game.holders ??= {};
   game.warnings ??= [];
   game.inForce ??= [];
+  // R29: a row saved with repealConsent names the chamber or no one; "army" was never written on a repeal.
+  for (const l of game.inForce as (typeof game.inForce[number] & { repealConsent?: string })[]) {
+    l.repealVetoes ??= l.repealConsent && l.repealConsent !== "none" ? [l.repealConsent] : [];
+    delete l.repealConsent;
+  }
   game.wire ??= [];
   game.pending ??= null;
   game.tag ??= null;
@@ -544,11 +551,16 @@ const room = (pack: Pack, game: Game): HolderView[] => {
   });
 };
 
+const refuse = (pack: Pack, game: Game, verb: Verb) => {
+  const b = blocker(pack, game, verb);
+  if (b) throw new Reject(409, `${b.name} will not agree: ${b.reason}.`);
+};
+
 const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, InstrumentView>> => {
   const out: Partial<Record<Verb, InstrumentView>> = {};
   for (const v of VERBS) {
     const i = instrumentOf(pack, v);
-    if (i) out[v] = { ...i, affordable: available(pack, game, v) && canAfford(pack, game, i.price) };
+    if (i) out[v] = { ...i, affordable: available(pack, game, v) && !blocker(pack, game, v) && canAfford(pack, game, i.price) };
   }
   return out;
 };

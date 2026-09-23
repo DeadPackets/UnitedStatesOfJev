@@ -1,9 +1,9 @@
 import {
-  ARMY_STANCE, armyAllows, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
+  agrees, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
   publicHolder, pushWire, repeal, SUPPORT_BYPASS, SUPPORT_HIT, SUPPORT_SERVE, weightOf,
-  type Game, type Member, type PriceTag, type Quote, type WireLine,
+  type Game, type Member, type PriceTag, type Quote, type Veto, type WireLine,
 } from "./engine";
-import type { Consent, Instrument, Pack, Price, Verb } from "./pack";
+import type { Instrument, Pack, Price, Verb } from "./pack";
 
 export const CAMPAIGN_DISCOUNT = 0.25;  // TUNE, C4
 
@@ -11,18 +11,37 @@ const round1 = (x: number) => Math.round(x * 10) / 10;
 
 // A pack built before v4 has no constitution: it keeps the two doors v3 had, the bill and the post, free as they were.
 const v3Instrument = (pack: Pack, verb: Verb): Instrument | null => verb === "law" || verb === "proclaim"
-  ? { name: verb === "law" ? pack.vocabulary.bill : pack.vocabulary.post, consent: verb === "law" ? "chamber" : "none",
+  ? { name: verb === "law" ? pack.vocabulary.bill : pack.vocabulary.post, vetoes: verb === "law" ? ["chamber"] : [],
       price: { authority: 0, treasury: 0, chest: 0 }, available: true }
   : null;
 
 export const instrumentOf = (pack: Pack, verb: Verb): Instrument | null =>
   pack.constitution ? pack.constitution.instruments[verb] ?? null : v3Instrument(pack, verb);
 
-export function consentOf(pack: Pack, game: Game, verb: Verb): Consent {
-  const c = instrumentOf(pack, verb)?.consent ?? "none";
-  // R19: emergency powers set the chamber aside while they hold.
-  if (game.emergency !== null && game.turn <= game.emergency && (c === "chamber" || c === "chamber_supermajority")) return "none";
-  return c;
+const CHAMBER = new Set(["chamber", "chamber_supermajority"]);
+
+// R29: who must agree to this verb. R19: emergency powers set the chamber aside while they hold.
+export function vetoesOf(pack: Pack, game: Game, verb: Verb): string[] {
+  const v = instrumentOf(pack, verb)?.vetoes ?? [];
+  return game.emergency !== null && game.turn <= game.emergency ? v.filter((x) => !CHAMBER.has(x)) : v;
+}
+
+// R29, the rule this build chose: a group agrees while its support is at or over its line, the same line whose
+// crossing starts its warning. A law's chamber agrees through the floor vote, so it is not asked here; on any
+// other verb the chamber agrees while the seats backing you carry a vote (a supermajority where one is written).
+export function vetoRows(pack: Pack, game: Game, verb: Verb): Veto[] {
+  return vetoesOf(pack, game, verb).flatMap((v): Veto[] => {
+    if (CHAMBER.has(v)) {
+      const ch = chamberHolder(pack);
+      if (verb === "law" || !ch) return [];
+      const seats = Math.round(((game.holders[ch.id]?.support ?? 0) * pack.chamber.size) / 100);
+      const need = v === "chamber" ? pack.chamber.threshold : pack.chamber.supermajority;
+      return [{ id: ch.id, name: ch.name, agrees: seats >= need, reason: `${seats} of ${pack.chamber.size} seats back you; it needs ${need}` }];
+    }
+    const h = holdersOf(pack).find((x) => x.id === v), s = game.holders[v];
+    if (!h || !s) return [];
+    return [{ id: v, name: h.name, agrees: agrees(game, v), reason: `support ${Math.round(s.support)}, its line ${s.line}` }];
+  });
 }
 
 export function available(pack: Pack, game: Game, verb: Verb): boolean {
@@ -32,9 +51,11 @@ export function available(pack: Pack, game: Game, verb: Verb): boolean {
   // §4: at 0 authority only proclaim and spend are left; at 0 treasury no spending act passes.
   if (below.includes("authority") && verb !== "proclaim" && verb !== "spend") return false;
   if (below.includes("treasury") && verb === "spend") return false;
-  if (verb === "force" && i.consent === "army" && !armyAllows(pack, game)) return false;
   return true;
 }
+
+// The first group that will not agree: the act can be priced, so the tag shows who refuses, but not signed.
+export const blocker = (pack: Pack, game: Game, verb: Verb): Veto | undefined => vetoRows(pack, game, verb).find((v) => !v.agrees);
 
 // C4: in the last four turns an act aimed at a holder that votes in the test costs less.
 export function discountOf(pack: Pack, game: Game, serves: string[]): number {
@@ -71,6 +92,7 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     charge, discounted: d < 1, revenue,
     serves: q.serves, hits: q.hits, keeps: q.keeps, targets: q.targets, tags: q.tags, regions: q.regions,
     member, promises: q.promises, sunset: q.sunset, template: q.template, stances,
+    vetoes: vetoRows(pack, game, q.verb),
   };
 }
 
@@ -127,7 +149,7 @@ function applyForce(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const wire: WireLine[] = [];
   const a = armyHolder(pack);
   if (a) {
-    const willing = (game.holders[a.id]?.support ?? 50) >= ARMY_STANCE;
+    const willing = agrees(game, a.id);
     wire.push(...moveSupport(pack, game, [a.id], willing ? FORCE_ARMY_EASE : -FORCE_ARMY_RISE, tag.title));
   }
   // R24 folds the street's resistance and the region's popularity into one number, so both hits land on it.
@@ -202,7 +224,7 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
     if (tag.revenue.length || tag.verb === "appoint") {
       enact(game, {
         id, verb: tag.verb, title: tag.title, perTurn: tag.revenue,
-        repealConsent: consentOf(pack, game, tag.verb), sunset: tag.sunset,
+        repealVetoes: vetoesOf(pack, game, tag.verb), sunset: tag.sunset,
       });
     }
     for (const t of tag.keeps) keepPromise(pack, game, t);
@@ -221,7 +243,7 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
 export function withdraw(pack: Pack, game: Game, id: string): WireLine[] {
   const law = game.inForce.find((l) => l.id === id);
   if (!law) throw new Error("No such act.");
-  if (law.repealConsent !== "none") throw new Error("That one needs a repeal.");
+  if (law.repealVetoes.length) throw new Error("That one needs a repeal.");
   const price: Price = { authority: WITHDRAW_COST, treasury: 0, chest: 0 };
   if (!canAfford(pack, game, price)) throw new Error("The ledgers cannot afford that act.");
   const wire = pay(pack, game, price, `withdrew ${law.title}`);

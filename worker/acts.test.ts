@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
-import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
-import { applyVote, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
+import { available, blocker, CAMPAIGN_DISCOUNT, commit, discountOf, instrumentOf, priceTag, vetoesOf, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { applyVote, armyHolder, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -54,10 +54,10 @@ test("the last four turns of the term cut the price of an act that serves a test
   expect(t.discounted).toBe(true);
 });
 
-test("consent and availability come from the constitution and the failure lines", () => {
+test("vetoes and availability come from the constitution and the failure lines", () => {
   const g = game();
-  expect(consentOf(pack, g, "law")).toBe("chamber");
-  expect(consentOf(pack, g, "force")).toBe("army");
+  expect(vetoesOf(pack, g, "law")).toEqual(["chamber"]);
+  expect(vetoesOf(pack, g, "force")).toEqual(["guard"]);    // an old pack's consent "army" is the holder force moves
   expect(available(pack, g, "force")).toBe(true);
   g.ledgers.authority = 0;
   g.ledgers.treasury = 0;
@@ -66,6 +66,35 @@ test("consent and availability come from the constitution and the failure lines"
   expect(available(pack, g, "spend")).toBe(false);          // treasury is also at 0, which blocks spending
   g.ledgers.treasury = 20;
   expect(available(pack, g, "spend")).toBe(true);
+});
+
+// R29: every veto holder must agree; a group agrees at or over its line, the chamber while its backing seats carry the vote.
+const vetoed = (vetoes: string[]): Pack => ({ ...pack, constitution: { ...pack.constitution!, instruments: {
+  ...pack.constitution!.instruments, decree: { ...pack.constitution!.instruments.decree, vetoes } } } });
+for (const [vetoes, set, blocked] of [
+  [[], {}, undefined],
+  [["guard"], { guard: 55 }, undefined],
+  [["guard"], { guard: 54 }, "guard"],
+  [["guard", "league"], { guard: 60, league: 10 }, "league"],
+  [["chamber"], { council: 13 / 24 * 100 }, undefined],
+  [["chamber"], { council: 12 / 24 * 100 }, "council"],
+  [["chamber_supermajority"], { council: 15 / 24 * 100 }, "council"],
+] as [string[], Record<string, number>, string | undefined][]) {
+  test(`a decree vetoed by ${vetoes.join(" and ") || "no one"} with ${JSON.stringify(set)} is blocked by ${blocked ?? "no one"}`, () => {
+    const g = game();
+    for (const [id, s] of Object.entries(set)) { g.holders[id].support = s; g.holders[id].line = id === "guard" ? 55 : g.holders[id].line; }
+    const p = vetoed(vetoes);
+    expect(blocker(p, g, "decree")?.id).toBe(blocked);
+    expect(priceTag(p, g, quote()).vetoes!.find((v) => !v.agrees)?.id).toBe(blocked);
+  });
+}
+
+test("the palace that can dismiss you is not the army: force is vetoed by the holder force moves", () => {
+  const palace = { ...pack.constitution!.holders[1], id: "palace", name: "The Palace", levers: ["appoint"], response: "dismiss" as const };
+  const p = PackSchema.parse({ ...mini, citizens: pack.citizens,
+    constitution: { ...mini.constitution, holders: [palace, ...mini.constitution.holders] } });
+  expect(armyHolder(p)!.id).toBe("guard");
+  expect(vetoesOf(p, game(), "force")).toEqual(["guard"]);
 });
 
 test("the tag prints each named holder's support and line", () => {
@@ -106,7 +135,7 @@ test("an act with a rate goes on the books and can be withdrawn for authority", 
   commit(pack, g, tag);
   expect(g.inForce).toHaveLength(1);
   expect(g.inForce[0].perTurn[0].delta).toBe(6);
-  expect(g.inForce[0].repealConsent).toBe("none");
+  expect(g.inForce[0].repealVetoes).toEqual([]);
   const id = g.inForce[0].id;
   const a = g.ledgers.authority;
   withdraw(pack, g, id);
@@ -260,8 +289,8 @@ test("an unwilling army is turned out anyway and resents it", () => {
   const h = game();
   h.holders.guard.support = 20;
   expect(armyAllows(pack, h)).toBe(false);
-  expect(available(pack, h, "force")).toBe(false);
-  expect(pack.constitution!.instruments.force.consent).toBe("army");
+  expect(blocker(pack, h, "force")?.id).toBe("guard");
+
   commit(pack, h, priceTag(pack, h, quote({ verb: "force", title: "A curfew" })));
   expect(h.holders.guard.support).toBe(20 - FORCE_ARMY_RISE);
 });
@@ -290,10 +319,10 @@ test("emergency powers cost a lot, set the chamber aside, and lapse when the arm
   expect(tag.charge.authority).toBe(3 + EMERGENCY_COST);
   commit(pack, g, tag);
   expect(g.emergency).toBe(g.turn + EMERGENCY_TURNS);
-  expect(consentOf(pack, g, "law")).toBe("none");
+  expect(vetoesOf(pack, g, "law")).toEqual([]);
   g.holders.guard.support = 20;
   expect(armyAllows(pack, g)).toBe(false);
   endTurn(pack, g);
   expect(g.emergency).toBeNull();
-  expect(consentOf(pack, g, "law")).toBe("chamber");
+  expect(vetoesOf(pack, g, "law")).toEqual(["chamber"]);
 });

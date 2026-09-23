@@ -82,7 +82,7 @@ export function RecordTab({ game }: { game: GameView }) {
           {game.inForce.length ? game.inForce.map((f) => (
             <li key={f.id}>
               <b className="num">{f.perTurn.reduce((a, p) => a + p.delta, 0)}</b>
-              <span>{f.title}, each {v.turn}, repeal needs {f.repealConsent.replace(/_/g, " ")}{f.sunset ? `, lapses in ${Math.max(0, left(f))}` : ""}</span>
+              <span>{f.title}, each {v.turn}, repeal needs {f.repealVetoes.join(", ").replace(/_/g, " ") || "none"}{f.sunset ? `, lapses in ${Math.max(0, left(f))}` : ""}</span>
             </li>
           )) : <li><span>Nothing is in force yet.</span></li>}
         </ul>

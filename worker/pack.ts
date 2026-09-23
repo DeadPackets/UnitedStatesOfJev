@@ -20,8 +20,14 @@ export const ESCALATION_KEYS = [
   "leaks", "war_footing", "famine", "succession_crisis", "foreign_meddling",
 ] as const;
 export const VERBS = ["decree", "law", "appoint", "spend", "proclaim", "favour", "force"] as const;
-export const HOLDER_RESPONSES = ["early_test", "coup", "strike", "refuse_levy", "riot", "excommunicate", "embargo", "none"] as const;
+// R29: dismiss removes the ruler without a coup (a Sultan, a Politburo, a Colonial Office); it has its own ending.
+export const HOLDER_RESPONSES = ["early_test", "coup", "dismiss", "strike", "refuse_levy", "riot", "excommunicate", "embargo", "none"] as const;
 export const CONSENTS = ["none", "chamber", "chamber_supermajority", "army"] as const;
+// R31: the fourteen kinds of prompt (.superpowers/ruler/research/prompt-kinds.md), in its order.
+export const KINDS = [
+  "recorded", "counterfactual", "near_future", "historical_fantasy", "mashup", "myth", "canon",
+  "speculative", "post_apocalypse", "thought_experiment", "non_human", "prehistory", "small_world", "absurd",
+] as const;
 // A new list: pack.ts's LEDGERS is the storylet effect target enum and every stored deck depends on it.
 export const LEDGERS_V4 = ["treasury", "authority", "chest", "loyalty", "popularity"] as const;
 
@@ -90,15 +96,37 @@ export const ConstitutionSchema = z.object({
   }),
   briefing: z.object({ situation: z.string(), room: z.string(), you: z.string() }),
 });
+// R29: `vetoes` lists who must agree to an act: holder ids, "chamber" or "chamber_supermajority". A pack from
+// before R29 says `consent`, mapped on load; "army" becomes the holder that force moves.
+const InstrumentReadSchema = InstrumentSchema.extend({
+  consent: z.enum(CONSENTS).optional(), vetoes: z.array(z.string()).optional(),
+});
+const vetoesFrom = (consent: (typeof CONSENTS)[number] | undefined, army: string | undefined): string[] =>
+  consent === "chamber" || consent === "chamber_supermajority" ? [consent] : consent === "army" && army ? [army] : [];
+
 // What the engine reads. ConstitutionSchema above stays the generator's strict output shape (every key required).
 const PackConstitutionSchema = ConstitutionSchema.extend({
+  ruler: z.object({
+    role: z.string(), faction: z.string(),
+    above: z.string().nullable().default(null),   // R29: the holder that sits above the seat
+    removedBy: z.string().default(""),           // R29: one sentence, who can remove you
+  }),
   holders: z.array(HolderReadSchema).min(3).max(10),
+  instruments: z.object({
+    decree: InstrumentReadSchema, law: InstrumentReadSchema, appoint: InstrumentReadSchema, spend: InstrumentReadSchema,
+    proclaim: InstrumentReadSchema, favour: InstrumentReadSchema, force: InstrumentReadSchema,
+  }),
   publicGroup: z.string().optional(),   // R24: the holder whose support by region was popularity
   ownGroup: z.string().optional(),      // R24: the holder whose support was loyalty
   ledgers: z.object({
     treasury: LedgerNameSchema, authority: LedgerNameSchema, chest: LedgerNameSchema,
     loyalty: LedgerNameSchema.optional(), popularity: LedgerNameSchema.optional(),
   }),
+}).transform((c) => {
+  const army = c.holders.find((h) => h.levers.includes("force"))?.id;
+  const instruments = Object.fromEntries(Object.entries(c.instruments).map(([verb, { consent, vetoes, ...i }]) =>
+    [verb, { ...i, vetoes: vetoes ?? vetoesFrom(consent, army) }])) as Record<keyof typeof c.instruments, Omit<z.infer<typeof InstrumentReadSchema>, "consent" | "vetoes"> & { vetoes: string[] }>;
+  return { ...c, instruments };
 });
 const MemberSchema = z.object({
   id: z.string(), seat: z.string(), region: z.string(), faction: z.string(), name: z.string(), bio: z.string(),
@@ -137,6 +165,10 @@ export const PackSchema = z.object({
   title: z.string(), era: z.string(), place: z.string(), description: z.string(),
   fiction: z.boolean(), sources: z.array(z.object({ title: z.string(), url: z.string() })),
   content_note: z.string().nullable().optional(),
+  kind: z.enum(KINDS).optional(),     // R31: replaces fiction; a pack built before it has none
+  grounding: z.string().default(""),  // R31: one line naming what the world is faithful to
+  // R29: when the real holder of the seat fell inside the term, the named, dated threat.
+  history: z.object({ fall: z.object({ date: z.string(), what: z.string() }).nullable().default(null) }).default({ fall: null }),
   vocabulary: z.object({
     seat: z.string(), chamber: z.string(), member: z.string(), bill: z.string(), pass: z.string(), fail: z.string(),
     capital: z.string(), turn: z.string(), midterm: z.string(), campaign: z.string(), test: z.string(), feed: z.string(),
@@ -170,6 +202,7 @@ export const PackSchema = z.object({
   endings: z.object({
     reelected: z.string(), defeated: z.string(), lame_duck: z.string(), impeached: z.string(),
     coup: z.string().nullable().optional(), stopped: z.string().nullable().optional(),
+    dismissed: z.string().nullable().optional(),   // R29: the one above you sends for your seals
   }),
   lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
   // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
@@ -191,7 +224,7 @@ export type Consent = (typeof CONSENTS)[number];
 export type LedgerV4 = (typeof LEDGERS_V4)[number];
 export type Constitution = z.infer<typeof ConstitutionSchema>;
 export type Holder = z.infer<typeof HolderReadSchema>;
-export type Instrument = z.infer<typeof InstrumentSchema>;
+export type Instrument = NonNullable<Pack["constitution"]>["instruments"]["law"];   // as the engine reads it: vetoes, not consent
 export type Price = z.infer<typeof PriceSchema>;
 
 // Largest remainder method, minimum one seat per faction that held any share.

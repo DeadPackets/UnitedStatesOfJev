@@ -350,7 +350,7 @@ test("a term ends with a score, and another term stacks two escalations", () => 
 
 test("another term carries the laws and every group's support, and reseeds the half-term class", () => {
   const g = game();
-  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
+  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealVetoes: ["chamber"], sunset: null });
   setSupport(g, { council: 100, street: 100, guard: 20 });
   advanceWarnings(pack, g);
   expect(g.holders.guard.warnedAt).toBe(1);
@@ -819,7 +819,7 @@ const STRIKES: [HolderResponse, (g: Game) => number, number][] = [
 for (const [response, read, cost] of STRIKES) {
   test(`a ${response} strike costs ${-cost} and the run goes on`, () => {
     const g = game();
-    enact(g, { id: "l9", verb: "decree", title: "The curfew", perTurn: [], repealConsent: "none", sunset: null });
+    enact(g, { id: "l9", verb: "decree", title: "The curfew", perTurn: [], repealVetoes: [], sunset: null });
     const was = read(g);
     const wire = fireResponse(pack, g, { holder: "guard", response, at: 1, fires: 3, number: 20 });
     expect(read(g)).toBe(was + cost);
@@ -835,12 +835,30 @@ test("each response does its own thing and a coup ends the run", () => {
   expect(g.earlyTest).toBe("council");
   expect(g.stage).toBe("test");
 
-  const h = game();
-  fireResponse(pack, h, { holder: "guard", response: "coup", at: 1, fires: 3, number: 70 });
-  expect(h.stage).toBe("over");
-  expect(h.result!.ending).toBe("coup");
-  expect(h.terms.length).toBe(1);
+  for (const [response, ending] of [["coup", "coup"], ["dismiss", "dismissed"]] as const) {
+    const h = game();
+    fireResponse(pack, h, { holder: "guard", response, at: 1, fires: 3, number: 70 });
+    expect(h.stage).toBe("over");
+    expect(h.result!.ending).toBe(ending);
+    expect(h.terms.length).toBe(1);
+  }
 });
+
+for (const [per, paid] of [["turn", [5, 10, 10]], ["once", [5, 5, 5]]] as const) {
+  test(`a home group that gives per ${per} pays while it agrees`, () => {
+    const g = game();
+    const p: Pack = { ...pack, constitution: { ...pack.constitution!, holders: pack.constitution!.holders.map((h) =>
+      h.id === "guard" ? { ...h, gives: { ledger: "chest" as const, amount: 5, per } } : h) } };
+    const chest = g.ledgers.chest, guard = g.holders.guard;
+    const got = [guard.line, guard.line, guard.line - 1].map((s) => {
+      guard.support = s;
+      busy(g);
+      endTurn(p, g);
+      return g.ledgers.chest - chest;
+    });
+    expect(got).toEqual([...paid]);
+  });
+}
 
 test("a vote no longer moves the clock; End turn does", () => {
   const g = game();
@@ -938,7 +956,7 @@ test("the public under its line warns and riots itself; it no longer pushes anot
 test("a law in force collects every turn until it is repealed", () => {
   const g = game();
   g.ledgers.treasury = 0;
-  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealConsent: "chamber", sunset: null });
+  enact(g, { id: "l1", verb: "law", title: "The harbour levy", perTurn: [{ ledger: "treasury", delta: 6 }], repealVetoes: ["chamber"], sunset: null });
   endTurn(pack, g);
   expect(g.ledgers.treasury).toBe(6);
   expect(g.wire.find((w) => w.cause === "The harbour levy")!.delta).toBe(6);
@@ -953,7 +971,7 @@ test("a law in force collects every turn until it is repealed", () => {
 test("a rate an empty treasury cannot pay prints the move that landed, so the grid does not count it", () => {
   const g = game();
   g.ledgers.treasury = 4;
-  enact(g, { id: "l1", verb: "law", title: "Grain for the quay", perTurn: [{ ledger: "treasury", delta: -15 }], repealConsent: "chamber", sunset: null });
+  enact(g, { id: "l1", verb: "law", title: "Grain for the quay", perTurn: [{ ledger: "treasury", delta: -15 }], repealVetoes: ["chamber"], sunset: null });
   endTurn(pack, g);
   expect(g.ledgers.treasury).toBe(0);
   expect(g.wire.find((w) => w.cause === "Grain for the quay")!.delta).toBe(-4);
@@ -964,7 +982,7 @@ test("a rate an empty treasury cannot pay prints the move that landed, so the gr
 
 test("an authored sunset lapses the law on its own", () => {
   const g = game();
-  enact(g, { id: "l2", verb: "decree", title: "A two tide curfew", perTurn: [{ ledger: "popularity", delta: -2 }], repealConsent: "none", sunset: 2 });
+  enact(g, { id: "l2", verb: "decree", title: "A two tide curfew", perTurn: [{ ledger: "popularity", delta: -2 }], repealVetoes: [], sunset: 2 });
   endTurn(pack, g);
   endTurn(pack, g);
   expect(inForceAge(g, g.inForce[0])).toBe(2);
@@ -975,7 +993,7 @@ test("an authored sunset lapses the law on its own", () => {
 test("a popularity rate moves the public's regions and a loyalty rate your own side", () => {
   const g = game();
   const before = { ...g.regions }, own = g.holders.own.support;
-  enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }, { ledger: "loyalty", delta: 2 }], repealConsent: "chamber", sunset: null });
+  enact(g, { id: "l3", verb: "law", title: "Relief for the quay", perTurn: [{ ledger: "popularity", delta: 1 }, { ledger: "loyalty", delta: 2 }], repealVetoes: ["chamber"], sunset: null });
   busy(g); endTurn(pack, g);
   for (const r of REGIONS) expect(g.regions[r]).toBe(before[r] + 1 - (r === g.rival!.region ? RIVAL_HIT : 0));
   expect(g.holders.own.support).toBe(own + 2);
@@ -983,8 +1001,8 @@ test("a popularity rate moves the public's regions and a loyalty rate your own s
 
 test("a court that strikes takes the newest law in force with it", () => {
   const g = game();
-  enact(g, { id: "l4", verb: "law", title: "The old levy", perTurn: [{ ledger: "treasury", delta: 1 }], repealConsent: "chamber", sunset: null });
-  enact(g, { id: "l5", verb: "decree", title: "The new curfew", perTurn: [{ ledger: "popularity", delta: -1 }], repealConsent: "none", sunset: null });
+  enact(g, { id: "l4", verb: "law", title: "The old levy", perTurn: [{ ledger: "treasury", delta: 1 }], repealVetoes: ["chamber"], sunset: null });
+  enact(g, { id: "l5", verb: "decree", title: "The new curfew", perTurn: [{ ledger: "popularity", delta: -1 }], repealVetoes: [], sunset: null });
   const authority = g.ledgers.authority;
   fireResponse(pack, g, { holder: "council", response: "strike", at: 1, fires: 3, number: 70 });
   expect(g.inForce.map((l) => l.id)).toEqual(["l4"]);   // the newest goes, the older one stands
@@ -998,7 +1016,7 @@ test("the record is bounded, and drops its softest lines first", () => {
   g.term = 3;
   for (let i = 0; i < 40; i++) {
     g.bills.push({ id: i, text: "", title: `Decree ${i}`, summary: "", tags: [], offers: {}, headline: { title: `A long headline about decree ${i} and the harbour`.repeat(4), lede: "" } });
-    enact(g, { id: `l${i}`, verb: "law", title: `A law with a long name number ${i}`.repeat(3), perTurn: [{ ledger: "treasury", delta: 1 }], repealConsent: "none", sunset: null });
+    enact(g, { id: `l${i}`, verb: "law", title: `A law with a long name number ${i}`.repeat(3), perTurn: [{ ledger: "treasury", delta: 1 }], repealVetoes: [], sunset: null });
   }
   const full = record(pack, g);
   expect(estimate(full)).toBeLessThanOrEqual(RECORD_TOKENS);
