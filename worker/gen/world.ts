@@ -107,7 +107,7 @@ export async function writeBible(
     name: earlier ? "bible-repair" : "bible",
     schema: BibleSchema,
     system: WORLD_SYSTEM,
-    prefix,
+    prefix: [prefix],
     user: `<task>\n${BIBLE_TASK}\n</task>${earlier ? failureBlock(earlier.bible, earlier.fails) : ""}`,
     maxTokens: 32000,
     model: earlier?.model,
@@ -231,8 +231,9 @@ export async function runJob(
     name: earlier ? `${job.name}-repair` : job.name,
     schema: PartSchemas[job.kind] as z.ZodType<unknown>,
     system: WORLD_SYSTEM,
-    prefix: context.prefix,
-    user: `<bible>\n${JSON.stringify(context.bible)}\n</bible>\n<task>\n${PART_RULES}\n${jobTask(job, context.roster, context.bible, isGrounded(context.plan, context.roster))}\n</task>${earlier ? failureBlock(earlier.part, earlier.fails) : ""}`,
+    // The bible is a second cached block: every part reads it, so only the first parts to start pay to send it.
+    prefix: [context.prefix, `<bible>\n${JSON.stringify(context.bible)}\n</bible>`],
+    user: `<task>\n${PART_RULES}\n${jobTask(job, context.roster, context.bible, isGrounded(context.plan, context.roster))}\n</task>${earlier ? failureBlock(earlier.part, earlier.fails) : ""}`,
     maxTokens: 48000,
     model: context.model,
   });

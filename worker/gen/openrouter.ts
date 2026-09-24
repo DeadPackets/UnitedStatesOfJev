@@ -40,7 +40,8 @@ export type CallRequest<T> = {
   system: string;
   user: string;
   maxTokens: number;
-  prefix?: string; // the shared block of documents and roster, sent first with a cache breakpoint
+  // The shared blocks (documents and roster, then the bible), sent first, each with a cache breakpoint.
+  prefix?: string[];
   strict?: boolean; // a json_schema response format; ignored when prefix is set
   model?: string;
 };
@@ -189,20 +190,21 @@ async function send(
 
 export async function callModel<T>(transport: Transport, request: CallRequest<T>): Promise<T> {
   const model = request.model ?? OPUS;
-  const strict = !!request.strict && !request.prefix;
+  const prefix = request.prefix ?? [];
+  const strict = !!request.strict && !prefix.length;
   const ask = `Return only one JSON object, with no code fences and no text before or after it. It must match this JSON Schema, with the properties in the order listed:\n${JSON.stringify(promptSchema(request.schema))}`;
-  const tail = request.prefix ? `${request.user}\n\n${ask}` : request.user;
+  const tail = prefix.length ? `${request.user}\n\n${ask}` : request.user;
   const messages: unknown[] = [
     // The system prompt stays the same across every part call, so the cache sees one prefix.
     {
       role: "system",
-      content: strict || request.prefix ? request.system : `${request.system}\n\n${ask}`,
+      content: strict || prefix.length ? request.system : `${request.system}\n\n${ask}`,
     },
     {
       role: "user",
-      content: request.prefix
+      content: prefix.length
         ? [
-            { type: "text", text: request.prefix, cache_control: { type: "ephemeral" } },
+            ...prefix.map((text) => ({ type: "text", text, cache_control: { type: "ephemeral" } })),
             { type: "text", text: tail },
           ]
         : tail,

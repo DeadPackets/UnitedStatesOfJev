@@ -76,6 +76,10 @@ const LUNA_STEP: WorkflowStepConfig = {
 };
 // The parts the pack cannot be built without; a missing groups, chamber, factions or theme part leaves defaults.
 const REQUIRED = new Set(["briefing", "ledgers", "instruments", "systems"]);
+// The longest parts start at once and write the bible to the cache; the rest start a few seconds later and read it,
+// since parallel calls on a cold block each pay to write it. They still end before the systems part (53 s on Ottoman).
+const FIRST_PARTS = new Set(["systems", "briefing"]);
+const CACHE_WAIT_MS = 5000;
 
 const plain = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);
 
@@ -360,6 +364,8 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
       const partOf = (job: Job): Promise<unknown> =>
         run(`part-${job.name}`, async () => {
           let part: unknown;
+          if (!FIRST_PARTS.has(job.name))
+            await new Promise((resolve) => setTimeout(resolve, CACHE_WAIT_MS));
           try {
             part = await runJob(call, job, context);
           } catch (error) {

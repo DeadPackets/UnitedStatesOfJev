@@ -82,9 +82,15 @@ test("a strict call sends nullable scalars as plain types and reads empty values
 // Lesson 23: a response_format sits in front of the cached block and breaks the cache.
 test("a call with a shared prefix caches it and carries its schema in the prompt, never as a response_format", async () => {
   const fake = server([{ content: '{"title":"A","seats":3}' }]);
-  await callModel(fake.transport, { ...request, prefix: "documents", strict: true });
-  const [cached, tail] = fake.bodies[0].messages[1].content;
-  expect(cached).toEqual({ type: "text", text: "documents", cache_control: { type: "ephemeral" } });
+  await callModel(fake.transport, { ...request, prefix: ["documents", "bible"], strict: true });
+  const [documents, bible, tail] = fake.bodies[0].messages[1].content;
+  expect([documents, bible]).toEqual(
+    ["documents", "bible"].map((text) => ({
+      type: "text",
+      text,
+      cache_control: { type: "ephemeral" },
+    })),
+  );
   expect(tail.text).toContain("JSON Schema");
   expect(fake.bodies[0].response_format).toBeUndefined();
   expect(fake.bodies[0].messages[0].content).toBe("system");
