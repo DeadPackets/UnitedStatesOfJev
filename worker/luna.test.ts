@@ -55,6 +55,7 @@ const ANSWER = {
   keeps: ["tariffs", "not-a-tag"],
   targets: null,
   tags: ["tariffs", "not-a-tag"],
+  touches: ["Not a glance tag"],
   regions: [REGIONS[0], "nowhere"],
   promises: [{ tag: "new-quay", label: "A new quay before winter", window: 8 }],
   sunset: null,
@@ -83,6 +84,7 @@ test("the act is priced, the ids are filtered and the player's words stay out of
   expect(q.hits).toEqual(["league"]); // "ghost" is not a holder
   expect(q.keeps).toEqual(["tariffs"]); // "not-a-tag" is not a promise tag
   expect(q.tags).toEqual(["tariffs"]);
+  expect(q.touches).toEqual([]); // mini.json has no glance cards, so no tag is known
   expect(q.regions).toEqual([REGIONS[0]]); // "nowhere" is not a region
   expect(q.revenue).toEqual([{ ledger: "treasury", id: null, delta: 6 }]);
   expect(q.promises[0]).toEqual({ tag: "new-quay", label: "A new quay before winter", window: 8 });

@@ -16,6 +16,7 @@ import {
 import {
   applyVote,
   armyHolder,
+  authorPromise,
   CAMPAIGN_FROM,
   encodeCode,
   newGame,
@@ -25,7 +26,7 @@ import {
   type Game,
   type Quote,
 } from "./engine";
-import { PackSchema, type Citizen, type Pack } from "./pack";
+import { PackSchema, type Citizen, type Glance, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
 const REGIONS = mini.regions.map((r) => r.id);
@@ -74,6 +75,7 @@ export const quote = (over: Partial<Quote> = {}): Quote => ({
   keeps: [],
   targets: null,
   tags: ["tariffs"],
+  touches: [],
   regions: [],
   promises: [],
   sunset: null,
@@ -196,7 +198,17 @@ test("the tag prints each named holder's support and line", () => {
   expect(t.stances[1]).toEqual({ id: "league", name: "the Grain League", support: 43, line: 40 });
 });
 
-// R30: a card answers an act the clerk did not aim at its group: red line first, then each want in order.
+// R36: a glance card answers an act the clerk did not aim at its group: its red line, then a hate, then a want.
+const glance: Glance = {
+  face: { name: "Ada Voss", role: "League factor" },
+  wants: ["Grain tariff cut", "tariffs"],
+  hates: [
+    { tag: "Grain tariff raised", redLine: false },
+    { tag: "Troops on the quay", redLine: true },
+  ],
+  strike: "Hoards the grain",
+};
+// R30: a long card from before R36 reads as a glance card: each want's first act, and its red line.
 const card = {
   base: "Grain factors of the upper quay",
   redLine: "Troops on the quay",
@@ -214,65 +226,105 @@ const card = {
   rival: "street",
   tension: "Wants free trade, but hoards grain in a famine.",
 };
-const carded: Pack = {
+const withLeague = (league: { glance?: Glance; card?: typeof card }): Pack => ({
   ...pack,
   constitution: {
     ...pack.constitution!,
-    holders: pack.constitution!.holders.map((h) => (h.id === "league" ? { ...h, card } : h)),
+    holders: pack.constitution!.holders.map((h) => (h.id === "league" ? { ...h, ...league } : h)),
   },
-};
-for (const [over, move, reason] of [
-  [{ tags: ["tariffs"] }, 4, "Backs Cut the grain tariff"],
-  [{ tags: ["tariffs"], serves: ["street"] }, -5, "Fights Raise the grain tariff"], // the first want decides: its no before its yes
-  [{ verb: "force", tags: ["tariffs"] }, -10, "Red line: Troops on the quay"],
-  [{ tags: ["fish-quotas"] }, 0, undefined],
-  [{ tags: ["tariffs"], hits: ["league"] }, -SUPPORT_HIT, undefined], // named by the clerk: SUPPORT_HIT only
-] as [Partial<Quote>, number, string | undefined][]) {
-  test(`a carded group answers ${JSON.stringify(over)} by ${move}`, () => {
+});
+const carded = withLeague({ glance });
+for (const [label, over, move, reason, league] of [
+  ["a want", { touches: ["grain tariff cut"] }, 4, "Wants Grain tariff cut", carded],
+  ["a want that is a pack tag", { tags: ["tariffs"] }, 4, "Wants tariffs", carded],
+  [
+    "a hate over a want",
+    { touches: ["Grain tariff cut", "Grain tariff raised"] },
+    -5,
+    "Hates Grain tariff raised",
+    carded,
+  ],
+  [
+    "the red line over all",
+    { touches: ["grain tariff cut", "troops on the quay"] },
+    -10,
+    "Red line: Troops on the quay",
+    carded,
+  ],
+  ["nothing on its card", { tags: [], touches: ["harbour lights"] }, 0, undefined, carded],
+  [
+    "a clerk's hit",
+    { touches: ["grain tariff cut"], hits: ["league"] },
+    -SUPPORT_HIT,
+    undefined,
+    carded,
+  ],
+  [
+    "an R30 want",
+    { touches: ["cut the grain tariff"] },
+    4,
+    "Wants Cut the grain tariff",
+    withLeague({ card }),
+  ],
+  [
+    "an R30 red line",
+    { touches: ["troops on the quay"] },
+    -10,
+    "Red line: Troops on the quay",
+    withLeague({ card }),
+  ],
+] as [string, Partial<Quote>, number, string | undefined, Pack][]) {
+  test(`a carded group answers ${label} by ${move}`, () => {
     const g = game();
     g.holders.league.support = 50;
-    const tag = priceTag(carded, g, quote(over));
+    const tag = priceTag(league, g, quote(over));
     expect(tag.stances.find((s) => s.id === "league")?.reason).toBe(reason);
-    commit(carded, g, tag);
+    commit(league, g, tag);
     expect(g.holders.league.support).toBe(50 + move);
   });
 }
 
-// R30: a chamber faction's card shifts its seats' chances, and the preview buckets them from the same numbers.
+// R36: a chamber faction's glance card shifts its seats' chances, and the preview buckets them from the same numbers.
 const floor: Pack = {
   ...pack,
-  factions: pack.factions.map((f) =>
-    f.id === "tidebound"
-      ? {
-          ...f,
-          card: {
-            ...card,
-            redMatch: ["piracy"],
-            wants: [{ ...card.wants[0], match: { yes: ["tariffs"], no: ["fish-quotas"] } }],
-          },
-        }
-      : f,
-  ),
+  factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, glance } : f)),
 };
-for (const [tags, bucket, reason] of [
-  [["harbor-tolls"], "hesitant", "Nothing in it decides them"], // 0.6
-  [["tariffs"], "for", "Backs Cut the grain tariff"], // 0.7
-  [["fish-quotas"], "hesitant", "Fights Raise the grain tariff"], // 0.5
-  [["piracy"], "against", "Red line: Troops on the quay"], // 0.3
+for (const [touches, bucket, reason] of [
+  [["harbour lights"], "hesitant", "Nothing in it decides them"], // 0.6
+  [["grain tariff cut"], "for", "Wants Grain tariff cut"], // 0.7
+  [["grain tariff raised"], "hesitant", "Hates Grain tariff raised"], // 0.5
+  [["troops on the quay"], "against", "Red line: Troops on the quay"], // 0.3
 ] as [string[], "for" | "against" | "hesitant", string][]) {
-  test(`a law on ${tags} puts the carded faction's seats ${bucket}`, () => {
+  test(`a law that does ${touches} puts the carded faction's seats ${bucket}`, () => {
     const g = game();
     for (const m of g.members) {
       m.mood = 0;
       m.loyalty = 100;
     }
-    const tag = priceTag(floor, g, quote({ verb: "law", tags }));
+    const tag = priceTag(floor, g, quote({ verb: "law", tags: ["harbor-tolls"], touches }));
     tag.count = { whip: Object.fromEntries(g.members.map((m) => [m.id, 0.6])) };
     const row = previewOf(floor, g, tag)!.factions.find((f) => f.id === "tidebound")!;
     expect(row[bucket]).toBe(6);
     expect(row.reason).toBe(reason);
   });
 }
+
+// R36: a Negotiate pledge is a promise keyed by the want; an act the clerk says does that want delivers it.
+test("a decree that does a pledged want keeps the pledge", () => {
+  const g = game();
+  authorPromise(g, "toll relief", "Toll relief", g.turn + 4);
+  g.promises["toll relief"].passed = 1; // as negotiate() leaves it
+  commit(pack, g, priceTag(pack, g, quote({ tags: [], touches: ["Toll relief"] })));
+  expect(g.promises["toll relief"].state).toBe("kept");
+});
+
+test("a price tag stored before R36 has no touches and still commits, as a law too", () => {
+  for (const verb of ["decree", "law"] as const) {
+    const g = game();
+    const { touches: _none, ...stored } = priceTag(carded, g, quote({ verb }));
+    expect(() => commit(carded, g, stored)).not.toThrow();
+  }
+});
 
 test("a veto group refuses an act over its red line whatever its support", () => {
   const g = game();
@@ -287,7 +339,7 @@ test("a veto group refuses an act over its red line whatever its support", () =>
       },
     },
   };
-  expect(priceTag(p, g, quote({ verb: "force" })).vetoes).toEqual([
+  expect(priceTag(p, g, quote({ verb: "force", touches: ["troops on the quay"] })).vetoes).toEqual([
     {
       id: "league",
       name: "the Grain League",
@@ -295,7 +347,7 @@ test("a veto group refuses an act over its red line whatever its support", () =>
       reason: "Red line: Troops on the quay",
     },
   ]);
-  expect(priceTag(p, g, quote({ verb: "force", tags: [] })).vetoes![0].agrees).toBe(false);
+  expect(priceTag(p, g, quote({ verb: "force" })).vetoes![0].agrees).toBe(true); // the act does not cross it
   expect(blocker(p, g, "force")).toBeUndefined(); // with no act in hand, only its support counts
 });
 

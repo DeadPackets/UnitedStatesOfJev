@@ -3,8 +3,10 @@ import {
   agrees,
   armyHolder,
   CARD_MOVE,
-  cardLean,
   cardShift,
+  glanceLean,
+  glanceOf,
+  tagKey,
   votePreview,
   authorPromise,
   belowLine,
@@ -37,7 +39,7 @@ import {
   type Veto,
   type WireLine,
 } from "./engine";
-import type { Instrument, Pack, Price, Verb } from "./pack";
+import { REFUSES_MONEY, type Instrument, type Pack, type Price, type Verb } from "./pack";
 
 export const CAMPAIGN_DISCOUNT = 0.25; // TUNE, C4
 
@@ -86,7 +88,7 @@ export function vetoRows(pack: Pack, game: Game, verb: Verb, tokens?: Set<string
     const holder = holdersOf(pack).find((candidate) => candidate.id === veto);
     const state = game.holders[veto];
     if (!holder || !state) return [];
-    const redLine = tokens ? cardLean(holder.card, tokens) : null;
+    const redLine = tokens ? glanceLean(glanceOf(holder), tokens) : null;
     if (redLine?.lean === -2)
       return [{ id: veto, name: holder.name, agrees: false, reason: redLine.reason }];
     const reason = `support ${Math.round(state.support)}, its line ${state.line}`;
@@ -145,7 +147,9 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     .flatMap((holder) => {
       const state = game.holders[holder.id];
       const named = q.serves.includes(holder.id) || q.hits.includes(holder.id);
-      const { lean, reason } = named ? { lean: 0, reason: "" } : cardLean(holder.card, tokens);
+      const { lean, reason } = named
+        ? { lean: 0, reason: "" }
+        : glanceLean(glanceOf(holder), tokens);
       if (!state || (!named && !lean)) return [];
       const row = { id: holder.id, name: holder.name, support: state.support, line: state.line };
       return [reason ? { ...row, reason } : row];
@@ -165,6 +169,7 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     keeps: q.keeps,
     targets: q.targets,
     tags: q.tags,
+    touches: q.touches.map(tagKey),
     regions: q.regions,
     member,
     promises: q.promises,
@@ -201,7 +206,7 @@ function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   const tokens = actTokens(tag);
   for (const holder of holdersOf(pack)) {
     if (tag.serves.includes(holder.id) || tag.hits.includes(holder.id)) continue;
-    const { lean, reason } = cardLean(holder.card, tokens);
+    const { lean, reason } = glanceLean(glanceOf(holder), tokens);
     if (lean)
       wire.push(
         ...moveSupport(pack, game, [holder.id], CARD_MOVE[lean], `${tag.title}: ${reason}`),
@@ -326,6 +331,7 @@ export const billOf = (game: Game, tag: PriceTag): Bill => ({
   offers: {},
   rates: tag.revenue,
   keeps: tag.keeps,
+  touches: tag.touches ?? [],
   sunset: tag.sunset,
   ...tag.count,
   ...(tag.shift ? { shift: { ...tag.shift } } : {}),
@@ -349,38 +355,33 @@ export const NEGOTIATE_LIFT = 0.34; // TUNE: lifts a hesitant seat (under 2/3) o
 export const PLEDGE_DUE = 4; // TUNE, the mock's: turns to deliver what was pledged
 export const SEAT_PRICE = 2; // TUNE, the mock's: chest per hesitant seat
 
-// R30: a pledge to the first thing its card backs that no promise holds yet, a post, or money for its hesitant seats.
+// R36: a pledge to the group's first want that no promise holds yet, a post, or money unless a hate refuses it.
 export function termsOf(pack: Pack, game: Game, factionId: string, hesitant: number): Term[] {
   const faction = pack.factions.find((candidate) => candidate.id === factionId);
   if (!faction) return [];
+  const glance = glanceOf(faction);
   const free: Price = { authority: 0, treasury: 0, chest: 0 };
   const terms: Term[] = [];
-  for (const want of faction.card?.wants ?? []) {
-    const subject = want.match.yes.find(
-      (cardTag) => pack.tags.includes(cardTag) && !game.promises[cardTag],
-    );
-    if (!subject) continue;
+  const want = glance?.wants.find((tag) => !game.promises[tagKey(tag)]);
+  if (want)
     terms.push({
       kind: "pledge",
-      label: want.yes[0] ?? want.want,
+      label: want,
       cost: free,
-      tag: subject,
+      tag: tagKey(want),
       due: game.turn + PLEDGE_DUE,
     });
-    break;
-  }
   // A post is an appointment: offered only where the ruler could appoint now, vetoes and all.
   const appoint = instrumentOf(pack, "appoint");
   if (appoint && available(pack, game, "appoint") && !blocker(pack, game, "appoint")) {
     terms.push({
       kind: "post",
-      label: `A post for ${faction.card?.face.name ?? faction.leader}`,
+      label: `A post for ${glance?.face?.name ?? faction.leader}`,
       cost: appoint.price,
     });
   }
   const money = SEAT_PRICE * hesitant;
-  // Lead's ruling: a faction whose card refuses money or payment is never offered it.
-  if (!/\b(money|pay|paid)/i.test(faction.card?.price.refuses ?? "")) {
+  if (!glance?.hates.some((hate) => REFUSES_MONEY.test(hate.tag))) {
     terms.push({
       kind: "money",
       label: `${money} from the chest`,
@@ -465,7 +466,7 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
         sunset: tag.sunset,
       });
     }
-    for (const t of tag.keeps) keepPromise(pack, game, t);
+    for (const t of [...tag.keeps, ...(tag.touches ?? [])]) keepPromise(pack, game, t);
   }
   for (const p of tag.promises) authorPromise(game, p.tag, p.label, game.turn + p.window);
   game.acts.push({

@@ -4,9 +4,11 @@ import {
   clamp,
   CRED_HI,
   CRED_LO,
+  glanceTags,
   holdersOf,
   PROMISE_WINDOW,
   record,
+  tagKey,
   type Bill,
   type BillDraft,
   type Event,
@@ -104,6 +106,7 @@ const QuoteSchema = z.object({
   keeps: z.array(z.string()),
   targets: z.array(z.string()).nullable(),
   tags: z.array(z.string()),
+  touches: z.array(z.string()),
   regions: z.array(z.string()),
   promises: z.array(z.object({ tag: z.string(), label: z.string(), window: z.number() })),
   sunset: z.number().nullable(),
@@ -126,6 +129,7 @@ Return one object:
 - serves: the ids of the power holders this act gives something to. hits: the ids it takes something from. Use only the ids in holders.
 - keeps: the promise tags this act delivers, from promise_tags. Empty when it delivers none.
 - tags: 1 to 4 subjects this act materially touches, from tags. These are what the ${pack.vocabulary.chamber} files it under.
+- touches: the tags from glance_tags that this act does, as written: a want it delivers, or a hated thing it commits. A tag the act opposes, undoes or only mentions is not touched. Empty when it does none.
 - regions: the ids of the regions the act touches, from regions. Empty when it touches the whole polity.
 - targets: for a proclaim, the ids of the groups it speaks to, from groups. null for every other verb.
 - promises: any new commitment the ruler makes in their own words, at most two. tag is a short lower case id with hyphens, label is the promise in at most 8 words, window is the number of ${pack.vocabulary.turn}s they gave themselves, or 12 when they named none. Empty when they promised nothing new.
@@ -156,6 +160,7 @@ export async function priceAct(
     })),
     ledgers: c?.ledgers ?? {},
     promise_tags: pack.promises.map((p) => p.tag),
+    glance_tags: glanceTags(pack),
     groups: pack.blocs.map((b) => ({ id: b.id, name: b.name })),
     regions: pack.regions.map((r) => ({ id: r.id, name: r.name })),
     record: record(pack, game),
@@ -164,6 +169,7 @@ export async function priceAct(
 
   const ids = new Set(holdersOf(pack).map((h) => h.id));
   const tags = new Set(pack.promises.map((p) => p.tag));
+  const glance = new Set(glanceTags(pack));
   const blocs = new Set(pack.blocs.map((b) => b.id));
   const regions = new Set(pack.regions.map((r) => r.id));
   const money = (x: number) => Math.max(0, Math.round(x));
@@ -194,6 +200,7 @@ export async function priceAct(
     keeps: [...new Set(q.keeps)].filter((t) => tags.has(t)),
     targets: q.targets === null ? null : [...new Set(q.targets)].filter((b) => blocs.has(b)),
     tags: [...new Set(q.tags)].filter((t) => pack.tags.includes(t)).slice(0, 4),
+    touches: [...new Set(q.touches.map(tagKey))].filter((t) => glance.has(t)).slice(0, 6),
     regions: [...new Set(q.regions)].filter((r) => regions.has(r)),
     promises: q.promises.slice(0, 2).map((p) => ({
       tag: clip(p.tag, 40)

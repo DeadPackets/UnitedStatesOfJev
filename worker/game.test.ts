@@ -12,7 +12,7 @@ import {
   SURVIVAL_BAR,
   type Game,
 } from "./engine";
-import { PackSchema, type Citizen, type Pack } from "./pack";
+import { PackSchema, type Citizen, type Glance, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
 const citizens = (): Citizen[] =>
@@ -315,6 +315,7 @@ test("a second request while one is in flight gets 409 one move at a time", asyn
 
 let refuse = false;
 let lawTag = false;
+let clerkTouches: string[] = [];
 let postTag = false;
 
 // Every model call goes out through one fetch: `systemone` is Jev, `chat/completions` is Luna, keyed by schema name.
@@ -337,6 +338,7 @@ const canned = (name: string, user: string): unknown => {
             keeps: [],
             targets: null,
             tags: [],
+            touches: [],
             regions: [],
             promises: [],
             sunset: null,
@@ -357,6 +359,7 @@ const canned = (name: string, user: string): unknown => {
             keeps: ["tariffs"],
             targets: postTag ? [pack.blocs[0].id] : null,
             tags: ["tariffs"],
+            touches: clerkTouches,
             regions: [],
             promises: [],
             sunset: null,
@@ -1010,30 +1013,19 @@ test("the preview follows a seat moved after pricing, so it still matches the vo
   expect((await post("bills/1/vote", { turn: 1 })).body.bills[0].yes).toBe(shown);
 });
 
-// R30: every seat at 0.5 hesitates; a term pays, spends one clerk unit and lifts the faction's seats over the for line.
-const tideCard = {
-  base: "Net-owners of the outer reefs",
-  redLine: "Closing the reef",
-  redMatch: [],
-  wants: [
-    {
-      want: "Toll relief",
-      yes: ["Cut the harbour tolls"],
-      no: ["Raise the harbour tolls"],
-      match: { yes: ["harbor-tolls"], no: [] },
-    },
-  ],
-  price: { takes: "a post", refuses: "nothing" },
-  face: { name: "Mira Salt", role: "Reef speaker", line: "Cut the tolls." },
-  rival: "harborites",
-  tension: "Wants low tolls, but needs the harbour dredged.",
+// R36: every seat at 0.5 hesitates; a term pays, spends one clerk unit and lifts the faction's seats over the for line.
+const tideGlance: Glance = {
+  face: { name: "Mira Salt", role: "Reef speaker" },
+  wants: ["Toll relief"],
+  hates: [{ tag: "Closing the reef", redLine: true }],
+  strike: "Keeps its boats in port",
 };
 for (const [term, paid] of [
   [
     "pledge",
     (g: Game) =>
-      g.promises["harbor-tolls"]?.state === "pending" &&
-      g.promises["harbor-tolls"].window === g.turn + 4,
+      g.promises["toll relief"]?.state === "pending" &&
+      g.promises["toll relief"].window === g.turn + 4,
   ],
   ["post", (g: Game) => g.inForce.some((l) => l.id === "appoint-tidebound")],
   ["money", (g: Game, chest: number) => g.ledgers.chest === chest - 12], // 2 a seat for 6 hesitant seats
@@ -1043,7 +1035,7 @@ for (const [term, paid] of [
     const { do_, game, post } = seatedGame(67);
     do_.pack = {
       ...pack,
-      factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card: tideCard } : f)),
+      factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, glance: tideGlance } : f)),
     };
     for (const m of game.members) {
       m.mood = -0.4;
@@ -1070,15 +1062,12 @@ for (const [term, paid] of [
   });
 }
 
-const priceHesitant = async (
-  card: typeof tideCard,
-  text = "Raise the harbour levy on the wharf.",
-) => {
+const priceHesitant = async (glance: Glance, text = "Raise the harbour levy on the wharf.") => {
   stubModels(0.9);
   const { do_, game, post } = seatedGame(67);
   do_.pack = {
     ...pack,
-    factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card } : f)),
+    factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, glance } : f)),
   };
   for (const m of game.members) {
     m.mood = -0.4;
@@ -1093,7 +1082,7 @@ const priceHesitant = async (
 };
 
 test("a term taken on this turn's law survives re-pricing it: charged once, the lift kept", async () => {
-  const { game, post } = await priceHesitant(tideCard);
+  const { game, post } = await priceHesitant(tideGlance);
   const chest = game.ledgers.chest;
   expect(
     (await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "money" })).status,
@@ -1111,11 +1100,11 @@ test("a term taken on this turn's law survives re-pricing it: charged once, the 
 });
 
 test("a pledge taken on a law is not kept by that same law passing", async () => {
-  const { game, post } = await priceHesitant(tideCard);
+  const { game, post } = await priceHesitant(tideGlance);
   expect(
     (await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "pledge" })).status,
   ).toBe(200);
-  game.tag!.tags.push("harbor-tolls"); // the law on the floor carries the pledged subject
+  game.tag!.touches = ["toll relief"]; // the law on the floor does the pledged want
   for (const m of game.members) m.mood = 1;
   await post("acts", { turn: 1 });
   game.bills[0].constitutional = 0; // the stub's 0.9 would strike it, and a struck law keeps nothing anyway
@@ -1123,11 +1112,11 @@ test("a pledge taken on a law is not kept by that same law passing", async () =>
     passed: true,
     struck: false,
   });
-  expect(game.promises["harbor-tolls"].state).toBe("pending");
+  expect(game.promises["toll relief"].state).toBe("pending");
 });
 
 test("a post is not offered while the appointment's veto holder refuses", async () => {
-  const { do_, game, post } = await priceHesitant(tideCard);
+  const { do_, game, post } = await priceHesitant(tideGlance);
   const c = do_.pack.constitution;
   do_.pack = {
     ...do_.pack,
@@ -1142,12 +1131,28 @@ test("a post is not offered while the appointment's veto holder refuses", async 
   ).toBe(409);
 });
 
-test("a faction whose card refuses payment is never offered money", async () => {
-  const { row } = await priceHesitant({
-    ...tideCard,
-    price: { takes: "a post", refuses: "Payment of any kind" },
+for (const [hate, offered] of [
+  ["Bribes", false],
+  ["Cash for votes", false],
+  ["Being bought", false],
+  ["Late payments", true], // hating late payments is not refusing money
+] as [string, boolean][]) {
+  test(`a faction that hates ${hate} is ${offered ? "" : "never "}offered money`, async () => {
+    const { row } = await priceHesitant({
+      ...tideGlance,
+      hates: [{ tag: hate, redLine: false }, ...tideGlance.hates],
+    });
+    expect(row.terms.map((t: { kind: string }) => t.kind)).toEqual(
+      offered ? ["pledge", "post", "money"] : ["pledge", "post"],
+    );
   });
-  expect(row.terms.map((t: { kind: string }) => t.kind)).toEqual(["pledge", "post"]);
+}
+
+test("the clerk's touches keep only this world's glance tags, as keys", async () => {
+  clerkTouches = ["Toll relief", "A tag no card has"];
+  const { game } = await priceHesitant(tideGlance);
+  clerkTouches = [];
+  expect(game.tag!.touches).toEqual(["toll relief"]);
 });
 
 test("a favour names a seat, and a body that names none is a 400", async () => {

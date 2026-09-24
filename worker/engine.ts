@@ -1,5 +1,6 @@
 import type {
   Card,
+  Glance,
   Holder,
   HolderResponse,
   LedgerV4,
@@ -62,6 +63,7 @@ export interface Bill extends BillDraft {
   keeps?: string[];
   sunset?: number | null; // the price tag's, applied on a pass
   shift?: Record<string, number>; // R30: per chamber faction, added to each seat's chance: its card, then negotiated terms
+  touches?: string[]; // R36: the glance tags the priced act does, which keep a pledge when the law passes
 }
 export type WhipCount = Pick<
   Bill,
@@ -139,6 +141,7 @@ export interface Quote {
   keeps: string[];
   targets: string[] | null;
   tags: string[]; // the pack's own topic tags, which the law verb puts on the bill
+  touches: string[]; // R36: the glance tags this act does, as tagKey keys
   regions: string[]; // the regions the act touches, which spend and force read
   promises: { tag: string; label: string; window: number }[];
   sunset: number | null;
@@ -160,6 +163,7 @@ export interface PriceTag {
   keeps: string[];
   targets: string[] | null;
   tags: string[];
+  touches?: string[]; // R36; a tag priced before R36 has none
   regions: string[];
   member: string | null; // the seat a favour is aimed at; code picks it from the body, never Luna
   promises: { tag: string; label: string; window: number }[];
@@ -803,35 +807,65 @@ export const armyHolder = (pack: Pack): Holder | null =>
 export const agrees = (game: Game, id: string): boolean =>
   !game.holders[id] || game.holders[id].support >= game.holders[id].line;
 
-// R30: an act's machine tags as a card reads them: its subjects, the promises it keeps, whom it serves and hits, its verb.
+// R36: a glance tag as the engine compares it; the clerk's touches and a pledge's promise use the same key.
+export const tagKey = (tag: string): string => tag.trim().toLowerCase();
+
+// R30 and R36: an act's machine tags as a card reads them: its subjects, the glance tags it does, the promises it
+// keeps, whom it serves and hits, its verb.
 export const actTokens = (a: {
   verb: Verb;
   tags: string[];
+  touches?: string[];
   keeps?: string[];
   serves?: string[];
   hits?: string[];
 }): Set<string> =>
   new Set([
-    ...a.tags,
+    ...a.tags.map(tagKey),
+    ...(a.touches ?? []).map(tagKey),
     ...(a.keeps ?? []),
     ...(a.serves ?? []).map((id) => `serves:${id}`),
     ...(a.hits ?? []).map((id) => `hits:${id}`),
     `verb:${a.verb}`,
   ]);
 
+// R36, with the R30 fallback: a card from before R36 reads as a glance card, each want's first act as its tag.
+export function glanceOf(entity: { glance?: Glance; card?: Card }): Glance | undefined {
+  if (entity.glance) return entity.glance;
+  const card = entity.card;
+  if (!card) return undefined;
+  const hates = card.wants.flatMap((want) => want.no.slice(0, 1)).slice(0, 2);
+  return {
+    face: { name: card.face.name, role: card.face.role },
+    wants: card.wants.map((want) => want.yes[0] ?? want.want).slice(0, 3),
+    hates: [...hates.map((tag) => ({ tag, redLine: false })), { tag: card.redLine, redLine: true }],
+    strike: "",
+  };
+}
+
+// Every glance tag in the world, as keys: the list the clerk picks an act's touches from.
+export function glanceTags(pack: Pack): string[] {
+  const glances = [...holdersOf(pack), ...pack.factions].map(glanceOf);
+  const tags = glances.flatMap((glance) =>
+    glance ? [...glance.wants, ...glance.hates.map((hate) => hate.tag)] : [],
+  );
+  return [...new Set(tags.map(tagKey))];
+}
+
 export interface Lean {
   lean: -2 | -1 | 0 | 1;
   reason: string;
 }
-// The red line first, then each want in order; the first the act touches decides and gives the reason.
-export function cardLean(card: Card | undefined, tokens: Set<string>): Lean {
-  const touches = (cardTags: string[]) => cardTags.some((cardTag) => tokens.has(cardTag));
-  if (!card) return { lean: 0, reason: "" };
-  if (touches(card.redMatch)) return { lean: -2, reason: `Red line: ${card.redLine}` };
-  for (const want of card.wants) {
-    if (touches(want.match.no)) return { lean: -1, reason: `Fights ${want.no[0] ?? want.want}` };
-    if (touches(want.match.yes)) return { lean: 1, reason: `Backs ${want.yes[0] ?? want.want}` };
-  }
+// R36: the red line first, then any other hate, then a want; the first the act touches decides and gives the reason.
+export function glanceLean(glance: Glance | undefined, tokens: Set<string>): Lean {
+  if (!glance) return { lean: 0, reason: "" };
+  const touched = (tag: string) => tokens.has(tagKey(tag));
+  const red = glance.hates.find((hate) => hate.redLine && touched(hate.tag));
+  if (red) return { lean: -2, reason: `Red line: ${red.tag}` };
+  const hate = glance.hates.find((candidate) => touched(candidate.tag));
+  if (hate) return { lean: -1, reason: `Hates ${hate.tag}` };
+  const want = glance.wants.find(touched);
+  if (want) return { lean: 1, reason: `Wants ${want}` };
   return { lean: 0, reason: "" };
 }
 export const CARD_MOVE: Record<Lean["lean"], number> = { 1: 4, 0: 0, [-1]: -5, [-2]: -10 }; // TUNE, the mock's numbers
@@ -1222,7 +1256,7 @@ export const CARD_SHIFT: Record<Lean["lean"], number> = { 1: 0.1, 0: 0, [-1]: -0
 export function cardShift(pack: Pack, tokens: Set<string>): Record<string, number> {
   const shift: Record<string, number> = {};
   for (const faction of pack.factions) {
-    const { lean } = cardLean(faction.card, tokens);
+    const { lean } = glanceLean(glanceOf(faction), tokens);
     if (lean) shift[faction.id] = CARD_SHIFT[lean];
   }
   return shift;
@@ -1271,7 +1305,7 @@ export function votePreview(
     const inFavour = chances.filter((chance) => chance >= FOR_AT).length;
     const against = chances.filter((chance) => chance <= AGAINST_AT).length;
     const average = mean(chances);
-    let reason = cardLean(faction.card, tokens).reason;
+    let reason = glanceLean(glanceOf(faction), tokens).reason;
     if (!reason && average >= FOR_AT) reason = "Votes with you on this";
     else if (!reason && average <= AGAINST_AT) reason = "Votes against you on this";
     else if (!reason) reason = "Nothing in it decides them";
@@ -1352,7 +1386,8 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   );
 
   if (passed && !struck) {
-    for (const t of new Set([...bill.tags, ...(bill.keeps ?? [])])) keepPromise(pack, game, t);
+    for (const t of new Set([...bill.tags, ...(bill.keeps ?? []), ...(bill.touches ?? [])]))
+      keepPromise(pack, game, t);
     if (bill.rates?.length)
       enact(game, {
         id: `law-${game.term}-${bill.id}`,
