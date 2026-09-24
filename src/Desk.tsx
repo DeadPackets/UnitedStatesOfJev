@@ -11,12 +11,33 @@ import {
   type CSSProperties,
   type KeyboardEvent,
 } from "react";
-import { ApiError, api, type GameView } from "./api";
+import { ApiError, api, type GameView, type ReviewLine } from "./api";
 import type { Act } from "./App";
 import { applyTokens, setThemeMode, themeMode } from "./theme";
 import { sound } from "./sound";
 import type { VerbKey } from "./rules";
-import { cancelMoments, mountLayer } from "./desk/fx";
+import {
+  beginMoment,
+  cancelMoments,
+  centre,
+  fpsStart,
+  fpsStop,
+  mountLayer,
+  sleep,
+  Stale,
+  type Point,
+} from "./desk/fx";
+import {
+  countVotes,
+  deliver,
+  dropKnots,
+  lineSource,
+  mergeReview,
+  signWave,
+  verdictMoment,
+  waitFor,
+  type Scene,
+} from "./desk/flow";
 import { Chamber, type ChamberHandle } from "./desk/Chamber";
 import { Composer } from "./desk/Composer";
 import { EventCard } from "./desk/EventCard";
@@ -25,6 +46,7 @@ import { Icon, RESOURCE_ICON } from "./desk/Icon";
 import { Live } from "./desk/Live";
 import { clearMarks, RESOURCE_TOKEN } from "./desk/paint";
 import { FloorSlip, Receipt } from "./desk/Receipt";
+import { Review } from "./desk/Review";
 import { Rim } from "./desk/Rim";
 import { Sheet } from "./desk/Sheet";
 import "./desk/desk.css";
@@ -42,7 +64,11 @@ type Phase =
   | { kind: "pricing" }
   | { kind: "printing"; next: GameView }
   | { kind: "priced" }
-  | { kind: "picking"; text: string }; // the clerk priced a favour with no member: the player picks one
+  | { kind: "picking"; text: string } // the clerk priced a favour with no member: the player picks one
+  | { kind: "waiting"; words: string } // End turn is out with the clerks: the printer head waits
+  | { kind: "moving" }
+  | { kind: "review"; kicker: string; title: string; failed: boolean; lines: ReviewLine[] };
+type ReviewSheet = Omit<Extract<Phase, { kind: "review" }>, "kind">;
 
 const capitalise = (text: string) => (text ? text[0].toUpperCase() + text.slice(1) : text);
 const press = (action: () => void) => (event: KeyboardEvent) => {
@@ -51,8 +77,7 @@ const press = (action: () => void) => (event: KeyboardEvent) => {
   action();
 };
 
-// onReview is Task 4's: the review holds the desk on screen whatever the stage.
-export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
+export default function Desk({ game, act, onGame, onError, onQuit, onReview }: Props) {
   // `shown` is what the desk draws; it follows `game` except while a moment holds it (frozen).
   const [shown, setShown] = useState(game);
   const frozen = useRef(false);
@@ -115,11 +140,14 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
         .join(", ") || "free",
     [view.resources], // eslint-disable-line
   );
+  // Stable, like onSeat below: App's act is new on every render, and a new handler would repaint the chamber mid-moment.
+  const negotiateNow = useRef<(faction: string, term: string) => void>(() => {});
+  negotiateNow.current = (faction, term) => {
+    if (!frozen.current) act(() => api.negotiate(shown, faction, term));
+  };
   const negotiate = useCallback(
-    (faction: string, term: string) => {
-      if (!frozen.current) act(() => api.negotiate(game, faction, term));
-    },
-    [act, game],
+    (faction: string, term: string) => negotiateNow.current(faction, term),
+    [],
   );
 
   const price = async (text: string, verb?: VerbKey, member?: string) => {
@@ -133,7 +161,16 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
       if (!next.desk.receipt) {
         frozen.current = false;
         setPhase({ kind: "idle" });
-        onGame(next); // a refusal: the placeholder says why
+        // A refusal: the placeholder says why, and what it cost travels first.
+        if (next.desk.review?.length)
+          changes(
+            async () => next,
+            tagCentre(),
+            next.refusal?.line ?? "The clerk refused",
+            "What the refusal cost",
+            null,
+          );
+        else onGame(next);
         return;
       }
       setPhase({ kind: "printing", next });
@@ -166,41 +203,234 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
     setPhase({ kind: "idle" });
   };
 
-  // Task 4 replaces these with moments; until then each lands the new view at once.
-  const sign = async () => {
-    const law = view.receipt?.verb === "law";
+  // A moment: React state changes here and at its end only; everything between moves the DOM by ref (src/desk/flow.ts).
+  const scene = (): Scene => ({
+    desk: deskRef.current!,
+    main: mainRef.current!,
+    spots: chamberRef.current!.spots,
+    rows: new Map(view.rim.map((row) => [row.id, row])),
+    names: new Map(shown.members.map((member) => [member.id, member.name])),
+    turn: shown.turn,
+    turnWord: words.turn,
+    need: view.finalVote.need,
+  });
+  const start = (phaseNow: Phase, keepSheet = false) => {
+    frozen.current = true;
+    beginMoment();
+    onReview(true);
+    setFile(null);
+    setSeat(null);
+    if (!keepSheet) setSheet(false);
+    setPhase(phaseNow);
+  };
+  // The moment is over but its marks stay: `shown` stays frozen until Back to the desk, the new game goes to App now.
+  const finish = (next: GameView, review: ReviewSheet) => {
+    for (const lock of deskRef.current!.querySelectorAll(".lockb")) lock.remove();
+    onGame(next);
+    setPhase({ kind: "review", ...review });
+  };
+  const unmark = () => {
     clearMarks(deskRef.current!);
-    await act(async () => {
-      const signed = await api.act(game);
-      return law ? api.vote(signed) : signed;
-    });
+    mainRef.current!.classList.remove("floor");
+    mainRef.current!.querySelector("#stfx")?.replaceChildren();
+    mainRef.current!.querySelector(".hemi-w")?.classList.remove("dim");
+  };
+  const failed = (error: unknown) => {
+    if (error instanceof Stale) return;
+    fpsStop();
+    cancelMoments();
+    unmark();
+    frozen.current = false;
+    onReview(false);
+    setPhase({ kind: "idle" });
+    onError(error); // App toasts and reloads the server's game
+  };
+  const back = (next = game) => {
+    unmark();
+    frozen.current = false;
+    setShown(next);
+    setTorn(false);
     setPhase({ kind: "idle" });
     setComposerKey((key) => key + 1);
+    onReview(false);
   };
-  const endTurn = () => act(() => api.endTurn(game));
-  const openEvent = game.events.findIndex((event) => event.stance === undefined && !event.declined);
-  const answer = (stance: number) => act(() => api.resolve(game, openEvent, stance));
-  const decline = () => act(() => api.decline(game, openEvent));
-  const withdraw = (id: string) => act(() => api.withdraw(game, id));
+  const verdictReview = (title: string, voted: GameView, ...reviews: (ReviewLine[] | null)[]) => {
+    const verdict = voted.desk.verdict!;
+    return {
+      kicker: `${title} · ${verdict.passed ? words.pass : words.fail} ${verdict.yes} to ${verdict.no}`,
+      title: verdict.passed ? "What it changed" : "What the defeat cost you",
+      failed: !verdict.passed,
+      lines: mergeReview(...reviews),
+    };
+  };
+  // The count, the verdict, and then every change of the vote travels from `source`.
+  const roll = async (stage: Scene, voted: GameView, source: (line: ReviewLine) => Point) => {
+    const verdict = voted.desk.verdict!;
+    fpsStart("the count");
+    await countVotes(stage, verdict);
+    fpsStop();
+    fpsStart("verdict");
+    await verdictMoment(stage, verdict, words);
+    fpsStop();
+    fpsStart("couriers");
+    if (!verdict.passed) await dropKnots(stage);
+    await deliver(voted.desk.review ?? [], source, stage);
+    fpsStop();
+  };
 
-  // The engine amends and lobbies only a tabled bill, so Amend on a receipt signs the law first (lead ruling 4).
-  const amend = async () => {
-    clearMarks(deskRef.current!);
-    if (await run(async () => api.amend(await api.act(game)))) setPhase({ kind: "idle" });
-    setComposerKey((key) => key + 1);
+  const sign = async () => {
+    const button = document.getElementById("sign");
+    if (frozen.current || !view.receipt || !button) return;
+    const law = view.receipt.verb === "law";
+    const title = view.receipt.title;
+    start({ kind: "moving" });
+    button.setAttribute("disabled", "");
+    const signing = api.act(shown);
+    const voting = law ? signing.then((signed) => api.vote(signed)) : null;
+    voting?.catch(() => {}); // handled where it is awaited
+    try {
+      const stage = scene();
+      fpsStart("sign: charge and shockwave");
+      await signWave(stage, button);
+      const signed = await signing;
+      const pen = centre(button);
+      await deliver(
+        signed.desk.review ?? [],
+        (line) => (line.target === "resource" ? pen : lineSource(stage, "now", line)),
+        stage,
+      );
+      fpsStop();
+      await sleep(250);
+      if (!voting) {
+        finish(signed, {
+          kicker: `${title} · signed`,
+          title: "What it changed",
+          failed: false,
+          lines: mergeReview(signed.desk.review),
+        });
+        return;
+      }
+      const voted = await waitFor(voting, stage, "The clerk calls the roll");
+      const passed = voted.desk.verdict!.passed;
+      await roll(stage, voted, (line) => lineSource(stage, passed ? "pass" : "fail", line));
+      finish(voted, verdictReview(title, voted, signed.desk.review, voted.desk.review));
+    } catch (error) {
+      failed(error);
+    }
   };
-  const vote = () => run(() => api.vote(game));
+  // A signed law waiting on the floor (after Amend, or a vote that failed to answer): the count, verdict and couriers.
+  const callVote = async () => {
+    if (frozen.current) return;
+    const title = view.floor?.title ?? "The act";
+    const from = tagCentre();
+    start({ kind: "moving" });
+    try {
+      const stage = scene();
+      const voted = await waitFor(api.vote(shown), stage, "The clerk calls the roll");
+      await roll(stage, voted, () => from);
+      finish(voted, verdictReview(title, voted, voted.desk.review));
+    } catch (error) {
+      failed(error);
+    }
+  };
+  // The engine amends only a tabled bill, so Amend signs the law first (lead ruling 4): the pen's wave and its costs
+  // travel, the clerks draft, and the desk lands on the floor slip with the drafts.
+  const amend = async () => {
+    const button = document.getElementById("sign");
+    if (frozen.current || !button) return;
+    start({ kind: "moving" });
+    const signing = api.act(shown);
+    try {
+      const stage = scene();
+      await signWave(stage, button);
+      const signed = await signing;
+      const pen = centre(button);
+      await deliver(
+        signed.desk.review ?? [],
+        (line) => (line.target === "resource" ? pen : lineSource(stage, "now", line)),
+        stage,
+      );
+      const tabled = await waitFor(api.amend(signed), stage, "The clerks draft three amendments");
+      onGame(tabled);
+      back(tabled);
+    } catch (error) {
+      failed(error);
+    }
+  };
+
+  // End turn, a card's answer or decline, a withdrawal: the request, then every change travels from where it began.
+  const changes = async (
+    request: () => Promise<GameView>,
+    origin: Point,
+    kicker: string,
+    title: string,
+    waiting: string | null,
+    keepSheet = false,
+  ) => {
+    if (frozen.current) return;
+    start(waiting ? { kind: "waiting", words: waiting } : { kind: "moving" }, keepSheet);
+    try {
+      const next = await request();
+      setPhase({ kind: "moving" });
+      await sleep(0);
+      fpsStart(kicker);
+      await deliver(next.desk.review ?? [], () => origin, scene());
+      fpsStop();
+      finish(next, { kicker, title, failed: false, lines: mergeReview(next.desk.review) });
+    } catch (error) {
+      failed(error);
+    }
+  };
+  const tagCentre = () => centre(document.getElementById("tagw")!);
+  const endTurn = () =>
+    changes(
+      () => api.endTurn(shown),
+      tagCentre(),
+      `End of ${words.turn} ${shown.turn}`,
+      `What the ${words.turn} changed`,
+      "The clerks read every group that moved",
+    );
+  const openEvent = game.events.findIndex((event) => event.stance === undefined && !event.declined);
+  const cardTitle = () => game.events[openEvent]?.card?.title ?? "A card";
+  const answer = (stance: number, button: HTMLElement) =>
+    changes(
+      () => api.resolve(shown, openEvent, stance),
+      centre(button),
+      cardTitle(),
+      "What your answer changed",
+      null,
+    );
+  const decline = (button: HTMLElement) =>
+    changes(
+      () => api.decline(shown, openEvent),
+      centre(button),
+      cardTitle(),
+      "What declining it cost",
+      null,
+    );
+  const withdraw = (id: string, button: HTMLElement) =>
+    changes(
+      () => api.withdraw(shown, id),
+      centre(button),
+      `${game.inForce.find((law) => law.id === id)?.title ?? "The act"} · withdrawn`,
+      "What withdrawing it changed",
+      null,
+      true, // the sheet stays open, so its card counts down and Drains it lights
+    );
   const favour = (member: string) => {
     const name = shown.members.find((candidate) => candidate.id === member)?.name ?? member;
     setSeat(null);
     price(`Do ${name} a favour.`, "favour", member);
   };
+  // Stable, so the chamber never repaints mid-moment for a new handler; it reads the phase through a ref.
+  const seatClick = useRef<(member: string, index: number) => void>(() => {});
+  seatClick.current = (member, index) => {
+    if (phase.kind === "picking") return void price(phase.text, "favour", member);
+    if (!frozen.current) setSeat({ member, index });
+  };
   const onSeat = useCallback(
-    (member: string, index: number) => {
-      if (phase.kind === "picking") return void price(phase.text, "favour", member);
-      if (!frozen.current) setSeat({ member, index });
-    },
-    [phase], // eslint-disable-line
+    (member: string, index: number) => seatClick.current(member, index),
+    [],
   );
   const eligible = useMemo(
     () =>
@@ -218,7 +448,8 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
         line.target !== "resource" ||
         (view.resources.find((card) => card.key === line.id)?.value ?? 0) + line.delta >= 0,
     );
-  const busy = phase.kind === "pricing" || phase.kind === "printing" || acting;
+  const calm = phase.kind === "idle" || phase.kind === "priced";
+  const busy = !calm || acting;
   const chamberRow =
     pack.constitution?.holders.find((holder) => holder.members === "seats")?.id ?? null;
   const fileRow = file ? game.desk.rim.find((row) => row.id === file) : undefined;
@@ -226,7 +457,7 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
   const seatFaction = seated
     ? view.factions.find((faction) => faction.id === seated.faction)
     : undefined;
-  const event = openEvent >= 0 && !frozen.current ? game.events[openEvent] : undefined;
+  const event = openEvent >= 0 && calm && !frozen.current ? game.events[openEvent] : undefined;
   const authority = view.resources.find((card) => card.key === "authority");
 
   return (
@@ -331,7 +562,25 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
           onOpen={(id) => !frozen.current && setFile(id)}
         />
         <div className="tagw" id="tagw">
-          {phase.kind === "pricing" ? (
+          {phase.kind === "review" ? (
+            <Review
+              kicker={phase.kicker}
+              title={phase.title}
+              failed={phase.failed}
+              lines={phase.lines}
+              rows={view.rim}
+              resources={view.resources}
+              onBack={() => back()}
+            />
+          ) : phase.kind === "waiting" ? (
+            <div className="rc" id="pb">
+              <div className="head wait">
+                <i />
+                <i />
+                <span>{phase.words}</span>
+              </div>
+            </div>
+          ) : phase.kind === "pricing" ? (
             <div className="rc" id="pb">
               <div className="head wait">
                 <i />
@@ -381,7 +630,7 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
               floor={floor}
               size={pack.chamber.size}
               busy={busy}
-              onVote={vote}
+              onVote={callVote}
               onAmend={() => run(() => api.amend(game))}
               onAdopt={(draft) => run(() => api.adopt(game, draft))}
             />
@@ -401,7 +650,7 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
           key={composerKey}
           instruments={shown.instruments}
           priced={(receipt?.verb as VerbKey | undefined) ?? null}
-          priceable={!busy && !receipt && phase.kind !== "picking"}
+          priceable={!busy && !receipt}
           endLabel={`End ${words.turn} ${shown.turn}`}
           endable={!busy && openEvent < 0 && !floor}
           onPrice={(text) => price(text)}
@@ -447,7 +696,7 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
           resources={game.desk.resources}
           turnWord={words.turn}
           inForce={game.inForce}
-          onWithdraw={(id) => withdraw(id)}
+          onWithdraw={withdraw}
           onClose={() => setSheet(false)}
         />
       ) : null}
@@ -457,8 +706,8 @@ export default function Desk({ game, act, onGame, onError, onQuit }: Props) {
           event={event}
           turnWord={words.turn}
           busy={busy}
-          onAnswer={(stance) => answer(stance)}
-          onDecline={() => decline()}
+          onAnswer={answer}
+          onDecline={decline}
         />
       ) : null}
     </div>

@@ -307,6 +307,9 @@ function countOf(pack: Pack, game: Game, bill: Bill, preview: Preview | null): C
   };
 }
 
+// A final vote that does not move has no line: its knot would read 0.
+const moved = (line: ReceiptLine) => (line.delta ? [line] : []);
+
 function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
   const words = pack.vocabulary;
   const law = tag.verb === "law";
@@ -335,7 +338,7 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
       ...resourceDiff(pack, signed.game, voted.game, voted.wire, verdictWords),
       ...(passed ? rates : []),
       ...groupLines(pack, signed.game, voted.game, voted.wire, tag.title, verdictWords),
-      voteLine(pack, game, voted.game),
+      ...moved(voteLine(pack, game, voted.game)),
     ];
   };
   return {
@@ -345,7 +348,7 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
     reading: tag.reading,
     now: law
       ? [...charge, ...groups]
-      : [...charge, ...rates, ...groups, voteLine(pack, game, signed.game)],
+      : [...charge, ...rates, ...groups, ...moved(voteLine(pack, game, signed.game))],
     pass: law ? outcome(true) : [],
     fail: law ? outcome(false) : [],
     vetoes,
