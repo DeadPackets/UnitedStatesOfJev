@@ -1,0 +1,185 @@
+/* The look every screen shares: the root scale, the fixed colour tokens, the paper and its hatch, and the atoms
+   (buttons, kickers, icons, surfaces). applyTokens (src/theme.tsx) writes each world's palette, fonts, radius and
+   texture scale over these, and fits the fixed colours to that palette. Values from docs/design/mock/desk.html. */
+:root {
+  /* The one root scale: 1rem = 16px x k, k = min(width / 1440, height / 900) clamped to 1..1.8 */
+  font-size: clamp(16px, min(100vw / 90, 100dvh / 56.25), 28.8px);
+  --tre: #227f53;
+  --aut: #623e96;
+  --che: #8a6d24;
+  --danger: #bb0916;
+  --up: #1d7a4a;
+  --dn: #c2410c;
+  --on-up: #fff;
+  --on-dn: #fff;
+  --on-danger: #fff;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rev: 0px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --tre: #6dc393;
+  --aut: #a37fde;
+  --che: #f1cc7e;
+  --danger: #ff7b72;
+  --up: #6dc393;
+  --dn: #ff9d5c;
+  --on-up: #0b1a12;
+  --on-dn: #1d0d02;
+  --on-danger: #1a0508;
+  color-scheme: dark;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+body {
+  font: 400 1.0625rem / 1.45 var(--ui);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+:root:has(.dk) body {
+  height: 100%;
+  overflow: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--ink) 6%, transparent) 0 0.0625rem,
+      transparent 0.0625rem calc(0.4375rem * var(--tex))
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--ink) 4%, transparent) 0 0.0625rem,
+      transparent 0.0625rem calc(0.4375rem * var(--tex))
+    );
+  -webkit-mask: radial-gradient(120% 90% at 50% 50%, transparent 45%, #000 100%);
+  mask: radial-gradient(120% 90% at 50% 50%, transparent 45%, #000 100%);
+}
+:root[data-texture="none"] body::before {
+  display: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 0.125rem solid var(--accent);
+  outline-offset: 0.1875rem;
+}
+.num {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.ic {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.kicker {
+  font: 700 0.9375rem / 1.2 var(--ui);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.sf {
+  background-color: color-mix(in srgb, var(--card) 94%, transparent);
+  border-radius: var(--r);
+  box-shadow:
+    0 0 0 0.0625rem var(--rule),
+    inset 0 0 0 0.1875rem var(--card),
+    inset 0 0 0 0.25rem color-mix(in srgb, var(--rule) 70%, transparent),
+    0 1.125rem 2.5rem -34px var(--sh);
+}
+:root[data-material="linen"] .sf {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--ink) 3%, transparent) 0 0.0625rem,
+      transparent 0.0625rem 0.1875rem
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--ink) 3%, transparent) 0 0.0625rem,
+      transparent 0.0625rem 0.1875rem
+    );
+}
+:root[data-material="parchment"] .sf {
+  background-image: radial-gradient(
+    130% 150% at 50% 42%,
+    transparent 58%,
+    color-mix(in srgb, var(--navy) 9%, transparent)
+  );
+}
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  border: 0.09375rem solid var(--ink);
+  border-radius: calc(var(--r) + 0.125rem);
+  background: var(--card);
+  color: var(--ink);
+  font: 700 0.9375rem / 1 var(--ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0.1875rem 0.1875rem 0 var(--ink);
+  transition:
+    transform 0.16s var(--ease),
+    box-shadow 0.16s var(--ease),
+    opacity 0.25s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 0.25rem 0.25rem 0 var(--ink);
+}
+.btn:active:not(:disabled) {
+  transform: translate(0.125rem, 0.125rem) scale(0.97);
+  box-shadow: 0 0 0 var(--ink);
+}
+.btn.accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+:root[data-theme="dark"] .btn.accent {
+  color: #12070a;
+}
+.btn.ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: default;
+}
+.btn .ic {
+  width: 1rem;
+  height: 1rem;
+}

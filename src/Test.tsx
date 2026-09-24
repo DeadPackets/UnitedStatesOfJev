@@ -4,7 +4,6 @@ import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
 import { Num } from "./Ledger";
-import { Ornament } from "./theme";
 import { TileReveal } from "./Tiles";
 import { sound } from "./sound";
 
@@ -104,7 +103,6 @@ export default function Test({ game, act, busy, onDone }: Props) {
       <header className="topbar">
         <h1>{pack.title}</h1>
         <nav aria-label={pack.test.name}>
-          <Ornament kind={pack.theme.ornament} />
           <span className="num" style={{ padding: "0 8px" }}>
             {shown} of {n}
           </span>

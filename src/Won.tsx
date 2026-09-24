@@ -2,7 +2,6 @@ import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num } from "./Ledger";
 import { barAt } from "./rules";
-import { Ornament } from "./theme";
 
 /** The term was won: the inaugural page, the term's score, and what another term brings. */
 export default function Won({ game, act, busy }: { game: GameView; act: Act; busy: boolean }) {
@@ -15,9 +14,7 @@ export default function Won({ game, act, busy }: { game: GameView; act: Act; bus
     <main className="over stagger press">
       <div className="mast" style={{ "--i": 0 } as any}>
         <b>{pack.test.name}</b>
-        <span className="flag">
-          <Ornament kind={pack.theme.ornament} />
-        </span>
+        <span className="flag" />
       </div>
       <h1 style={{ "--i": 1 } as any}>{game.ending?.title ?? pack.endings.reelected}</h1>
       {game.ending ? <p style={{ "--i": 2 } as any}>{game.ending.body}</p> : null}

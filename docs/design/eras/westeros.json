@@ -1,0 +1,1356 @@
+{
+  "id": "westeros",
+  "prompt": "The King on the Iron Throne, fifteen years after Robert's Rebellion",
+  "title": "The Iron Throne",
+  "era": "The Seven Kingdoms, 298 AC",
+  "place": "King's Landing",
+  "year": 298,
+  "kind": "fiction",
+  "ruler": {
+    "role": "King",
+    "name": "Robert Baratheon",
+    "faction": "baratheon",
+    "youAre": "You are Robert Baratheon, King on the Iron Throne.",
+    "above": null,
+    "removedBy": [
+      {
+        "id": "houses",
+        "how": "can rise against you, as they rose against King Aerys"
+      }
+    ]
+  },
+  "oath": {
+    "form": "Before the High Septon and the Seven, Great Sept of Baelor, King's Landing, 298 AC",
+    "lead": "The new year's court opens in the Great Sept of Baelor, fifteen years after your crowning. Jon Arryn is dead and the Hand's chair stands empty. Kneel before the High Septon and renew your vows.",
+    "text": "Before the Seven who are One, I swear to keep the King's Peace in all the Seven Kingdoms. In the name of the Father I will judge justly, and in the name of the Mother I will show mercy. In the name of the Warrior I will defend the realm, and in the name of the Smith I will mend what the war broke. I will guard the Faith and its septs. May the Crone light my way, and may the Stranger take me if I break this oath.",
+    "source": "Invented in the form of the Faith of the Seven; the setting records no text of a king's coronation oath, and Robert was crowned in 283 AC.",
+    "gesture": "Kneel before the Seven",
+    "signed": "Robert Baratheon"
+  },
+  "theme": {
+    "display": "IM Fell English SC",
+    "displayWeight": 400,
+    "displayCase": "none",
+    "displayTracking": 0.02,
+    "body": "EB Garamond",
+    "bodySize": 19,
+    "mono": null,
+    "script": "ltr",
+    "paper": "#e8d7b0",
+    "surface": "#f1e4c5",
+    "ink": "#1d1510",
+    "muted": "#574634",
+    "accent": "#3f5163",
+    "accent2": "#8e1d1d",
+    "rule": "#bfa575",
+    "dark": {
+      "paper": "#121010",
+      "surface": "#1b1818",
+      "ink": "#eadcc0",
+      "muted": "#a79a82",
+      "accent": "#9fb4c8",
+      "accent2": "#e07b6d",
+      "rule": "#332c26"
+    },
+    "material": "parchment",
+    "texture": "crosshatch",
+    "textureScale": 1.5,
+    "radius": 2,
+    "ruleStyle": "double",
+    "ornament": "seal",
+    "motion": "stately",
+    "motif": "298 AC"
+  },
+  "vocabulary": {
+    "chamber": "small council",
+    "member": "lord",
+    "bill": "edict",
+    "pass": "sealed",
+    "fail": "refused",
+    "turn": "moon",
+    "test": "the realm's fealty",
+    "post": "raven",
+    "halfTerm": "the Hand's tourney",
+    "turnLength": "about a month",
+    "abroad": "across the Narrow Sea",
+    "file": "Herald's roll"
+  },
+  "chamber": null,
+  "ledgers": {
+    "treasury": {
+      "name": "Treasury",
+      "start": 22,
+      "line": 0,
+      "for": "The crown's gold, which pays the court, the gold cloaks and the crown's debts.",
+      "earn": [
+        "Crown taxes and port tolls",
+        "Loans from the Lannisters and the Iron Bank"
+      ],
+      "spend": [
+        "Crown grants",
+        "Tourneys and feasts",
+        "Interest on the crown's debt"
+      ],
+      "fails": "the crown cannot pay its creditors or the gold cloaks.",
+      "icon": "coins"
+    },
+    "authority": {
+      "name": "King's peace",
+      "start": 42,
+      "line": 0,
+      "for": "The weight of your word, which makes the lords obey a royal decree.",
+      "earn": [
+        "A pledge kept",
+        "A rebel lord brought to heel"
+      ],
+      "spend": [
+        "Every decree and appointment",
+        "A decree a great house ignores"
+      ],
+      "fails": "the lords stop obeying your decrees.",
+      "icon": "crown"
+    },
+    "chest": {
+      "name": "Privy purse",
+      "start": 20,
+      "line": 0,
+      "for": "Your own gold, which you spend without the master of coin.",
+      "earn": [
+        "Gifts from lords who want favour",
+        "Fines in the king's courts"
+      ],
+      "spend": [
+        "Gifts and favours for a lord",
+        "Hunts and feasts for your court"
+      ],
+      "fails": "you have no gold of your own to buy a lord's favour.",
+      "icon": "crate"
+    },
+    "loyalty": {
+      "name": "Baratheons",
+      "start": 58,
+      "line": 20
+    },
+    "popularity": {
+      "name": "Standing",
+      "start": 50,
+      "line": 30
+    }
+  },
+  "holders": [
+    {
+      "id": "houses",
+      "tiny": "Houses",
+      "name": "The great houses",
+      "where": "home",
+      "icon": "army",
+      "weight": 0.3,
+      "stance": 0.5,
+      "line": 40,
+      "response": "coup",
+      "wants": "The great houses, from Stark in the North to Martell in Dorne, want justice in their own lands and no royal hand on the men they raise.",
+      "says": "We bent the knee to your house once. A knee can straighten.",
+      "does": "Rises against the throne",
+      "card": {
+        "base": "The Lords Paramount and their bannermen: Stark of the North, Arryn of the Vale, Tully of the Riverlands, Tyrell of the Reach, Martell of Dorne, Greyjoy of the Iron Islands. They raise every soldier the crown can call.",
+        "wants": [
+          {
+            "issue": "Their own justice",
+            "backs": "Leaving each lord to judge in his own lands",
+            "fights": "A royal justice sent into a lord's lands",
+            "match": {
+              "backs": [
+                "own lands",
+                "lords judge"
+              ],
+              "fights": [
+                "royal justice",
+                "king's justice",
+                "crown judge"
+              ]
+            }
+          },
+          {
+            "issue": "Their men",
+            "backs": "Asking the lords before any war",
+            "fights": "Calling the banners for a war they did not choose",
+            "match": {
+              "backs": [
+                "ask the lords",
+                "council of lords"
+              ],
+              "fights": [
+                "call the banners",
+                "levy",
+                "raise men",
+                "war on"
+              ]
+            }
+          },
+          {
+            "issue": "Peace between houses",
+            "backs": "Ordering the Lannisters and the Tullys to keep the king's peace",
+            "fights": "Taking one house's side in a feud",
+            "match": {
+              "backs": [
+                "king's peace",
+                "keep the peace"
+              ],
+              "fights": [
+                "side with"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Seizing a great house's lands or castle",
+          "then": "rise against you, as they rose against King Aerys",
+          "match": [
+            "seize",
+            "attaint",
+            "confiscate",
+            "strip the"
+          ]
+        },
+        "price": {
+          "takes": "Offices at court, marriages into the royal house, crown land",
+          "refuses": "A royal garrison in their castles"
+        },
+        "face": {
+          "name": "Eddard Stark",
+          "role": "Lord of Winterfell, Warden of the North",
+          "line": "The North pays its taxes and sends its men when you ask. Leave our justice to us, and ask before you take."
+        },
+        "rival": {
+          "id": "lannister",
+          "issue": "Who holds the king's ear at court"
+        },
+        "tension": "Wants no royal hand in their lands, but Stark, Arryn and Tully fought the rebellion that crowned you and still expect you to lead."
+      }
+    },
+    {
+      "id": "lannister",
+      "tiny": "Lannister",
+      "name": "House Lannister",
+      "where": "home",
+      "icon": "patrons",
+      "weight": 0.2,
+      "stance": 0.6,
+      "line": 35,
+      "response": "refuse_levy",
+      "wants": "House Lannister wants the Hand's chain for one of its own and the crown's debt kept in its books.",
+      "says": "Half the gold in your treasury came from Casterly Rock. We keep count.",
+      "does": "Keeps its men and gold at home",
+      "card": {
+        "base": "The richest house in the realm: lords of Casterly Rock and the gold mines of the westerlands. Lord Tywin, your queen's father, holds much of the crown's debt.",
+        "wants": [
+          {
+            "issue": "The Hand",
+            "backs": "Naming Lord Tywin Hand of the King",
+            "fights": "Naming Eddard Stark Hand",
+            "match": {
+              "backs": [
+                "tywin",
+                "lannister as hand",
+                "lannister hand"
+              ],
+              "fights": [
+                "stark",
+                "eddard",
+                "ned "
+              ]
+            }
+          },
+          {
+            "issue": "The debt",
+            "backs": "Repaying Casterly Rock first",
+            "fights": "Repaying the Iron Bank before the Lannisters",
+            "match": {
+              "backs": [
+                "repay the lannisters",
+                "casterly rock"
+              ],
+              "fights": [
+                "iron bank"
+              ]
+            }
+          },
+          {
+            "issue": "The succession",
+            "backs": "A proclamation naming Joffrey your heir",
+            "fights": "Any inquiry into the queen's children",
+            "match": {
+              "backs": [
+                "joffrey",
+                "heir"
+              ],
+              "fights": [
+                "bastard",
+                "inquiry",
+                "lineage"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Setting Queen Cersei aside",
+          "then": "calls in the crown's debts and arms the westerlands",
+          "match": [
+            "set aside",
+            "annul",
+            "put aside the queen",
+            "divorce"
+          ]
+        },
+        "price": {
+          "takes": "Offices at court for Lannisters, repayment with interest",
+          "refuses": "Being paid in promises"
+        },
+        "face": {
+          "name": "Tywin Lannister",
+          "role": "Lord of Casterly Rock, Warden of the West",
+          "line": "A Lannister always pays his debts. I expect the crown to pay its own, and the Hand's chain would help it remember."
+        },
+        "rival": {
+          "id": "baratheon",
+          "issue": "Who stands closest to the throne"
+        },
+        "tension": "Wants the crown strong enough to repay it, but lends it more gold every year and keeps it in debt."
+      }
+    },
+    {
+      "id": "council",
+      "tiny": "Council",
+      "name": "The small council",
+      "where": "home",
+      "icon": "council",
+      "weight": 0.15,
+      "stance": 0.55,
+      "line": 35,
+      "response": "strike",
+      "wants": "The small council wants a Hand you listen to and a treasury that does not run on borrowed gold.",
+      "says": "Your Grace's word is law. Our work is to make it a law the lords will follow.",
+      "does": "Lets the realm's business stall",
+      "card": {
+        "base": "The men who run the realm day to day: Grand Maester Pycelle, Petyr Baelish the master of coin, Varys the master of whisperers, your brothers Stannis and Renly, and Ser Barristan Selmy. The Hand's seat is empty.",
+        "wants": [
+          {
+            "issue": "A Hand",
+            "backs": "Naming a Hand the council can work with",
+            "fights": "Leaving the Hand's office empty",
+            "match": {
+              "backs": [
+                "hand of the king",
+                "name a hand",
+                "new hand",
+                "as hand"
+              ],
+              "fights": []
+            }
+          },
+          {
+            "issue": "Coin",
+            "backs": "Cutting the crown's spending on tourneys",
+            "fights": "A new tourney paid for on credit",
+            "match": {
+              "backs": [
+                "cut spending",
+                "no tourney"
+              ],
+              "fights": [
+                "tourney",
+                "feast"
+              ]
+            }
+          },
+          {
+            "issue": "Order",
+            "backs": "Decrees drafted in council before you seal them",
+            "fights": "Decrees sealed without the council",
+            "match": {
+              "backs": [
+                "in council",
+                "the council"
+              ],
+              "fights": [
+                "without the council"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Dismissing the whole council",
+          "then": "stops sealing your decrees",
+          "match": [
+            "dismiss the council",
+            "dissolve the council"
+          ]
+        },
+        "price": {
+          "takes": "Titles and lands for its members, and a Hand who hears them",
+          "refuses": "Being blamed for the king's debts"
+        },
+        "face": {
+          "name": "Petyr Baelish",
+          "role": "Master of coin, King's Landing",
+          "line": "Your Grace's word is law. My work is to find the gold for it, and the Lannisters and the Iron Bank both want theirs back."
+        },
+        "rival": {
+          "id": "lannister",
+          "issue": "Who controls the crown's purse"
+        },
+        "tension": "Wants a Hand the king listens to, but Baelish and Varys each profit from a council the king ignores."
+      }
+    },
+    {
+      "id": "baratheon",
+      "tiny": "Baratheon",
+      "name": "House Baratheon and the Stormlands",
+      "short": "House Baratheon",
+      "where": "home",
+      "icon": "party",
+      "weight": 0.2,
+      "stance": 0.65,
+      "line": 35,
+      "response": "refuse_levy",
+      "wants": "House Baratheon and the Stormlands want your brothers given their due and the storm lords rewarded for the rebellion.",
+      "says": "Dragonstone was a poor reward for the brother who held Storm's End for you.",
+      "does": "Keeps the storm lords' swords at home",
+      "card": {
+        "base": "Your own house and the storm lords who rode with you: your brother Stannis on Dragonstone, your brother Renly at Storm's End, and their bannermen.",
+        "wants": [
+          {
+            "issue": "Your brothers",
+            "backs": "Stannis or Renly given the Hand or a greater seat",
+            "fights": "A Lannister named Hand",
+            "match": {
+              "backs": [
+                "stannis",
+                "renly"
+              ],
+              "fights": [
+                "tywin",
+                "lannister"
+              ]
+            }
+          },
+          {
+            "issue": "Reward",
+            "backs": "Crown land for the storm lords",
+            "fights": "Crown grants to the houses that fought for Aerys",
+            "match": {
+              "backs": [
+                "storm lord",
+                "stormlands",
+                "storm's end"
+              ],
+              "fights": [
+                "tyrell",
+                "the reach"
+              ]
+            }
+          },
+          {
+            "issue": "The Targaryens",
+            "backs": "Hunting down the last Targaryens",
+            "fights": "A pardon for Targaryen loyalists",
+            "match": {
+              "backs": [
+                "targaryen",
+                "daenerys",
+                "viserys",
+                "killer",
+                "assassin"
+              ],
+              "fights": [
+                "pardon"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Inviting the Targaryen heirs home under a pardon",
+          "then": "refuses you its levies",
+          "match": [
+            "pardon the targaryen",
+            "invite the targaryen",
+            "welcome viserys"
+          ]
+        },
+        "price": {
+          "takes": "Seats and titles for your brothers and the storm lords",
+          "refuses": "Lannister gold in place of honours"
+        },
+        "face": {
+          "name": "Stannis Baratheon",
+          "role": "Lord of Dragonstone, master of ships",
+          "line": "I held Storm's End for you for a year on rats and boiled leather. Dragonstone was a poor reward. Give me what I am owed."
+        },
+        "rival": {
+          "id": "lannister",
+          "issue": "Who stands closest to the throne"
+        },
+        "tension": "Wants the throne's power kept in Baratheon hands, but Stannis and Renly each want it for himself."
+      }
+    },
+    {
+      "id": "smallfolk",
+      "tiny": "Smallfolk",
+      "name": "The smallfolk",
+      "where": "home",
+      "icon": "street",
+      "weight": 0.15,
+      "stance": 0.5,
+      "line": 40,
+      "response": "riot",
+      "wants": "The smallfolk want bread at a fair price and peace on the roads.",
+      "says": "Lords fight and the fields burn. Keep the lords quiet.",
+      "does": "Riots in King's Landing",
+      "card": {
+        "base": "The peasants, craftsmen and townsfolk of the Seven Kingdoms, most of the realm's people. Half a million live in King's Landing alone.",
+        "wants": [
+          {
+            "issue": "Bread",
+            "backs": "Grain from the crown's stores at a fair price",
+            "fights": "A new tax on bread or the markets",
+            "match": {
+              "backs": [
+                "grain",
+                "bread",
+                "food"
+              ],
+              "fights": [
+                "tax"
+              ]
+            }
+          },
+          {
+            "issue": "Peace",
+            "backs": "An end to the lords' feuds and raids",
+            "fights": "Calling the banners for war",
+            "match": {
+              "backs": [
+                "king's peace",
+                "peace"
+              ],
+              "fights": [
+                "call the banners",
+                "war",
+                "levy"
+              ]
+            }
+          },
+          {
+            "issue": "Safe roads",
+            "backs": "Gold cloaks and knights to clear the kingsroad of outlaws",
+            "fights": "A tourney paid for while the city goes hungry",
+            "match": {
+              "backs": [
+                "kingsroad",
+                "outlaw",
+                "gold cloaks"
+              ],
+              "fights": [
+                "tourney"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Burning a rebel lord's fields",
+          "then": "flee the land and riot in King's Landing",
+          "match": [
+            "burn the fields",
+            "burn the crops",
+            "sack "
+          ]
+        },
+        "price": {
+          "takes": "Bread, peace, and a king who is seen",
+          "refuses": "Ravens full of words with no bread behind them"
+        },
+        "face": {
+          "name": "Wat Heddle",
+          "role": "Baker in Flea Bottom, King's Landing; an invented voice",
+          "line": "Lords fight and the fields burn, and then a loaf costs a stag. Keep the lords quiet and the grain coming."
+        },
+        "rival": {
+          "id": "houses",
+          "issue": "The lords' wars that burn the fields"
+        },
+        "tension": "Loves a king who feasts and rides in tourneys, but pays for every feast in the price of bread."
+      }
+    },
+    {
+      "id": "faith",
+      "tiny": "Faith",
+      "name": "The Faith of the Seven",
+      "where": "home",
+      "icon": "clergy",
+      "weight": 0,
+      "stance": 0.5,
+      "line": 40,
+      "response": "excommunicate",
+      "short": "The Faith",
+      "wants": "The Faith of the Seven wants its courts and its tithes left as they are.",
+      "says": "The crown rests on the Seven. The septons remember that even when kings forget.",
+      "does": "Turns your own house against you",
+      "card": {
+        "base": "The Faith of the Seven under the High Septon at the Great Sept of Baelor, with septons and septas in every town and the tithes of the smallfolk.",
+        "wants": [
+          {
+            "issue": "Its courts",
+            "backs": "Leaving septons to judge the clergy",
+            "fights": "Crown courts that try septons",
+            "match": {
+              "backs": [
+                "faith's courts"
+              ],
+              "fights": [
+                "try septons",
+                "royal justice over"
+              ]
+            }
+          },
+          {
+            "issue": "Tithes",
+            "backs": "Crown gifts to the Great Sept",
+            "fights": "A tax on the Faith's lands or tithes",
+            "match": {
+              "backs": [
+                "great sept",
+                "septon",
+                "gift to the faith"
+              ],
+              "fights": [
+                "tax the faith",
+                "tithe"
+              ]
+            }
+          },
+          {
+            "issue": "The royal marriage",
+            "backs": "Your marriage kept in the sight of the Seven",
+            "fights": "Setting the queen aside",
+            "match": {
+              "backs": [
+                "marriage"
+              ],
+              "fights": [
+                "set aside",
+                "annul"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Seizing sept lands or silver",
+          "then": "preaches against you, and your own house turns cold",
+          "match": [
+            "seize the sept",
+            "sept lands",
+            "faith's silver",
+            "faith's treasure"
+          ]
+        },
+        "price": {
+          "takes": "Gifts to the Great Sept and a king who is seen at prayer",
+          "refuses": "Being taxed like a merchant"
+        },
+        "face": {
+          "name": "The High Septon",
+          "role": "Head of the Faith, Great Sept of Baelor",
+          "line": "The crown rests on the Seven. Honour the Sept, and the septons will pray for you in every town."
+        },
+        "rival": {
+          "id": "council",
+          "issue": "Taxing the Faith to pay the crown's debts"
+        },
+        "tension": "Wants the crown's respect, but has had no swords of its own since King Maegor broke the Faith Militant."
+      }
+    },
+    {
+      "id": "ironbank",
+      "tiny": "Iron Bank",
+      "name": "The Iron Bank of Braavos",
+      "where": "abroad",
+      "icon": "market",
+      "weight": 0,
+      "stance": 0.5,
+      "line": 35,
+      "response": "embargo",
+      "short": "The Iron Bank",
+      "wants": "The Iron Bank of Braavos wants its loans repaid on time and in full.",
+      "says": "The Bank lends to kings. It also lends to the men who replace them.",
+      "does": "Calls in the crown's loans",
+      "card": {
+        "base": "The bank of the Free City of Braavos. It lends to kings, and the Iron Throne owes it millions of gold dragons.",
+        "wants": [
+          {
+            "issue": "Repayment",
+            "backs": "Paying part of the crown's loan on time",
+            "fights": "Delaying a payment",
+            "match": {
+              "backs": [
+                "repay",
+                "pay the iron bank",
+                "pay down"
+              ],
+              "fights": [
+                "delay",
+                "refuse to pay"
+              ]
+            }
+          },
+          {
+            "issue": "A sound debtor",
+            "backs": "A Hand or master of coin who keeps the books",
+            "fights": "A new tourney on credit",
+            "match": {
+              "backs": [
+                "hand of the king",
+                "master of coin"
+              ],
+              "fights": [
+                "tourney"
+              ]
+            }
+          },
+          {
+            "issue": "No rival lenders",
+            "backs": "Borrowing from Braavos alone",
+            "fights": "New loans from the Lannisters or the Faith",
+            "match": {
+              "backs": [
+                "braavos"
+              ],
+              "fights": [
+                "borrow from the lannister",
+                "lannister gold"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Refusing to repay the crown's loans",
+          "then": "funds the crown's enemies",
+          "match": [
+            "refuse to repay",
+            "repudiate",
+            "default"
+          ]
+        },
+        "price": {
+          "takes": "Payments on time and a king who keeps his word",
+          "refuses": "Excuses"
+        },
+        "face": {
+          "name": "Tycho Nestoris",
+          "role": "Envoy of the Iron Bank, Braavos",
+          "line": "The Bank lends to kings. It also lends to the men who replace them. Pay on time, and we need never meet the second."
+        },
+        "rival": {
+          "id": "lannister",
+          "issue": "Who holds the crown's debt"
+        },
+        "tension": "Wants its loans repaid in full, but earns more while the crown keeps borrowing."
+      }
+    },
+    {
+      "id": "exiles",
+      "tiny": "Exiles",
+      "name": "The Targaryen exiles",
+      "where": "abroad",
+      "icon": "foreign",
+      "weight": 0,
+      "stance": 0.3,
+      "line": 30,
+      "response": "none",
+      "short": "Targaryen exiles",
+      "wants": "The Targaryen exiles, Viserys and Daenerys, want the throne their family lost and an army from across the sea to take it.",
+      "says": "The realm has a long memory. So do we.",
+      "does": "Buys a Dothraki army for a landing",
+      "card": {
+        "base": "Viserys and Daenerys Targaryen, the last children of King Aerys II, living on the charity of a magister in Pentos.",
+        "wants": [
+          {
+            "issue": "Loyalists at home",
+            "backs": "A pardon for Targaryen loyalists in Westeros",
+            "fights": "Killers sent after the heirs",
+            "match": {
+              "backs": [
+                "pardon"
+              ],
+              "fights": [
+                "targaryen",
+                "killer",
+                "assassin",
+                "daenerys",
+                "viserys"
+              ]
+            }
+          },
+          {
+            "issue": "The Narrow Sea",
+            "backs": "Leaving the Free Cities alone",
+            "fights": "A royal fleet sent into the Narrow Sea",
+            "match": {
+              "backs": [],
+              "fights": [
+                "fleet",
+                "narrow sea"
+              ]
+            }
+          },
+          {
+            "issue": "Dorne",
+            "backs": "Dorne left angry with the crown",
+            "fights": "Crown gifts to House Martell",
+            "match": {
+              "backs": [],
+              "fights": [
+                "martell",
+                "dorne"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "A price on the heads of Viserys and Daenerys",
+          "then": "sell Daenerys to a Dothraki khal for an army",
+          "match": [
+            "price on",
+            "killer",
+            "assassin"
+          ]
+        },
+        "price": {
+          "takes": "Nothing the king can give but the throne",
+          "refuses": "Any terms that leave you on the throne"
+        },
+        "face": {
+          "name": "Viserys Targaryen",
+          "role": "The last son of Aerys II, in Pentos",
+          "line": "The realm has a long memory. So do we. The usurper's dogs will kneel when the dragon comes home."
+        },
+        "rival": {
+          "id": "baratheon",
+          "issue": "The Iron Throne itself"
+        },
+        "tension": "Wants the throne back, but has no army, no ships and no gold, and lives on Illyrio Mopatis's charity."
+      }
+    },
+    {
+      "id": "freecities",
+      "tiny": "Cities",
+      "name": "The Free Cities",
+      "where": "abroad",
+      "icon": "foreign",
+      "weight": 0,
+      "stance": 0.55,
+      "line": 45,
+      "response": "none",
+      "wants": "The Free Cities want open ports and no war across the Narrow Sea.",
+      "says": "Trade with us and we have no quarrel with your throne.",
+      "does": "Shuts the ports to your trade",
+      "card": {
+        "base": "Nine city-states across the Narrow Sea, from Braavos to Volantis, whose merchant magisters trade in every port of Westeros.",
+        "wants": [
+          {
+            "issue": "Open ports",
+            "backs": "Low harbour dues in King's Landing and Gulltown",
+            "fights": "New harbour taxes",
+            "match": {
+              "backs": [
+                "harbour",
+                "port",
+                "trade"
+              ],
+              "fights": [
+                "harbour tax",
+                "port tax",
+                "dues"
+              ]
+            }
+          },
+          {
+            "issue": "Quiet seas",
+            "backs": "Peace across the Narrow Sea",
+            "fights": "A royal fleet sent east",
+            "match": {
+              "backs": [
+                "peace"
+              ],
+              "fights": [
+                "fleet",
+                "invade"
+              ]
+            }
+          },
+          {
+            "issue": "Pentos left alone",
+            "backs": "Leaving the exiles to the magisters",
+            "fights": "Killers sent into Pentos",
+            "match": {
+              "backs": [],
+              "fights": [
+                "pentos",
+                "killer",
+                "assassin"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Seizing Free City ships in port",
+          "then": "close their ports to your merchants",
+          "match": [
+            "seize ships",
+            "seize their ships",
+            "impound"
+          ]
+        },
+        "price": {
+          "takes": "Trade terms and quiet seas",
+          "refuses": "Taking sides in Westerosi wars"
+        },
+        "face": {
+          "name": "Illyrio Mopatis",
+          "role": "Magister of Pentos",
+          "line": "Trade with us and we have no quarrel with your throne. The children in my house are a kindness, nothing more."
+        },
+        "rival": {
+          "id": "baratheon",
+          "issue": "The hunt for the Targaryens in their cities"
+        },
+        "tension": "Wants no war across the Narrow Sea, but a magister of Pentos feeds the Targaryen heirs and plans to wed Daenerys to a khal."
+      }
+    }
+  ],
+  "regions": [
+    {
+      "id": "crownlands",
+      "name": "The Crownlands",
+      "popularity": 52
+    },
+    {
+      "id": "north",
+      "name": "The North",
+      "popularity": 55
+    },
+    {
+      "id": "vale",
+      "name": "The Vale",
+      "popularity": 45
+    },
+    {
+      "id": "riverlands",
+      "name": "The Riverlands",
+      "popularity": 57
+    },
+    {
+      "id": "ironislands",
+      "name": "The Iron Islands",
+      "popularity": 22
+    },
+    {
+      "id": "westerlands",
+      "name": "The Westerlands",
+      "popularity": 58
+    },
+    {
+      "id": "reach",
+      "name": "The Reach",
+      "popularity": 50
+    },
+    {
+      "id": "stormlands",
+      "name": "The Stormlands",
+      "popularity": 60
+    },
+    {
+      "id": "dorne",
+      "name": "Dorne",
+      "popularity": 31
+    }
+  ],
+  "world": [
+    {
+      "id": "ironbank",
+      "name": "The Iron Bank of Braavos",
+      "mood": "wary",
+      "wants": "Repayment of the crown's loans."
+    },
+    {
+      "id": "freecities",
+      "name": "The Free Cities",
+      "mood": "warm",
+      "wants": "Open trade across the Narrow Sea."
+    },
+    {
+      "id": "dothraki",
+      "name": "The Dothraki khalasars",
+      "mood": "hostile",
+      "wants": "Gifts, and a crossing of the sea they have never tried."
+    },
+    {
+      "id": "beyondwall",
+      "name": "The free folk beyond the Wall",
+      "mood": "hostile",
+      "wants": "Passage south through the Wall before winter."
+    }
+  ],
+  "instruments": {
+    "decree": {
+      "name": "Royal decree",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "law": {
+      "name": "Law of the realm",
+      "available": false,
+      "consent": "none",
+      "vetoes": []
+    },
+    "appoint": {
+      "name": "Royal appointment",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "spend": {
+      "name": "Crown grant",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "proclaim": {
+      "name": "Proclamation by raven",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "favour": {
+      "name": "Royal favour",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "force": {
+      "name": "Call the banners",
+      "available": true,
+      "consent": "army",
+      "vetoes": [
+        "houses"
+      ]
+    }
+  },
+  "briefing": {
+    "situation": "Fifteen years ago you took the Iron Throne in a rebellion against the last Targaryen king. The realm is at peace, but the crown owes 6 million gold dragons, much of it to House Lannister and the Iron Bank. Your Hand, Jon Arryn, has just died, and you must choose another. Across the Narrow Sea, the last children of the old dynasty are growing up in exile.",
+    "room": "No council votes on laws in the Seven Kingdoms. Your word is law, but the great lords decide whether to obey it, because they hold the land and the soldiers. Each decree that offends a house lowers its support. At the end of your reign five groups decide whether you keep the throne: the great houses with 30 of 100 votes, House Lannister and your own House Baratheon with 20 each, the small council and the smallfolk with 15 each.",
+    "you": "You are the King, and no council votes on your word. You cannot pass laws, so you act by decree and your other royal powers. Your treasury starts at 22 of 100 because the crown lives on borrowed gold. The Faith cannot vote but can turn your own house against you, and the Iron Bank can call in its loans. The first act of your reign is the choice of a new Hand."
+  },
+  "problems": [
+    "The crown owes 6 million gold dragons and spends more than it collects.",
+    "Your Hand, Jon Arryn, is dead, and his office is empty.",
+    "The Targaryen heirs are looking for allies across the Narrow Sea."
+  ],
+  "pledges": [
+    {
+      "text": "Pay down the debt to the Iron Bank",
+      "for": "ironbank",
+      "keep": "Repay 1 million gold dragons to the Iron Bank by moon 10.",
+      "gain": 8,
+      "lose": [
+        "treasury",
+        10
+      ],
+      "icon": "coin"
+    },
+    {
+      "text": "Keep the king's peace across the realm",
+      "for": "smallfolk",
+      "keep": "Let no great house make war on another through moon 12.",
+      "gain": 6,
+      "lose": [
+        "authority",
+        8
+      ],
+      "icon": "olive"
+    },
+    {
+      "text": "Hold a great tourney in the capital",
+      "for": "crownlands",
+      "keep": "Hold the Hand's tourney in King's Landing by moon 6.",
+      "gain": 5,
+      "lose": [
+        "popularity",
+        4
+      ],
+      "icon": "banner"
+    },
+    {
+      "text": "Send men and supplies to the Wall",
+      "for": "north",
+      "keep": "Send 500 men and a year of grain to the Night's Watch by moon 8.",
+      "gain": 10,
+      "lose": [
+        "popularity",
+        3
+      ],
+      "icon": "shield"
+    },
+    {
+      "text": "Bring Dorne closer to the throne",
+      "for": "dorne",
+      "keep": "Betroth a royal child to House Martell by moon 9.",
+      "gain": 12,
+      "lose": [
+        "authority",
+        5
+      ],
+      "icon": "heart"
+    },
+    {
+      "text": "No Lannister as Hand of the King",
+      "for": "houses",
+      "keep": "Name no Lannister as your Hand through moon 20.",
+      "gain": 7,
+      "lose": [
+        "loyalty",
+        6
+      ],
+      "icon": "crown"
+    },
+    {
+      "text": "Stop any Targaryen landing",
+      "for": "stormlands",
+      "keep": "Keep every Targaryen army off Westeros through moon 20.",
+      "gain": 4,
+      "lose": [
+        "authority",
+        12
+      ],
+      "icon": "ship"
+    },
+    {
+      "text": "Cut the royal household's spending",
+      "for": "council",
+      "keep": "Cut the royal household's costs by a quarter by moon 5.",
+      "gain": 3,
+      "lose": [
+        "chest",
+        6
+      ],
+      "icon": "cut"
+    }
+  ],
+  "build": {
+    "lookups": [
+      "Government of the Seven Kingdoms",
+      "Offices of the small council",
+      "Crown debt in 298 AC",
+      "Great houses and Lords Paramount",
+      "Iron Bank of Braavos",
+      "Vows of the Night's Watch"
+    ],
+    "people": [
+      "Robert Baratheon",
+      "Cersei Lannister",
+      "Eddard Stark",
+      "Tywin Lannister",
+      "Petyr Baelish",
+      "Varys",
+      "Stannis Baratheon",
+      "Renly Baratheon"
+    ],
+    "parties": [
+      "House Baratheon",
+      "House Lannister",
+      "House Stark",
+      "House Tyrell",
+      "House Martell",
+      "House Arryn"
+    ],
+    "keywords": [
+      "King's Landing",
+      "Hand of the King",
+      "fealty",
+      "crown debt",
+      "tourney",
+      "winter"
+    ]
+  },
+  "sampleAct": {
+    "verb": "appoint",
+    "text": "Name Lord Eddard Stark as Hand of the King",
+    "cost": "2 King's peace",
+    "pays": "+10 support with the great houses, House Lannister anger up 8",
+    "outcome": "The North serves the throne, and the Lannisters remember the chain they did not get."
+  },
+  "refusal": {
+    "text": "Drive the ironborn off the Iron Islands and give their lands to loyal houses",
+    "why": "content",
+    "line": "I will not file an order to drive the ironborn off their islands. That is the expulsion of a whole people."
+  },
+  "handling": [
+    "No council votes on laws here. Everything you do is a royal decree, and each great house decides whether to go along.",
+    "The crown has no standing army. Before you call the banners, the great houses must give you at least 50 of 100 support.",
+    "If the great houses' support falls below their line, they warn you, then rise against you, as they rose against the last king on this throne.",
+    "You may send a killer after the Targaryen heirs. House Lannister and the Stormlands approve, and support in the North falls.",
+    "The Faith and the Iron Bank have no vote. The Faith can turn your own house against you, and the Bank can call in its loans."
+  ],
+  "publicGroup": "smallfolk",
+  "ownGroup": "baratheon",
+  "screens": {
+    "premise": "You begin the year with a dead Hand and a crown that owes 6 million gold dragons.",
+    "clerks": {
+      "label": "Red Keep hours",
+      "unit": "hour",
+      "out": "The Red Keep has no hours left this moon."
+    },
+    "waits": {
+      "price": "Lord Baelish is costing it",
+      "count": "Grand Maester Pycelle is gathering answers",
+      "end": "Varys's little birds are reading the realm",
+      "replies": "Ravens are coming back to the rookery",
+      "card": "Your Hand is drafting your answer"
+    },
+    "halfTerm": {
+      "walk": "groups",
+      "holder": "council",
+      "groups": [
+        "council",
+        "houses",
+        "lannister",
+        "smallfolk"
+      ],
+      "lead": "Lords and knights ride to King's Landing for the Hand's tourney, and the great houses measure your favour."
+    },
+    "crisis": {
+      "title": "Lady Catelyn Stark has seized Tyrion Lannister on the kingsroad.",
+      "text": "She accuses him of trying to murder her son. Lord Tywin calls his banners in the westerlands.",
+      "choices": [
+        {
+          "label": "Order both houses to keep the king's peace",
+          "verb": "decree",
+          "cost": {
+            "aut": 3
+          },
+          "moves": {
+            "houses": 3,
+            "baratheon": 2,
+            "lannister": -4
+          },
+          "note": "The raids stop, for now."
+        },
+        {
+          "label": "Send knights to hunt Ser Gregor's raiders",
+          "verb": "force",
+          "cost": {
+            "aut": 4,
+            "tre": 6
+          },
+          "moves": {
+            "houses": 5,
+            "lannister": -8,
+            "council": -2
+          },
+          "note": "Lord Beric rides out, and Casterly Rock takes offence."
+        }
+      ]
+    },
+    "foreign": {
+      "from": "exiles",
+      "title": "Viserys Targaryen has wed his sister Daenerys to Khal Drogo.",
+      "text": "Drogo leads 40,000 riders across the Narrow Sea. Viserys expects them to carry him to the Iron Throne.",
+      "choices": [
+        {
+          "label": "Send a killer after Daenerys Targaryen",
+          "verb": "decree",
+          "cost": {
+            "aut": 2,
+            "che": 3
+          },
+          "moves": {
+            "lannister": 3,
+            "exiles": -8,
+            "houses": -3
+          },
+          "note": "A lordship is the price, and your Hand resigns over it."
+        },
+        {
+          "label": "Pay the Free Cities for news of the khalasar",
+          "verb": "spend",
+          "cost": {
+            "tre": 8
+          },
+          "moves": {
+            "freecities": 4,
+            "exiles": -4,
+            "council": -2
+          },
+          "note": "Every ship out of Pentos is reported to you."
+        }
+      ]
+    },
+    "swan": {
+      "title": "The Citadel's white ravens say the long summer is over.",
+      "text": "Winter may last years, and the granaries hold only months of food. The North goes hungry first.",
+      "choices": [
+        {
+          "label": "Order every lord to fill the crown's granaries",
+          "verb": "decree",
+          "cost": {
+            "aut": 3
+          },
+          "moves": {
+            "smallfolk": 4,
+            "houses": -5
+          },
+          "note": "Grain flows to King's Landing, and the lords grumble."
+        },
+        {
+          "label": "Buy grain from Braavos with borrowed gold",
+          "verb": "spend",
+          "cost": {
+            "tre": 10
+          },
+          "moves": {
+            "smallfolk": 5,
+            "freecities": 3,
+            "ironbank": -4
+          },
+          "note": "Ships come in from Braavos, and the debt grows."
+        }
+      ]
+    },
+    "escalations": [
+      {
+        "title": "Lord Tywin wants the Hand's chain",
+        "text": "Casterly Rock now wants its price for every loan, and the Queen presses its case at court.",
+        "effect": {
+          "line": {
+            "lannister": 6
+          }
+        }
+      },
+      {
+        "title": "The Iron Bank wants its gold",
+        "text": "The Iron Bank takes its repayments first, and the treasury fills more slowly.",
+        "effect": {
+          "flow": {
+            "tre": 2
+          }
+        }
+      }
+    ],
+    "verdict": {
+      "win": "The realm keeps faith with the King on the Iron Throne.",
+      "lose": "The realm breaks faith with you, and the lords seek another king."
+    },
+    "epilogue": "The maesters file your reign as the long summer between two wars.",
+    "obit": "Prince Joffrey takes the Iron Throne, and the Queen rules as regent."
+  }
+}

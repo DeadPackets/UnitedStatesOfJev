@@ -4,7 +4,6 @@ import { api, type GameView, type ViewMember } from "./api";
 import type { Act } from "./App";
 import { Chamber as ChamberFloor } from "./Hemicycle";
 import { TileReveal, type RevealRegion } from "./Tiles";
-import { Ornament } from "./theme";
 import { sound } from "./sound";
 
 type Props = { game: GameView; act: Act; busy: boolean; onDone: () => void };
@@ -144,7 +143,6 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
       <header className="topbar">
         <h1>{pack.title}</h1>
         <nav aria-label={name}>
-          <Ornament kind={pack.theme.ornament} />
           <span className="num" style={{ padding: "0 8px" }}>
             {shown} of {total || (game.marks.midterm ?? []).length}
           </span>

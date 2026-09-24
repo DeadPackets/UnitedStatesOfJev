@@ -39,8 +39,6 @@ export function Num({
   );
 }
 
-const clamp = (x: number) => Math.min(100, Math.max(0, x));
-
 /** The one national number: region approval weighted by region weight, the same sum the test's public half uses. */
 export function national(pack: GamePack, approval: Record<string, number>): number {
   let w = 0,
@@ -50,36 +48,4 @@ export function national(pack: GamePack, approval: Record<string, number>): numb
     sum += r.weight * (approval[r.id] ?? 50);
   }
   return w ? sum / w : 50;
-}
-
-type MeterProps = {
-  k: string;
-  value: number;
-  decimals?: number;
-  suffix?: string;
-  fill: number;
-  i: number;
-};
-
-/** One meter: label, rolling number, bar. The bar's transition delay staggers the row by 100 ms. */
-export function Meter({ k, value, decimals = 0, suffix = "", fill, i }: MeterProps) {
-  return (
-    <div className="meter rise" style={{ animationDelay: `${i * 100}ms` }}>
-      <div className="k">{k}</div>
-      <div className="v">
-        <Num value={value} decimals={decimals} />
-        {suffix}
-      </div>
-      <div
-        className="bar"
-        role="meter"
-        aria-label={k}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(clamp(fill))}
-      >
-        <i style={{ width: `${clamp(fill)}%`, transitionDelay: `${i * 100}ms` }} />
-      </div>
-    </div>
-  );
 }

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
 import Tiles, { shortNames, type TileDatum } from "./Tiles";
-import { Ornament, applyTheme } from "./theme";
+import { DEFAULT_THEME_TOKENS } from "../worker/tokens";
+import { applyTokens } from "./theme";
 import { allRead, barAt, difficulty, LEDGER_KEYS } from "./rules";
 import { sound } from "./sound";
 
@@ -29,8 +30,8 @@ export default function Seat({
   const [stamped, setStamped] = useState(false);
   const [seed] = useState(() => Math.floor(Math.random() * 36 ** 6));
   useEffect(() => {
-    applyTheme(pack.theme);
-  }, [pack.theme]);
+    applyTokens(pack.themeTokens ?? DEFAULT_THEME_TOKENS);
+  }, [pack.themeTokens]);
 
   const c = pack.constitution;
   // The pack names the office holder's own party, so there is no picker (planning brief).
@@ -73,9 +74,7 @@ export default function Seat({
     <main className="takeseat press" onPointerDown={sound.unlock}>
       <div className="mast">
         <b>{pack.title}</b>
-        <span className="flag">
-          <Ornament kind={pack.theme.ornament} />
-        </span>
+        <span className="flag" />
         <span>
           {pack.era} · {pack.place}
         </span>
@@ -144,9 +143,6 @@ export default function Seat({
               </p>
             </>
           )}
-          <div className={`stamp ${stamped ? "hit" : ""}`} aria-hidden="true">
-            {v.seat}
-          </div>
         </div>
       </section>
 

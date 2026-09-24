@@ -4,7 +4,6 @@ import type {
   BillDraft,
   Event,
   Game,
-  HolderRow,
   HolderView,
   InForce,
   InstrumentView,
@@ -18,6 +17,28 @@ import type {
   WireLine,
 } from "../worker/engine";
 import type { Citizen, Pack, PackView, Verb } from "../worker/pack";
+import type {
+  ChamberFaction,
+  Count,
+  DeskView,
+  Receipt,
+  ReceiptLine,
+  ResourceCard,
+  ReviewLine,
+  RimRow,
+  Verdict,
+} from "../worker/desk";
+export type {
+  ChamberFaction,
+  Count,
+  DeskView,
+  Receipt,
+  ReceiptLine,
+  ResourceCard,
+  ReviewLine,
+  RimRow,
+  Verdict,
+};
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
 export type { PackView };
@@ -59,6 +80,7 @@ export type GameView = Omit<
   ledgers: Game["ledgers"];
   scenario: string;
   pack: PackView;
+  desk: DeskView;
   members: ViewMember[];
   bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];
@@ -87,7 +109,7 @@ export type GameView = Omit<
   test?: TestResult;
   result?: NonNullable<Game["result"]> & Partial<RunStyle>;
 };
-export type { Act, HolderRow, InForce, PriceTag, Refusal, RivalMove, TestResult, Verb, WireLine };
+export type { Act, InForce };
 /** The pack as the game screens see it: the deck never leaves the Worker. */
 export type GamePack = GameView["pack"];
 export type Offer = {
@@ -158,12 +180,15 @@ export const api = {
   price: (g: GameView, text: string, verb?: string, memberId?: string) =>
     call<GameView>(`/games/${g.id}/acts/price`, { turn: g.turn, text, verb, memberId }),
   act: (g: GameView) => call<GameView>(`/games/${g.id}/acts`, { turn: g.turn }),
-  whip: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/whip`, { turn: g.turn }),
   lobby: (g: GameView, memberId: string, action: LobbyAction) =>
     call<GameView>(`/games/${g.id}/bills/${g.turn}/lobby`, { turn: g.turn, memberId, action }),
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),
   adopt: (g: GameView, i: number) =>
     call<GameView>(`/games/${g.id}/bills/${g.turn}/amend/${i}`, { turn: g.turn }),
+  negotiate: (g: GameView, faction: string, term: string) =>
+    call<GameView>(`/games/${g.id}/acts/negotiate`, { turn: g.turn, faction, term }),
+  decline: (g: GameView, i: number) =>
+    call<GameView>(`/games/${g.id}/events/${i}/decline`, { turn: g.turn }),
   vote: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/vote`, { turn: g.turn }),
   withdraw: (g: GameView, id: string) =>
     call<GameView>(`/games/${g.id}/acts/withdraw`, { turn: g.turn, id }),
