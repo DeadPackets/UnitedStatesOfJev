@@ -2,7 +2,8 @@ import { expect, test } from "bun:test";
 import { checkEmblem, EMBLEM_LIMIT, EmblemSchema, emblemShapes, sanitizeEmblem } from "./emblem";
 
 const CIRCLE = { tag: "circle", cx: 12, cy: 12, r: 5 };
-const box = (elements: unknown[], viewBox = "0 0 24 24") => sanitizeEmblem({ viewBox, elements });
+const box = (elements: unknown[], viewBox: unknown = "0 0 24 24") =>
+  sanitizeEmblem({ viewBox, elements });
 const one = (element: unknown) => box([element]).emblem?.elements[0];
 
 for (const tag of [
@@ -43,13 +44,32 @@ test("only allowlisted attributes survive: handlers, links, styles and classes a
   expect(element).toEqual({ tag: "path", d: "M2 2L20 20", fill: "ink" });
 });
 
-test("a __proto__ key from parsed JSON is dropped and pollutes nothing", () => {
+test("__proto__, constructor and toString keys from parsed JSON are dropped and pollute nothing", () => {
   const element = one(
-    JSON.parse('{"tag":"circle","cx":1,"cy":1,"r":1,"__proto__":{"polluted":1}}'),
+    JSON.parse(
+      '{"tag":"circle","cx":1,"cy":1,"r":1,"__proto__":{"polluted":1},"constructor":{"prototype":{"polluted":1}},"toString":"x"}',
+    ),
   );
   expect(element).toEqual({ tag: "circle", cx: 1, cy: 1, r: 1, fill: "ink" });
   expect(({} as Record<string, unknown>).polluted).toBeUndefined();
 });
+
+let deep: unknown = 5;
+for (let i = 0; i < 100_000; i++) deep = [deep];
+for (const [label, element, kept] of [
+  ["a number in an array", { ...CIRCLE, r: [5] }, false],
+  ["a number nested 100,000 deep", { ...CIRCLE, r: deep }, false],
+  ["a tag in an array", { ...CIRCLE, tag: ["circle"] }, false],
+  ["a boolean", { ...CIRCLE, cx: true }, false],
+  ["a null", { ...CIRCLE, cy: null }, false],
+  ["path data in an object", { tag: "path", d: { toString: () => "M0 0" } }, false],
+  ["a paint in an object", { ...CIRCLE, fill: { toString: () => "accent" } }, true],
+] as [string, unknown, boolean][]) {
+  test(`${label} is never read as text: the element is ${kept ? "painted in ink" : "dropped"}`, () => {
+    const result = box([element]);
+    expect(result.emblem?.elements ?? null).toEqual(kept ? [{ ...CIRCLE, fill: "ink" }] : null);
+  });
+}
 
 for (const d of [
   "M0 0 javascript:alert(1)",
@@ -76,11 +96,21 @@ for (const [transform, kept] of [
   ["translate(1,2);fill:red", false],
   ["scale(2) javascript:", false],
   ["rotate(calc(1))", false],
+  ["scale(1)".repeat(25), true],
+  ["scale(1)".repeat(26), false],
 ] as [string, boolean][]) {
-  test(`transform ${transform} is ${kept ? "kept" : "refused"}`, () => {
+  test(`transform ${transform.slice(0, 40)} (${transform.length} characters) is ${kept ? "kept" : "refused"}`, () => {
     expect(one({ ...CIRCLE, transform })?.transform).toBe(kept ? transform : undefined);
   });
 }
+
+test("a long transform is refused in linear time, on write and on render", () => {
+  const transform = `scale(${" ".repeat(100_000)}x`;
+  const started = performance.now();
+  expect(one({ ...CIRCLE, transform })).toBeUndefined();
+  expect(checkEmblem({ size: 24, elements: [{ ...CIRCLE, transform }] })).toBeNull();
+  expect(performance.now() - started).toBeLessThan(50);
+});
 
 for (const [paint, token] of [
   ["url(#g)", "ink"],
@@ -93,6 +123,9 @@ for (const [paint, token] of [
   ["ACCENT", "accent"],
   ["var(--paper)", "paper"],
   ["none", "none"],
+  ["constructor", "ink"],
+  ["__proto__", "ink"],
+  ["hasOwnProperty", "ink"],
 ]) {
   test(`fill ${paint} is stored as ${token}`, () => {
     expect(one({ ...CIRCLE, fill: paint })?.fill).toBe(token as never);
@@ -107,7 +140,8 @@ for (const [viewBox, size] of [
   ["0 0 24", null],
   ["", null],
   ["0 0 24 24; x", null],
-] as [string, number | null][]) {
+  [["0 0 24 24"], null],
+] as [unknown, number | null][]) {
   test(`viewBox ${JSON.stringify(viewBox)} gives size ${size}`, () => {
     expect(box([CIRCLE], viewBox).emblem?.size ?? null).toBe(size);
   });
@@ -170,6 +204,9 @@ for (const [label, stored] of [
   ["a script in d", { size: 24, elements: [{ tag: "path", d: "M0 0 javascript:" }] }],
   ["a raw colour", { size: 24, elements: [{ ...CIRCLE, fill: "#ff0000" }] }],
   ["no elements", { size: 24, elements: [] }],
+  ["an infinite radius", JSON.parse('{"size":24,"elements":[{"tag":"circle","r":1e400}]}')],
+  ["a NaN radius", { size: 24, elements: [{ ...CIRCLE, r: Number.NaN }] }],
+  ["thirteen elements", { size: 24, elements: Array.from({ length: 13 }, () => CIRCLE) }],
 ] as [string, unknown][]) {
   test(`checkEmblem refuses a stored emblem with ${label}`, () => {
     expect(checkEmblem(stored)).toBeNull();

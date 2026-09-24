@@ -28,22 +28,25 @@ const NUMBER_KEYS = [
 const PATTERNS = {
   d: /^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s+-]{1,1500}$/,
   points: /^[0-9eE.,\s+-]{1,600}$/,
-  transform: /^\s*((translate|rotate|scale|matrix|skewX|skewY)\(\s*[-0-9eE.,\s]*\)\s*)+$/,
+  // The lookahead caps the length before the body runs, so a long string costs no backtracking.
+  transform:
+    /^(?=[^]{1,200}$)\s*((translate|rotate|scale|matrix|skewX|skewY)\([-0-9eE.,\s]*\)\s*)+$/,
 };
-const ATTRIBUTE_NAMES: Record<string, string> = {
-  "stroke-width": "strokeWidth",
-  "fill-rule": "fillRule",
-};
+// Maps, not object literals: a model key such as "constructor" must not find Object.prototype.
+const ATTRIBUTE_NAMES = new Map([
+  ["stroke-width", "strokeWidth"],
+  ["fill-rule", "fillRule"],
+]);
 // The model may name a paint by its token or by the CSS the lab used; anything else is painted in ink.
-const PAINT_ALIASES: Record<string, EmblemPaint> = {
-  ink: "ink",
-  currentcolor: "ink",
-  accent: "accent",
-  "var(--accent)": "accent",
-  paper: "paper",
-  "var(--paper)": "paper",
-  none: "none",
-};
+const PAINT_ALIASES = new Map<string, EmblemPaint>([
+  ["ink", "ink"],
+  ["currentcolor", "ink"],
+  ["accent", "accent"],
+  ["var(--accent)", "accent"],
+  ["paper", "paper"],
+  ["var(--paper)", "paper"],
+  ["none", "none"],
+]);
 const PAINT_CSS: Record<EmblemPaint, string> = {
   ink: "currentColor",
   accent: "var(--accent)",
@@ -115,6 +118,10 @@ export type SanitizedEmblem =
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+// Only a string or a number is read. Anything else reads as empty, which every rule below refuses or paints in ink,
+// so an array or a deep nest is never stringified.
+const text = (value: unknown): string =>
+  typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
 
 // One model element to a stored element, or null (with the reason in fixes) when it cannot be made safe.
 function cleanElement(item: unknown, size: 24 | 64, fixes: string[]): EmblemElement | null {
@@ -122,7 +129,7 @@ function cleanElement(item: unknown, size: 24 | 64, fixes: string[]): EmblemElem
     fixes.push("dropped an element that is not an object");
     return null;
   }
-  const tag = String(item.tag ?? "").toLowerCase();
+  const tag = text(item.tag).toLowerCase();
   if (!(EMBLEM_TAGS as readonly string[]).includes(tag)) {
     fixes.push(`dropped <${tag.slice(0, 20)}>`);
     return null;
@@ -130,8 +137,8 @@ function cleanElement(item: unknown, size: 24 | 64, fixes: string[]): EmblemElem
   const element: Record<string, unknown> = { tag };
   for (const [rawKey, rawValue] of Object.entries(item)) {
     if (rawKey === "tag") continue;
-    const key = ATTRIBUTE_NAMES[rawKey] ?? rawKey;
-    const value = String(rawValue).trim();
+    const key = ATTRIBUTE_NAMES.get(rawKey) ?? rawKey;
+    const value = text(rawValue);
     if ((NUMBER_KEYS as readonly string[]).includes(key)) {
       const number = Number(value);
       if (value === "" || !Number.isFinite(number) || Math.abs(number) > size * 2) {
@@ -151,7 +158,7 @@ function cleanElement(item: unknown, size: 24 | 64, fixes: string[]): EmblemElem
       }
       element[key] = value;
     } else if (key === "fill" || key === "stroke") {
-      const paint = PAINT_ALIASES[value.toLowerCase()];
+      const paint = PAINT_ALIASES.get(value.toLowerCase());
       if (!paint) fixes.push(`${key} ${value.slice(0, 24)} -> ink`);
       element[key] = paint ?? "ink";
     } else if (key === "fillRule") {
@@ -177,9 +184,7 @@ function cleanElement(item: unknown, size: 24 | 64, fixes: string[]): EmblemElem
 export function sanitizeEmblem(raw: unknown): SanitizedEmblem {
   const fixes: string[] = [];
   if (!isRecord(raw)) return { emblem: null, reason: "not an object", fixes };
-  const viewBox = String(raw.viewBox ?? "")
-    .trim()
-    .replace(/\s+/g, " ");
+  const viewBox = text(raw.viewBox).replace(/\s+/g, " ");
   const size = viewBox === "0 0 24 24" ? 24 : viewBox === "0 0 64 64" ? 64 : null;
   if (!size) return { emblem: null, reason: `viewBox ${viewBox.slice(0, 40)}`, fixes };
   const elements: EmblemElement[] = [];
