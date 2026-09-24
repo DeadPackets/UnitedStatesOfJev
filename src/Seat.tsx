@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PackView } from "./api";
 import { Chamber } from "./Hemicycle";
 import Tiles, { shortNames, type TileDatum } from "./Tiles";
-import { DEFAULT_THEME_TOKENS } from "../worker/tokens";
+import { DEFAULT_THEME_TOKENS } from "../worker/colour";
 import { applyTokens } from "./theme";
 import { allRead, barAt, difficulty, LEDGER_KEYS } from "./rules";
 import { sound } from "./sound";

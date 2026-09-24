@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-import { DEFAULT_THEME_TOKENS } from "../worker/tokens";
+import { DEFAULT_THEME_TOKENS } from "../worker/colour";
 import { api, ApiError, type Daily, type GameView, type Offer, type PackView } from "./api";
 import Landing from "./Landing";
 import Match from "./Match";

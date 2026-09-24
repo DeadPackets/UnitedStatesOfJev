@@ -1,12 +1,7 @@
 import { memo } from "react";
 import type { Faction } from "../worker/pack";
-import {
-  DEFAULT_THEME_TOKENS,
-  fitContrast,
-  type Palette,
-  type ThemeTokens,
-  type Tint,
-} from "../worker/tokens";
+import { DEFAULT_THEME_TOKENS, fitContrast } from "../worker/colour";
+import type { Palette, ThemeTokens, Tint } from "../worker/tokens";
 
 type Fill = Faction["fill"];
 

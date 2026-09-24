@@ -1,6 +1,6 @@
 import "./base.css";
 import { createRoot } from "react-dom/client";
-import { DEFAULT_THEME_TOKENS } from "../worker/tokens";
+import { DEFAULT_THEME_TOKENS } from "../worker/colour";
 import App from "./App";
 import { applyTokens, themeMode } from "./theme";
 
