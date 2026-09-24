@@ -230,3 +230,20 @@ test.each([
   expect(claims).toBe(builds);
   if (builds === 0) expect(await r.json()).toEqual({ id: "rome01" });
 });
+
+test("a search that fails offers a build instead of an error", async () => {
+  const e = {
+    ...(env({}) as object),
+    BUILDS: { idFromName: () => "builds", get: () => ({ claim: async () => "ok" }) },
+    AI: { run: async () => ({ data: [[0.1, 0.2]] }) },
+    VEC: { query: async () => Promise.reject(new Error("no Vectorize")) },
+  } as never;
+  const r = await app.fetch(
+    new Request("https://x/api/scenarios/match", {
+      method: "POST",
+      body: JSON.stringify({ prompt: "Rome after Caesar" }),
+    }),
+    e,
+  );
+  expect([r.status, await r.json()]).toEqual([200, { build: true }]);
+});

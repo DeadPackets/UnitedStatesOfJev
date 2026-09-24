@@ -189,7 +189,13 @@ app.post("/api/scenarios/match", async (c) => {
   const builds = buildsDO(c.env);
   if ((await builds.claim(ip, "match", 20_000)) !== "ok")
     return c.json({ error: "One search every 20 seconds." }, 429);
-  return c.json(await match(c.env, prompt));
+  // A search that fails (Vectorize down, or local dev without it) offers a build, as POST /api/scenarios does.
+  return c.json(
+    await match(c.env, prompt).catch((e) => {
+      console.error("match", e);
+      return { build: true as const };
+    }),
+  );
 });
 
 app.post("/api/scenarios", async (c) => {
