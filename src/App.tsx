@@ -64,7 +64,7 @@ export default function App() {
   // Both keys outlive the tab: a reload between the night and the end of the term must not replay it.
   const [revealed, setRevealed] = useState<string | null>(() => store.get("usoj:revealed"));
   const [counted, setCounted] = useState<string | null>(() => store.get("usoj:counted"));
-  const [rolled, setRolled] = useState<string | null>(() => store.get("usoj:rolled"));
+  const [reviewing, setReviewing] = useState(false);
 
   const fail = (e: unknown) =>
     setToast(e instanceof ApiError ? e.message : "The connection dropped. Try again.");
@@ -155,21 +155,27 @@ export default function App() {
     return () => clearTimeout(t);
   }, [toast]);
 
+  const keep = (next: GameView) => {
+    setGame(next);
+    store.set("usoj:game", next.id);
+  };
+  const recover = (error: unknown) => {
+    fail(error);
+    // A 409 means the screen argued with a game that already moved; any failure mid-moment reloads the server's word.
+    if (game)
+      api
+        .load(game.id)
+        .then(setGame)
+        .catch(() => {});
+  };
+
   const act: Act = async (fn) => {
     setBusy(true);
     try {
-      const g = await fn();
-      setGame(g);
-      store.set("usoj:game", g.id);
+      keep(await fn());
       return true;
     } catch (e) {
-      fail(e);
-      // A 409 means the screen is arguing with a game that has already moved: take the server's word for it.
-      if (e instanceof ApiError && e.status === 409 && game)
-        await api
-          .load(game.id)
-          .then(setGame)
-          .catch(() => {});
+      recover(e);
       return false;
     } finally {
       setBusy(false);
@@ -251,31 +257,27 @@ export default function App() {
   const midtermKey = game?.midterm ? `${game.id}#${game.term}` : null;
   const showMidterm =
     !!game && (game.stage === "midterm" || (!!midtermKey && counted !== midtermKey));
-  // The vote that ends a term flips the stage in the same answer, so the Chamber keeps the floor until
-  // the roll call that did it has been seen. The midterm, the test and an impeachment all wait here.
-  const lastBill = game?.bills.at(-1);
-  const rollKey = game && lastBill?.votes ? `${game.id}#${lastBill.id}` : null;
-  const showRoll = !!game && !!rollKey && rolled !== rollKey && game.stage !== "session";
-  const onRolled = () => {
-    if (!rollKey) return;
-    setRolled(rollKey);
-    store.set("usoj:rolled", rollKey);
-  };
+  // The vote that ends a term flips the stage in the same answer, so the desk keeps the screen while its review
+  // is up. The midterm, the test and an impeachment all wait for "Back to the desk".
+  const desk = game ? (
+    <Desk
+      key={game.term}
+      game={game}
+      act={act}
+      onGame={keep}
+      onError={recover}
+      onQuit={quit}
+      onReview={setReviewing}
+    />
+  ) : null;
 
   return (
     <>
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
       <Suspense fallback={null}>
         {booting ? null : game ? (
-          showRoll ? (
-            <Desk
-              key={game.term}
-              game={game}
-              act={act}
-              busy={busy}
-              onQuit={quit}
-              onRolled={onRolled}
-            />
+          reviewing ? (
+            desk
           ) : showTest ? (
             <Test
               game={game}
@@ -301,14 +303,7 @@ export default function App() {
           ) : game.stage === "over" ? (
             <Over game={game} act={act} busy={busy} onNew={quit} />
           ) : (
-            <Desk
-              key={game.term}
-              game={game}
-              act={act}
-              busy={busy}
-              onQuit={quit}
-              onRolled={onRolled}
-            />
+            desk
           )
         ) : screen === "seat" && pack && scenario ? (
           <Seat pack={pack} busy={busy} onSeat={takeSeat} />

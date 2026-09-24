@@ -519,7 +519,7 @@ a.sr:focus {
 .mast .flag:empty {
   gap: 0;
 }
-.row {
+.row:not(.desk *) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -569,17 +569,17 @@ a.sr:focus {
   gap: 24px;
   width: 100%;
 }
-.card {
+.card:not(.desk *) {
   display: grid;
   gap: 8px;
   align-content: start;
   border-top: 2px solid var(--line);
   padding-top: 12px;
 }
-.card h2 {
+.card h2:not(.desk *) {
   font-size: 30px;
 }
-.card p {
+.card p:not(.desk *) {
   margin: 0;
 }
 
@@ -810,23 +810,6 @@ a.sr:focus {
   padding: 12px 24px 96px;
 }
 /* the Desk: one page, 100dvh. Only the rail body and the desk column scroll (spec §9) */
-body:has(.desk) {
-  height: 100dvh;
-  overflow: hidden;
-}
-.desk {
-  position: relative;
-  height: 100dvh;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px var(--wire);
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
-}
-.desk .mast {
-  min-height: var(--head);
-  padding: 7px 0;
-}
 .striprow {
   position: relative;
 }
@@ -1337,12 +1320,6 @@ button.w:focus-visible:not(.desk *) {
 .campaignview .causes {
   max-height: 22vh;
   overflow: auto;
-}
-.desk .hemi {
-  width: 100%;
-  height: auto;
-  max-height: 52vh;
-  margin-inline: auto;
 }
 .railbody {
   flex: 1;
@@ -1950,7 +1927,7 @@ button.w:focus-visible:not(.desk *) {
 
 /* over */
 /* the ending is a front page, not a receipt: the flag, then the headline across the measure */
-.over {
+.over:not(.desk *) {
   max-width: 900px;
   margin: 0 auto;
   padding: clamp(20px, 6vh, 64px) 24px 96px;
@@ -1958,7 +1935,7 @@ button.w:focus-visible:not(.desk *) {
   gap: 30px;
   justify-items: start;
 }
-.over h1 {
+.over h1:not(.desk *) {
   font-size: clamp(46px, 10vw, 118px);
   line-height: 0.9;
   letter-spacing: -0.02em;
@@ -2161,15 +2138,6 @@ button.w:focus-visible:not(.desk *) {
   }
   .drawer:not([open]) {
     transform: translateY(12px);
-  }
-  body:has(.desk) {
-    height: auto;
-    overflow: auto;
-  }
-  .desk {
-    height: auto;
-    display: block;
-    padding: 0 15px calc(var(--wire) + 56px);
   }
   .strip {
     grid-template-columns: repeat(5, 1fr);

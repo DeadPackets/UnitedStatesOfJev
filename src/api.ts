@@ -4,7 +4,6 @@ import type {
   BillDraft,
   Event,
   Game,
-  HolderRow,
   HolderView,
   InForce,
   InstrumentView,
@@ -110,7 +109,7 @@ export type GameView = Omit<
   test?: TestResult;
   result?: NonNullable<Game["result"]> & Partial<RunStyle>;
 };
-export type { Act, HolderRow, InForce, PriceTag, Refusal, RivalMove, TestResult, Verb, WireLine };
+export type { Act, InForce };
 /** The pack as the game screens see it: the deck never leaves the Worker. */
 export type GamePack = GameView["pack"];
 export type Offer = {
@@ -181,7 +180,6 @@ export const api = {
   price: (g: GameView, text: string, verb?: string, memberId?: string) =>
     call<GameView>(`/games/${g.id}/acts/price`, { turn: g.turn, text, verb, memberId }),
   act: (g: GameView) => call<GameView>(`/games/${g.id}/acts`, { turn: g.turn }),
-  whip: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/whip`, { turn: g.turn }),
   lobby: (g: GameView, memberId: string, action: LobbyAction) =>
     call<GameView>(`/games/${g.id}/bills/${g.turn}/lobby`, { turn: g.turn, memberId, action }),
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),

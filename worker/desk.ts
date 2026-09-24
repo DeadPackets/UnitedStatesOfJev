@@ -6,6 +6,7 @@ import { checkEmblem } from "./emblem";
 import {
   AGAINST_AT,
   FOR_AT,
+  type Bill,
   RESOURCES,
   WARN_TURNS,
   actTokens,
@@ -16,9 +17,11 @@ import {
   holdersOf,
   rng,
   testBar,
+  votePreview,
   weightOf,
   type FactionCount,
   type Game,
+  type Preview,
   type PriceTag,
   type Resource,
   type Veto,
@@ -104,6 +107,15 @@ export interface Count {
   expected: number;
   tie: string | null; // who breaks a tie in the ruler's favour
   factions: (FactionCount & { hesitantNames: string[] })[]; // FactionCount carries terms
+  leans: Record<string, "for" | "against" | "hesitant">; // each member's lean, so a seat opens the member it shows
+}
+
+/** A law signed and waiting for its vote: the only time the engine lets you lobby a seat or amend the bill. */
+export interface Floor {
+  title: string;
+  count: Count | null; // null until the bill is counted
+  drafts: { title: string; summary: string; expected: number }[] | null; // null: not amended yet
+  lobbied: string[]; // the members already offered something on this bill
 }
 
 /** The vote as the desk plays it, seat by seat, and its result. */
@@ -134,6 +146,7 @@ export interface DeskView {
   receipt: Receipt | null;
   verdict: Verdict | null;
   review: ReviewLine[] | null;
+  floor: Floor | null;
 }
 
 type Holder = ReturnType<typeof holdersOf>[number];
@@ -273,12 +286,14 @@ function afterVote(pack: Pack, signed: Game, passed: boolean) {
   return { game: clone, wire: clone.wire.slice(mark) };
 }
 
-function countOf(pack: Pack, game: Game, tag: PriceTag): Count | null {
-  const preview = previewOf(pack, game, tag);
+function countOf(pack: Pack, game: Game, bill: Bill, preview: Preview | null): Count | null {
   if (!preview) return null;
-  const chance = effectiveWhip(game, billOf(game, tag));
+  const chance = effectiveWhip(game, bill);
   const unsure = (id: string) => chance[id] > AGAINST_AT && chance[id] < FOR_AT;
+  const lean = (id: string) =>
+    chance[id] >= FOR_AT ? "for" : chance[id] <= AGAINST_AT ? "against" : "hesitant";
   return {
+    leans: Object.fromEntries(game.members.map((member) => [member.id, lean(member.id)])),
     label: pack.vocabulary.chamber,
     need: preview.need,
     expected: preview.expected,
@@ -335,7 +350,7 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
     fail: law ? outcome(false) : [],
     vetoes,
     blocked: vetoes.find((veto) => !veto.agrees) ?? null,
-    count: law ? countOf(pack, game, tag) : null,
+    count: law ? countOf(pack, game, billOf(game, tag), previewOf(pack, game, tag)) : null,
   };
 }
 
@@ -398,6 +413,30 @@ function reviewOf(pack: Pack, game: Game, previous: Game): ReviewLine[] {
   ];
 }
 
+function floorOf(pack: Pack, game: Game): Floor | null {
+  const bill = game.bills.at(-1);
+  if (game.phase !== "whip" || !bill || bill.id !== game.turn || bill.votes) return null;
+  const tokens = actTokens({
+    verb: "law",
+    tags: bill.tags,
+    touches: bill.touches,
+    keeps: bill.keeps,
+  });
+  const preview = bill.whip ? votePreview(pack, game, bill, tokens) : null;
+  return {
+    title: bill.title,
+    count: countOf(pack, game, bill, preview),
+    // game.ts stores each draft with its expected yes count
+    drafts:
+      bill.amendments?.map((draft) => ({
+        title: draft.title,
+        summary: draft.summary,
+        expected: (draft as { expected?: number }).expected ?? 0,
+      })) ?? null,
+    lobbied: Object.keys(bill.offers),
+  };
+}
+
 /** Everything the desk draws for this game, from the pack's words and the game's numbers; the client derives nothing. */
 export function deskView(pack: Pack, game: Game, previous?: Game): DeskView {
   const words = pack.vocabulary;
@@ -445,5 +484,6 @@ export function deskView(pack: Pack, game: Game, previous?: Game): DeskView {
     receipt: game.tag ? receiptOf(pack, game, game.tag) : null,
     verdict: verdictOf(pack, game),
     review: previous ? reviewOf(pack, game, previous) : null,
+    floor: floorOf(pack, game),
   };
 }

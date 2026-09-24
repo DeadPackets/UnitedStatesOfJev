@@ -83,15 +83,28 @@ test("a law's receipt counts every seat, names each hesitant one, and its defeat
   expect(count.factions.reduce((sum, f) => sum + f.for + f.against + f.hesitant, 0)).toBe(
     game.members.length,
   );
-  for (const faction of count.factions)
+  for (const faction of count.factions) {
     expect(faction.hesitantNames).toHaveLength(faction.hesitant);
+    // a seat opens the member it shows: each faction's leans add up to its split
+    const leans = game.members
+      .filter((m) => m.faction === faction.id)
+      .map((m) => count.leans[m.id]);
+    expect([faction.for, faction.against, faction.hesitant]).toEqual(
+      ["for", "against", "hesitant"].map((lean) => leans.filter((l) => l === lean).length),
+    );
+  }
   const authority = (lines: typeof receipt.pass) =>
     lines.find((line) => line.id === "authority")?.delta ?? 0;
   expect(authority(receipt.pass)).toBeGreaterThan(0);
   expect(authority(receipt.fail)).toBeLessThan(0);
 
   commit(pack, game, tag);
+  // tabled, it waits on the floor with the count the receipt showed, until the vote
+  expect(deskView(pack, game).floor!.count!.factions).toEqual(
+    count.factions.map(({ terms, ...f }) => f),
+  );
   applyVote(pack, game, game.bills.at(-1)!);
+  expect(deskView(pack, game).floor).toBeNull();
   const verdict = deskView(pack, game).verdict!;
   expect(new Set(verdict.order.map((seat) => seat.member)).size).toBe(game.members.length);
   const hesitant = verdict.order.map((seat) => seat.hesitant);
