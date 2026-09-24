@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { available, blocker, CAMPAIGN_DISCOUNT, commit, discountOf, instrumentOf, priceTag, vetoesOf, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, blocker, CAMPAIGN_DISCOUNT, commit, discountOf, instrumentOf, previewOf, priceTag, vetoesOf, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { applyVote, armyHolder, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
@@ -128,6 +128,26 @@ for (const [over, move, reason] of [
     expect(tag.stances.find((s) => s.id === "league")?.reason).toBe(reason);
     commit(carded, g, tag);
     expect(g.holders.league.support).toBe(50 + move);
+  });
+}
+
+// R30: a chamber faction's card shifts its seats' chances, and the preview buckets them from the same numbers.
+const floor: Pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound"
+  ? { ...f, card: { ...card, redMatch: ["piracy"], wants: [{ ...card.wants[0], match: { yes: ["tariffs"], no: ["fish-quotas"] } }] } } : f)) };
+for (const [tags, bucket, reason] of [
+  [["harbor-tolls"], "hesitant", "Nothing in it decides them"],       // 0.6
+  [["tariffs"], "for", "Backs Cut the grain tariff"],                  // 0.7
+  [["fish-quotas"], "hesitant", "Fights Raise the grain tariff"],      // 0.5
+  [["piracy"], "against", "Red line: Troops on the quay"],             // 0.3
+] as [string[], "for" | "against" | "hesitant", string][]) {
+  test(`a law on ${tags} puts the carded faction's seats ${bucket}`, () => {
+    const g = game();
+    for (const m of g.members) { m.mood = 0; m.loyalty = 100; }
+    const tag = priceTag(floor, g, quote({ verb: "law", tags }));
+    tag.count = { whip: Object.fromEntries(g.members.map((m) => [m.id, 0.6])) };
+    const row = previewOf(floor, g, tag)!.factions.find((f) => f.id === "tidebound")!;
+    expect(row[bucket]).toBe(6);
+    expect(row.reason).toBe(reason);
   });
 }
 

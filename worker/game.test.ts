@@ -565,25 +565,43 @@ test("price then commit moves the ledgers once, and a second commit has nothing 
   expect((await post("acts", { turn: 1 })).status).toBe(409);
 });
 
-test("committing a law tables it, counts the whip once and prints the band", async () => {
+test("pricing a law counts the whip and previews the vote; the vote agrees with it", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(62);
   lawTag = true;
-  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
+  const priced = await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
+  expect(game.calls).toBe(2);                       // R30: the price call and the whip count, both at price
+  const p = priced.body.tag.preview;
+  expect(p.need).toBe(pack.chamber.supermajority);  // the stub answers the filibuster at 0.9
+  expect(p.factions.reduce((a: number, f: any) => a + f.for + f.against + f.hesitant, 0)).toBe(game.members.length);
   const r = await post("acts", { turn: 1 });
   lawTag = false;
   expect(r.status).toBe(200);
+  expect(game.calls).toBe(2);                       // signing a counted law spends no clerk time
   expect(r.body.bills).toHaveLength(1);
-  expect(r.body.bills[0].needed).toBe(pack.chamber.supermajority);   // the stub answers the filibuster at 0.9
+  expect(r.body.bills[0].expected).toBe(p.expected);
   expect(r.body.bills[0].band[0]).toBeLessThanOrEqual(r.body.bills[0].expected);
   expect(r.body.bills[0].band[1]).toBeGreaterThanOrEqual(r.body.bills[0].expected);
-  expect(game.calls).toBe(2);                       // one for the price call, one for the whip count
   expect((await post("bills", { turn: 1, text: "anything at all here" })).status).toBe(404);
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
   const authority = game.ledgers.authority;
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(409);   // a decided bill is never voted twice
   expect(game.ledgers.authority).toBe(authority);
 });
+
+for (const mood of [1, -1]) {
+  test(`with every seat sure (mood ${mood}) the vote is exactly the preview's for`, async () => {
+    stubModels(0.9);
+    const { game, post } = seatedGame(65);
+    for (const m of game.members) { m.mood = mood; m.loyalty = 100; }
+    lawTag = true;
+    const p = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview;
+    await post("acts", { turn: 1 });
+    lawTag = false;
+    expect(p.for).toBe(mood > 0 ? game.members.length : 0);
+    expect((await post("bills/1/vote", { turn: 1 })).body.bills[0].yes).toBe(p.for);
+  });
+}
 
 test("a favour names a seat, and a body that names none is a 400", async () => {
   stubModels(0.9);

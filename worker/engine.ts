@@ -24,7 +24,9 @@ export interface Bill extends BillDraft {
   passed?: boolean; struck?: boolean; vetoed?: boolean;
   headline?: { title: string; lede: string }; quotes?: { name: string; text: string }[];
   rates?: InForce["perTurn"]; keeps?: string[]; sunset?: number | null;   // the price tag's, applied on a pass
+  shift?: Record<string, number>;   // R30: per chamber faction, added to each seat's chance: its card, then negotiated terms
 }
+export type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 export interface Event {
   id: string; turn: number; relief: boolean; stances: string[];
   kind?: "crisis" | "relief" | "foreign" | "swan";
@@ -76,6 +78,8 @@ export interface PriceTag {
   sunset: number | null; template: ActTemplate | null;
   stances: { id: string; name: string; support: number; line: number; reason?: string }[];
   vetoes?: Veto[];
+  // R30, a law only: the whip count taken at price, each faction's shift, and the preview they give.
+  count?: WhipCount; shift?: Record<string, number>; preview?: Preview | null;
 }
 export interface Veto { id: string; name: string; agrees: boolean; reason: string }
 export interface Refusal { line: string; test: "power" | "era"; cost: number }
@@ -694,7 +698,7 @@ export function threshold(pack: Pack, game: Game, bill: Bill): number {
 export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
   const out: Record<string, number> = {};
   for (const m of game.members) {
-    let p = (bill.whip?.[m.id] ?? 0) + m.mood;
+    let p = (bill.whip?.[m.id] ?? 0) + m.mood + (bill.shift?.[m.faction] ?? 0);
     for (const e of on(game)) p += e.whip?.(game, m) ?? 0;
     if (m.loyalty > 0 && m.loyalty < 30) p = Math.min(p, 0.15);   // a coalition partner under 30 votes as opposition
     if (game.revolt === game.turn && m.faction === game.faction) p = Math.min(p, REVOLT_WHIP);
@@ -703,12 +707,42 @@ export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
   return out;
 }
 export const expectedYes = (whip: Record<string, number>) => Object.values(whip).reduce((a, b) => a + b, 0);
-export const drawVotes = (whip: Record<string, number>) => Object.fromEntries(Object.keys(whip).map((id) => [id, roll() < whip[id]]));
+// R30: seeded by the game, term and bill, so the draw behind the preview is fixed once the act is priced.
+export const voteSeed = (game: Game, bill: Bill) => hash(`${game.seed}:${game.term}:${bill.id}`);
+export const drawVotes = (whip: Record<string, number>, seed: number) => {
+  const r = rng(seed);
+  return Object.fromEntries(Object.keys(whip).map((id) => [id, r() < whip[id]]));
+};
+
+// R30: what a chamber faction's card adds to each of its seats' chance of a yes.
+export const CARD_SHIFT: Record<Lean["lean"], number> = { 1: 0.1, 0: 0, [-1]: -0.1, [-2]: -0.3 };   // TUNE
+export const cardShift = (pack: Pack, tokens: Set<string>): Record<string, number> =>
+  Object.fromEntries(pack.factions.flatMap((f) => { const l = cardLean(f.card, tokens).lean; return l ? [[f.id, CARD_SHIFT[l]]] : []; }));
+
+export const FOR_AT = 2 / 3, AGAINST_AT = 1 / 3;   // TUNE: a seat this sure either way is counted; between them it hesitates
+export interface FactionCount { id: string; name: string; for: number; against: number; hesitant: number; reason: string }
+export interface Preview { need: number; expected: number; for: number; factions: FactionCount[] }
+
+// R30: the vote preview reads effectiveWhip, the same per-seat chances applyVote draws from.
+export function votePreview(pack: Pack, game: Game, bill: Bill, tokens: Set<string>): Preview | null {
+  if (!game.members.length) return null;
+  const whip = effectiveWhip(game, bill);
+  const factions = pack.factions.flatMap((f): FactionCount[] => {
+    const ps = game.members.filter((m) => m.faction === f.id).map((m) => whip[m.id]);
+    if (!ps.length) return [];
+    const n = { for: ps.filter((p) => p >= FOR_AT).length, against: ps.filter((p) => p <= AGAINST_AT).length };
+    const avg = mean(ps);
+    const reason = cardLean(f.card, tokens).reason
+      || (avg >= FOR_AT ? "Votes with you on this" : avg <= AGAINST_AT ? "Votes against you on this" : "Nothing in it decides them");
+    return [{ id: f.id, name: f.name, ...n, hesitant: ps.length - n.for - n.against, reason }];
+  });
+  return { need: threshold(pack, game, bill), expected: round1(expectedYes(whip)), for: factions.reduce((a, f) => a + f.for, 0), factions };
+}
 
 export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   const whip = effectiveWhip(game, bill);
   const th = threshold(pack, game, bill);
-  const votes = drawVotes(whip);
+  const votes = drawVotes(whip, voteSeed(game, bill));
   const yes = Object.values(votes).filter(Boolean).length;
   const passed = yes >= th;
   const struck = passed && (bill.constitutional ?? 0) >= (first(game, "struckAt") ?? 0.7);

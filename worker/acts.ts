@@ -1,7 +1,7 @@
 import {
-  actTokens, agrees, armyHolder, CARD_MOVE, cardLean, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
+  actTokens, agrees, armyHolder, CARD_MOVE, cardLean, cardShift, votePreview, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
   publicHolder, pushWire, repeal, SUPPORT_BYPASS, SUPPORT_HIT, SUPPORT_SERVE, weightOf,
-  type Game, type Member, type PriceTag, type Quote, type Veto, type WireLine,
+  type Bill, type Game, type Member, type Preview, type PriceTag, type Quote, type Veto, type WireLine,
 } from "./engine";
 import type { Instrument, Pack, Price, Verb } from "./pack";
 
@@ -98,6 +98,7 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
     serves: q.serves, hits: q.hits, keeps: q.keeps, targets: q.targets, tags: q.tags, regions: q.regions,
     member, promises: q.promises, sunset: q.sunset, template: q.template, stances,
     vetoes: vetoRows(pack, game, q.verb, tokens),
+    ...(q.verb === "law" ? { shift: cardShift(pack, tokens) } : {}),
   };
 }
 const rank = (q: Quote, id: string) => (q.serves.includes(id) ? 0 : q.hits.includes(id) ? 1 : 2);
@@ -216,6 +217,16 @@ function applyTemplate(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   }
 }
 
+// The bill a priced law tables, with the count and shifts the tag already holds.
+export const billOf = (game: Game, tag: PriceTag): Bill => ({
+  id: game.turn, text: tag.reading, title: tag.title, summary: tag.reading, tags: tag.tags, offers: {},
+  rates: tag.revenue, keeps: tag.keeps, sunset: tag.sunset, ...tag.count, ...(tag.shift ? { shift: { ...tag.shift } } : {}),
+});
+
+// R30: the preview a priced law shows; it needs the whip count, so a tag priced without one has none.
+export const previewOf = (pack: Pack, game: Game, tag: PriceTag): Preview | null =>
+  tag.verb === "law" && tag.count ? votePreview(pack, game, billOf(game, tag), actTokens(tag)) : null;
+
 export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (!canAfford(pack, game, tag.charge)) throw new Error("The ledgers cannot afford that act.");
   const wire = pay(pack, game, tag.charge, tag.title);
@@ -228,10 +239,7 @@ export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (post) repeal(game, id);
   // A law's rates and kept promises wait for the vote: applyVote enacts them only when it passes.
   if (tag.verb === "law") {
-    game.bills.push({
-      id: game.turn, text: tag.reading, title: tag.title, summary: tag.reading, tags: tag.tags, offers: {},
-      rates: tag.revenue, keeps: tag.keeps, sunset: tag.sunset,
-    });
+    game.bills.push(billOf(game, tag));
     game.phase = "whip";
   } else {
     if (tag.revenue.length || tag.verb === "appoint") {

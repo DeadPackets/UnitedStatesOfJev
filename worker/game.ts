@@ -5,7 +5,7 @@ import {
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
   pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, declineEvent, foreignStorylet, moveSupport, publicHolder,
-  REREAD_MAX, seedHolders, actTokens, type PriceTag,
+  REREAD_MAX, seedHolders, actTokens, type PriceTag, type WhipCount,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -16,7 +16,7 @@ import {
 import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, blocker, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, billOf, blocker, commit, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -30,7 +30,6 @@ export function pickStart(pack: Pack, f: number) {
 
 type Prose = { ending?: { title: string; body: string } };
 type Saved = { game: Game; prose: Prose };
-type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
 type Extra = { deltas?: Record<string, number>; usage?: { tokens: number; cost: number; calls: number; worst: number } };
@@ -204,7 +203,7 @@ export class GameDO extends DurableObject<Env> {
     if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
     refuse(pack, game, tag.verb, actTokens(tag));
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
-    if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    if (tag.verb === "law" && !tag.count && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     if (tag.verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
     if (tag.verb === "proclaim" && !spendCalls(game, 2)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);
@@ -217,7 +216,8 @@ export class GameDO extends DurableObject<Env> {
         bill.whip[m.id] = r.answers[m.id]?.noul ?? bill.whip[m.id];
       }
     }
-    if (tag.verb === "law") {
+    // A law priced with its whip count is tabled counted; one priced without (no clerk time left then) counts now.
+    if (tag.verb === "law" && !tag.count) {
       const bill = game.bills.at(-1)!;
       Object.assign(bill, await this.count(game, pack, bill));
     }
@@ -259,7 +259,13 @@ export class GameDO extends DurableObject<Env> {
       return {};
     }
     game.refusal = null;
-    game.tag = priceTag(pack, game, q, seat?.id ?? null);
+    const tag = priceTag(pack, game, q, seat?.id ?? null);
+    // R30: a law is counted at price, so the preview shows before signing; signing then spends no clerk time.
+    if (tag.verb === "law" && spendCalls(game)) {
+      tag.count = await this.count(game, pack, billOf(game, tag));
+      tag.preview = previewOf(pack, game, tag);
+    }
+    game.tag = tag;
     return {};
   }
 
