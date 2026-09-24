@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { DEFAULT_THEME_TOKENS } from "../worker/tokens";
 import { api, ApiError, type Daily, type GameView, type Offer, type PackView } from "./api";
 import Landing from "./Landing";
 import Match from "./Match";
-import Build from "./Build";
-import Seat from "./Seat";
-import Desk from "./Desk";
-import Midterm from "./Midterm";
-import Test from "./Test";
-import Won from "./Won";
-import Over from "./Over";
-import { applyTheme, resetTheme } from "./theme";
+import { applyTokens, resetTokens } from "./theme";
+// Each screen is its own chunk: the landing never downloads the desk.
+const Build = lazy(() => import("./Build"));
+const Seat = lazy(() => import("./Seat"));
+const Desk = lazy(() => import("./Desk"));
+const Midterm = lazy(() => import("./Midterm"));
+const Test = lazy(() => import("./Test"));
+const Won = lazy(() => import("./Won"));
+const Over = lazy(() => import("./Over"));
 import "./styles.css";
 
 export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
@@ -144,7 +146,7 @@ export default function App() {
 
   // A game loaded from storage or a share code never passed through Seat, so the theme lands here.
   useEffect(() => {
-    if (game) applyTheme(game.pack.theme);
+    if (game) applyTokens(game.pack.themeTokens ?? DEFAULT_THEME_TOKENS);
   }, [game?.pack.id]); // eslint-disable-line
 
   useEffect(() => {
@@ -225,7 +227,7 @@ export default function App() {
     setPack(null);
     setScenario(null);
     setScreen("landing");
-    resetTheme();
+    resetTokens();
     go("/");
     api
       .daily()
@@ -263,67 +265,69 @@ export default function App() {
   return (
     <>
       {busy || booting ? <div className="progress" aria-hidden="true" /> : null}
-      {booting ? null : game ? (
-        showRoll ? (
-          <Desk
-            key={game.term}
-            game={game}
-            act={act}
-            busy={busy}
-            onQuit={quit}
-            onRolled={onRolled}
-          />
-        ) : showTest ? (
-          <Test
-            game={game}
-            act={act}
-            busy={busy}
-            onDone={() => {
-              setRevealed(testKey);
-              store.set("usoj:revealed", testKey!);
-            }}
-          />
-        ) : showMidterm ? (
-          <Midterm
-            game={game}
-            act={act}
-            busy={busy}
-            onDone={() => {
-              setCounted(midtermKey);
-              store.set("usoj:counted", midtermKey!);
-            }}
-          />
-        ) : game.stage === "won" ? (
-          <Won game={game} act={act} busy={busy} />
-        ) : game.stage === "over" ? (
-          <Over game={game} act={act} busy={busy} onNew={quit} />
+      <Suspense fallback={null}>
+        {booting ? null : game ? (
+          showRoll ? (
+            <Desk
+              key={game.term}
+              game={game}
+              act={act}
+              busy={busy}
+              onQuit={quit}
+              onRolled={onRolled}
+            />
+          ) : showTest ? (
+            <Test
+              game={game}
+              act={act}
+              busy={busy}
+              onDone={() => {
+                setRevealed(testKey);
+                store.set("usoj:revealed", testKey!);
+              }}
+            />
+          ) : showMidterm ? (
+            <Midterm
+              game={game}
+              act={act}
+              busy={busy}
+              onDone={() => {
+                setCounted(midtermKey);
+                store.set("usoj:counted", midtermKey!);
+              }}
+            />
+          ) : game.stage === "won" ? (
+            <Won game={game} act={act} busy={busy} />
+          ) : game.stage === "over" ? (
+            <Over game={game} act={act} busy={busy} onNew={quit} />
+          ) : (
+            <Desk
+              key={game.term}
+              game={game}
+              act={act}
+              busy={busy}
+              onQuit={quit}
+              onRolled={onRolled}
+            />
+          )
+        ) : screen === "seat" && pack && scenario ? (
+          <Seat pack={pack} busy={busy} onSeat={takeSeat} />
+        ) : screen === "build" && scenario ? (
+          <Build id={scenario} onReady={ready} onRestart={restart} />
+        ) : screen === "match" ? (
+          <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
         ) : (
-          <Desk
-            key={game.term}
-            game={game}
-            act={act}
+          <Landing
+            daily={daily}
+            resume={!!resumeId}
             busy={busy}
-            onQuit={quit}
-            onRolled={onRolled}
+            onFind={find}
+            onResume={resume}
+            onCode={(code) => act(() => api.share(code))}
+            onPlayDaily={playDaily}
           />
-        )
-      ) : screen === "seat" && pack && scenario ? (
-        <Seat pack={pack} busy={busy} onSeat={takeSeat} />
-      ) : screen === "build" && scenario ? (
-        <Build id={scenario} onReady={ready} onRestart={restart} />
-      ) : screen === "match" ? (
-        <Match offers={offers} busy={busy} onPlay={open} onBuild={() => start(prompt)} />
-      ) : (
-        <Landing
-          daily={daily}
-          resume={!!resumeId}
-          busy={busy}
-          onFind={find}
-          onResume={resume}
-          onCode={(code) => act(() => api.share(code))}
-          onPlayDaily={playDaily}
-        />
-      )}
+        )}
+      </Suspense>
       <div role="status" aria-live="polite">
         {toast ? <div className="toast">{toast}</div> : null}
       </div>

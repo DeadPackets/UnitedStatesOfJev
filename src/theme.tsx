@@ -1,5 +1,12 @@
 import { memo } from "react";
 import type { Faction, Pack } from "../worker/pack";
+import {
+  DEFAULT_THEME_TOKENS,
+  fitContrast,
+  type Palette,
+  type ThemeTokens,
+  type Tint,
+} from "../worker/tokens";
 
 type Fill = Faction["fill"];
 
@@ -169,4 +176,126 @@ export function Ornament({ kind }: { kind: OrnamentKind }) {
       <path d={d} />
     </svg>
   );
+}
+
+// ---- world tokens (level B): the palette in both modes, the fonts, radius, texture scale, material, motion, courier ----
+
+// The fixed colours (resources, danger, change), fitted per world at 4.6:1 on its grounds, as the mock did.
+const FIXED = [
+  {
+    tre: "#227f53",
+    aut: "#623e96",
+    che: "#8a6d24",
+    danger: "#bb0916",
+    up: "#1d7a4a",
+    dn: "#c2410c",
+  },
+  {
+    tre: "#6dc393",
+    aut: "#a37fde",
+    che: "#f1cc7e",
+    danger: "#ff7b72",
+    up: "#6dc393",
+    dn: "#ff9d5c",
+  },
+];
+const hexToRgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+/** `from` moved `share` of the way to `to` in sRGB, as the mock's mix(). */
+export const mix = (from: string, to: string, share: number) => {
+  const target = hexToRgb(to);
+  return `#${hexToRgb(from)
+    .map((channel, i) =>
+      Math.round(channel + (target[i] - channel) * share)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+};
+
+function paletteRules(palette: Palette, dark: boolean, tints: Tint[]): string {
+  const tone = mix(palette.ink, palette.paper, dark ? 0.9 : 0.92);
+  const grounds = [palette.paper, palette.surface, tone];
+  // Danger also sits on every rim row's deepest wash (16% of the group's hue), so it is fitted there too.
+  const washes = tints.map((tint) => mix(palette.surface, dark ? tint.dark : tint.light, 0.16));
+  const fixed = Object.entries(FIXED[dark ? 1 : 0]).map(
+    ([key, colour]) =>
+      `--${key}:${fitContrast(colour, key === "danger" ? [...grounds, ...washes] : grounds, 4.6) ?? colour}`,
+  );
+  return [
+    `--paper:${palette.paper}`,
+    `--card:${palette.surface}`,
+    `--ink:${palette.ink}`,
+    `--ink-2:${palette.muted}`,
+    `--rule:${palette.rule}`,
+    `--tone:${tone}`,
+    `--accent:${palette.accent}`,
+    `--navy:${palette.accent2}`,
+    `--sh:${dark ? "rgba(0,0,0,.55)" : `${palette.ink}38`}`,
+    ...fixed,
+  ].join(";");
+}
+
+/** Paints a world: its palette (both modes), its two or three fonts, radius, texture scale, material, motion and courier. */
+export function applyTokens(tokens: ThemeTokens, tints: Tint[] = []) {
+  const root = document.documentElement;
+  // Seat and Build still paint the old pack theme inline, which would outrank these rules until Task 5 restyles them.
+  resetTheme();
+  const families = [...new Set([tokens.display, tokens.body, tokens.mono ?? tokens.body])];
+  const href = `https://fonts.googleapis.com/css2?${families
+    .map(
+      (family) =>
+        `family=${family.replace(/ /g, "+")}${family === tokens.display ? "" : ":wght@400;500;600;700"}`,
+    )
+    .join("&")}&display=swap`;
+  let fonts = document.getElementById("world-fonts") as HTMLLinkElement | null;
+  if (!fonts) {
+    fonts = Object.assign(document.createElement("link"), { id: "world-fonts", rel: "stylesheet" });
+    document.head.append(fonts);
+  }
+  if (fonts.href !== href) fonts.href = href;
+  // Blackletter and small-caps faces set poor figures, so numbers fall back to the body face there (the mock's rule).
+  const numerals = /IM Fell| SC$|Unifraktur/.test(tokens.display) ? tokens.body : tokens.display;
+  const shared = [
+    `--disp:"${tokens.display}",Georgia,serif`,
+    `--ui:"${tokens.body}",system-ui,sans-serif`,
+    `--mono:"${tokens.mono ?? tokens.body}",ui-monospace,monospace`,
+    `--numf:"${numerals}",Georgia,serif`,
+    `--r:${tokens.radius / 16}rem`,
+    `--tex:${tokens.textureScale}`,
+    `--fs:${tokens.bodySize / 16}rem`,
+  ].join(";");
+  let style = document.getElementById("world-tokens");
+  if (!style) {
+    style = Object.assign(document.createElement("style"), { id: "world-tokens" });
+    document.head.append(style);
+  }
+  style.textContent = `:root{${shared};${paletteRules(tokens.light, false, tints)}}:root[data-theme=dark]{${paletteRules(tokens.dark, true, tints)}}`;
+  Object.assign(root.dataset, {
+    material: tokens.material,
+    texture: tokens.texture,
+    motion: tokens.motion,
+    courier: tokens.courier,
+  });
+}
+
+/** Back to the default world, so the next pack never starts from the last one's look. */
+export const resetTokens = () => applyTokens(DEFAULT_THEME_TOKENS);
+
+const MODE_KEY = "usoj:theme";
+export function themeMode(): "light" | "dark" {
+  try {
+    const saved = localStorage.getItem(MODE_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+  } catch {
+    /* blocked storage: follow the system */
+  }
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+export function setThemeMode(mode: "light" | "dark") {
+  document.documentElement.dataset.theme = mode;
+  try {
+    localStorage.setItem(MODE_KEY, mode);
+  } catch {
+    /* the choice lasts this visit */
+  }
 }

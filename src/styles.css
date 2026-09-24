@@ -1,19 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600&display=swap");
-
 /* Duotone: ink on paper, one red. The pack overrides ink, paper, accent and the two font stacks. */
 :root {
-  --bg: #ffffff;
-  --paper: #f4f4f2;
-  --ink: #0b0b0b;
-  --line: #0b0b0b;
-  --accent: #d0001f;
   /* spec §9: fixed across every pack. applyTheme and resetTheme must never list these. */
-  --tre: #227f53;
-  --aut: #623e96;
-  --che: #a98738;
   --loy: #2b7592;
   --pop: #a5417f;
-  --danger: #bb0916;
   --tre-on: #6dc393;
   --aut-on: #a37fde;
   --che-on: #f1cc7e;
@@ -27,10 +16,6 @@
   --s4: 16px;
   --s5: 24px;
   --s6: 32px;
-  --tone: color-mix(in oklab, var(--ink) 10%, var(--paper));
-  --ink-2: color-mix(in oklab, var(--ink) 65%, var(--paper));
-  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
-  --sans: "Public Sans", system-ui, sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --t-fast: 120ms;
@@ -40,7 +25,11 @@
   --z-modal: 30;
   --z-toast: 40;
   --z-coach: 50;
-  color-scheme: light;
+  /* the old screens read these names; the world tokens (src/base.css, applyTokens) own the values */
+  --bg: var(--paper);
+  --line: var(--ink);
+  --display: var(--disp);
+  --sans: var(--ui);
 }
 .r-tre {
   --c: var(--tre);
@@ -67,18 +56,6 @@
   --c-on: var(--danger);
 }
 /* chest is 3.10:1 on paper, so a hue paints the mark and never the text (research §3) */
-.ic {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  vertical-align: -4px;
-  color: var(--c, currentColor);
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
 .ic.sm {
   width: 15px;
   height: 15px;
@@ -97,7 +74,7 @@
 html {
   -webkit-text-size-adjust: 100%;
 }
-body {
+body:not(:has(.desk)) {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -108,45 +85,7 @@ body {
 }
 /* halftone paper: one cheap repeating gradient, masked so it never sits behind text-heavy areas */
 /* drifts one 7px period per loop, so the seam never shows; transform only, so it stays on the compositor */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -7px;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.55;
-  animation: drift 5s linear infinite;
-  background-image: radial-gradient(var(--tone) 0.7px, transparent 0.9px);
-  background-size: 7px 7px;
-  mask-image: radial-gradient(60% 50% at 50% 30%, black, transparent 80%);
-}
-@keyframes drift {
-  to {
-    transform: translate(7px, 7px);
-  }
-}
 /* the pack's texture, all four from gradients on the same fixed layer. newsprint is the halftone above. */
-html[data-texture="parchment"] body::before {
-  animation: none;
-  opacity: 0.7;
-  background-image:
-    repeating-linear-gradient(94deg, transparent 0 3px, var(--tone) 3px 4px),
-    repeating-linear-gradient(2deg, transparent 0 9px, var(--tone) 9px 11px);
-}
-html[data-texture="concrete"] body::before {
-  animation: none;
-  opacity: 0.8;
-  background-image: radial-gradient(var(--tone) 0.5px, transparent 0.7px);
-  background-size: 3px 3px;
-}
-html[data-texture="steel"] body::before {
-  animation: none;
-  opacity: 0.6;
-  background-image: repeating-linear-gradient(90deg, var(--tone) 0 1px, transparent 1px 7px);
-}
-html[data-texture="none"] body::before {
-  display: none;
-}
 /* the press wipe: one sheet of paper crosses the page while the theme is repainted behind it */
 .wipe {
   position: fixed;
@@ -170,33 +109,13 @@ html[data-texture="none"] body::before {
   }
 }
 /* press sheen: a paper-tone band sweeps the page like light on newsprint. Band period is 100vw, so a 100vw shift loops seamlessly */
-body::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: -100vw;
-  width: 400vw;
-  z-index: 0;
-  pointer-events: none;
-  transform: skewX(-22deg);
-  background:
-    linear-gradient(90deg, transparent 0 30%, var(--paper) 50%, transparent 70% 100%) 0 0 / 25% 100%
-    repeat-x;
-  animation: sheen 18s linear infinite;
-}
-@keyframes sheen {
-  to {
-    transform: skewX(-22deg) translateX(-25%);
-  }
-}
 #root {
   position: relative;
   z-index: 1;
 }
-h1,
-h2,
-h3 {
+h1:not(.desk *),
+h2:not(.desk *),
+h3:not(.desk *) {
   font-family: var(--display);
   font-weight: 800;
   line-height: 0.95;
@@ -204,16 +123,13 @@ h3 {
   margin: 0;
   text-wrap: balance;
 }
-p {
+p:not(.desk *) {
   text-wrap: pretty;
   max-width: 65ch;
 }
 li,
 figcaption {
   text-wrap: pretty;
-}
-.num {
-  font-variant-numeric: tabular-nums;
 }
 button {
   font: inherit;
@@ -224,11 +140,11 @@ button {
   padding: 0;
   touch-action: manipulation;
 }
-button:disabled {
+button:disabled:not(.desk *) {
   opacity: 0.4;
   cursor: default;
 }
-:focus-visible {
+:focus-visible:not(.desk *) {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
@@ -259,29 +175,11 @@ a.sr:focus {
   color: var(--ink);
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 0 26px;
-  border: 2px solid var(--ink);
-  background: var(--ink);
-  color: var(--bg);
-  font: 800 19px / 1 var(--display);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transition:
-    transform var(--t-fast) var(--ease-out),
-    background var(--t-state),
-    color var(--t-state);
-}
-.btn:not(:disabled):hover {
+.btn:not(:disabled):hover:not(.desk *) {
   background: var(--bg);
   color: var(--ink);
 }
-.btn:not(:disabled):active {
+.btn:not(:disabled):active:not(.desk *) {
   transform: scale(0.96);
 }
 .btn.ghost {
@@ -337,13 +235,6 @@ a.sr:focus {
 .chip.red {
   border-color: var(--danger);
   color: var(--danger);
-}
-.kicker {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-2);
 }
 .rule {
   border-top: 1px solid var(--line);
@@ -635,7 +526,7 @@ a.sr:focus {
   gap: 14px;
 }
 /* the premise is the pitch: a sentence at poster size on a poster measure, not a wall of caps */
-.head {
+.head:not(.desk *) {
   font: 800 clamp(26px, 3.2vw, 44px) / 1.05 var(--display);
   letter-spacing: -0.01em;
   max-width: 32ch;
@@ -781,7 +672,7 @@ a.sr:focus {
   display: grid;
   gap: 8px;
 }
-.fcard {
+.fcard:not(.desk *) {
   width: 100%;
   display: flex;
   align-items: start;
@@ -794,11 +685,11 @@ a.sr:focus {
     border-color var(--t-state),
     transform var(--t-fast);
 }
-.fcard:hover {
+.fcard:hover:not(.desk *) {
   border-color: var(--ink);
 }
 /* the pick is the whole card taking ink, never a stripe down one side */
-.fcard[aria-checked="true"] {
+.fcard[aria-checked="true"]:not(.desk *) {
   border-color: var(--ink);
   border-width: 2px;
   background: var(--tone);
@@ -807,7 +698,7 @@ a.sr:focus {
 .fcard[aria-checked="true"] .muted {
   color: var(--ink);
 }
-.fcard:active {
+.fcard:active:not(.desk *) {
   transform: scale(0.96);
 }
 .fcard .t {
@@ -815,7 +706,7 @@ a.sr:focus {
   gap: 3px;
   min-width: 0;
 }
-.fcard b {
+.fcard b:not(.desk *) {
   font: 800 19px / 1.05 var(--display);
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -944,7 +835,7 @@ body:has(.desk) {
   grid-template-columns: repeat(5, 1fr);
   border-bottom: 2px solid var(--ink);
 }
-.led {
+.led:not(.desk *) {
   text-align: left;
   padding: 9px 14px 11px;
   border-right: 1px solid var(--tone);
@@ -953,15 +844,15 @@ body:has(.desk) {
   min-height: 44px;
   transition: background var(--t-fast);
 }
-.led:first-child {
+.led:first-child:not(.desk *) {
   padding-left: 0;
 }
-.led:last-child {
+.led:last-child:not(.desk *) {
   border-right: 0;
   padding-right: 0;
 }
-.led:hover,
-.led[aria-expanded="true"] {
+.led:hover:not(.desk *),
+.led[aria-expanded="true"]:not(.desk *) {
   background: color-mix(in oklab, var(--c) 9%, transparent);
 }
 .ledk {
@@ -972,7 +863,7 @@ body:has(.desk) {
 .ledk .kicker {
   color: var(--ink-2);
 }
-.led .top {
+.led .top:not(.desk *) {
   display: flex;
   align-items: baseline;
   gap: var(--s2);
@@ -1133,8 +1024,8 @@ body:has(.desk) {
   min-height: 38px;
   border-bottom: 2px solid transparent;
 }
-button.w:hover,
-button.w:focus-visible {
+button.w:hover:not(.desk *),
+button.w:focus-visible:not(.desk *) {
   border-bottom-color: var(--c-on);
 }
 .wire .w b {
@@ -1611,7 +1502,7 @@ button.w:focus-visible {
   color: var(--ink-2);
   white-space: nowrap;
 }
-.stage {
+.stage:not(.desk *) {
   display: grid;
   gap: 14px;
   align-content: start;
@@ -2283,12 +2174,12 @@ button.w:focus-visible {
   .strip {
     grid-template-columns: repeat(5, 1fr);
   }
-  .led {
+  .led:not(.desk *) {
     padding: 8px 4px 10px;
     border-right: 1px solid var(--tone);
     min-width: 0;
   }
-  .led:last-child {
+  .led:last-child:not(.desk *) {
     border-right: 0;
   }
   .led .v {

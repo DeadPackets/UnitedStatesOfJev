@@ -1,0 +1,1615 @@
+{
+  "id": "biden-2021",
+  "prompt": "The Biden presidency, United States 2021 to 2025",
+  "title": "The Biden presidency",
+  "era": "United States, January 2021 to January 2025",
+  "place": "Washington, D.C.",
+  "year": 2021,
+  "kind": "recorded",
+  "ruler": {
+    "role": "President",
+    "name": "Joe Biden",
+    "faction": "dem",
+    "youAre": "You are Joe Biden, the 46th President of the United States.",
+    "above": null,
+    "removedBy": [
+      {
+        "id": "dem",
+        "how": "can call the final vote early if its support falls below its line"
+      }
+    ]
+  },
+  "oath": {
+    "form": "Before Chief Justice John Roberts, West Front of the Capitol, 20 January 2021",
+    "lead": "Chief Justice John Roberts holds the family Bible. The crowd goes quiet. When you are ready, place your left hand on it, raise your right, and repeat after him.",
+    "text": "I do solemnly swear that I will faithfully execute the Office of President of the United States, and will to the best of my Ability, preserve, protect and defend the Constitution of the United States. So help me God.",
+    "source": "US Constitution, Article II, Section 1, with the closing 'So help me God' that Biden added, as presidents by custom do.",
+    "gesture": "Place your hand on the Bible",
+    "signed": "Joseph R. Biden Jr."
+  },
+  "theme": {
+    "display": "Libre Caslon Display",
+    "displayWeight": 400,
+    "displayCase": "none",
+    "displayTracking": 0,
+    "body": "Public Sans",
+    "bodySize": 17,
+    "mono": "IBM Plex Mono",
+    "script": "ltr",
+    "paper": "#f4f0e6",
+    "surface": "#fbf9f3",
+    "ink": "#121a2b",
+    "muted": "#4f5668",
+    "accent": "#b3202e",
+    "accent2": "#1f3a6e",
+    "rule": "#c9bfa9",
+    "dark": {
+      "paper": "#0c111a",
+      "surface": "#141b27",
+      "ink": "#ece5d5",
+      "muted": "#9ba2b2",
+      "accent": "#ef5a62",
+      "accent2": "#8eaaf0",
+      "rule": "#263044"
+    },
+    "material": "linen",
+    "texture": "crosshatch",
+    "textureScale": 0.8,
+    "radius": 4,
+    "ruleStyle": "double",
+    "ornament": "star",
+    "motion": "brisk",
+    "motif": "46"
+  },
+  "vocabulary": {
+    "chamber": "Senate",
+    "member": "senator",
+    "bill": "bill",
+    "pass": "passed",
+    "fail": "failed",
+    "turn": "turn",
+    "test": "the final vote",
+    "post": "address",
+    "halfTerm": "the midterms",
+    "turnLength": "about ten weeks",
+    "file": "Senate file"
+  },
+  "chamber": {
+    "name": "Senate",
+    "shape": "hemicycle",
+    "size": 100,
+    "threshold": 50,
+    "tie": "your Vice President",
+    "factions": [
+      {
+        "id": "dem",
+        "name": "Democratic Party",
+        "short": "Democrats",
+        "color": "#2553a3",
+        "seats": 48,
+        "card": {
+          "base": "48 Senate Democrats under Chuck Schumer, from Elizabeth Warren of Massachusetts to Joe Manchin of West Virginia.",
+          "wants": [
+            {
+              "issue": "Relief",
+              "backs": "Relief checks and aid for states and cities",
+              "fights": "Cutting the rescue plan down",
+              "match": {
+                "backs": [
+                  "rescue",
+                  "checks",
+                  "$1,400",
+                  "relief",
+                  "jobless aid"
+                ],
+                "fights": [
+                  "smaller relief",
+                  "means test"
+                ]
+              }
+            },
+            {
+              "issue": "Roads and energy",
+              "backs": "Roads, broadband and clean energy",
+              "fights": "New oil and gas leases",
+              "match": {
+                "backs": [
+                  "roads",
+                  "bridges",
+                  "broadband",
+                  "infrastructure",
+                  "clean energy",
+                  "climate"
+                ],
+                "fights": [
+                  "oil lease",
+                  "more drilling"
+                ]
+              }
+            },
+            {
+              "issue": "Voting rights",
+              "backs": "The Freedom to Vote Act",
+              "fights": "Leaving state voting laws as they are",
+              "match": {
+                "backs": [
+                  "voting rights",
+                  "freedom to vote"
+                ],
+                "fights": []
+              }
+            }
+          ],
+          "redLine": {
+            "act": "Cutting Social Security or Medicare",
+            "then": "votes against you as a bloc",
+            "match": [
+              "cut social security",
+              "cuts to social security",
+              "cut medicare",
+              "cuts to medicare"
+            ]
+          },
+          "price": {
+            "takes": "Something for West Virginia and Arizona, and a smaller total",
+            "refuses": "Anything that loses a single Democrat on the floor"
+          },
+          "face": {
+            "name": "Joe Manchin",
+            "role": "Senator for West Virginia",
+            "line": "I will not vote for a bill I cannot explain back home. Make it smaller, and give coal country something it can see."
+          },
+          "rival": {
+            "id": "gop",
+            "issue": "Spending and the filibuster"
+          },
+          "tension": "Wants your whole agenda, but Joe Manchin and Kyrsten Sinema will not end the filibuster or back a bill over about $1.5 trillion.",
+          "swing": 2
+        }
+      },
+      {
+        "id": "ind",
+        "name": "Independents",
+        "short": "Independents",
+        "color": "#596073",
+        "seats": 2,
+        "withYou": true,
+        "card": {
+          "base": "Two independents, Bernie Sanders of Vermont and Angus King of Maine. Both vote with the Democrats.",
+          "wants": [
+            {
+              "issue": "Wages",
+              "backs": "A $15 federal minimum wage",
+              "fights": "Dropping the minimum wage from the bill",
+              "match": {
+                "backs": [
+                  "minimum wage",
+                  "$15"
+                ],
+                "fights": []
+              }
+            },
+            {
+              "issue": "Health",
+              "backs": "Dental, vision and hearing cover in Medicare",
+              "fights": "A drug price deal that spares the drug companies",
+              "match": {
+                "backs": [
+                  "medicare",
+                  "drug price",
+                  "health cover"
+                ],
+                "fights": []
+              }
+            },
+            {
+              "issue": "Rural states",
+              "backs": "Broadband for rural Maine and Vermont",
+              "fights": "Money that skips rural states",
+              "match": {
+                "backs": [
+                  "broadband",
+                  "rural"
+                ],
+                "fights": []
+              }
+            }
+          ],
+          "redLine": {
+            "act": "Cutting Social Security",
+            "then": "votes against you",
+            "match": [
+              "cut social security",
+              "cuts to social security"
+            ]
+          },
+          "price": {
+            "takes": "A line in the bill for working people and rural states",
+            "refuses": "A smaller bill that drops the minimum wage without a fight"
+          },
+          "face": {
+            "name": "Bernie Sanders",
+            "role": "Senator for Vermont, chair of the Budget Committee",
+            "line": "I will vote for the bill. I will also tell every American what you left out of it."
+          },
+          "rival": {
+            "id": "gop",
+            "issue": "The minimum wage and taxes on the rich"
+          },
+          "tension": "Votes with the Democrats on almost everything, but Sanders wants a bill four times the size Joe Manchin will accept."
+        }
+      },
+      {
+        "id": "gop",
+        "name": "Republican Party",
+        "short": "Republicans",
+        "color": "#bf2f2b",
+        "seats": 50,
+        "card": {
+          "base": "50 Republican senators under Mitch McConnell. A dealmaking group at its edge (Susan Collins, Mitt Romney, Lisa Murkowski, Rob Portman) talks to your staff.",
+          "wants": [
+            {
+              "issue": "Spending",
+              "backs": "Cuts that pay for any new program",
+              "fights": "New spending without cuts",
+              "match": {
+                "backs": [
+                  "spending cuts",
+                  "cut spending",
+                  "offset"
+                ],
+                "fights": [
+                  "trillion",
+                  "checks",
+                  "$1,400",
+                  "relief",
+                  "rescue"
+                ]
+              }
+            },
+            {
+              "issue": "The border",
+              "backs": "More border agents and the wall finished",
+              "fights": "A path to citizenship",
+              "match": {
+                "backs": [
+                  "border agent",
+                  "the wall",
+                  "border security",
+                  "secure the border"
+                ],
+                "fights": [
+                  "amnesty",
+                  "path to citizenship",
+                  "title 42"
+                ]
+              }
+            },
+            {
+              "issue": "Taxes",
+              "backs": "Keeping the 2017 tax cuts",
+              "fights": "Any tax rise on business",
+              "match": {
+                "backs": [
+                  "tax cut"
+                ],
+                "fights": [
+                  "raise taxes",
+                  "tax rise",
+                  "corporate tax",
+                  "tax the rich",
+                  "minimum tax"
+                ]
+              }
+            }
+          ],
+          "redLine": {
+            "act": "Ending the filibuster",
+            "then": "blocks every routine request on the floor",
+            "match": [
+              "filibuster",
+              "nuclear option"
+            ]
+          },
+          "price": {
+            "takes": "A smaller bill, money for its states, a seat at the drafting table",
+            "refuses": "A bill written without them and handed over for a yes"
+          },
+          "face": {
+            "name": "Susan Collins",
+            "role": "Senator for Maine",
+            "line": "Give me a smaller bill with a real price tag, and I can bring nine others to the table."
+          },
+          "rival": {
+            "id": "dem",
+            "issue": "How much to spend"
+          },
+          "tension": "Wants to deny you a win before the midterms, but ten of its senators offered their own $618 billion relief plan in February.",
+          "swing": 10
+        }
+      }
+    ]
+  },
+  "ledgers": {
+    "treasury": {
+      "name": "Federal funds",
+      "start": 60,
+      "line": 0,
+      "icon": "bank",
+      "for": "Pays for programs, relief and deals.",
+      "earn": [
+        "Tax laws in force",
+        "A growing economy"
+      ],
+      "spend": [
+        "Appropriations",
+        "Costly laws",
+        "Crisis answers"
+      ],
+      "fails": "you cannot spend until a revenue law passes."
+    },
+    "authority": {
+      "name": "Authority",
+      "start": 72,
+      "line": 0,
+      "icon": "gavel",
+      "for": "The price of acting at all. Every act costs some.",
+      "earn": [
+        "A law passed, +2",
+        "A promise kept, +3"
+      ],
+      "spend": [
+        "Every act",
+        "A struck order, 3",
+        "A lost vote, 2"
+      ],
+      "fails": "you can only speak and spend."
+    },
+    "chest": {
+      "name": "Campaign cash",
+      "start": 40,
+      "line": 0,
+      "icon": "note",
+      "for": "Buys reach for your addresses and votes on the floor.",
+      "earn": [
+        "Donors, up to 20 a turn",
+        "Laws donors like"
+      ],
+      "spend": [
+        "Address reach",
+        "Floor votes, 2 for 1"
+      ],
+      "fails": "your voice stops carrying and rivals outspend you."
+    },
+    "loyalty": {
+      "name": "Party loyalty",
+      "start": 65,
+      "line": 20
+    },
+    "popularity": {
+      "name": "Approval",
+      "start": 47,
+      "line": 30
+    }
+  },
+  "holders": [
+    {
+      "id": "congress",
+      "name": "Congress",
+      "where": "home",
+      "icon": "chamber",
+      "weight": 0.24,
+      "stance": 0.42,
+      "line": 42,
+      "response": "refuse_levy",
+      "wants": "Congress wants its say on every dollar you spend.",
+      "says": "Send us the bill. We decide what it costs.",
+      "does": "Refuses your budget",
+      "card": {
+        "base": "100 senators, two from each state: 48 Democrats, 2 independents who vote with them, 50 Republicans. Budget bills pass with 50 and your Vice President's vote.",
+        "wants": [
+          {
+            "issue": "The power of the purse",
+            "backs": "An appropriation sent to the Senate for a vote",
+            "fights": "Spending moved by executive order around Congress",
+            "match": {
+              "backs": [
+                "appropriat",
+                "act of congress"
+              ],
+              "fights": [
+                "executive order",
+                "emergency powers",
+                "without congress"
+              ]
+            }
+          },
+          {
+            "issue": "Regular order",
+            "backs": "A bipartisan bill written in committee",
+            "fights": "A party-line bill forced through reconciliation",
+            "match": {
+              "backs": [
+                "bipartisan",
+                "both parties"
+              ],
+              "fights": [
+                "reconciliation",
+                "party-line",
+                "party line"
+              ]
+            }
+          },
+          {
+            "issue": "Its right to confirm",
+            "backs": "A nominee sent for Senate confirmation",
+            "fights": "Acting officials kept in posts to avoid a vote",
+            "match": {
+              "backs": [
+                "name ",
+                "nominat",
+                "confirm"
+              ],
+              "fights": [
+                "acting "
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Ending the filibuster by a party-line rules change",
+          "then": "stops: Republicans block every routine request on the floor",
+          "match": [
+            "filibuster",
+            "nuclear option"
+          ]
+        },
+        "price": {
+          "takes": "Home-state projects, a committee's say on the text, time on the floor",
+          "refuses": "A bill whose text it sees only when the vote is called"
+        },
+        "face": {
+          "name": "Chuck Schumer",
+          "role": "Majority Leader, New York",
+          "line": "I can get you 50 on the floor if Joe Manchin is one of them. Bring me his vote before you bring me the bill."
+        },
+        "rival": {
+          "id": "court",
+          "issue": "Who decides what a vague law allows"
+        },
+        "tension": "The Senate guards its power over spending, but its 50 Republicans would rather let your orders stand and run against them than vote on them."
+      }
+    },
+    {
+      "id": "court",
+      "name": "Supreme Court",
+      "where": "home",
+      "icon": "court",
+      "weight": 0,
+      "stance": 0.38,
+      "line": 35,
+      "response": "strike",
+      "wants": "The Court wants orders that stay inside the law.",
+      "says": "The Court reads the order against the statute, not the headlines.",
+      "does": "Strikes down your orders",
+      "card": {
+        "base": "Nine justices appointed for life: six named by Republican presidents, three by Democrats. Chief Justice John Roberts.",
+        "wants": [
+          {
+            "issue": "A statute behind every rule",
+            "backs": "An order that cites the law Congress passed",
+            "fights": "A sweeping rule with no clear statute, like mass student debt relief",
+            "match": {
+              "backs": [
+                "under the act",
+                "statute",
+                "as the law"
+              ],
+              "fights": [
+                "student loan",
+                "student debt",
+                "eviction",
+                "forgive"
+              ]
+            }
+          },
+          {
+            "issue": "Limits on federal power",
+            "backs": "Returning a question to the states",
+            "fights": "A federal mandate on private employers",
+            "match": {
+              "backs": [
+                "to the states",
+                "states decide"
+              ],
+              "fights": [
+                "mandate",
+                "require every",
+                "employers must"
+              ]
+            }
+          },
+          {
+            "issue": "Its own size",
+            "backs": "Leaving the Court at nine",
+            "fights": "Adding seats or term limits for justices",
+            "match": {
+              "backs": [],
+              "fights": [
+                "court packing",
+                "add seats",
+                "expand the court",
+                "term limits"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Defying a ruling of the Court",
+          "then": "strikes down your next order in the same turn",
+          "match": [
+            "ignore the court",
+            "defy",
+            "ignore the ruling"
+          ]
+        },
+        "price": {
+          "takes": "Nothing you can offer. Careful drafting that cites a statute is the only thing that works",
+          "refuses": "Deals, pressure, or talk of new seats"
+        },
+        "face": {
+          "name": "John Roberts",
+          "role": "Chief Justice of the United States",
+          "line": "The Court decides cases. Write the order so that a statute holds it up, and it will stand."
+        },
+        "rival": {
+          "id": "dem",
+          "issue": "Adding seats and term limits to the Court"
+        },
+        "tension": "Wants the Court seen as above politics, but its six-justice majority has agreed to hear a case that could overturn Roe v. Wade."
+      }
+    },
+    {
+      "id": "fed",
+      "name": "Federal Reserve",
+      "where": "home",
+      "icon": "market",
+      "weight": 0,
+      "stance": 0.55,
+      "line": 48,
+      "response": "none",
+      "wants": "The Fed wants room to fight rising prices.",
+      "says": "We will keep at it until prices come down.",
+      "does": "Raises rates hard",
+      "card": {
+        "base": "The central bank: a Board of Governors in Washington and 12 regional banks. Chair Jerome Powell's term ends in February 2022.",
+        "wants": [
+          {
+            "issue": "Stable prices",
+            "backs": "Spending paid for with offsets",
+            "fights": "Another large stimulus while prices climb",
+            "match": {
+              "backs": [
+                "paid for",
+                "offset"
+              ],
+              "fights": [
+                "stimulus",
+                "checks",
+                "$1,400",
+                "rescue"
+              ]
+            }
+          },
+          {
+            "issue": "Its independence",
+            "backs": "Naming Jerome Powell to a second term",
+            "fights": "Public pressure on interest rates",
+            "match": {
+              "backs": [
+                "powell"
+              ],
+              "fights": [
+                "interest rate",
+                "hold rates",
+                "lower rates"
+              ]
+            }
+          },
+          {
+            "issue": "Supply",
+            "backs": "Clearing the ports and the chip shortage",
+            "fights": "New tariffs that raise prices",
+            "match": {
+              "backs": [
+                "port",
+                "supply chain",
+                "chip plant",
+                "chips"
+              ],
+              "fights": [
+                "tariff"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Ordering the Fed to hold rates down",
+          "then": "raises rates hard and says why in public",
+          "match": [
+            "order the fed",
+            "fire powell",
+            "hold rates down"
+          ]
+        },
+        "price": {
+          "takes": "A second term for its chair, Board seats for economists it trusts",
+          "refuses": "Any promise on the path of interest rates"
+        },
+        "face": {
+          "name": "Jerome Powell",
+          "role": "Chair of the Federal Reserve",
+          "line": "We will keep at it until prices come down. Your bills are your business. Rates are ours."
+        },
+        "rival": {
+          "id": "dem",
+          "issue": "How much to spend while prices rise"
+        },
+        "tension": "Wants prices down, but spent 2021 calling the rise transitory and will not raise rates while millions are still out of work."
+      }
+    },
+    {
+      "id": "nato",
+      "name": "NATO allies",
+      "where": "abroad",
+      "icon": "foreign",
+      "weight": 0.15,
+      "stance": 0.58,
+      "line": 50,
+      "response": "embargo",
+      "wants": "The allies want a firm line on Russia.",
+      "says": "The alliance needs Washington at the front of it.",
+      "does": "Pulls back from your plans",
+      "card": {
+        "base": "The 29 other members of the alliance. Germany, France, Britain and Poland set the tone in Brussels under Secretary General Jens Stoltenberg.",
+        "wants": [
+          {
+            "issue": "Russia",
+            "backs": "US troops and arms for Poland, Romania and the Baltic states",
+            "fights": "Pulling US troops out of Europe",
+            "match": {
+              "backs": [
+                "poland",
+                "romania",
+                "baltic",
+                "eastern flank",
+                "troops to europe"
+              ],
+              "fights": [
+                "withdraw from europe",
+                "bring the troops home from europe",
+                "pull troops out of germany"
+              ]
+            }
+          },
+          {
+            "issue": "Ukraine",
+            "backs": "Arms and money for Ukraine",
+            "fights": "A deal with Moscow over Ukraine's head",
+            "match": {
+              "backs": [
+                "ukraine",
+                "kyiv",
+                "javelin"
+              ],
+              "fights": [
+                "deal with russia",
+                "deal with moscow",
+                "lift sanctions on russia"
+              ]
+            }
+          },
+          {
+            "issue": "Being consulted",
+            "backs": "Allies told before a withdrawal",
+            "fights": "Leaving Afghanistan on a US timetable alone",
+            "match": {
+              "backs": [
+                "allies",
+                "consult"
+              ],
+              "fights": [
+                "afghanistan",
+                "kabul"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Doubting the Article 5 promise in public",
+          "then": "plans its defence without Washington",
+          "match": [
+            "article 5",
+            "leave nato",
+            "quit nato"
+          ]
+        },
+        "price": {
+          "takes": "US troops on the eastern flank, arms, a seat at every table",
+          "refuses": "Tariffs on its steel as the price of US protection"
+        },
+        "face": {
+          "name": "Jens Stoltenberg",
+          "role": "Secretary General of NATO, Brussels",
+          "line": "Allies need to know Washington will be there before the tanks move. Tell us first, and we move with you."
+        },
+        "rival": {
+          "id": "china",
+          "issue": "Whether US ships and attention go to Europe or the Pacific"
+        },
+        "tension": "Wants Washington in front against Russia, but Germany still buys Russian gas and wants the Nord Stream 2 pipeline finished."
+      }
+    },
+    {
+      "id": "public",
+      "name": "The American public",
+      "where": "home",
+      "icon": "street",
+      "weight": 0.24,
+      "stance": 0.44,
+      "line": 45,
+      "response": "riot",
+      "wants": "The American public wants prices down and jobs back.",
+      "says": "Groceries cost more every week. Fix that first.",
+      "does": "Takes to the streets",
+      "card": {
+        "base": "About 258 million adults. In November 2020, 81 million voted for you and 74 million for Donald Trump.",
+        "wants": [
+          {
+            "issue": "Prices",
+            "backs": "Cash relief and lower drug prices",
+            "fights": "A new tax on gas or groceries",
+            "match": {
+              "backs": [
+                "checks",
+                "$1,400",
+                "relief",
+                "drug price",
+                "lower prices",
+                "cost of living"
+              ],
+              "fights": [
+                "gas tax",
+                "tax on gas",
+                "tax on groceries"
+              ]
+            }
+          },
+          {
+            "issue": "The pandemic",
+            "backs": "Free shots and schools open again",
+            "fights": "Lockdowns back after the vaccines",
+            "match": {
+              "backs": [
+                "shots",
+                "vaccin",
+                "reopen",
+                "schools"
+              ],
+              "fights": [
+                "lockdown"
+              ]
+            }
+          },
+          {
+            "issue": "Jobs",
+            "backs": "Roads, bridges and factory jobs",
+            "fights": "Cuts to Social Security and Medicare",
+            "match": {
+              "backs": [
+                "roads",
+                "bridges",
+                "factor",
+                "jobs",
+                "infrastructure"
+              ],
+              "fights": [
+                "cut social security",
+                "cuts to social security",
+                "cut medicare",
+                "cuts to medicare"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Sending troops against protesters in US cities",
+          "then": "takes to the streets in every region",
+          "match": [
+            "insurrection act",
+            "troops against",
+            "troops on protesters"
+          ]
+        },
+        "price": {
+          "takes": "Checks, jobs and lower bills it can feel",
+          "refuses": "Speeches with no money behind them"
+        },
+        "face": {
+          "name": "Deb Kowalski",
+          "role": "ICU nurse, Erie, Pennsylvania; an invented voice",
+          "line": "Groceries cost more every week and my ward is still full. Fix those two, and then talk to me about the rest."
+        },
+        "rival": {
+          "id": "markets",
+          "issue": "Relief paid for with more debt"
+        },
+        "tension": "Wants prices down, but also wants the checks and the spending that the Fed says push prices up."
+      }
+    },
+    {
+      "id": "china",
+      "name": "China",
+      "where": "abroad",
+      "icon": "foreign",
+      "weight": 0,
+      "stance": 0.3,
+      "line": 55,
+      "response": "embargo",
+      "wants": "Beijing wants tariffs lifted and no new chip bans.",
+      "says": "Lift the tariffs, and we can talk about the rest.",
+      "does": "Cuts off chips and rare earths",
+      "card": {
+        "base": "The People's Republic under Xi Jinping and the Communist Party. About $370 billion a year of its goods face US tariffs set in 2018 and 2019.",
+        "wants": [
+          {
+            "issue": "Trade",
+            "backs": "Lifting the 2018 tariffs",
+            "fights": "New tariffs on Chinese goods",
+            "match": {
+              "backs": [
+                "lift the tariffs",
+                "lift tariffs",
+                "cut tariffs",
+                "remove tariffs"
+              ],
+              "fights": [
+                "tariff"
+              ]
+            }
+          },
+          {
+            "issue": "Technology",
+            "backs": "Easing the export limits on Huawei",
+            "fights": "New bans on chip sales to China",
+            "match": {
+              "backs": [
+                "huawei"
+              ],
+              "fights": [
+                "chip",
+                "semiconductor",
+                "export ban",
+                "export control"
+              ]
+            }
+          },
+          {
+            "issue": "Taiwan",
+            "backs": "Keeping to the One China policy",
+            "fights": "Arms sales and official visits to Taiwan",
+            "match": {
+              "backs": [
+                "one china"
+              ],
+              "fights": [
+                "taiwan"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Recognising Taiwan as a state",
+          "then": "cuts off rare earths and ends all talks",
+          "match": [
+            "recognise taiwan",
+            "recognize taiwan",
+            "taiwan independence"
+          ]
+        },
+        "price": {
+          "takes": "Tariff cuts and fewer chip bans",
+          "refuses": "Talks on Xinjiang or Hong Kong"
+        },
+        "face": {
+          "name": "Wang Yi",
+          "role": "Foreign Minister, Beijing",
+          "line": "Lift the tariffs, and we can talk about the rest. Taiwan is not part of the rest."
+        },
+        "rival": {
+          "id": "gop",
+          "issue": "Tariffs and chip bans"
+        },
+        "tension": "Wants the tariffs lifted, but has not bought the $200 billion of US goods it promised in the 2020 trade deal."
+      }
+    },
+    {
+      "id": "dem",
+      "name": "Democratic Party",
+      "where": "home",
+      "icon": "party",
+      "weight": 0.19,
+      "stance": 0.6,
+      "line": 40,
+      "response": "early_test",
+      "wants": "Your party wants the agenda you ran on.",
+      "says": "We ran on this agenda. Now deliver it.",
+      "does": "Calls the final vote early",
+      "card": {
+        "base": "The party that nominated you: about 48 million registered Democrats, the Senate caucus, and a House majority of 222 to 213 under Speaker Nancy Pelosi.",
+        "wants": [
+          {
+            "issue": "Relief",
+            "backs": "The $1.9 trillion rescue plan",
+            "fights": "Shrinking relief to win Republican votes",
+            "match": {
+              "backs": [
+                "rescue",
+                "checks",
+                "$1,400",
+                "relief",
+                "jobless aid"
+              ],
+              "fights": [
+                "smaller relief",
+                "means test",
+                "means-test"
+              ]
+            }
+          },
+          {
+            "issue": "Build Back Better",
+            "backs": "Child care, paid leave and clean energy money",
+            "fights": "Dropping the climate money",
+            "match": {
+              "backs": [
+                "child care",
+                "paid leave",
+                "climate",
+                "clean energy",
+                "carbon"
+              ],
+              "fights": [
+                "drop the climate",
+                "more drilling",
+                "oil lease"
+              ]
+            }
+          },
+          {
+            "issue": "Voting rights",
+            "backs": "The Freedom to Vote Act",
+            "fights": "Keeping the filibuster in its way",
+            "match": {
+              "backs": [
+                "voting rights",
+                "freedom to vote",
+                "right to vote"
+              ],
+              "fights": [
+                "keep the filibuster"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Cutting Social Security or Medicare",
+          "then": "calls the final vote early",
+          "match": [
+            "cut social security",
+            "cuts to social security",
+            "cut medicare",
+            "cuts to medicare"
+          ]
+        },
+        "price": {
+          "takes": "Something for each wing: climate for progressives, jobs and a smaller total for moderates",
+          "refuses": "A deal that trades the climate money away"
+        },
+        "face": {
+          "name": "Nancy Pelosi",
+          "role": "Speaker of the House, San Francisco",
+          "line": "I have a four-seat majority. Send me a bill both my wings can vote for, and it passes the House that week."
+        },
+        "rival": {
+          "id": "gop",
+          "issue": "How much to spend"
+        },
+        "tension": "Wants the whole agenda you ran on, but its moderates in swing seats fear the price tag before the midterms."
+      }
+    },
+    {
+      "id": "gop",
+      "name": "Republican Party",
+      "where": "home",
+      "icon": "party",
+      "weight": 0,
+      "stance": 0.3,
+      "line": 38,
+      "response": "strike",
+      "wants": "The Republicans want less spending and a tighter border.",
+      "says": "Not one more dollar without cuts.",
+      "does": "Shuts the government down",
+      "card": {
+        "base": "The other party: 50 senators under Mitch McConnell, 213 House members, about 36 million registered Republicans. Donald Trump is still its loudest voice.",
+        "wants": [
+          {
+            "issue": "Spending",
+            "backs": "Cuts that pay for any new program",
+            "fights": "New spending without cuts",
+            "match": {
+              "backs": [
+                "spending cuts",
+                "cut spending",
+                "offset"
+              ],
+              "fights": [
+                "billion",
+                "trillion",
+                "checks",
+                "relief",
+                "rescue",
+                "appropriat"
+              ]
+            }
+          },
+          {
+            "issue": "The border",
+            "backs": "More border agents and the wall finished",
+            "fights": "Ending Title 42 or a path to citizenship",
+            "match": {
+              "backs": [
+                "border agent",
+                "the wall",
+                "border security",
+                "secure the border",
+                "troops to the border"
+              ],
+              "fights": [
+                "amnesty",
+                "path to citizenship",
+                "title 42"
+              ]
+            }
+          },
+          {
+            "issue": "Taxes",
+            "backs": "Keeping the 2017 tax cuts",
+            "fights": "Any tax rise on business",
+            "match": {
+              "backs": [
+                "tax cut"
+              ],
+              "fights": [
+                "raise taxes",
+                "tax rise",
+                "corporate tax",
+                "tax the rich",
+                "minimum tax"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "A federal law over how states run elections",
+          "then": "shuts the government down",
+          "match": [
+            "voting rights",
+            "freedom to vote",
+            "for the people act"
+          ]
+        },
+        "price": {
+          "takes": "Spending cuts, border money, projects in its states",
+          "refuses": "Any deal Donald Trump attacks before the vote"
+        },
+        "face": {
+          "name": "Mitch McConnell",
+          "role": "Senate Minority Leader, Kentucky",
+          "line": "My focus is on stopping this administration. Bring me cuts, and I will talk about roads."
+        },
+        "rival": {
+          "id": "dem",
+          "issue": "Spending and the filibuster"
+        },
+        "tension": "Wants to deny you every win, but its senators want the roads and bridges money for their own states."
+      }
+    },
+    {
+      "id": "markets",
+      "name": "The bond markets",
+      "where": "abroad",
+      "icon": "market",
+      "weight": 0.18,
+      "stance": 0.47,
+      "line": 58,
+      "response": "embargo",
+      "wants": "The bond markets want a budget that adds up.",
+      "says": "Show us a budget that adds up.",
+      "does": "Sells your bonds",
+      "card": {
+        "base": "The holders of about $22 trillion of Treasury debt: pension funds, banks, and central banks from Tokyo to Beijing.",
+        "wants": [
+          {
+            "issue": "The deficit",
+            "backs": "Tax rises that pay for new spending",
+            "fights": "Unfunded spending in the trillions",
+            "match": {
+              "backs": [
+                "paid for",
+                "offset",
+                "raise taxes"
+              ],
+              "fights": [
+                "trillion"
+              ]
+            }
+          },
+          {
+            "issue": "The debt ceiling",
+            "backs": "Raising the debt ceiling on time",
+            "fights": "A standoff that risks default",
+            "match": {
+              "backs": [
+                "debt ceiling",
+                "debt limit"
+              ],
+              "fights": [
+                "shutdown"
+              ]
+            }
+          },
+          {
+            "issue": "Inflation",
+            "backs": "A Fed chair who fights rising prices",
+            "fights": "Pressure on the Fed to hold rates",
+            "match": {
+              "backs": [
+                "powell"
+              ],
+              "fights": [
+                "hold rates",
+                "lower rates"
+              ]
+            }
+          }
+        ],
+        "redLine": {
+          "act": "Missing a payment on Treasury debt",
+          "then": "sells your bonds, and your borrowing costs jump",
+          "match": [
+            "default",
+            "miss a payment",
+            "skip a payment"
+          ]
+        },
+        "price": {
+          "takes": "A budget that adds up",
+          "refuses": "Promises about next year's budget"
+        },
+        "face": {
+          "name": "Ruth Adler",
+          "role": "Head of rates, a London bank; an invented voice",
+          "line": "Show us a budget that adds up. Until then we price the risk, and you pay it."
+        },
+        "rival": {
+          "id": "public",
+          "issue": "Relief paid for with more debt"
+        },
+        "tension": "Wants a budget that adds up, but keeps buying ten-year Treasuries under 2% because nothing else is safer."
+      }
+    }
+  ],
+  "regions": [
+    {
+      "id": "pac",
+      "name": "Pacific states",
+      "popularity": 58
+    },
+    {
+      "id": "mtn",
+      "name": "Mountain West",
+      "popularity": 43
+    },
+    {
+      "id": "mw",
+      "name": "Midwest",
+      "popularity": 44
+    },
+    {
+      "id": "south",
+      "name": "The South",
+      "popularity": 36
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Atlantic",
+      "popularity": 53
+    },
+    {
+      "id": "ne",
+      "name": "Northeast",
+      "popularity": 57
+    }
+  ],
+  "world": [
+    {
+      "id": "nato",
+      "name": "NATO allies",
+      "mood": "warm",
+      "wants": "NATO allies want a firm line on Russia."
+    },
+    {
+      "id": "china",
+      "name": "China",
+      "mood": "hostile",
+      "wants": "China wants tariffs lifted and no new chip bans."
+    },
+    {
+      "id": "markets",
+      "name": "The bond markets",
+      "mood": "wary",
+      "wants": "The bond markets want a budget that adds up."
+    }
+  ],
+  "instruments": {
+    "decree": {
+      "name": "Executive order",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "law": {
+      "name": "Act of Congress",
+      "available": true,
+      "consent": "chamber",
+      "vetoes": [
+        "chamber"
+      ]
+    },
+    "appoint": {
+      "name": "Appointment",
+      "available": true,
+      "consent": "chamber",
+      "vetoes": [
+        "chamber"
+      ]
+    },
+    "spend": {
+      "name": "Appropriation",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "proclaim": {
+      "name": "Address",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "favour": {
+      "name": "Favour",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    },
+    "force": {
+      "name": "Deployment",
+      "available": true,
+      "consent": "none",
+      "vetoes": []
+    }
+  },
+  "briefing": {
+    "situation": "You won the White House, but the Senate is split evenly and only your Vice President's vote breaks a tie. Hospitals are still full and prices are starting to climb. Within a year, Russia will invade Ukraine. And one senator from West Virginia can sink any bill you send.",
+    "room": "Every act wins some groups and costs you others. This is who they are, what they can do to you, and how much each one counts at the end.",
+    "you": "Each act costs one ledger and can pay another. The red tick on each bar is where it fails."
+  },
+  "problems": [
+    "Prices are rising faster than wages",
+    "The rescue bill needs a vote by turn 3",
+    "The Senate is split 50 to 50, so one senator can sink any bill"
+  ],
+  "pledges": [
+    {
+      "text": "Cut the cost of living",
+      "for": "public",
+      "keep": "Get price rises under 4% a year by turn 12.",
+      "gain": 8,
+      "lose": [
+        "popularity",
+        10
+      ],
+      "icon": "coin"
+    },
+    {
+      "text": "Finish the pandemic response",
+      "for": "mid",
+      "keep": "Get 200 million shots into arms by turn 4.",
+      "gain": 6,
+      "lose": [
+        "popularity",
+        7
+      ],
+      "icon": "drop"
+    },
+    {
+      "text": "Repair roads and bridges",
+      "for": "congress",
+      "keep": "Sign an infrastructure law by turn 6.",
+      "gain": 5,
+      "lose": [
+        "authority",
+        6
+      ],
+      "icon": "column"
+    },
+    {
+      "text": "Bring factories home",
+      "for": "mw",
+      "keep": "Pass a law that pays for new chip plants by turn 8.",
+      "gain": 9,
+      "lose": [
+        "loyalty",
+        6
+      ],
+      "icon": "banner"
+    },
+    {
+      "text": "Cut carbon emissions",
+      "for": "pac",
+      "keep": "Pass a climate law by turn 9, before the midterms.",
+      "gain": 10,
+      "lose": [
+        "loyalty",
+        8
+      ],
+      "icon": "leaf"
+    },
+    {
+      "text": "Protect health cover",
+      "for": "dem",
+      "keep": "Pass a law that lowers drug prices by turn 12.",
+      "gain": 4,
+      "lose": [
+        "loyalty",
+        9
+      ],
+      "icon": "heart"
+    },
+    {
+      "text": "Defend the vote",
+      "for": "south",
+      "keep": "Pass a voting rights act by turn 8.",
+      "gain": 3,
+      "lose": [
+        "loyalty",
+        5
+      ],
+      "icon": "scales"
+    },
+    {
+      "text": "Stand with Ukraine",
+      "for": "nato",
+      "keep": "Send Ukraine arms within one turn of an invasion.",
+      "gain": 12,
+      "lose": [
+        "authority",
+        4
+      ],
+      "icon": "shield"
+    }
+  ],
+  "build": {
+    "lookups": [
+      "Presidency of Joe Biden",
+      "117th Congress",
+      "118th Congress",
+      "2022 midterms",
+      "Inflation Reduction Act",
+      "Invasion of Ukraine",
+      "Dobbs v. Jackson",
+      "Fed rate rises 2022"
+    ],
+    "people": [
+      "Joe Biden",
+      "Kamala Harris",
+      "Chuck Schumer",
+      "Nancy Pelosi",
+      "Mitch McConnell",
+      "Kevin McCarthy",
+      "Joe Manchin",
+      "Kyrsten Sinema",
+      "Janet Yellen",
+      "Jerome Powell",
+      "John Roberts",
+      "Volodymyr Zelenskyy"
+    ],
+    "parties": [
+      "Democratic Party",
+      "Republican Party",
+      "Independents"
+    ],
+    "keywords": [
+      "inflation",
+      "pandemic relief",
+      "infrastructure",
+      "Ukraine",
+      "the border",
+      "abortion rights",
+      "student loans",
+      "chips and factories"
+    ]
+  },
+  "sampleAct": {
+    "verb": "law",
+    "text": "Send $1,400 checks and extend jobless aid through the summer.",
+    "cost": "1 Authority, 14 Federal funds",
+    "pays": "+5 Approval, +3 Party loyalty",
+    "outcome": "Whip count: 48 yes and 2 undecided. It needs 50, and your Vice President breaks the tie."
+  },
+  "refusal": {
+    "text": "Order the National Guard to round up and expel every migrant family in the border towns",
+    "why": "content",
+    "line": "Refused. The desk takes no order to expel a population. A deployment to the border or an emergency order is open to you."
+  },
+  "handling": [
+    "Every bill goes through the Senate: 100 seats, 50 that vote with you and 50 against, and your Vice President breaks a tie.",
+    "Your cabinet picks need the Senate too, because it confirms every post.",
+    "The Supreme Court has no vote on you, but it can strike down your executive orders. Orders that go around Congress cost you its support.",
+    "The midterms come at turn 10. At turn 20 five groups hold the final vote on you."
+  ],
+  "publicGroup": "public",
+  "ownGroup": "dem",
+  "screens": {
+    "premise": "You take office with a Senate split down the middle, a pandemic still raging and prices starting to climb.",
+    "clerks": {
+      "label": "West Wing hours",
+      "unit": "hour",
+      "out": "The West Wing has no hours left this turn."
+    },
+    "waits": {
+      "price": "The Office of Management and Budget is costing it",
+      "count": "The whips are counting",
+      "end": "The pollsters are reading the country",
+      "replies": "Replies are pouring in",
+      "card": "The Situation Room is drafting your answer"
+    },
+    "halfTerm": {
+      "walk": "regions",
+      "holder": "congress",
+      "lead": "Every region votes in the midterms, and the Senate seats follow the vote."
+    },
+    "crisis": {
+      "title": "February's winter storm left the Texas grid broken.",
+      "text": "Four million homes lost power in the February freeze, repairs are stalled, and the governor blames Washington.",
+      "choices": [
+        {
+          "label": "Send federal disaster aid",
+          "verb": "spend",
+          "cost": {
+            "tre": 10
+          },
+          "moves": {
+            "public": 4,
+            "gop": -2
+          },
+          "note": "Aid reaches Texas within days."
+        },
+        {
+          "label": "Order FEMA to run the repairs",
+          "verb": "decree",
+          "cost": {
+            "aut": 3
+          },
+          "moves": {
+            "public": 2,
+            "gop": -5,
+            "court": -3
+          },
+          "note": "Fast, but Austin calls it a federal takeover."
+        }
+      ]
+    },
+    "foreign": {
+      "from": "china",
+      "title": "China flies 38 warplanes into Taiwan's air defence zone.",
+      "text": "Beijing is testing how far you will go. Taipei asks for a statement today.",
+      "choices": [
+        {
+          "label": "Sail a carrier group through the Taiwan Strait",
+          "verb": "force",
+          "cost": {
+            "aut": 3,
+            "tre": 4
+          },
+          "moves": {
+            "china": -8,
+            "nato": 4,
+            "markets": -2
+          },
+          "note": "A show of force that Beijing will answer."
+        },
+        {
+          "label": "Call Beijing and ask for talks",
+          "verb": "favour",
+          "cost": {
+            "aut": 1
+          },
+          "moves": {
+            "china": 4,
+            "nato": -3,
+            "gop": -3
+          },
+          "note": "Calm for now; your rivals call it weak."
+        }
+      ]
+    },
+    "swan": {
+      "title": "A new variant, Omicron, doubles cases every three days.",
+      "text": "Hospitals fill again in a week. The country you told to get back to normal is scared.",
+      "choices": [
+        {
+          "label": "Mail free tests to every home",
+          "verb": "spend",
+          "cost": {
+            "tre": 12
+          },
+          "moves": {
+            "public": 5,
+            "markets": -2
+          },
+          "note": "A billion tests, paid from federal funds."
+        },
+        {
+          "label": "Tell the country to hold its nerve",
+          "verb": "proclaim",
+          "cost": {
+            "che": 2
+          },
+          "moves": {
+            "public": -3,
+            "gop": 3
+          },
+          "note": "Calm words, and no new rules."
+        }
+      ]
+    },
+    "escalations": [
+      {
+        "title": "The Republicans take the House",
+        "text": "Every act of Congress now has to clear a hostile House first.",
+        "effect": {
+          "line": {
+            "congress": 6
+          }
+        }
+      },
+      {
+        "title": "Rates stay high",
+        "text": "The Federal Reserve keeps money dear, and receipts slow down.",
+        "effect": {
+          "flow": {
+            "tre": 2
+          }
+        }
+      }
+    ],
+    "verdict": {
+      "win": "Washington keeps you for another term.",
+      "lose": "Washington turns you out of the White House."
+    },
+    "epilogue": "History files your term between a pandemic and a war in Europe.",
+    "obit": "Your successor takes the oath on the West Front of the Capitol."
+  }
+}
