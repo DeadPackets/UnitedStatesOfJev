@@ -116,6 +116,7 @@ export interface Game {
   wire: WireLine[];   // this turn's lines
   pending: string | null;
   tag: PriceTag | null;
+  deals?: { term: number; turn: number; factions: string[] };   // R30: the factions that took terms on this turn's law
   refusal: Refusal | null;
   acts: Act[];
   rival: RivalMove | null;

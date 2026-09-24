@@ -259,10 +259,16 @@ export function termsOf(pack: Pack, game: Game, factionId: string, hesitant: num
     terms.push({ kind: "pledge", label: want.yes[0] ?? want.want, cost: free, tag: subject, due: game.turn + PLEDGE_DUE });
     break;
   }
-  const postPrice = instrumentOf(pack, "appoint")?.price ?? free;
-  terms.push({ kind: "post", label: `A post for ${faction.card?.face.name ?? faction.leader}`, cost: postPrice });
+  // A post is an appointment: offered only where the ruler could appoint now, vetoes and all.
+  const appoint = instrumentOf(pack, "appoint");
+  if (appoint && available(pack, game, "appoint") && !blocker(pack, game, "appoint")) {
+    terms.push({ kind: "post", label: `A post for ${faction.card?.face.name ?? faction.leader}`, cost: appoint.price });
+  }
   const money = SEAT_PRICE * hesitant;
-  terms.push({ kind: "money", label: `${money} from the chest`, cost: { ...free, chest: money } });
+  // Lead's ruling: a faction whose card refuses money or payment is never offered it.
+  if (!/\b(money|pay|paid)/i.test(faction.card?.price.refuses ?? "")) {
+    terms.push({ kind: "money", label: `${money} from the chest`, cost: { ...free, chest: money } });
+  }
   return terms;
 }
 
@@ -280,11 +286,23 @@ export function negotiate(pack: Pack, game: Game, tag: PriceTag, factionId: stri
     repeal(game, postId);
     enact(game, { id: postId, verb: "appoint", title: term.label, perTurn: [], repealVetoes: [], sunset: null });
   }
-  tag.shift = { ...tag.shift, [factionId]: (tag.shift?.[factionId] ?? 0) + NEGOTIATE_LIFT };
-  tag.negotiated = [...(tag.negotiated ?? []), factionId];
+  const kept = game.deals?.term === game.term && game.deals.turn === game.turn ? game.deals.factions : [];
+  game.deals = { term: game.term, turn: game.turn, factions: [...kept, factionId] };
+  lift(tag, [factionId]);
   tag.preview = previewOf(pack, game, tag);
   pushWire(game, wire);
   return wire;
+}
+
+const lift = (tag: PriceTag, factions: string[]) => {
+  for (const f of factions) tag.shift = { ...tag.shift, [f]: (tag.shift?.[f] ?? 0) + NEGOTIATE_LIFT };
+  tag.negotiated = [...(tag.negotiated ?? []), ...factions];
+};
+
+// Owner ruling: a deal belongs to this turn's law, so re-pricing it keeps the lift and never charges again.
+export function keepDeals(game: Game, tag: PriceTag): void {
+  const deals = game.deals;
+  if (tag.verb === "law" && deals?.term === game.term && deals.turn === game.turn) lift(tag, deals.factions);
 }
 
 export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {

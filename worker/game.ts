@@ -16,7 +16,7 @@ import {
 import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, billOf, blocker, commit, negotiate, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, billOf, blocker, commit, keepDeals, negotiate, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -228,8 +228,9 @@ export class GameDO extends DurableObject<Env> {
   // R30: a hesitant faction's term on the priced law. It spends clerks' time and calls no model: the terms come from its card.
   private deal(game: Game, pack: Pack, faction: string, kind: string): Extra {
     const tag = game.tag;
-    if (!tag?.preview) throw new Reject(409, `Price a ${pack.vocabulary.bill} first.`);
-    const row = tag.preview.factions.find((candidate) => candidate.id === faction);
+    const preview = tag && previewOf(pack, game, tag);
+    if (!tag || !preview) throw new Reject(409, `Price a ${pack.vocabulary.bill} first.`);
+    const row = preview.factions.find((candidate) => candidate.id === faction);
     const term = row?.terms?.find((offer) => offer.kind === kind);
     if (!term) throw new Reject(409, "They offer no such terms on this act.");
     if (!canAfford(pack, game, term.cost)) throw new Reject(402, "There is not enough to pay for that.");
@@ -274,6 +275,7 @@ export class GameDO extends DurableObject<Env> {
     }
     game.refusal = null;
     const tag = priceTag(pack, game, q, seat?.id ?? null);
+    keepDeals(game, tag);
     // R30: a law is counted at price, so the preview shows before signing; signing then spends no clerk time.
     if (tag.verb === "law" && spendCalls(game)) {
       tag.count = await this.count(game, pack, billOf(game, tag));
@@ -593,6 +595,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
+    // Recounted on every read: a card answered after pricing can move seats, and the preview must match the draw.
+    tag: game.tag?.count ? { ...game.tag, preview: previewOf(pack, game, game.tag) } : game.tag,
     // R22 and the share grid are read off the run log, because five places write game.result and none of them own this.
     ...(game.result ? { result: { ...game.result, ...runStyle(pack, game) } } : {}),
     scenario: game.pack, pack: pv,

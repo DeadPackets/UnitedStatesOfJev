@@ -603,6 +603,20 @@ for (const mood of [1, -1]) {
   });
 }
 
+test("the preview follows a seat moved after pricing, so it still matches the vote", async () => {
+  stubModels(0.9);
+  const { game, post, view } = seatedGame(65);
+  for (const m of game.members) { m.mood = -1; m.loyalty = 100; }
+  lawTag = true;
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview.for).toBe(0);
+  for (const m of game.members) m.mood = 1;   // as a card's seat mark would, before the act is signed
+  const shown = (view() as any).tag.preview.for;
+  await post("acts", { turn: 1 });
+  lawTag = false;
+  expect(shown).toBe(game.members.length);
+  expect((await post("bills/1/vote", { turn: 1 })).body.bills[0].yes).toBe(shown);
+});
+
 // R30: every seat at 0.5 hesitates; a term pays, spends one clerk unit and lifts the faction's seats over the for line.
 const tideCard = {
   base: "Net-owners of the outer reefs", redLine: "Closing the reef", redMatch: [],
@@ -633,6 +647,42 @@ for (const [term, paid] of [
     expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term })).status).toBe(409);   // once an act
   });
 }
+
+const priceHesitant = async (card: typeof tideCard, text = "Raise the harbour levy on the wharf.") => {
+  stubModels(0.9);
+  const { do_, game, post } = seatedGame(67);
+  do_.pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card } : f)) };
+  for (const m of game.members) { m.mood = -0.4; m.loyalty = 100; }
+  lawTag = true;
+  const row = (await post("acts/price", { turn: 1, text })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+  lawTag = false;
+  return { do_, game, post, row };
+};
+
+test("a term taken on this turn's law survives re-pricing it: charged once, the lift kept", async () => {
+  const { game, post } = await priceHesitant(tideCard);
+  const chest = game.ledgers.chest;
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "money" })).status).toBe(200);
+  lawTag = true;
+  const row = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf, and say so." })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+  lawTag = false;
+  expect(game.ledgers.chest).toBe(chest - 12);
+  expect(row).toMatchObject({ for: 6, hesitant: 0 });
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "money" })).status).toBe(409);
+});
+
+test("a post is not offered while the appointment's veto holder refuses", async () => {
+  const { do_, game, post } = await priceHesitant(tideCard);
+  const c = do_.pack.constitution;
+  do_.pack = { ...do_.pack, constitution: { ...c, instruments: { ...c.instruments, appoint: { ...c.instruments.appoint, vetoes: ["guard"] } } } };
+  game.holders.guard.support = game.holders.guard.line - 1;
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "post" })).status).toBe(409);
+});
+
+test("a faction whose card refuses payment is never offered money", async () => {
+  const { row } = await priceHesitant({ ...tideCard, price: { takes: "a post", refuses: "Payment of any kind" } });
+  expect(row.terms.map((t: { kind: string }) => t.kind)).toEqual(["pledge", "post"]);
+});
 
 test("a favour names a seat, and a body that names none is a 400", async () => {
   stubModels(0.9);
