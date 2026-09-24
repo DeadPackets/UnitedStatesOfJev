@@ -5,7 +5,7 @@
 import type { z } from "zod";
 import { ESCALATION_KEYS } from "../pack";
 import { fold, isGrounded, quoted } from "./checks";
-import { docBlock, type Gathered } from "./gather";
+import { SWEEP_TITLE, docBlock, type Gathered } from "./gather";
 import { GROK, ModelStop, OPUS, type CallRequest, type Caller } from "./openrouter";
 import {
   BibleSchema,
@@ -67,7 +67,8 @@ export function worldPrefix(
     chamber: roster.chamber,
     groups: roster.groups.map(({ doc, quote, seats_doc, seats_quote, ...group }) => group),
   });
-  return `${docBlock(gathered.docs, WORLD_DOC_CHARACTERS)}
+  const sources = gathered.docs.filter((doc) => doc.title !== SWEEP_TITLE);
+  return `${docBlock(sources, WORLD_DOC_CHARACTERS)}
 
 <roster>
 ${table}

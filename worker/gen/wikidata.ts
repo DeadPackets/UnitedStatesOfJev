@@ -179,7 +179,7 @@ export async function sweepCategories(
       if (member.ns === 14) {
         if (
           / (in|of) /.test(member.title) &&
-          !/attack|member|people|operation|battle|history|by |incident|bombing|assassinat/i.test(
+          !/attack|member|people|politicians|operation|battle|history|by |incident|bombing|assassinat/i.test(
             member.title,
           ) &&
           /politic|militant|paramilitar|armed|insurg|rebel|resistance|guerr|youth organi|jewish organi|arab organi/i.test(
@@ -194,7 +194,8 @@ export async function sweepCategories(
   return { categories: used, titles: [...titles].slice(0, SWEEP_TITLES) };
 }
 
-// Each title's intro, led by its short description in brackets: "[Palestinian militant group, 1935–1948] ...".
+// Each title's short description in brackets ("[Palestinian militant group, 1935–1948]"), then the first 200 characters
+// of its intro: enough to judge it and to quote it. The whole 500-character intro made Ottoman's sweep 71k characters.
 export async function intros(titles: string[]): Promise<Map<string, string>> {
   const found = new Map<string, string>();
   for (const batch of inChunks(titles, 20)) {
@@ -206,7 +207,7 @@ export async function intros(titles: string[]): Promise<Map<string, string>> {
       const described = page.pageprops?.["wikibase-shortdesc"];
       found.set(
         page.title,
-        `${described ? `[${described}] ` : ""}${page.extract.replace(/\s+/g, " ").slice(0, 500)}`,
+        `${described ? `[${described}] ` : ""}${page.extract.replace(/\s+/g, " ").slice(0, 200)}`,
       );
     }
   }

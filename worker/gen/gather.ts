@@ -15,6 +15,7 @@ import { allowedHost, fetchPage, getJson, type Doc } from "./wikipedia";
 const WIKIPEDIA = "en.wikipedia.org";
 const PAGE_CHARACTERS = 12000;
 const TOTAL_CHARACTERS = 120000;
+export const SWEEP_TITLE = "Category sweep"; // the roster's checklist; the world calls read the closed roster instead
 
 export type Gathered = {
   docs: Doc[];
@@ -73,7 +74,8 @@ export async function gather(plan: Plan): Promise<Gathered> {
   const organisationCategories = [...new Set(docs.flatMap((doc) => doc.categories ?? []))].filter(
     (category) =>
       homes.some((home) => category.toLowerCase().includes(home)) &&
-      /organi[sz]ations|parties|politic|militant|paramilitar|nationalis|insurg|resistance|youth/i.test(
+      // Not "politic": for Ottoman it let in "Politics of X" (laws, eras, ideas) and "X politicians" (people).
+      /organi[sz]ations|parties|militant|paramilitar|nationalis|insurg|resistance|youth/i.test(
         category,
       ),
   );
@@ -106,12 +108,15 @@ export async function gather(plan: Plan): Promise<Gathered> {
     .map((place) => qids[place])
     .filter((qid): qid is string => !!qid);
 
+  // A body active on the start date. A person is never one: 69 of Ottoman's 158 checklist names were people from the
+  // swept categories, and each one cost an excluded row in the roster's answer.
   const active = (title: string) => {
     const fact = factsOf(title);
+    if (!fact) return true;
     return (
-      !fact ||
-      ((!fact.founded || compareDates(fact.founded, plan.start_date) <= 0) &&
-        (!fact.dissolved || compareDates(fact.dissolved, plan.start_date) >= 0))
+      !fact.born &&
+      (!fact.founded || compareDates(fact.founded, plan.start_date) <= 0) &&
+      (!fact.dissolved || compareDates(fact.dissolved, plan.start_date) >= 0)
     );
   };
   const sweptActive = swept.titles.filter(active);
@@ -132,7 +137,7 @@ export async function gather(plan: Plan): Promise<Gathered> {
     docs.push({
       index: docs.length + 1,
       source: `Wikipedia category sweep: ${swept.categories.join("; ")}`,
-      title: "Category sweep",
+      title: SWEEP_TITLE,
       text: lines.join("\n"),
     });
   }
