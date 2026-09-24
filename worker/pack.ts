@@ -184,8 +184,10 @@ export const GlanceSchema = z
     "exactly one hate is the red line",
   );
 export type Glance = z.infer<typeof GlanceSchema>;
-// Lead's ruling on Negotiate: a group with a hate tag like this is never offered money for its votes.
-export const REFUSES_MONEY = /\b(bribes?|bribery|bought|paid off|cash for|money for)\b/i;
+// Lead's ruling on Negotiate: a group with a hate tag like this is never offered money for its votes. "Money for"
+// needs what the money buys, so a policy such as "Cash for clunkers" or "Money for the banks" refuses nothing.
+export const REFUSES_MONEY =
+  /\b(brib(e|es|ed|ery|ing)|bought|paid off|pay-?offs?|kickbacks?|vote[- ]buying|buying (votes|seats|loyalty)|(cash|money|gold|coin) for (votes|seats|support|loyalty))\b/i;
 
 const FactionSchema = z.object({
   id: z.string(),

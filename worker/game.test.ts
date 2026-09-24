@@ -1135,7 +1135,13 @@ for (const [hate, offered] of [
   ["Bribes", false],
   ["Cash for votes", false],
   ["Being bought", false],
+  ["Bribed judges", false],
+  ["Vote buying", false],
+  ["Payoffs", false],
+  ["Kickbacks", false],
   ["Late payments", true], // hating late payments is not refusing money
+  ["Cash for clunkers", true], // a policy, not a price
+  ["Money for the banks", true],
 ] as [string, boolean][]) {
   test(`a faction that hates ${hate} is ${offered ? "" : "never "}offered money`, async () => {
     const { row } = await priceHesitant({
