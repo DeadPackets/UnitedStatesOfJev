@@ -11,7 +11,6 @@
   "ratelimits": [{ "name": "RL", "namespace_id": "1001", "simple": { "limit": 240, "period": 60 } }],
   "d1_databases": [{ "binding": "DB", "database_name": "usoj", "database_id": "f0792d84-dc66-4444-8f8d-8f3db4e94c36" }],
   "vectorize": [{ "binding": "VEC", "index_name": "usoj-scenarios" }],
-  "r2_buckets": [{ "binding": "ART", "bucket_name": "usoj-art" }],
   "ai": { "binding": "AI" },
   "workflows": [
     { "name": "build", "binding": "BUILD", "class_name": "ScenarioBuild" },

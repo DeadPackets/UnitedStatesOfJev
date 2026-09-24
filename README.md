@@ -72,7 +72,6 @@ and the loop is in `docs/balance.md`.
 |---|---|---|
 | `DB` | D1 `usoj` | scenarios table: id, status, pack JSON, builds count |
 | `VEC` | Vectorize `usoj-scenarios` | 1024-dim, cosine, one vector per ready scenario |
-| `ART` | R2 `usoj-art` | unused: the game makes no pictures; the bucket keeps the old ones |
 | `AI` | Workers AI | `@cf/baai/bge-m3` embeddings for matching |
 | `BUILD` | Workflow `ScenarioBuild` (`worker/build.ts`) | one step per pack row, status written to D1 after each |
 | `GAME` | Durable Object `GameDO` | one per game, unchanged shape plus `scenarioId` |
