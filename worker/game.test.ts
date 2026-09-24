@@ -1523,17 +1523,29 @@ test("a pack stored before R36 gets the default theme and a line icon and tint o
 
 // What the review of the signing request moved is what the receipt showed; per-turn rates wait for End turn and the
 // final vote line is derived. A vote also reads the citizens (Jev), which moves the public group on its own line.
-const moved = (lines: { target: string; id: string; delta: number; why: string }[], skip = "") =>
-  lines
-    .filter(
-      (line) => line.target !== "finalVote" && !line.why.startsWith("Every ") && line.id !== skip,
-    )
-    .map((line) => `${line.target}:${line.id}:${line.delta}`)
+// Net per target: the receipt shows the charge on its own stub, the review one line per target.
+const moved = (lines: { target: string; id: string; delta: number; why: string }[], skip = "") => {
+  const net = new Map<string, number>();
+  for (const line of lines)
+    if (line.target !== "finalVote" && !line.why.startsWith("Every ") && line.id !== skip)
+      net.set(
+        `${line.target}:${line.id}`,
+        (net.get(`${line.target}:${line.id}`) ?? 0) + line.delta,
+      );
+  return [...net]
+    .filter(([, delta]) => delta)
+    .map(([key, delta]) => `${key}:${delta}`)
     .sort();
-for (const verb of ["decree", "law"] as const) {
-  test(`a ${verb} lands at signing exactly as its receipt showed`, async () => {
+};
+for (const [verb, keeps] of [
+  ["decree", false],
+  ["decree", true],
+  ["law", false],
+] as const) {
+  test(`a ${verb}${keeps ? " that keeps a promise" : ""} lands at signing exactly as its receipt showed`, async () => {
     stubModels(0.9);
     const { game, post } = seatedGame(81);
+    if (keeps) game.promises.tariffs.passed = 1; // this act keeps it, which pays authority at signing
     // Every seat sure, so the real draw is the simulated one (the receipt forces hesitant seats one way).
     for (const member of game.members) {
       member.mood = 1;

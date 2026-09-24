@@ -264,14 +264,17 @@ function resourceDiff(
   });
 }
 
-// ponytail: ledgers are set deep enough that commit never refuses and a vote's +2 or -2 never clamps; the receipt
-// reads resources off the tag, so these numbers never reach the player. Upgrade: an engine dry-run flag on commit.
+// ponytail: ledgers are set deep enough that commit never refuses (a receipt shows an act the player cannot afford
+// yet), then put back to the real ones, so a kept promise and a vote's clamp at 0 read as they will land. The top
+// clamps (authority 200) are not re-applied. Upgrade: an engine dry-run flag on commit.
 const DEEP = { treasury: 5000, authority: 100, chest: 5000 };
 function afterCommit(pack: Pack, game: Game, tag: PriceTag) {
   const clone = structuredClone(game);
   clone.ledgers = { ...DEEP };
   const mark = clone.wireTurn === clone.turn ? clone.wire.length : 0;
   commit(pack, clone, structuredClone(tag));
+  for (const key of RESOURCES)
+    clone.ledgers[key] = Math.max(0, game.ledgers[key] + clone.ledgers[key] - DEEP[key]);
   return { game: clone, wire: clone.wire.slice(mark) };
 }
 // Seat by seat on the preview's own lines: a passage takes every hesitant seat, a defeat none of them. The whip is set
@@ -333,6 +336,11 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
       : [],
   );
   const groups = groupLines(pack, game, signed.game, signed.wire, tag.title);
+  // What signing pays in besides the charge: a promise the act keeps pays authority then.
+  const paid = RESOURCES.flatMap((key) => {
+    const delta = Math.round(signed.game.ledgers[key] - game.ledgers[key] + tag.charge[key]);
+    return delta ? [resourceLine(pack, key, delta, "When you sign")] : [];
+  });
   const outcome = (passed: boolean) => {
     const voted = afterVote(pack, signed.game, passed);
     const verdictWords = `The ${words.bill} ${passed ? words.pass : words.fail}`;
@@ -350,7 +358,7 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
     reading: tag.reading,
     now: law
       ? [...charge, ...groups]
-      : [...charge, ...rates, ...groups, ...moved(voteLine(pack, game, signed.game))],
+      : [...charge, ...paid, ...rates, ...groups, ...moved(voteLine(pack, game, signed.game))],
     pass: law ? outcome(true) : [],
     fail: law ? outcome(false) : [],
     vetoes,
