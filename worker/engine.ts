@@ -445,12 +445,12 @@ export const actTokens = (a: { verb: Verb; tags: string[]; keeps?: string[]; ser
 export interface Lean { lean: -2 | -1 | 0 | 1; reason: string }
 // The red line first, then each want in order; the first the act touches decides and gives the reason.
 export function cardLean(card: Card | undefined, tokens: Set<string>): Lean {
-  const hit = (xs: string[]) => xs.some((x) => tokens.has(x));
+  const touches = (cardTags: string[]) => cardTags.some((cardTag) => tokens.has(cardTag));
   if (!card) return { lean: 0, reason: "" };
-  if (hit(card.redMatch)) return { lean: -2, reason: `Red line: ${card.redLine}` };
-  for (const w of card.wants) {
-    if (hit(w.match.no)) return { lean: -1, reason: `Fights ${w.no[0] ?? w.want}` };
-    if (hit(w.match.yes)) return { lean: 1, reason: `Backs ${w.yes[0] ?? w.want}` };
+  if (touches(card.redMatch)) return { lean: -2, reason: `Red line: ${card.redLine}` };
+  for (const want of card.wants) {
+    if (touches(want.match.no)) return { lean: -1, reason: `Fights ${want.no[0] ?? want.want}` };
+    if (touches(want.match.yes)) return { lean: 1, reason: `Backs ${want.yes[0] ?? want.want}` };
   }
   return { lean: 0, reason: "" };
 }
@@ -711,14 +711,20 @@ export const expectedYes = (whip: Record<string, number>) => Object.values(whip)
 // R30: seeded by the game, term and bill, so the draw behind the preview is fixed once the act is priced.
 export const voteSeed = (game: Game, bill: Bill) => hash(`${game.seed}:${game.term}:${bill.id}`);
 export const drawVotes = (whip: Record<string, number>, seed: number) => {
-  const r = rng(seed);
-  return Object.fromEntries(Object.keys(whip).map((id) => [id, r() < whip[id]]));
+  const draw = rng(seed);
+  return Object.fromEntries(Object.keys(whip).map((id) => [id, draw() < whip[id]]));
 };
 
 // R30: what a chamber faction's card adds to each of its seats' chance of a yes.
 export const CARD_SHIFT: Record<Lean["lean"], number> = { 1: 0.1, 0: 0, [-1]: -0.1, [-2]: -0.3 };   // TUNE
-export const cardShift = (pack: Pack, tokens: Set<string>): Record<string, number> =>
-  Object.fromEntries(pack.factions.flatMap((f) => { const l = cardLean(f.card, tokens).lean; return l ? [[f.id, CARD_SHIFT[l]]] : []; }));
+export function cardShift(pack: Pack, tokens: Set<string>): Record<string, number> {
+  const shift: Record<string, number> = {};
+  for (const faction of pack.factions) {
+    const { lean } = cardLean(faction.card, tokens);
+    if (lean) shift[faction.id] = CARD_SHIFT[lean];
+  }
+  return shift;
+}
 
 export const FOR_AT = 2 / 3, AGAINST_AT = 1 / 3;   // TUNE: a seat this sure either way is counted; between them it hesitates
 // R30: what a hesitant faction will take for its seats on this act (acts.ts termsOf).
@@ -730,16 +736,20 @@ export interface Preview { need: number; expected: number; for: number; factions
 export function votePreview(pack: Pack, game: Game, bill: Bill, tokens: Set<string>): Preview | null {
   if (!game.members.length) return null;
   const whip = effectiveWhip(game, bill);
-  const factions = pack.factions.flatMap((f): FactionCount[] => {
-    const ps = game.members.filter((m) => m.faction === f.id).map((m) => whip[m.id]);
-    if (!ps.length) return [];
-    const n = { for: ps.filter((p) => p >= FOR_AT).length, against: ps.filter((p) => p <= AGAINST_AT).length };
-    const avg = mean(ps);
-    const reason = cardLean(f.card, tokens).reason
-      || (avg >= FOR_AT ? "Votes with you on this" : avg <= AGAINST_AT ? "Votes against you on this" : "Nothing in it decides them");
-    return [{ id: f.id, name: f.name, ...n, hesitant: ps.length - n.for - n.against, reason }];
+  const factions = pack.factions.flatMap((faction): FactionCount[] => {
+    const chances = game.members.filter((member) => member.faction === faction.id).map((member) => whip[member.id]);
+    if (!chances.length) return [];
+    const inFavour = chances.filter((chance) => chance >= FOR_AT).length;
+    const against = chances.filter((chance) => chance <= AGAINST_AT).length;
+    const average = mean(chances);
+    let reason = cardLean(faction.card, tokens).reason;
+    if (!reason && average >= FOR_AT) reason = "Votes with you on this";
+    else if (!reason && average <= AGAINST_AT) reason = "Votes against you on this";
+    else if (!reason) reason = "Nothing in it decides them";
+    return [{ id: faction.id, name: faction.name, for: inFavour, against, hesitant: chances.length - inFavour - against, reason }];
   });
-  return { need: threshold(pack, game, bill), expected: round1(expectedYes(whip)), for: factions.reduce((a, f) => a + f.for, 0), factions };
+  const seatsInFavour = factions.reduce((total, faction) => total + faction.for, 0);
+  return { need: threshold(pack, game, bill), expected: round1(expectedYes(whip)), for: seatsInFavour, factions };
 }
 
 export function applyVote(pack: Pack, game: Game, bill: Bill): void {

@@ -229,7 +229,8 @@ export class GameDO extends DurableObject<Env> {
   private deal(game: Game, pack: Pack, faction: string, kind: string): Extra {
     const tag = game.tag;
     if (!tag?.preview) throw new Reject(409, `Price a ${pack.vocabulary.bill} first.`);
-    const term = tag.preview.factions.find((f) => f.id === faction)?.terms?.find((t) => t.kind === kind);
+    const row = tag.preview.factions.find((candidate) => candidate.id === faction);
+    const term = row?.terms?.find((offer) => offer.kind === kind);
     if (!term) throw new Reject(409, "They offer no such terms on this act.");
     if (!canAfford(pack, game, term.cost)) throw new Reject(402, "There is not enough to pay for that.");
     if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
@@ -510,9 +511,10 @@ export function migrate(game: Game, pack: Pack): void {
   game.warnings ??= [];
   game.inForce ??= [];
   // R29: a row saved with repealConsent names the chamber or no one; "army" was never written on a repeal.
-  for (const l of game.inForce as (typeof game.inForce[number] & { repealConsent?: string })[]) {
-    l.repealVetoes ??= l.repealConsent && l.repealConsent !== "none" ? [l.repealConsent] : [];
-    delete l.repealConsent;
+  for (const law of game.inForce as (typeof game.inForce[number] & { repealConsent?: string })[]) {
+    const consent = law.repealConsent;
+    law.repealVetoes ??= consent && consent !== "none" ? [consent] : [];
+    delete law.repealConsent;
   }
   game.wire ??= [];
   game.pending ??= null;
@@ -571,8 +573,8 @@ const room = (pack: Pack, game: Game): HolderView[] => {
 };
 
 const refuse = (pack: Pack, game: Game, verb: Verb, tokens?: Set<string>) => {
-  const b = blocker(pack, game, verb, tokens);
-  if (b) throw new Reject(409, `${b.name} will not agree: ${b.reason}.`);
+  const refusing = blocker(pack, game, verb, tokens);
+  if (refusing) throw new Reject(409, `${refusing.name} will not agree: ${refusing.reason}.`);
 };
 
 const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, InstrumentView>> => {

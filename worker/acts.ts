@@ -31,19 +31,22 @@ export function vetoesOf(pack: Pack, game: Game, verb: Verb): string[] {
 // other verb the chamber agrees while the seats backing you carry a vote (a supermajority where one is written).
 // R30: a veto group whose red line the act crosses refuses whatever its support.
 export function vetoRows(pack: Pack, game: Game, verb: Verb, tokens?: Set<string>): Veto[] {
-  return vetoesOf(pack, game, verb).flatMap((v): Veto[] => {
-    if (CHAMBER.has(v)) {
-      const ch = chamberHolder(pack);
-      if (verb === "law" || !ch) return [];
-      const seats = Math.round(((game.holders[ch.id]?.support ?? 0) * pack.chamber.size) / 100);
-      const need = v === "chamber" ? pack.chamber.threshold : pack.chamber.supermajority;
-      return [{ id: ch.id, name: ch.name, agrees: seats >= need, reason: `${seats} of ${pack.chamber.size} seats back you; it needs ${need}` }];
+  return vetoesOf(pack, game, verb).flatMap((veto): Veto[] => {
+    if (CHAMBER.has(veto)) {
+      const chamber = chamberHolder(pack);
+      if (verb === "law" || !chamber) return [];
+      const seats = Math.round(((game.holders[chamber.id]?.support ?? 0) * pack.chamber.size) / 100);
+      const need = veto === "chamber" ? pack.chamber.threshold : pack.chamber.supermajority;
+      const reason = `${seats} of ${pack.chamber.size} seats back you; it needs ${need}`;
+      return [{ id: chamber.id, name: chamber.name, agrees: seats >= need, reason }];
     }
-    const h = holdersOf(pack).find((x) => x.id === v), s = game.holders[v];
-    if (!h || !s) return [];
-    const red = tokens ? cardLean(h.card, tokens) : null;
-    if (red?.lean === -2) return [{ id: v, name: h.name, agrees: false, reason: red.reason }];
-    return [{ id: v, name: h.name, agrees: agrees(game, v), reason: `support ${Math.round(s.support)}, its line ${s.line}` }];
+    const holder = holdersOf(pack).find((candidate) => candidate.id === veto);
+    const state = game.holders[veto];
+    if (!holder || !state) return [];
+    const redLine = tokens ? cardLean(holder.card, tokens) : null;
+    if (redLine?.lean === -2) return [{ id: veto, name: holder.name, agrees: false, reason: redLine.reason }];
+    const reason = `support ${Math.round(state.support)}, its line ${state.line}`;
+    return [{ id: veto, name: holder.name, agrees: agrees(game, veto), reason }];
   });
 }
 
@@ -59,7 +62,7 @@ export function available(pack: Pack, game: Game, verb: Verb): boolean {
 
 // The first group that will not agree: the act can be priced, so the tag shows who refuses, but not signed.
 export const blocker = (pack: Pack, game: Game, verb: Verb, tokens?: Set<string>): Veto | undefined =>
-  vetoRows(pack, game, verb, tokens).find((v) => !v.agrees);
+  vetoRows(pack, game, verb, tokens).find((veto) => !veto.agrees);
 
 // C4: in the last four turns an act aimed at a holder that votes in the test costs less.
 export function discountOf(pack: Pack, game: Game, serves: string[]): number {
@@ -86,11 +89,14 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
   const revenue = q.revenue.map((r) => ({ ...r, delta: r.delta > 0 ? round1(r.delta * q.credibility) : r.delta }));
   const tokens = actTokens(q);
   // The named holders, then every other holder whose card the act touches, with the card's reason (as touch() moves them).
-  const stances = holdersOf(pack).flatMap((h) => {
-    const s = game.holders[h.id], named = q.serves.includes(h.id) || q.hits.includes(h.id);
-    const { lean, reason } = named ? { lean: 0, reason: "" } : cardLean(h.card, tokens);
-    return s && (named || lean) ? [{ id: h.id, name: h.name, support: s.support, line: s.line, ...(reason ? { reason } : {}) }] : [];
-  }).sort((a, b) => rank(q, a.id) - rank(q, b.id));
+  const stances = holdersOf(pack).flatMap((holder) => {
+    const state = game.holders[holder.id];
+    const named = q.serves.includes(holder.id) || q.hits.includes(holder.id);
+    const { lean, reason } = named ? { lean: 0, reason: "" } : cardLean(holder.card, tokens);
+    if (!state || (!named && !lean)) return [];
+    const row = { id: holder.id, name: holder.name, support: state.support, line: state.line };
+    return [reason ? { ...row, reason } : row];
+  }).sort((first, second) => rank(q, first.id) - rank(q, second.id));
   return {
     verb: q.verb, title: q.title, reading: q.reading, credibility: q.credibility,
     quoted: { authority: q.cost.authority, treasury: q.cost.treasury, chest: q.cost.chest },
@@ -116,10 +122,10 @@ function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   }
   // R30: a group the clerk did not name still answers by its card.
   const tokens = actTokens(tag);
-  for (const h of holdersOf(pack)) {
-    if (tag.serves.includes(h.id) || tag.hits.includes(h.id)) continue;
-    const { lean, reason } = cardLean(h.card, tokens);
-    if (lean) wire.push(...moveSupport(pack, game, [h.id], CARD_MOVE[lean], `${tag.title}: ${reason}`));
+  for (const holder of holdersOf(pack)) {
+    if (tag.serves.includes(holder.id) || tag.hits.includes(holder.id)) continue;
+    const { lean, reason } = cardLean(holder.card, tokens);
+    if (lean) wire.push(...moveSupport(pack, game, [holder.id], CARD_MOVE[lean], `${tag.title}: ${reason}`));
   }
   return wire;
 }
@@ -226,10 +232,15 @@ export const billOf = (game: Game, tag: PriceTag): Bill => ({
 // R30: the preview a priced law shows; it needs the whip count, so a tag priced without one has none.
 // A faction with hesitant seats that has not dealt on this act yet lists its terms.
 export function previewOf(pack: Pack, game: Game, tag: PriceTag): Preview | null {
-  const p = tag.verb === "law" && tag.count ? votePreview(pack, game, billOf(game, tag), actTokens(tag)) : null;
-  if (!p) return null;
-  const done = tag.negotiated ?? [];
-  return { ...p, factions: p.factions.map((f) => (f.hesitant && !done.includes(f.id) ? { ...f, terms: termsOf(pack, game, f.id, f.hesitant) } : f)) };
+  if (tag.verb !== "law" || !tag.count) return null;
+  const preview = votePreview(pack, game, billOf(game, tag), actTokens(tag));
+  if (!preview) return null;
+  const dealt = tag.negotiated ?? [];
+  const factions = preview.factions.map((faction) => {
+    if (!faction.hesitant || dealt.includes(faction.id)) return faction;
+    return { ...faction, terms: termsOf(pack, game, faction.id, faction.hesitant) };
+  });
+  return { ...preview, factions };
 }
 
 export const NEGOTIATE_LIFT = 0.34;   // TUNE: lifts a hesitant seat (under 2/3) over the for line, an against seat to hesitant
@@ -238,29 +249,36 @@ export const SEAT_PRICE = 2;          // TUNE, the mock's: chest per hesitant se
 
 // R30: a pledge to the first thing its card backs that no promise holds yet, a post, or money for its hesitant seats.
 export function termsOf(pack: Pack, game: Game, factionId: string, hesitant: number): Term[] {
-  const f = pack.factions.find((x) => x.id === factionId);
-  if (!f) return [];
-  const none: Price = { authority: 0, treasury: 0, chest: 0 };
-  const want = (f.card?.wants ?? []).flatMap((w) => w.match.yes.filter((t) => pack.tags.includes(t) && !game.promises[t]).map((t) => ({ w, t })))[0];
-  return [
-    ...(want ? [{ kind: "pledge" as const, label: want.w.yes[0] ?? want.w.want, cost: none, tag: want.t, due: game.turn + PLEDGE_DUE }] : []),
-    { kind: "post", label: `A post for ${f.card?.face.name ?? f.leader}`, cost: instrumentOf(pack, "appoint")?.price ?? none },
-    { kind: "money", label: `${SEAT_PRICE * hesitant} from the chest`, cost: { ...none, chest: SEAT_PRICE * hesitant } },
-  ];
+  const faction = pack.factions.find((candidate) => candidate.id === factionId);
+  if (!faction) return [];
+  const free: Price = { authority: 0, treasury: 0, chest: 0 };
+  const terms: Term[] = [];
+  for (const want of faction.card?.wants ?? []) {
+    const subject = want.match.yes.find((cardTag) => pack.tags.includes(cardTag) && !game.promises[cardTag]);
+    if (!subject) continue;
+    terms.push({ kind: "pledge", label: want.yes[0] ?? want.want, cost: free, tag: subject, due: game.turn + PLEDGE_DUE });
+    break;
+  }
+  const postPrice = instrumentOf(pack, "appoint")?.price ?? free;
+  terms.push({ kind: "post", label: `A post for ${faction.card?.face.name ?? faction.leader}`, cost: postPrice });
+  const money = SEAT_PRICE * hesitant;
+  terms.push({ kind: "money", label: `${money} from the chest`, cost: { ...free, chest: money } });
+  return terms;
 }
 
 // Accepting a term pays it and lifts the faction's seats for this act. A pledge is the promise machinery: one
 // passed law on its subject keeps it; past its turn it breaks and decays as any promise does.
 export function negotiate(pack: Pack, game: Game, tag: PriceTag, factionId: string, term: Term): WireLine[] {
-  const name = pack.factions.find((f) => f.id === factionId)?.name ?? factionId;
+  const name = pack.factions.find((faction) => faction.id === factionId)?.name ?? factionId;
   const wire = pay(pack, game, term.cost, `terms with ${name}`);
   if (term.kind === "pledge" && term.tag) {
     authorPromise(game, term.tag, term.label, term.due);
     game.promises[term.tag].passed = 1;
   }
   if (term.kind === "post") {
-    repeal(game, `appoint-${factionId}`);
-    enact(game, { id: `appoint-${factionId}`, verb: "appoint", title: term.label, perTurn: [], repealVetoes: [], sunset: null });
+    const postId = `appoint-${factionId}`;
+    repeal(game, postId);
+    enact(game, { id: postId, verb: "appoint", title: term.label, perTurn: [], repealVetoes: [], sunset: null });
   }
   tag.shift = { ...tag.shift, [factionId]: (tag.shift?.[factionId] ?? 0) + NEGOTIATE_LIFT };
   tag.negotiated = [...(tag.negotiated ?? []), factionId];
