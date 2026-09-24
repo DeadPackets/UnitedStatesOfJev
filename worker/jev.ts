@@ -24,6 +24,7 @@ export type Env = {
   DAILY_BUILD_CAP: string;
   DAILY_GAME_CAP: string;
   DAILY_SECRET: string;
+  BUILD_COST_CAP?: string; // dollars one build may spend on Opus and Grok; worker/build.ts defaults it to 3
   MODEL?: string;
   BOTS?: string;
   GOLDEN?: string;
