@@ -108,7 +108,7 @@ export const RosterSchema = z.object({
     backer: phrase
       .nullable()
       .describe(
-        "The id of the home group without seats whose backing keeps the ruler in the seat day to day, or null.",
+        "The id of the home group without seats whose backing keeps the ruler in the seat day to day (an army, guard, party machine, patron, Politburo or the ruler's own house); null only when no such group exists.",
       ),
   }),
   fall: z
