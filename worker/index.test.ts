@@ -172,12 +172,15 @@ test.each([
   expect(reached).toBe(`/${path}`);
 });
 
-// Owner rule: at 90% or more the build route answers the stored world's id and starts nothing.
+// Owner rule: at 90% or more the build route answers the stored world's id and starts nothing, without spending the
+// player's build window.
 test.each([
-  ["a stored world at 95% is answered without a build", 0.95, 200, 0],
-  ["a stored world at 85% still builds", 0.85, 202, 1],
-])("%s", async (_name, p, status, builds) => {
+  ["a stored world at 95% is answered without a build", 0.95, "ok", 200, 0],
+  ["a stored world at 95% loads inside the 10-minute window", 0.95, "spaced", 200, 0],
+  ["a stored world at 85% still builds", 0.85, "ok", 202, 1],
+])("%s", async (_name, p, claimed, status, builds) => {
   let started = 0;
+  let claims = 0;
   const e = {
     ...(env({}) as object),
     DB: {
@@ -192,7 +195,15 @@ test.each([
         }),
       }),
     },
-    BUILDS: { idFromName: () => "builds", get: () => ({ claim: async () => "ok" }) },
+    BUILDS: {
+      idFromName: () => "builds",
+      get: () => ({
+        claim: async () => {
+          claims++;
+          return claimed;
+        },
+      }),
+    },
     BUILD: { create: async () => void started++ },
     AI: { run: async () => ({ data: [[0.1, 0.2]] }) },
     VEC: { query: async () => ({ matches: [{ id: "rome01", score: 0.5 }] }) },
@@ -216,5 +227,6 @@ test.each([
     });
   expect(r.status).toBe(status);
   expect(started).toBe(builds);
+  expect(claims).toBe(builds);
   if (builds === 0) expect(await r.json()).toEqual({ id: "rome01" });
 });

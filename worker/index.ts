@@ -195,6 +195,11 @@ app.post("/api/scenarios/match", async (c) => {
 app.post("/api/scenarios", async (c) => {
   const prompt = await readPrompt(c);
   if (typeof prompt !== "string") return prompt;
+  // Owner rule: a prompt that is a stored world at 90% or more loads it instead of paying for a build. It runs before the
+  // claim, so a load spends neither the player's 10-minute window nor a daily build. The search failing (no Vectorize in
+  // local dev) is not a reason to refuse the build.
+  const found = await match(c.env, prompt).catch(() => null);
+  if (found && "load" in found) return c.json({ id: found.load });
   const ip = ipOf(c);
   const builds = buildsDO(c.env);
   const claim = await builds.claim(ip, "build", 600_000, true);
@@ -202,10 +207,6 @@ app.post("/api/scenarios", async (c) => {
     return c.json({ error: "One build every 10 minutes. Load a scenario in the meantime." }, 429);
   if (claim === "capped")
     return c.json({ error: "Today's builds are used up. Try again tomorrow." }, 429);
-  // Owner rule: a prompt that is a stored world at 90% or more loads it instead of paying for a build. The search
-  // failing (no Vectorize in local dev) is not a reason to refuse the build.
-  const found = await match(c.env, prompt).catch(() => null);
-  if (found && "load" in found) return c.json({ id: found.load });
   const id = scenarioId();
   try {
     await newScenario(c.env, id, prompt);
