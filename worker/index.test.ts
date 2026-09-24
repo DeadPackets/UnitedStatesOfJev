@@ -1,4 +1,4 @@
-import { test, expect, mock } from "bun:test";
+import { test, expect, mock, setSystemTime } from "bun:test";
 
 mock.module("cloudflare:workers", () => ({ DurableObject: class {}, WorkflowEntrypoint: class {} }));
 mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
@@ -47,7 +47,9 @@ test("a played daily ships the grid rows the Over screen and the landing both re
     play: { id: "p", day: "2026-09-22", game: "g1", grid: JSON.stringify([{ ledger: "authority" }, { ledger: "treasury", won: true }]), won: 1, ended: 1 },
     days: [{ day: "2026-09-22" }], plays: 1,
   });
+  setSystemTime(new Date("2026-09-22T12:00:00Z"));   // the streak counts back from today
   const body = await (await app.fetch(new Request("https://x/api/daily"), e)).json() as Record<string, any>;
+  setSystemTime();
   expect(body.played).toBe(true);
   expect(body.streak).toBe(1);
   expect(body.grid.map((g: { ledger: string }) => g.ledger)).toEqual(["authority", "treasury"]);
