@@ -103,9 +103,23 @@ test("a law's receipt counts every seat, names each hesitant one, and its defeat
   expect(deskView(pack, game).floor!.count!.factions).toEqual(
     count.factions.map(({ terms, ...f }) => f),
   );
+  const tabled = structuredClone(game);
   applyVote(pack, game, game.bills.at(-1)!);
+  // a vote moves moods (a threatened seat that voted no sulks): the call still follows the count as it was shown
+  for (const member of game.members) member.mood -= 0.2;
   expect(deskView(pack, game).floor).toBeNull();
-  const verdict = deskView(pack, game).verdict!;
+  const verdict = deskView(pack, game, tabled).verdict!;
+  // the seats called by name are the ones the count showed hesitant
+  expect(
+    verdict.order
+      .filter((seat) => seat.hesitant)
+      .map((seat) => seat.member)
+      .sort(),
+  ).toEqual(
+    Object.keys(count.leans)
+      .filter((id) => count.leans[id] === "hesitant")
+      .sort(),
+  );
   expect(new Set(verdict.order.map((seat) => seat.member)).size).toBe(game.members.length);
   const hesitant = verdict.order.map((seat) => seat.hesitant);
   expect(hesitant).toEqual([...hesitant].sort()); // every sure seat is called before any hesitant one

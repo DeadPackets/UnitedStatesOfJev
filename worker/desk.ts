@@ -367,11 +367,13 @@ function receiptOf(pack: Pack, game: Game, tag: PriceTag): Receipt {
   };
 }
 
-function verdictOf(pack: Pack, game: Game): Verdict | null {
+function verdictOf(pack: Pack, game: Game, previous?: Game): Verdict | null {
   const bill = game.bills.at(-1);
   if (game.phase !== "over" || !bill?.votes || bill.id !== game.turn) return null;
   const votes = bill.votes;
-  const chance = effectiveWhip(game, bill);
+  // The seats called by name are the ones the count showed hesitant: read the chances from before the vote moved them.
+  const tabled = previous?.bills.find((candidate) => candidate.id === bill.id && !candidate.votes);
+  const chance = previous && tabled ? effectiveWhip(previous, tabled) : effectiveWhip(game, bill);
   const unsure = (id: string) => chance[id] > AGAINST_AT && chance[id] < FOR_AT;
   // The sure seats in a shuffle seeded by the bill, so a reload replays the same count; then each hesitant seat.
   const draw = rng(hash(`${game.seed}:${game.term}:${bill.id}:order`));
@@ -515,7 +517,7 @@ export function deskView(pack: Pack, game: Game, previous?: Game): DeskView {
     }),
     finalVote: { value: finalVote(game), need: need(pack, game) },
     receipt: game.tag ? receiptOf(pack, game, game.tag) : null,
-    verdict: verdictOf(pack, game),
+    verdict: verdictOf(pack, game, previous),
     review: previous ? reviewOf(pack, game, previous) : null,
     floor: floorOf(pack, game),
     shut: shutOf(pack, game),
