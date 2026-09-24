@@ -503,6 +503,13 @@ export class GameDO extends DurableObject<Env> {
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb))
       throw new Reject(400, "That instrument is not available.");
+    // With no verb chosen the clerk picks one; when every door is already shut, no model call can open one.
+    const open = (door: Verb) =>
+      available(pack, game, door) &&
+      !(door === "law" && game.phase !== "draft") &&
+      !(door === "proclaim" && game.posts.some((p) => p.turn === game.turn));
+    if (!verb && !VERBS.some(open))
+      throw new Reject(400, `No instrument is open this ${pack.vocabulary.turn}. End the turn.`);
     if (verb) refuse(pack, game, verb);
     if (verb === "law" && game.phase !== "draft")
       throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);

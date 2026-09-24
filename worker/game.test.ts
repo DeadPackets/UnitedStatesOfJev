@@ -933,6 +933,21 @@ test("pricing an act writes the tag, and a refusal is a 200 that costs one autho
   ).toBe(409);
 });
 
+test("with every instrument shut, pricing answers 400 before any model call", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(62);
+  let calls = 0;
+  const model = globalThis.fetch;
+  globalThis.fetch = ((...args: Parameters<typeof fetch>) => (
+    calls++, model(...args)
+  )) as typeof fetch;
+  game.ledgers.authority = 0; // only proclaim and spend stay open
+  game.ledgers.treasury = 0; // spend shuts
+  game.posts.push({ turn: game.turn } as never); // the turn's one proclaim is spent
+  const r = await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
+  expect([r.status, calls, game.calls]).toEqual([400, 0, 0]);
+});
+
 test("price then commit moves the ledgers once, and a second commit has nothing to apply", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(61);
