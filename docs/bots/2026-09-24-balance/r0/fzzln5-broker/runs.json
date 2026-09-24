@@ -1,0 +1,41 @@
+[
+  {
+    "run": "broker-20260922",
+    "game": "02ec10dd-5b6f-4f42-b812-43604232b594",
+    "policy": "broker",
+    "seed": 20260922,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.8664999999999999,
+    "bar": 0.4,
+    "turns": []
+  },
+  {
+    "run": "broker-20260923",
+    "game": "2d6acf96-c23d-4bce-a264-7811815c2722",
+    "policy": "broker",
+    "seed": 20260923,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.8848999999999999,
+    "bar": 0.4,
+    "turns": []
+  },
+  {
+    "run": "broker-20260924",
+    "game": "c5c98ae2-2a49-4099-9122-c3c8758d1b81",
+    "policy": "broker",
+    "seed": 20260924,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.7030999999999998,
+    "bar": 0.4,
+    "turns": []
+  }
+]

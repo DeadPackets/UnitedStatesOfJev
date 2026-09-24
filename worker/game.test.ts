@@ -13,6 +13,7 @@ import {
   hash,
   newGame,
   scenarioTag,
+  SUPPORT_HIT,
   SURVIVAL_BAR,
   type Game,
 } from "./engine";
@@ -1121,6 +1122,22 @@ test("a term taken on this turn's law survives re-pricing it: charged once, the 
   ).toBe(409);
 });
 
+test("a pledge taken on a law is not kept by that same law passing", async () => {
+  const { game, post } = await priceHesitant(tideCard);
+  expect(
+    (await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "pledge" })).status,
+  ).toBe(200);
+  game.tag!.tags.push("harbor-tolls"); // the law on the floor carries the pledged subject
+  for (const m of game.members) m.mood = 1;
+  await post("acts", { turn: 1 });
+  game.bills[0].constitutional = 0; // the stub's 0.9 would strike it, and a struck law keeps nothing anyway
+  expect((await post("bills/1/vote", { turn: 1 })).body.bills[0]).toMatchObject({
+    passed: true,
+    struck: false,
+  });
+  expect(game.promises["harbor-tolls"].state).toBe("pending");
+});
+
 test("a post is not offered while the appointment's veto holder refuses", async () => {
   const { do_, game, post } = await priceHesitant(tideCard);
   const c = do_.pack.constitution;
@@ -1239,10 +1256,10 @@ test("the holders an act moved are read again before the turn ends", async () =>
     (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status,
   ).toBe(200);
   await post("acts", { turn: 1 }); // serves guard, hits league, bypasses the council
-  expect(game.holders.league.support).toBe(42);
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT);
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.support).toBe(45); // Jev reads 90, and the re-read moves it at most 3 (R33)
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT + 3); // Jev reads 90, and the re-read moves it at most 3 (R33)
   const read = r.body.wire
     .filter((w: { cause: string }) => w.cause === "read again at the turn's end")
     .map((w: { id: string }) => w.id);
@@ -1258,7 +1275,7 @@ test("the read never spends more than the turn has left", async () => {
   game.calls = 6;
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.support).toBe(42); // nothing left to spend, so nothing was asked
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT); // nothing left to spend, so nothing was asked
 });
 
 test("last turn's wire moves no holder into this turn's read", async () => {

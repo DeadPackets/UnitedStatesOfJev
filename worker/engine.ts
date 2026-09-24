@@ -230,6 +230,7 @@ export interface Game {
       window: number;
       share: number;
       authored: boolean;
+      pledgedOn?: number; // lead ruling: a Negotiate pledge, never kept by a law of the turn it was made on
     }
   >;
   members: Member[];
@@ -331,8 +332,8 @@ export const TURNS_PER_TERM = 20;
 // R24: C2's resistance numbers, now support lost or won. Resistance decayed 1 a turn; support does not decay,
 // and R33's End turn re-read is what drifts it.
 export const SUPPORT_BYPASS = 12; // TUNE: an act a holder could have stopped
-export const SUPPORT_HIT = 8; // TUNE: an act that costs a holder something
-export const SUPPORT_SERVE = 10; // TUNE: a favour or a service
+export const SUPPORT_HIT = 5; // TUNE: an act that costs a holder something
+export const SUPPORT_SERVE = 2; // TUNE: a favour or a service; at 3 or more the broker and idealist bots won both test packs
 // A pack from before R24 set a resistance line L on a stance near 0.5: its support line is 100 - L, kept at
 // least this far under the day-one support so no old holder opens warning.
 export const LEGACY_ROOM = 10; // TUNE
@@ -1618,6 +1619,7 @@ function pendingItem(
 export function keepPromise(pack: Pack, game: Game, tag: string) {
   const p = game.promises[tag];
   if (!p || p.state !== "pending") return;
+  if (p.pledgedOn === game.term * TURNS_PER_TERM + game.turn) return;
   if (++p.passed < 2) return;
   p.state = "kept";
   moveSupport(pack, game, [ownHolder(pack).id], PROMISE_LOYALTY, p.label);
@@ -2311,7 +2313,7 @@ export function bar(pack: Pack, term: number): number {
 export const HANDICAP_SHORTFALL = 6; // TUNE, §6: above this the start carries a printed handicap
 export const HANDICAP = 10; // TUNE, §6: the authority that handicap costs
 export const SURVIVAL_SHORTFALL = 15; // TUNE, §6: above this the win path is survival
-export const SURVIVAL_BAR = 0.4; // TUNE, §6: the survival path's own bar
+export const SURVIVAL_BAR = 0.45; // TUNE, §6: the survival path's own bar; 0.40 sat under a court pack's opening 0.497
 
 export const shortfall = (pack: Pack, faction: string): number =>
   pack.chamber.threshold - pack.members.filter((m) => m.faction === faction).length;

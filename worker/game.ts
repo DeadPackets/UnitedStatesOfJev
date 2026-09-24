@@ -145,7 +145,7 @@ type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
 type Extra = {
   deltas?: Record<string, number>;
-  usage?: { tokens: number; cost: number; calls: number; worst: number };
+  usage?: Omit<typeof meter, "reset">;
 };
 
 export class GameDO extends DurableObject<Env> {
@@ -243,7 +243,14 @@ export class GameDO extends DurableObject<Env> {
     if (this.env.BOTS === "1")
       extra = {
         ...extra,
-        usage: { tokens: meter.tokens, cost: meter.cost, calls: meter.calls, worst: meter.worst },
+        usage: {
+          tokens: meter.tokens,
+          cost: meter.cost,
+          calls: meter.calls,
+          worst: meter.worst,
+          lunaTokens: meter.lunaTokens,
+          lunaCost: meter.lunaCost,
+        },
       };
     return Response.json(view(pack ?? (await this.loadPack(s.game.pack)), s, extra));
   }

@@ -1543,7 +1543,14 @@ test("the citizens' read is capped like every other Jev answer", () => {
   for (const r of REGIONS) expect(g.regions[r]).toBeCloseTo(before[r], 5);
 });
 
-import { deckOf, FIC_TURNS, foreignPending, FOREIGN_PRICE, resolveForeign } from "./engine";
+import {
+  deckOf,
+  FIC_TURNS,
+  foreignPending,
+  FOREIGN_PRICE,
+  resolveForeign,
+  SUPPORT_SERVE,
+} from "./engine";
 
 test("an abroad holder near its line puts a foreign move on the desk, and only once a term", () => {
   const g = game();
@@ -1571,7 +1578,7 @@ test("giving a foreign power what it asks costs treasury and starts its payments
   };
   resolveForeign(pack, g, e, 0);
   expect(g.ledgers.treasury).toBe(30 - FOREIGN_PRICE);
-  expect(g.holders.league.support).toBe(52); // SUPPORT_SERVE
+  expect(g.holders.league.support).toBe(42 + SUPPORT_SERVE);
   expect(g.inForce.find((l) => l.id === "gives-league")!.perTurn[0]).toEqual({
     ledger: "treasury",
     delta: 4,

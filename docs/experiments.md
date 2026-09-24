@@ -340,3 +340,31 @@ Caps in code: `MAX_TERMS` and `BUDGET_USD` in `scripts/bots/run.ts`, checked bef
 again after every finished term, where a term counts at its metered Jev cost or `TERM_USD`, whichever is
 higher. The caps hold per runner call; the spread and the own-failure runs are two calls and together
 spend at most $24.60.
+
+## Engine v2 balance pass, 2026-09-24
+
+The four R23 style bots, 3 seeds a round (20260922-24, confirmed on 20260925-27), on two production packs run
+locally: `fzzln5` Zanzibar sultanate (court, ruler `palace`, a minority start on the survival bar) and `74shk3`
+Biden presidency (democracy, ruler `democrats`, the pack's own 0.50 bar). Run summaries are in
+`docs/bots/2026-09-24-balance/*/runs.json`; the round log is `.superpowers/ruler/balance-progress.md`.
+
+| Style | Before (6 runs) | After (12 runs) | Median losing ending after |
+|---|---|---|---|
+| strongman | 50% | 50% | defeated (Biden) |
+| populist | 67% (2 coups) | 50% | defeated (Biden) |
+| broker | 100% | 50% | defeated (Biden) |
+| idealist | 83% (1 coup) | 50% | defeated (Biden) |
+
+Constants: `SUPPORT_SERVE` 10 to 2, `SUPPORT_HIT` 8 to 5, `SURVIVAL_BAR` 0.40 to 0.45. Engine v2 was too easy:
+support gains are permanent, and at 10 a served group one act could add +0.33 to +0.39 of mandate by turn 8.
+After the pass every style wins Zanzibar and loses Biden, so the 50% comes from the packs, not from play inside
+one pack. The strongman bot spends its authority on decrees by turn 5 and idles; no constant pays authority back
+for coercion, so its mandate stays near each pack's opening number whatever the constants.
+
+One term's model cost, measured solo (the meter is per isolate and races when bots run in parallel):
+
+| Model | Tokens | Cost |
+|---|---|---|
+| Jev | 1,558,624 input | $0.0655 |
+| Luna | 89,304 | $0.0195 |
+| Total | | $0.085 |

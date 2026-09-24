@@ -1,0 +1,41 @@
+[
+  {
+    "run": "strongman-20260922",
+    "game": "0e988257-d16a-4922-8778-c574f6ed8b63",
+    "policy": "strongman",
+    "seed": 20260922,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.4860999999999999,
+    "bar": 0.45,
+    "turns": []
+  },
+  {
+    "run": "strongman-20260923",
+    "game": "0f45480e-931d-4ffd-b58b-5a0b8ef211f1",
+    "policy": "strongman",
+    "seed": 20260923,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.47859999999999997,
+    "bar": 0.45,
+    "turns": []
+  },
+  {
+    "run": "strongman-20260924",
+    "game": "51ba260f-a35c-4887-8c1b-57ae3260bd99",
+    "policy": "strongman",
+    "seed": 20260924,
+    "terms": 1,
+    "ending": "stopped",
+    "won": true,
+    "term1Won": true,
+    "mandate": 0.4594,
+    "bar": 0.45,
+    "turns": []
+  }
+]

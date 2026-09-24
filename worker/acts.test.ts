@@ -20,6 +20,8 @@ import {
   encodeCode,
   newGame,
   scenarioTag,
+  SUPPORT_HIT,
+  SUPPORT_SERVE,
   type Game,
   type Quote,
 } from "./engine";
@@ -224,7 +226,7 @@ for (const [over, move, reason] of [
   [{ tags: ["tariffs"], serves: ["street"] }, -5, "Fights Raise the grain tariff"], // the first want decides: its no before its yes
   [{ verb: "force", tags: ["tariffs"] }, -10, "Red line: Troops on the quay"],
   [{ tags: ["fish-quotas"] }, 0, undefined],
-  [{ tags: ["tariffs"], hits: ["league"] }, -8, undefined], // named by the clerk: SUPPORT_HIT only
+  [{ tags: ["tariffs"], hits: ["league"] }, -SUPPORT_HIT, undefined], // named by the clerk: SUPPORT_HIT only
 ] as [Partial<Quote>, number, string | undefined][]) {
   test(`a carded group answers ${JSON.stringify(over)} by ${move}`, () => {
     const g = game();
@@ -305,9 +307,9 @@ test("a decree is paid for, costs support where it hits and wins it where it ser
   const tag = priceTag(pack, g, quote({ serves: ["guard"], hits: ["league", "street"] }));
   const wire = commit(pack, g, tag);
   expect(g.ledgers.authority).toBe(before - 3);
-  expect(g.holders.league.support).toBe(42); // SUPPORT_HIT 8
-  expect(g.holders.street.support).toBeCloseTo(street - 8, 0);
-  expect(g.holders.guard.support).toBe(50); // SUPPORT_SERVE 10
+  expect(g.holders.league.support).toBe(50 - SUPPORT_HIT);
+  expect(g.holders.street.support).toBeCloseTo(street - SUPPORT_HIT, 0);
+  expect(g.holders.guard.support).toBe(40 + SUPPORT_SERVE);
   expect(g.holders.own.support).toBe(55); // it was neither served nor hit
   expect(wire.some((w) => w.kind === "support")).toBe(true);
   expect(g.acts.at(-1)).toMatchObject({
@@ -482,7 +484,7 @@ test("an appointment wins the post's support and a second one replaces the first
       quote({ verb: "appoint", title: "A captain of the watch", serves: ["guard"] }),
     ),
   );
-  expect(g.holders.guard.support).toBe(50); // SUPPORT_SERVE
+  expect(g.holders.guard.support).toBe(40 + SUPPORT_SERVE);
   expect(g.inForce.map((l) => l.id)).toEqual(["appoint-guard"]);
   expect(g.inForce[0].verb).toBe("appoint");
 
@@ -557,11 +559,11 @@ test("force needs the army's support, and moves the army's support either way", 
     ),
   );
   expect(g.holders.guard.support).toBe(50 + FORCE_ARMY_EASE);
-  // Every region pays SUPPORT_HIT 8 from touch(), the street's own answer and the resentment of the group it fell
+  // Every region pays SUPPORT_HIT from touch(), the street's own answer and the resentment of the group it fell
   // on; the region it fell in pays FORCE_POP_HIT once more.
-  expect(g.regions[two]).toBeCloseTo(before[two] - 8 - FORCE_POP_HIT - FORCE_RESENT, 1);
+  expect(g.regions[two]).toBeCloseTo(before[two] - SUPPORT_HIT - FORCE_POP_HIT - FORCE_RESENT, 1);
   expect(g.regions[one]).toBeCloseTo(
-    before[one] - 8 - FORCE_POP_HIT - FORCE_RESENT - FORCE_POP_HIT,
+    before[one] - SUPPORT_HIT - FORCE_POP_HIT - FORCE_RESENT - FORCE_POP_HIT,
     1,
   );
 });

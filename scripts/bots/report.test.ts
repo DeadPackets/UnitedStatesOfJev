@@ -13,7 +13,7 @@ const turn = (over: Partial<TurnLog> = {}): TurnLog => ({
   holders: [],
   acts: [],
   whip: null,
-  jev: { tokens: 0, cost: 0, calls: 0, worst: 0, ms: 0 },
+  jev: { tokens: 0, cost: 0, calls: 0, worst: 0, lunaTokens: 0, lunaCost: 0, ms: 0 },
   pending: null,
   wire: [],
   ...over,

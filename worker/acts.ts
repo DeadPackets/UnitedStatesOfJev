@@ -25,6 +25,7 @@ import {
   SUPPORT_BYPASS,
   SUPPORT_HIT,
   SUPPORT_SERVE,
+  TURNS_PER_TERM,
   weightOf,
   type Bill,
   type Game,
@@ -403,6 +404,7 @@ export function negotiate(
   if (term.kind === "pledge" && term.tag) {
     authorPromise(game, term.tag, term.label, term.due);
     game.promises[term.tag].passed = 1;
+    game.promises[term.tag].pledgedOn = game.term * TURNS_PER_TERM + game.turn;
   }
   if (term.kind === "post") {
     const postId = `appoint-${factionId}`;
