@@ -333,9 +333,6 @@ export async function countVotes(scene: Scene, verdict: Verdict) {
   main.classList.add("floor");
   if (!reduced())
     animate(find(main, "#stage"), { scale: [1, 1.02] }, { duration: 0.6, ease: "easeOut" });
-  const call = document.createElement("div");
-  call.className = "call";
-  find(main, "#stfx").replaceChildren(call);
   paintCentre(main, 0, `for · ${verdict.need} needed`);
   paintTally(main, 0, 0, size);
   const circles = [...main.querySelectorAll<SVGCircleElement>("#hemi .seat")];
@@ -349,26 +346,30 @@ export async function countVotes(scene: Scene, verdict: Verdict) {
   };
   const sure = verdict.order.filter((seat) => !seat.hesitant),
     unsure = verdict.order.filter((seat) => seat.hesitant);
+  // Reduced motion: the count's end state at once, with no seat called one by one.
   if (reduced()) {
-    sure.forEach(mark);
+    verdict.order.forEach(mark);
     paintTally(main, yes, no, size);
     paintCentre(main, yes, `for · ${verdict.need} needed`);
     await sleep(300);
-  } else {
-    let owed = 0;
-    for (let i = 0; i < sure.length; i++) {
-      mark(sure[i]);
-      animate(circles[seatOf.get(sure[i].member)!], { scale: [1.7, 1] }, { duration: 0.22 });
-      paintTally(main, yes, no, size);
-      paintCentre(main, yes, `for · ${verdict.need} needed`);
-      sfx("seat", yes);
-      owed += 45 + (10 - 45) * Math.min(1, i / (sure.length * 0.65));
-      if (owed >= 16) {
-        await sleep(owed);
-        owed = 0;
-      }
+    return;
+  }
+  let owed = 0;
+  for (let i = 0; i < sure.length; i++) {
+    mark(sure[i]);
+    animate(circles[seatOf.get(sure[i].member)!], { scale: [1.7, 1] }, { duration: 0.22 });
+    paintTally(main, yes, no, size);
+    paintCentre(main, yes, `for · ${verdict.need} needed`);
+    sfx("seat", yes);
+    owed += 45 + (10 - 45) * Math.min(1, i / (sure.length * 0.65));
+    if (owed >= 16) {
+      await sleep(owed);
+      owed = 0;
     }
   }
+  const call = document.createElement("div");
+  call.className = "call";
+  find(main, "#stfx").replaceChildren(call);
   const beat = Math.min(1, 3 / Math.max(1, unsure.length));
   for (const seat of unsure) {
     const circle = circles[seatOf.get(seat.member)!];
@@ -377,15 +378,14 @@ export async function countVotes(scene: Scene, verdict: Verdict) {
     call.replaceChildren(iconNode("i-ballot"), name, document.createElement("span"));
     await play(call, { opacity: [0, 1], y: [-10, 0] }, { duration: 0.18 });
     circle?.setAttribute("class", "seat p-hes");
-    if (circle && !reduced()) animate(circle, { scale: [1, 1.35, 1] }, { duration: 0.45 });
+    if (circle) animate(circle, { scale: [1, 1.35, 1] }, { duration: 0.45 });
     await sleep(520 * beat);
     mark(seat);
     const answer = document.createElement("span");
     answer.className = seat.yes ? "vv" : "vv no";
     answer.textContent = seat.yes ? "Yes" : "No";
     call.append(answer);
-    if (circle && !reduced())
-      animate(circle, { scale: [2, 1] }, { type: "spring", stiffness: 600, damping: 12 });
+    if (circle) animate(circle, { scale: [2, 1] }, { type: "spring", stiffness: 600, damping: 12 });
     paintTally(main, yes, no, size);
     paintCentre(main, yes, `for · ${verdict.need} needed`);
     shake(2.5, 160);
