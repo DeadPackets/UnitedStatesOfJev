@@ -6,19 +6,18 @@ export type MatchResult =
   | { offer: (MatchCandidate & { p: number })[] }
   | { build: true };
 
-// Measured 2026-09-22: bge-m3 scored Rome's own prompt 0.54 against its pack, below the old 0.6 floor.
-// Jev still decides above this floor, so lowering it only widens what reaches Jev, not what auto-loads.
-const COSINE_FLOOR = 0.45;
+// Owner rule (experiment 6): Jev reads the cosine top 20 with no floor; a floor had cut Rome's own pack at 0.54.
+const SHORTLIST = 20;
+const LOAD_AT = 0.9; // at or above: the prompt is this world, so it loads instead of paying for a build
+const OFFER_AT = 0.8; // above: the player is offered the match before a build
 
 export async function match(env: Env, prompt: string): Promise<MatchResult> {
   const r = (await env.AI.run("@cf/baai/bge-m3", { text: [prompt] } as never)) as any;
   const values: number[] | undefined = r?.data?.[0] ?? r?.response?.data?.[0];
   if (!Array.isArray(values)) throw new Error("bge-m3 returned no vector");
 
-  const q = await env.VEC.query(values, { topK: 20, returnMetadata: "all" });
-  const matches = q.matches
-    .filter((m) => m.score >= COSINE_FLOOR)
-    .sort((a, b) => b.score - a.score);
+  const q = await env.VEC.query(values, { topK: SHORTLIST, returnMetadata: "all" });
+  const matches = [...q.matches].sort((a, b) => b.score - a.score);
   if (matches.length === 0) return { build: true };
 
   // Lazy import: db.ts pulls in `cloudflare:workers` for its Durable Object class, which only workerd
@@ -45,8 +44,8 @@ export function decide(
     0,
   ];
   if (topId === "none_of_these") return { build: true };
-  if (topP >= 0.95) return { load: topId };
-  if (topP >= 0.85) {
+  if (topP >= LOAD_AT) return { load: topId };
+  if (topP > OFFER_AT) {
     const offer = Object.entries(probabilities)
       .filter(([id, p]) => id !== "none_of_these" && p >= 0.5)
       .sort((a, b) => b[1] - a[1])
