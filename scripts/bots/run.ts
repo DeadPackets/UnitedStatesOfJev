@@ -22,7 +22,12 @@ export type TurnLog = {
   bar: number;
   ledgers: unknown;
   holders: { id: string; support: number; line: number; weight: number }[];
-  acts: { verb: string; expected: Record<string, number>; realised: Record<string, number> }[];
+  acts: {
+    verb: string;
+    expected: Record<string, number>;
+    realised: Record<string, number>;
+    error?: string;
+  }[];
   whip: Whip | null;
   jev: Bot["used"] & { ms: number };
   pending: string | null;
@@ -104,13 +109,20 @@ export async function runTerm(
       before = bot.ms;
     bot.whip = null;
     const rows: TurnLog["acts"] = [];
+    // A card costs two clerk units, so it is answered before the acts spend them all.
+    g = await bot.card(g);
     for (const a of policy.acts(g, rnd) as BotAct[]) {
       const pre = num(g.ledgers),
         expected = priceOf(g, a.verb);
       try {
         g = a.verb === "law" ? await bot.law(g, a.text) : await bot.act(g, a);
-      } catch {
-        rows.push({ verb: a.verb, expected, realised: { refused: 1 } });
+      } catch (e) {
+        rows.push({
+          verb: a.verb,
+          expected,
+          realised: { refused: 1 },
+          error: (e as Error).message.slice(0, 160),
+        });
         continue;
       }
       rows.push({ verb: a.verb, expected, realised: diff(pre, num(g.ledgers)) });
@@ -164,6 +176,7 @@ const scenario = arg("scenario", "v3nj3k");
 const factionArg = arg("faction", "0");
 const faction = /^\d+$/.test(factionArg) ? Number(factionArg) : factionArg;
 const seeds = Number(arg("seeds", "8"));
+const firstSeed = Number(arg("first", "20260922"));
 const maxTerms = Number(arg("terms", "1"));
 const only = arg("policies", "all");
 const out = arg("out", `docs/bots/${new Date().toISOString().slice(0, 10)}`);
@@ -187,7 +200,7 @@ let spent = 0;
 
 for (const policy of chosen) {
   for (let s = 0; s < seeds; s++) {
-    const seed = 20260922 + s;
+    const seed = firstSeed + s;
     const run = `${policy.name}-${seed}`;
     const bot = new Bot(base);
     let g = await bot.seat(scenario, faction, [0, 1, 2], seed);
@@ -201,7 +214,10 @@ for (const policy of chosen) {
         // The meter sees Jev and Luna, not the portraits, so a term never counts for less than its measured whole.
         const measured = turns.slice(from).reduce((a, t) => a + t.jev.cost + t.jev.lunaCost, 0);
         spent += Math.max(measured, TERM_USD);
-        if (terms === 1) term1Won = (g.test as never as { won?: boolean } | undefined)?.won ?? null;
+        // A coup, a dismissal or a lame duck ends the term with no test, and that is a loss.
+        if (terms === 1)
+          term1Won =
+            (g.test as never as { won?: boolean } | undefined)?.won ?? (g.result ? false : null);
         if (spent > BUDGET_USD) throw new Error("budget");
         if (g.stage !== "won" || terms >= maxTerms) break;
         g = await bot.cont(g);
@@ -218,7 +234,7 @@ for (const policy of chosen) {
       seed,
       terms,
       ending: g.result?.ending ?? null,
-      won: t?.won ?? null,
+      won: t?.won ?? (g.result ? false : null),
       term1Won,
       mandate: t?.mandate ?? null,
       bar: t?.bar ?? null,
