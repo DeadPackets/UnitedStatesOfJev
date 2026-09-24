@@ -11,7 +11,7 @@ const world = () =>
         {
           term: "The Haganah",
           meaning: "The Agency's force.",
-          aliases: ["Hebrew Rebellion Movement"],
+          aliases: ["Hebrew Rebellion Movement", "Haganah"],
         },
       ],
       groups: [{ id: "a", short: "Shelf", identity: "They keep the shelves." }],
@@ -50,6 +50,7 @@ test.each([
   ["groups[0].strike", "Raises the holder's price.", "holder"],
   ["bible.groups[0].short", "The Committee of Union", "at most 16"],
   ["briefing.briefing.room", "The Hebrew Rebellion Movement struck at dawn.", "The Haganah"],
+  ["briefing.briefing.room", "Haganah men held the road.", null],
   ["briefing.pledges[0].quote", "a pivotal moment \u2014 as sourced", null],
   ["briefing.briefing.you", "You hold the shelf and 40 police.", null],
 ])("%s set to %p is flagged for %p", (path, text, issue) => {

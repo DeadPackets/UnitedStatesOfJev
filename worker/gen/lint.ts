@@ -64,10 +64,18 @@ export function strings(value: unknown, path = ""): [string, string][] {
   return [];
 }
 
+// "the Porte" for Sublime Porte, "Macedonia" for Ottoman Macedonia: a short form of the term is not a second name.
+const words = (text: string) =>
+  fold(text)
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word && word !== "the");
+const shortForm = (alias: string, term: string) =>
+  words(alias).every((word) => words(term).includes(word));
+
 export function lint(world: World): LintIssue[] {
   const aliases = world.bible.terms.flatMap((term) =>
     term.aliases
-      .filter((alias) => alias.trim() && fold(alias) !== fold(term.term))
+      .filter((alias) => alias.trim() && !shortForm(alias, term.term))
       .map((alias) => ({
         alias,
         term: term.term,
