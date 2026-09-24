@@ -1,5 +1,6 @@
 import { test, expect } from "bun:test";
-import { PackSchema, scaleSeats, packView, type Citizen } from "./pack";
+import { GlanceSchema, PackSchema, scaleSeats, packView, type Citizen } from "./pack";
+import { DEFAULT_THEME_TOKENS } from "./tokens";
 import mini from "./fixtures/mini.json";
 
 const BLOCS = ["dockworkers", "merchants", "fisherfolk", "clergy", "students"];
@@ -101,3 +102,67 @@ test("a pack with a constitution parses and the view keeps holder prose in the w
   expect(json).not.toContain('"tell"');
   expect(json).toContain('"briefing"');
 });
+
+// R36, emblems and level B themes: every new field is optional, and a malformed one drops alone.
+const GLANCE = {
+  wants: ["Toll relief"],
+  hates: [{ tag: "Closing the reef", redLine: true }],
+  strike: "Keeps its boats in port",
+};
+const EMBLEM = { size: 24, elements: [{ tag: "circle", cx: 12, cy: 12, r: 5, fill: "ink" }] };
+const TINT = { light: "#2553a3", dark: "#7aa2ff" };
+const dressed = (extra: Record<string, unknown>, tokens: unknown) => ({
+  ...mini,
+  citizens: makeCitizens(),
+  themeTokens: tokens,
+  factions: mini.factions.map((f) => ({ ...f, ...extra })),
+  members: mini.members.map((m) => ({ ...m, glance: extra.glance })),
+  constitution: {
+    ...mini.constitution,
+    holders: mini.constitution.holders.map((h) => ({ ...h, ...extra, icon: "court" })),
+  },
+});
+
+test("glance cards, emblems, tints, icons and theme tokens survive a parse", () => {
+  const parsed = PackSchema.parse(
+    dressed({ glance: GLANCE, emblem: EMBLEM, tint: TINT }, DEFAULT_THEME_TOKENS),
+  );
+  const holder = parsed.constitution!.holders[0];
+  expect([holder.glance, holder.emblem, holder.tint, holder.icon]).toEqual([
+    GLANCE,
+    EMBLEM,
+    TINT,
+    "court",
+  ]);
+  expect([parsed.factions[0].glance, parsed.members[0].glance]).toEqual([GLANCE, GLANCE]);
+  expect(parsed.themeTokens).toEqual(DEFAULT_THEME_TOKENS);
+});
+
+test("a malformed glance, emblem, tint or theme drops to undefined and the pack still loads", () => {
+  const bad = {
+    glance: { ...GLANCE, hates: [{ tag: "Closing the reef", redLine: false }] }, // no red line
+    emblem: { size: 24, elements: [{ tag: "script" }] },
+    tint: { light: "red", dark: "#7aa2ff" },
+  };
+  const parsed = PackSchema.parse(dressed(bad, { ...DEFAULT_THEME_TOKENS, display: "Comic Sans" }));
+  const holder = parsed.constitution!.holders[0];
+  expect([holder.glance, holder.emblem, holder.tint]).toEqual([undefined, undefined, undefined]);
+  expect([parsed.factions[0].glance, parsed.members[0].glance]).toEqual([undefined, undefined]);
+  expect(parsed.themeTokens).toBeUndefined();
+});
+
+for (const [label, hates] of [
+  ["no red line", [{ tag: "A", redLine: false }]],
+  [
+    "two red lines",
+    [
+      { tag: "A", redLine: true },
+      { tag: "B", redLine: true },
+    ],
+  ],
+  ["four hates", ["A", "B", "C", "D"].map((tag, i) => ({ tag, redLine: i === 0 }))],
+] as [string, { tag: string; redLine: boolean }[]][]) {
+  test(`a glance card with ${label} fails the write check`, () => {
+    expect(GlanceSchema.safeParse({ ...GLANCE, hates }).success).toBe(false);
+  });
+}

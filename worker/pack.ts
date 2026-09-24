@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { EmblemSchema } from "./emblem";
 import { TEMPERAMENTS } from "./engine";
+import { ThemeTokensSchema, TintSchema } from "./tokens";
 
 export const FONT_PAIRS = [
   "Big Shoulders Display + Public Sans",
@@ -103,7 +105,42 @@ const LEDGERS = [
   "turn",
 ] as const;
 
+// The desk's line icons: a group's rim-row disc when it has no emblem, or its emblem fails.
+export const LINE_ICONS = [
+  "chamber",
+  "court",
+  "army",
+  "clergy",
+  "street",
+  "party",
+  "patrons",
+  "press",
+  "foreign",
+  "market",
+  "crown",
+  "council",
+] as const;
+export const RESOURCE_ICONS = [
+  "bank",
+  "coins",
+  "note",
+  "gavel",
+  "medal",
+  "people",
+  "crown",
+  "scroll",
+  "flag",
+  "drop",
+  "grain",
+  "crate",
+  "house",
+  "sword",
+  "faith",
+] as const;
+
 const IdNum = z.object({ id: z.string(), value: z.number() });
+// A malformed value drops to undefined, so one bad card or emblem never fails a whole stored pack.
+const lenient = <T extends z.ZodType>(schema: T) => schema.optional().catch(undefined);
 const LobbyText = z.object({ cost: z.number(), label: z.string(), text: z.string() });
 
 // R30: a faction card. yes and no are the acts a want backs and fights, in the player's words; `match` and
@@ -129,6 +166,27 @@ const CardSchema = z.object({
   rival: z.string(),
   tension: z.string(),
 });
+// R36: the glance card, about 20 words. wants and hates are short tags (1 to 4 words) that the file shows and the
+// engine matches: the clerk names the tags an act does, and a tag equal to one of the pack's own tags matches it
+// directly. Exactly one hate is the red line. strike is what the group does when it turns on the ruler.
+export const GlanceSchema = z
+  .object({
+    face: z.object({ name: z.string(), role: z.string() }).optional(),
+    wants: z.array(z.string().min(1).max(48)).min(1).max(3),
+    hates: z
+      .array(z.object({ tag: z.string().min(1).max(48), redLine: z.boolean() }))
+      .min(1)
+      .max(3),
+    strike: z.string(),
+  })
+  .refine(
+    (glance) => glance.hates.filter((hate) => hate.redLine).length === 1,
+    "exactly one hate is the red line",
+  );
+export type Glance = z.infer<typeof GlanceSchema>;
+// Lead's ruling on Negotiate: a group with a hate tag like this is never offered money for its votes.
+export const REFUSES_MONEY = /\b(bribes?|bribery|bought|paid off|cash for|money for)\b/i;
+
 const FactionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -138,6 +196,9 @@ const FactionSchema = z.object({
   ideology: z.string(),
   leader: z.string(),
   card: CardSchema.optional(),
+  glance: lenient(GlanceSchema),
+  emblem: lenient(EmblemSchema),
+  tint: lenient(TintSchema),
 });
 const RegionSchema = z.object({
   id: z.string(),
@@ -190,8 +251,22 @@ const HolderSchema = z.object({
 const HolderReadSchema = HolderSchema.extend({
   support: z.number().min(0).max(100).optional(),
   card: CardSchema.optional(),
+  short: z.string().optional(), // the rim row's label when the name is long
+  icon: lenient(z.enum(LINE_ICONS)),
+  glance: lenient(GlanceSchema),
+  emblem: lenient(EmblemSchema),
+  tint: lenient(TintSchema),
 });
 const LedgerNameSchema = z.object({ name: z.string(), line: z.number() });
+// The resources sheet's words for treasury, authority and chest: what it is, what fills it, what drains it, and
+// the tail after "At 0".
+const ResourceNameSchema = LedgerNameSchema.extend({
+  icon: lenient(z.enum(RESOURCE_ICONS)),
+  for: z.string().optional(),
+  earn: z.array(z.string()).default([]),
+  spend: z.array(z.string()).default([]),
+  fails: z.string().optional(),
+});
 
 export const ConstitutionSchema = z.object({
   ruler: z.object({ role: z.string(), faction: z.string() }),
@@ -263,9 +338,9 @@ const PackConstitutionSchema = ConstitutionSchema.extend({
   publicGroup: z.string().optional(), // R24: the holder whose support by region was popularity
   ownGroup: z.string().optional(), // R24: the holder whose support was loyalty
   ledgers: z.object({
-    treasury: LedgerNameSchema,
-    authority: LedgerNameSchema,
-    chest: LedgerNameSchema,
+    treasury: ResourceNameSchema,
+    authority: ResourceNameSchema,
+    chest: ResourceNameSchema,
     loyalty: LedgerNameSchema.optional(),
     popularity: LedgerNameSchema.optional(),
   }),
@@ -298,6 +373,7 @@ const MemberSchema = z.object({
   // Optional: packs stored before names carried them are re-validated on read.
   gender: z.enum(GENDERS).optional(),
   look: z.string().optional(),
+  glance: lenient(GlanceSchema), // R36: members get the same card; the file shows it, the engine does not read it
 });
 const CitizenSchema = z.object({
   id: z.string(),
@@ -388,6 +464,8 @@ export const PackSchema = z
       promise: z.string(),
       patron: z.string(),
       approval: z.string(),
+      file: z.string().optional(), // the glance file's kicker: "Senate file", "Herald's roll"
+      abroad: z.string().optional(), // the right rim's words for abroad: "across the Narrow Sea"
     }),
     theme: z.object({
       fonts: z.enum(FONT_PAIRS),
@@ -444,6 +522,7 @@ export const PackSchema = z
     }),
     lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
     constitution: PackConstitutionSchema.optional(),
+    themeTokens: lenient(ThemeTokensSchema), // level B; a pack without them shows DEFAULT_THEME_TOKENS
   })
   .refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")
   .refine((p) => p.starts.length === p.factions.length, "one start per faction")
@@ -467,6 +546,8 @@ export type Holder = z.infer<typeof HolderReadSchema>;
 export type Instrument = NonNullable<Pack["constitution"]>["instruments"]["law"]; // as the engine reads it: vetoes, not consent
 export type Price = z.infer<typeof PriceSchema>;
 export type Card = z.infer<typeof CardSchema>;
+export type LineIcon = (typeof LINE_ICONS)[number];
+export type ResourceIcon = (typeof RESOURCE_ICONS)[number];
 
 // Largest remainder method, minimum one seat per faction that held any share.
 export function scaleSeats(shares: Record<string, number>, size: number): Record<string, number> {
