@@ -45,6 +45,18 @@ const OLD_STEP: Record<string, Phase> = {
   assemble: "finish",
 };
 
+// The plan's dates are YYYY-MM-DD with BC years negative (-0044-03-15); anything else prints as written.
+function dated(date: string): string {
+  const parts = /^(-?)(\d{1,6})-(\d{2})-(\d{2})$/.exec(date);
+  if (!parts) return date;
+  const [, bc, year, month, day] = parts;
+  const name = new Date(Date.UTC(2000, Number(month) - 1)).toLocaleString("en", {
+    month: "long",
+    timeZone: "UTC",
+  });
+  return `${Number(day)} ${name} ${Number(year)}${bc ? " BC" : ""}`;
+}
+
 type Timed = { at?: number };
 type PlanFragment = Timed & { seat: string; holder: string; start: string; end: string };
 type SourcesFragment = Timed & { pages: string[] };
@@ -236,7 +248,7 @@ export default function Build({
               <p className="lede">{frame.description}</p>
             ) : plan ? (
               <p className="lede rise">
-                {plan.holder}, {plan.seat}, from {plan.start} to {plan.end}.
+                {plan.holder}, {plan.seat}, from {dated(plan.start)} to {dated(plan.end)}.
               </p>
             ) : (
               <h1>Reading the world, seating the chamber.</h1>
