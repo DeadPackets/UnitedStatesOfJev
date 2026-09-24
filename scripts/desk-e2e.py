@@ -3,6 +3,8 @@
 # fragments, the seat, reduced motion and 1920x1080. Leaves screenshots, the frame rate and long tasks of every moment,
 # the loaded fonts and the JS size in OUT, and compare.html: each app shot beside the approved mock's shot of the same
 # moment, with the measurements and every known difference from the mock and its reason.
+# It also runs a contrast audit (every visible text against the ground under it, 4.5:1) in both worlds and themes, and
+# seats a pack stored before R36 (no tokens, glance cards, icons, emblems, tints or short names) by its /s/ link.
 # Run against the production build (frame rates of the dev build measure React's dev mode), fixtures seeded (plan,
 # Global Constraints):
 #   bunx vite build && bunx vite preview --port 4173 &
@@ -43,28 +45,31 @@ INIT = "window.__long=[];new PerformanceObserver(l=>{for(const e of l.getEntries
 
 # Every visible difference between the app and the approved mock that this run leaves, and why.
 DIFFERENCES = [
-    ("Numbers, faction names, reasons and the chip's verb differ in every shot", "The app shows the engine's real state and the clerk's real pricing; the mock shows scripted numbers."),
+    ("Numbers, reasons and the chip's verb differ in every shot", "The app shows the engine's real state and the clerk's real pricing; the mock shows scripted numbers."),
     ("No mock control bar above the desk; the desk is 40 px taller", "The bar was the mock's own switcher (world, theme, outcome), not part of the game (`--rev: 0`)."),
     ("Three text controls at the right of the top bar (Dark or Light, Sound, Leave) and the clerk's calls left in the turn line", "Decision 4: the game needs them; the mock never drew them."),
+    ("Every text is at least 15 px at k = 1 (the mock's kickers, receipt heads and chip were 13 to 14 px)", "The owner asked for larger text after approving the mock."),
     ("Receipt stubs: 'Support, when you sign' instead of 'Support, if it passes', and 'Every turn while it stands' lines", "Decision 1: engine v2 moves support at signing for every verb; the receipt is simulated on the real engine so it lands exactly as shown."),
     ("Westeros: the force act has no count and no verdict (no 2b and 2e shots)", "Decision 2: the engine does not vote on force; a count would show a vote the engine never took."),
-    ("No tie beat in the count", "Decision 3: the engine has no tie-breaker yet (cross-track request 3)."),
+    ("No tie beat in the count, and no star seal on the verdict", "Decision 3: the engine has no tie-breaker yet. The seal is a stamp, and the owner ruled no logos, stamps or crests."),
     ("The resources sheet's trend is one bar and '1 turn ±0'", "Decision 5: the engine does not keep per-turn closing values yet (cross-track request 1)."),
-    ("Negotiate terms show as small buttons in the legend after pricing; with three hesitant factions the legend grows and the hemicycle shrinks about 90 px", "Decision 4 and lead ruling 1: the mock never drew Negotiate; the chips are the mock's own atoms."),
+    ("After pricing, each hesitant faction's legend entry ends in a 'Their terms' chip that opens a card with its terms; the legend runs three lines where the mock's ran two", "Lead ruling 1 keeps Negotiate reachable; one chip per faction keeps the hemicycle at the mock's size."),
     ("An Amend button on a short law's receipt, a floor slip with the drafts and 'Call the vote', and a member card when a seat is clicked", "Lead rulings 2 to 4: every engine mechanic stays reachable; built from the mock's atoms."),
-    ("Rows use the pack's short names and tints where generation wrote them; older packs fall back to the full name, the faction colour and a guessed icon", "Cross-track request 2 (Track E writes short, tint and icon)."),
-    ("The receipt head uses the world's mono face, not IBM Plex Mono everywhere", "Decision 8: at most three fonts per world."),
-    ("The other screens (landing, build wait, seat, midterm, test, end) keep their v1 layout", "Scope: they take the tokens, fonts and scale now; their redesign is at CP4."),
+    ("When a ledger under its line shuts kinds of act, the receipt slot says which kinds are still open, in red", "The clerk's answer would otherwise be a refusal the player could not see coming; the mock never reached 0."),
+    ("The chamber kicker names seats by the pack's own word ('100 senators', '100 lords'); the mock scripted 'votes' and 'voices'", "The pack's member word is the nearest it has; the mock's words were never pack data."),
+    ("Older packs fall back to the full name, the faction colour, a guessed icon and the default theme (see the old-pack shot)", "Review Focus 2: packs stored before R36 keep loading."),
+    ("The receipt head uses the world's mono face, not IBM Plex Mono everywhere; the receipt's gain green is a shade darker", "Decision 8: at most three fonts per world. The mock's green read 4.2:1 on the dark theme's light paper."),
+    ("The other screens (landing, build wait, seat, midterm, test, end) keep their v1 layout", "Scope: they take the tokens, fonts, scale and the 15 px floor now; their redesign is at CP4."),
     ("No star mark before the world's title in the top bar", "The owner ruled no logos, stamps or crests at world level; the mock's star is the stamp glyph Task 1 left out of the sprite."),
-    ("Rim rows and the file's disc show the world's emblem (an elephant, a donkey, a lion) where the mock shows line icons", "Placement A: the emblem replaces the line icon; the line icon stays the fallback. The mock predates the emblems."),
-    ("The chamber kicker reads '100 seats' for every world; the mock reads '100 votes' (Biden) and '100 voices' (Westeros)", "The mock scripted that unit per world; the pack has no word for it, so the desk uses the neutral one."),
-    ("The legend names factions in full ('Democratic Party 48'); the mock uses 'Democrats 48'", "Pack data: the fixture's faction names. A pack with shorter names reads like the mock."),
-    ("Price it stays disabled until the act has 12 characters; the mock drew it enabled", "The server refuses shorter acts ('Write a little more.'); the button says so before the call."),
+    ("Rim rows and the file's disc show the world's emblem where the mock shows line icons", "Placement A: the emblem replaces the line icon; the line icon stays the fallback. The mock predates the emblems."),
     ("The Negotiate chips stay in the legend through the count, verdict and review of a priced law", "The chamber keeps the priced count until Back to the desk so nothing repaints mid-moment; the chips do nothing while a moment runs."),
     ("At 1920x1080 the desk fills the screen at k = 1.2 (19.2 px root); the mock's fhd shot shows it near k = 1.0", "The brief's scaling rule (k = min(w/1440, h/900), clamped 1 to 1.8); the mock's shot predates the scale."),
 ]
 MOMENTS = {"open a file", "close a file", "open resources", "pricing", "sign: charge and shockwave", "the count", "verdict", "couriers"}
-report = {"fps": [], "long": [], "fonts": {}, "errors": [], "answers": [], "turns": [], "js": {}, "js_gzip_kb": None, "shots": []}
+report = {"fps": [], "long": [], "fonts": {}, "errors": [], "answers": [], "turns": [], "js": {}, "js_gzip_kb": None, "shots": [], "contrast": [], "keyboard": []}
+# Every visible text node (and each empty input's placeholder) against the ground under it, 4.5:1. Disabled controls are
+# exempt (WCAG). A ground is each ancestor's background colour composited down; an opaque gradient counts at its worst stop.
+AUDIT = (ROOT / "scripts/contrast.js").read_text()
 CAPTIONS = {}
 
 
@@ -147,6 +152,15 @@ async def act(page, text, prefix=None, review=None):
     await page.wait_for_timeout(3000)  # the printing
     if prefix:
         await shot(page, f"{prefix}-2a-receipt", "The clerk's receipt, printed, with its knots tied on what it moves")
+        await contrast(page, f"{prefix}, the receipt")
+        chip = await page.query_selector(".gleg .term")
+        if chip:  # Negotiate: a hesitant faction's terms card
+            await chip.click()
+            await page.wait_for_timeout(1500)
+            await shot(page, f"{prefix}-2f-terms", "A hesitant faction's terms (Negotiate), opened from its legend chip")
+            await contrast(page, f"{prefix}, a terms card")
+            await page.keyboard.press("Escape")
+            await page.wait_for_timeout(600)
     if await page.is_disabled("#sign"):
         await page.click("#tear")
         return "blocked"
@@ -165,12 +179,15 @@ async def act(page, text, prefix=None, review=None):
     if await page.query_selector("#callvote"):  # the vote failed after signing: the desk reloaded the server's game
         await page.wait_for_timeout(1500)
         await shot(page, "biden-light-8-vote-failed", "Review Focus 5: the vote answered 503 after signing; the toast, and the law waits with Call the vote")
+        if not await page.is_enabled("#callvote"):  # the clerks are out of time: End turn drops the bill
+            return "law (vote failed, no clerk time left to call it)"
         await page.click("#callvote")
         await back(page)
         return "law (vote failed, then called)"
     if prefix or review:
         await page.wait_for_timeout(1200)
         await shot(page, review or f"{prefix}-2d-review", "The review, which stays until Back to the desk")
+        await contrast(page, f"{review or prefix}, the review")
     await back(page)
     return "law" if law else "act"
 
@@ -205,17 +222,69 @@ async def screens_until_desk(page):
 
 async def statics(page, prefix, rows, resource_suffix="-4-resources"):
     await shot(page, f"{prefix}-1-desk", "The desk at rest")
+    await contrast(page, f"{prefix}, at rest")
     for row in rows:
         await page.click(f'.hm[data-h="{row}"]')
         await page.wait_for_timeout(1500)
         await shot(page, f"{prefix}-3-file-{row}", f"The glance file of {row}")
+        await contrast(page, f"{prefix}, the file of {row}")
         await page.keyboard.press("Escape")
         await page.wait_for_timeout(500)
     await page.click('.led[data-r="treasury"]')
     await page.wait_for_timeout(1800)
     await shot(page, f"{prefix}{resource_suffix}", "The resources sheet")
+    await contrast(page, f"{prefix}, the resources sheet")
     await page.keyboard.press("Escape")
     await page.wait_for_timeout(500)
+
+
+async def contrast(page, where):
+    result = await page.evaluate(AUDIT)
+    report["contrast"].append({"where": where, "checked": result["checked"], "failures": result["failures"]})
+
+
+async def keyboard(page):
+    """Seats from the keyboard: Tab reaches one seat, the arrows walk, Enter opens that member's card, Esc gives focus back."""
+    await page.focus('#hemi .seat[tabindex="0"]')
+    for _ in range(3):
+        await page.keyboard.press("ArrowRight")
+    seat = await page.evaluate("document.activeElement.getAttribute('aria-label')")
+    await page.keyboard.press("Enter")
+    await page.wait_for_selector(".fcard", timeout=5000)
+    await page.wait_for_timeout(900)
+    card = await page.evaluate("document.querySelector('.fcard h2').textContent")
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(700)
+    back = await page.evaluate("document.activeElement.getAttribute('aria-label')")
+    report["keyboard"].append({"seat": seat, "card": card, "focus after Esc": back, "ok": bool(seat) and seat.startswith(card) and back == seat})
+
+
+def seed_old_pack():
+    """Biden stripped of everything R36 added, as a pack stored before it would be (local D1 only)."""
+    pack = json.loads((ROOT / "worker/fixtures/biden-2021.json").read_text())
+    def strip(node):
+        if isinstance(node, dict):
+            for key in ("glance", "icon", "emblem", "tint", "themeTokens"):
+                node.pop(key, None)
+            for value in node.values():
+                strip(value)
+        elif isinstance(node, list):
+            for value in node:
+                strip(value)
+    strip(pack)
+    for holder in pack["constitution"]["holders"]:
+        holder.pop("short", None)
+    for key in ("file", "abroad"):
+        pack["vocabulary"].pop(key, None)
+    pack["id"] = "e2e-old"
+    text = json.dumps(pack).replace("'", "''")
+    chunks = [text[i : i + 40000] for i in range(0, len(text), 40000)]
+    sql = OUT / "seed-old-pack.sql"
+    sql.write_text("\n".join(
+        ["INSERT OR REPLACE INTO scenarios (id,status,step,lang,title,era,place,description,prompt,pack,fragments,created,builds) VALUES ('e2e-old','ready','ready','en','The old pack','2021','Washington, D.C.','A pack stored before R36.','e2e','','[]',%d,0);" % int(time.time() * 1000)]
+        + ["UPDATE scenarios SET pack = pack || '%s' WHERE id = 'e2e-old';" % chunk for chunk in chunks]
+    ))
+    subprocess.run(["bunx", "wrangler", "d1", "execute", "usoj", "--local", "--file", str(sql)], cwd=ROOT, check=True, capture_output=True)
 
 
 async def fonts(page):
@@ -252,6 +321,7 @@ def seed_builds():
 async def main():
     OUT.mkdir(parents=True, exist_ok=True)
     seed_builds()
+    seed_old_pack()
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path=CHROME, headless=False)
         context = await browser.new_context(viewport={"width": 1440, "height": 900})
@@ -272,10 +342,17 @@ async def main():
         await page.goto(f"{URL}/s/westeros")
         await page.wait_for_timeout(2500)
         await shot(page, "screen-seat", "The seat (briefing pages), Westeros tokens")
+        await page.goto(f"{URL}/s/e2e-old")  # a hyphenated id opens by its link
+        await page.wait_for_timeout(2500)
+        await shot(page, "screen-seat-old-pack", "The seat of a pack stored before R36, opened by its /s/e2e-old link")
+        await seat(page, "e2e-old", "dem", "light")
+        await shot(page, "old-pack-desk", "Review Focus 2: a pack stored before R36 on the desk: the default theme, a line icon and a tint on every row, full names")
+        await contrast(page, "old pack, light, at rest")
 
         # One Biden term, light, and the desk in dark.
         await seat(page, "biden-2021", "dem", "light")
         await statics(page, "biden-light", ["gop", "nato"], "-4-resources-change")
+        await keyboard(page)
         await page.hover('.hm[data-h="congress"] .bal-w')
         await page.wait_for_timeout(300)
         await shot(page, "biden-light-5-vote-tooltip", "The ballot chip's tooltip", clip={"x": 0, "y": 80, "width": 620, "height": 260})
@@ -298,7 +375,7 @@ async def main():
             result = await act(page, text, "biden-light" if turn == 1 else None)
             report["turns"].append({"turn": turn, "act": text, "result": result})
             await collect(page)
-            if await page.query_selector("#callvote"):
+            if await page.query_selector("#callvote") and await page.is_enabled("#callvote"):
                 await page.click("#callvote")
                 await back(page)
             await answer_cards(page)
@@ -341,9 +418,10 @@ async def main():
     report["captions"] = CAPTIONS
     report["slow_moments"] = [f for f in report["fps"] if f["avg"] < 58]
     report["long_over_50ms"] = [t for t in report["long"] if t["ms"] > 50]
+    report["contrast_failures"] = sum(len(c["failures"]) for c in report["contrast"])
     (OUT / "report.json").write_text(json.dumps(report, indent=1))
     write_compare()
-    print(json.dumps({k: report[k] for k in ("js_gzip_kb", "fonts", "slow_moments", "long_over_50ms", "errors", "turns")}, indent=1))
+    print(json.dumps({k: report[k] for k in ("js_gzip_kb", "fonts", "slow_moments", "long_over_50ms", "errors", "turns", "contrast_failures", "keyboard")}, indent=1))
 
 
 def write_compare():
@@ -373,6 +451,12 @@ def write_compare():
     fonts = "".join(f"<li><b>{e(world)}</b>: {e(', '.join(names))}</li>" for world, names in report["fonts"].items())
     turns = "".join(f"<li>{e(json.dumps(t))}</li>" for t in report["turns"])
     errors = "".join(f"<li>{e(x)}</li>" for x in report["errors"]) or "<li>none</li>"
+    low = lambda c: "; ".join(f"{f['text']} ({f['fg']} on {f['bg']}, {f['ratio']}:1)" for f in c["failures"]) or "none"
+    audit = "".join(
+        f"<tr class='{'bad' if c['failures'] else ''}'><td>{e(c['where'])}</td><td>{c['checked']}</td><td>{e(low(c))}</td></tr>"
+        for c in report["contrast"]
+    )
+    keys = "".join(f"<li>{e(json.dumps(k))}</li>" for k in report["keyboard"]) or "<li>not run</li>"
     differences = "".join(f"<tr><td>{e(what)}</td><td>{e(why)}</td></tr>" for what, why in DIFFERENCES)
     (OUT / "compare.html").write_text(f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Desk against mock</title>
 <style>body{{font:15px/1.45 system-ui,sans-serif;margin:0 auto;max-width:1600px;padding:16px;color:#1b1b1b;background:#fafaf7}}h1{{margin:0 0 4px}}h2{{margin-top:32px;border-bottom:2px solid #1b1b1b}}
@@ -381,12 +465,14 @@ table{{border-collapse:collapse;width:100%}}td,th{{border-bottom:1px solid #ddd;
 section{{margin:24px 0}}section h3{{margin:0}}section p{{margin:2px 0 8px;color:#555}}.none{{border:1px dashed #bbb;padding:24px;color:#777}}.big{{font-size:20px}}@media(max-width:900px){{.pair{{grid-template-columns:1fr}}}}</style>
 <h1>The desk: app against the approved mock</h1>
 <p>What this is: <code>scripts/desk-e2e.py</code> drove the real game (the production build, real clerk calls) in Chrome at 1440x900: one Biden term to its end screen, one Westeros act, the screens around the desk, 1920x1080 and reduced motion. Each app screenshot sits beside the mock's screenshot of the same moment. To get a fresh copy: <code>bunx vite build &amp;&amp; bunx vite preview --port 4173</code>, then <code>uv run --with playwright python scripts/desk-e2e.py</code>.</p>
-<p class=big><b>JS</b> {report['js_gzip_kb']} KB gzipped of the 200 KB budget · <b>{len(report['slow_moments'])}</b> moments under 58 fps · <b>{len(report['long_over_50ms'])}</b> long tasks over 50 ms · <b>{len(report['errors'])}</b> errors</p>
+<p class=big><b>JS</b> {report['js_gzip_kb']} KB gzipped of the 200 KB budget · <b>{len(report['slow_moments'])}</b> moments under 58 fps · <b>{len(report['long_over_50ms'])}</b> long tasks over 50 ms · <b>{len(report['errors'])}</b> errors · <b>{report['contrast_failures']}</b> texts under 4.5:1</p>
 <h2>Every remaining difference from the mock, and why</h2><table><tr><th>What differs</th><th>Why</th></tr>{differences}</table>
 <h2>Frame rate per moment</h2><p>Frames per second while each moment runs, measured by the page itself on every animation frame. The display runs at 120 Hz here, so 120 is the ceiling; the budget is 60 (a row turns red under 58 or with a long task, a main-thread block of 50 ms or more, inside the moment). "1% low" is the rate of the slowest 1% of frames.</p>
 <table><tr><th>Moment</th><th>times run</th><th>lowest avg fps</th><th>lowest 1% low</th><th>long tasks inside</th></tr>{summary}</table>
 <p><b>Long tasks outside every moment:</b></p><ul>{outside}</ul><p>The known one: opening the audio device takes about 120 ms. The desk does it when the act box first takes focus, so it never lands inside a moment (before this fix it hit the start of the first count).</p>
 <details><summary>Every moment run, in order</summary><table><tr><th>Moment</th><th>avg fps</th><th>1% low</th><th>frames</th><th>long tasks</th></tr>{fps}</table></details>
+<h2>Contrast: every visible text against its ground</h2><p>Each row is one state of the desk; the audit (<code>scripts/contrast.js</code>) checks every text node and placeholder against the colour under it and lists any under 4.5:1. Disabled controls are exempt.</p><table><tr><th>State</th><th>texts checked</th><th>under 4.5:1</th></tr>{audit}</table>
+<h2>Keyboard</h2><p>A seat reached by Tab and the arrows opens its member's card with Enter; Esc closes it and gives focus back to the seat.</p><ul>{keys}</ul>
 <h2>Fonts loaded per world</h2><ul>{fonts}</ul>
 <h2>JS per chunk (gzipped KB)</h2><table>{js}</table>
 <h2>Turns played</h2><ol>{turns}</ol>
