@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type BuildState, type FrameFragment, type PackView } from "./api";
-import { Ornament, applyTheme, art, hideBroken } from "./theme";
+import { Ornament, applyTheme } from "./theme";
 
 const STEPS = [
   "plan",
@@ -14,7 +14,6 @@ const STEPS = [
   "personas",
   "dedupe",
   "deck",
-  "art",
   "index",
   "assemble",
 ] as const;
@@ -30,7 +29,6 @@ const PLAIN: Record<string, string> = {
   personas: "Write the people",
   dedupe: "Clear the repeats",
   deck: "Build the deck",
-  art: "Print the masthead and crests",
   index: "File it in the archive",
   assemble: "Bind the pack",
 };
@@ -104,7 +102,6 @@ export default function Build({
 
   const frame = find<FrameFragment>(state, "frame");
   const members = find<{ names: string[] }>(state, "members");
-  const artf = find<{ masthead: string; crests: number }>(state, "art");
   const vocab = state?.pack?.vocabulary ?? frame?.vocabulary;
 
   // The theme lands mid-build, behind a sheet of paper crossing the page.
@@ -151,14 +148,6 @@ export default function Build({
       ) : (
         <>
           <section className="stage">
-            {artf ? (
-              <img
-                className="masthead rise"
-                src={art(id, "masthead.png")}
-                alt=""
-                onError={hideBroken}
-              />
-            ) : null}
             {frame ? (
               <p className="lede">{frame.description}</p>
             ) : (

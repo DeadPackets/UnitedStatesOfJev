@@ -69,11 +69,8 @@ const readPrompt = async (c: Ctx): Promise<string | Response> => {
 
 app.use("/api/*", async (c, next) => {
   // 40/min: a turn is 3-7 requests and one amend per bill, so a nonstop abuser costs about $2.40 an hour.
-  // Art is exempt: one seat coin per member is up to 100 requests when a pack screen opens.
-  if (!/^\/api\/scenarios\/[^/]+\/art\//.test(c.req.path)) {
-    const { success } = await c.env.RL.limit({ key: ipOf(c) });
-    if (!success) return c.json({ error: "Slow down." }, 429);
-  }
+  const { success } = await c.env.RL.limit({ key: ipOf(c) });
+  if (!success) return c.json({ error: "Slow down." }, 429);
   await next();
 });
 
@@ -215,18 +212,6 @@ app.post("/api/scenarios", async (c) => {
     return c.json({ error: "The build could not start. Try again in a minute." }, 503);
   }
   return c.json({ id }, 202);
-});
-
-app.get("/api/scenarios/:id/art/*", async (c) => {
-  const key = `scenarios/${c.req.param("id")}/${c.req.path.split("/art/").slice(1).join("/art/")}`;
-  const obj = await c.env.ART.get(key);
-  if (!obj) return c.json({ error: "No such image." }, 404);
-  return new Response(obj.body, {
-    headers: {
-      "content-type": "image/png",
-      "cache-control": "public, max-age=31536000, immutable",
-    },
-  });
 });
 
 // A stack trace or a provider's JSON is not a message for a player.

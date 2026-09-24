@@ -1929,8 +1929,6 @@ export function replacements(_pack: Pack, game: Game, draw: MidtermDraw): Replac
   return draw.lost.map((l, i) => {
     const old = game.members.find((m) => m.seat === l.seat)!;
     return {
-      // The game id is in the member id because the portrait is written under the scenario's R2 prefix and
-      // served immutable: two games of one scenario would otherwise overwrite each other's faces.
       id: `r${hash(game.id).toString(36)}-${game.term}-${l.seat}`,
       seat: l.seat,
       region: old.region,
@@ -1964,7 +1962,6 @@ export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas
       patrons: slot.patrons,
       years: slot.years,
       flags: slot.flags,
-      portrait: `members/${slot.id}.png`,
       memory: [],
       loyalty: loyaltyFor(start, slot.faction, game.faction),
       mood: 0,

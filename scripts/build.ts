@@ -65,9 +65,6 @@ for (;;) {
           )
           .join(""),
     );
-    console.log(
-      `art: ${p.art.masthead}, ${p.art.crests.length} crests, portraits ${JSON.stringify(p.art.portraits)}`,
-    );
     process.exit(0);
   }
   if (Date.now() - t0 > 600_000) {

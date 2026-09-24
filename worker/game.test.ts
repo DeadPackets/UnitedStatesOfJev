@@ -1,11 +1,6 @@
 import { test, expect, mock, afterEach } from "bun:test";
-// game.ts pulls in `cloudflare:workers` for the Durable Object class, and build.ts for the portrait sheet;
-// only workerd resolves either module.
-mock.module("cloudflare:workers", () => ({
-  DurableObject: class {},
-  WorkflowEntrypoint: class {},
-}));
-mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
+// game.ts pulls in `cloudflare:workers` for the Durable Object class; only workerd resolves it.
+mock.module("cloudflare:workers", () => ({ DurableObject: class {} }));
 const { view, pickStart, GameDO, seededSample, streetSample } = await import("./game");
 import {
   CHEST_START,
@@ -448,7 +443,6 @@ function stubModels(intent: number) {
       return Response.json({ answers, usage: { input_tokens: 1 } });
     }
     const name = body.response_format?.json_schema?.name;
-    if (!name) return Response.json({}); // the portrait sheet's image call, which has no schema and no answer here
     return Response.json({
       choices: [{ message: { content: JSON.stringify(canned(name, body.messages[1].content)) } }],
     });
@@ -470,10 +464,8 @@ function seatedGame(seed: number) {
     ["dockworker-pay", "tariffs", "fish-quotas"],
     pack.calendar,
   );
-  const background: Promise<unknown>[] = [];
   const ctx = {
     storage: { sql: { exec: () => ({ toArray: () => [] }) } },
-    waitUntil: (p: Promise<unknown>) => background.push(p),
   } as any;
   const do_ = new GameDO(ctx, {} as any) as any;
   do_.ctx = ctx;
@@ -490,7 +482,7 @@ function seatedGame(seed: number) {
     );
     return { status: r.status, body: (await r.json()) as any };
   };
-  return { do_, game, background, post, view: () => view(pack, do_.saved) };
+  return { do_, game, post, view: () => view(pack, do_.saved) };
 }
 
 async function playTo(
@@ -537,7 +529,7 @@ async function playTo(
 
 test("the midterm swaps the seats it lost and ships the new members in the view", async () => {
   stubModels(0);
-  const { game, background, post, view: current } = seatedGame(7);
+  const { game, post, view: current } = seatedGame(7);
   await playTo(post, game, 10);
   expect(game.stage).toBe("midterm");
   // A tanked ledger settles the draw before the roll: the government's seats fall, the opposition's hold.
@@ -559,16 +551,13 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
     expect(seat.faction).toBe(l.to);
     expect(seat.name.length).toBeGreaterThan(0);
     expect(seat.memory).toEqual([]);
-    expect(seat.portrait).toBe(`members/r${hash("g-mid").toString(36)}-1-${l.seat}.png`);
     expect("bio" in seat || "tell" in seat).toBe(false);
   }
-  expect(background.length).toBe(1); // the portrait sheet runs after the answer, never before it
-  await Promise.all(background);
 });
 
 test("a midterm that is not a wipeout hands the chamber back to the session", async () => {
   stubModels(0);
-  const { game, background, post } = seatedGame(9);
+  const { game, post } = seatedGame(9);
   game.stage = "midterm";
   game.marks.midterm = ["seat-01", "seat-11", "seat-12", "seat-13", "seat-19", "seat-20"]; // one government seat in six
   for (const r of pack.regions) game.regions[r.id] = -999;
@@ -582,7 +571,6 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   expect(body.members.find((m: any) => m.seat === "seat-01").id).toBe(
     `r${hash("g-mid").toString(36)}-1-seat-01`,
   );
-  await Promise.all(background);
 });
 
 test("the midterm is refused outside its stage, and a bill cannot jump it", async () => {

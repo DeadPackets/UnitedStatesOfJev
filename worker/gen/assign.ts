@@ -100,7 +100,6 @@ export function assignMembers(frame: Frame): Member[] {
       patrons: [],
       years: i % 10 < 3 ? "new" : i % 10 < 7 ? "mid" : "long",
       flags,
-      portrait: `members/m${i + 1}.png`,
     } satisfies Member;
   });
 }

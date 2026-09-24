@@ -1,5 +1,5 @@
 import type { Offer } from "./api";
-import { Ornament, art, hideBroken } from "./theme";
+import { Ornament } from "./theme";
 
 export default function Match({
   offers,
@@ -25,7 +25,6 @@ export default function Match({
       <ul className="cards">
         {offers.map((o, i) => (
           <li key={o.id} className="card rise" style={{ animationDelay: `${i * 90}ms` }}>
-            <img className="masthead" src={art(o.id, "masthead.png")} alt="" onError={hideBroken} />
             <div className="kicker">
               {o.era} · {o.place}
             </div>

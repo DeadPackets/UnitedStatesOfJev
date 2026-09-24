@@ -46,7 +46,6 @@ const ctx = (names: string[]): GenCtx => ({
     patrons: [],
     years: "new",
     flags: [],
-    portrait: "",
   })),
 });
 

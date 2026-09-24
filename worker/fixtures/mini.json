@@ -299,8 +299,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["grand-exchange"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m2",
@@ -314,8 +313,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["keelwright-hall"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m3",
@@ -329,8 +327,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["tide-temple"],
       "years": "long",
-      "flags": ["crown"],
-      "portrait": ""
+      "flags": ["crown"]
     },
     {
       "id": "m4",
@@ -344,8 +341,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["net-and-line"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m5",
@@ -359,8 +355,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["admiralty-club"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m6",
@@ -374,8 +369,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["silver-quay"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m7",
@@ -389,8 +383,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["free-press-circle"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m8",
@@ -404,8 +397,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["smugglers-rest"],
       "years": "mid",
-      "flags": ["clergy"],
-      "portrait": ""
+      "flags": ["clergy"]
     },
     {
       "id": "m9",
@@ -419,8 +411,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["uplands-charities"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m10",
@@ -434,8 +425,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["academy-league"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m11",
@@ -449,8 +439,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["grand-exchange"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m12",
@@ -464,8 +453,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["keelwright-hall"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m13",
@@ -479,8 +467,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["tide-temple"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m14",
@@ -494,8 +481,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["net-and-line"],
       "years": "mid",
-      "flags": ["army"],
-      "portrait": ""
+      "flags": ["army"]
     },
     {
       "id": "m15",
@@ -509,8 +495,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["admiralty-club"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m16",
@@ -524,8 +509,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["silver-quay"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m17",
@@ -539,8 +523,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["free-press-circle"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m18",
@@ -554,8 +537,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["smugglers-rest"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m19",
@@ -569,8 +551,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["uplands-charities"],
       "years": "new",
-      "flags": ["court"],
-      "portrait": ""
+      "flags": ["court"]
     },
     {
       "id": "m20",
@@ -584,8 +565,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["academy-league"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m21",
@@ -599,8 +579,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["grand-exchange"],
       "years": "long",
-      "flags": ["veto"],
-      "portrait": ""
+      "flags": ["veto"]
     },
     {
       "id": "m22",
@@ -614,8 +593,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["keelwright-hall"],
       "years": "new",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m23",
@@ -629,8 +607,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["tide-temple"],
       "years": "mid",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     },
     {
       "id": "m24",
@@ -644,8 +621,7 @@
       "tell": "Taps the table twice before changing a vote.",
       "patrons": ["net-and-line"],
       "years": "long",
-      "flags": [],
-      "portrait": ""
+      "flags": []
     }
   ],
   "citizens": [],
@@ -1194,23 +1170,6 @@
       "label": "Threaten a challenger",
       "text": "The Consul threatens to back a rival in the next canvass."
     }
-  },
-  "art": {
-    "masthead": "harbor-council-mini/masthead.png",
-    "crests": [
-      {
-        "id": "harborites",
-        "value": "harbor-council-mini/crest-harborites.png"
-      },
-      {
-        "id": "keelwrights",
-        "value": "harbor-council-mini/crest-keelwrights.png"
-      },
-      {
-        "id": "tidebound",
-        "value": "harbor-council-mini/crest-tidebound.png"
-      }
-    ]
   },
   "constitution": {
     "ruler": { "role": "Consul", "faction": "harborites" },

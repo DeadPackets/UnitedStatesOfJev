@@ -29,13 +29,7 @@ mock.module("../luna", () => ({
     };
   },
 }));
-mock.module("cloudflare:workers", () => ({
-  DurableObject: class {},
-  WorkflowEntrypoint: class {},
-}));
-mock.module("cloudflare:workflows", () => ({ NonRetryableError: class extends Error {} }));
 const { names } = await import("./personas");
-const { sheetPrompt } = await import("../build");
 
 const ctx = (m: number, c: number): GenCtx => ({
   prompt: "Rome -0044",
@@ -59,7 +53,6 @@ const ctx = (m: number, c: number): GenCtx => ({
     patrons: [],
     years: "new",
     flags: [],
-    portrait: "",
   })),
   citizens: Array.from({ length: c }, (_, i) => ({
     id: `c${i + 1}`,
@@ -94,19 +87,6 @@ describe("names", () => {
     expect(r.citizens!.length).toBe(250);
     const all = [...r.members!.map((m) => m.name), ...r.citizens!.map((c) => c.name)];
     expect(new Set(all).size).toBe(all.length);
-  });
-
-  test("each named member's face is drawn with its gender and look", async () => {
-    seen.length = 0;
-    series = 0;
-    forceDup = false;
-    dupCitizens = false;
-    const r = await names({} as never, ctx(2, 0));
-    const prompt = sheetPrompt(
-      { era: "2020s", vocabulary: { member: "senators" } } as never,
-      r.members!,
-    );
-    expect(prompt).toContain("young woman, Korean American, loyalist");
   });
 
   test("a shortfall is topped up three times, and a pool that never fills is a repair, not an id in the chamber", async () => {

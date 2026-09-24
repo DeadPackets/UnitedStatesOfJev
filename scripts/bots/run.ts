@@ -211,7 +211,7 @@ for (const policy of chosen) {
         const from = turns.length;
         g = await runTerm(bot, policy, g, turns, seed, run);
         terms++;
-        // The meter sees Jev and Luna, not the portraits, so a term never counts for less than its measured whole.
+        // The meter sees Jev and Luna, so a term never counts for less than its measured whole.
         const measured = turns.slice(from).reduce((a, t) => a + t.jev.cost + t.jev.lunaCost, 0);
         spent += Math.max(measured, TERM_USD);
         // A coup, a dismissal or a lame duck ends the term with no test, and that is a loss.

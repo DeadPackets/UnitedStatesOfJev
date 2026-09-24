@@ -73,14 +73,6 @@ export const FILL_DEFS = memo(function FILL_DEFS({
 export const fillFor = (f: Faction, scope: string) =>
   f.fill === "solid" ? f.color : `url(#${scope}fill-${f.id})`;
 
-/** R2 art, served by the Worker: `members/<id>.png`, `members/<id>-plate.png`, `masthead.png`, `crests/<id>.png`. */
-export const art = (packId: string, file: string) => `/api/scenarios/${packId}/art/${file}`;
-
-/** An R2 image that never landed leaves the initials under it, not a broken-image glyph. */
-export const hideBroken = (e: { currentTarget: HTMLElement | SVGElement }) => {
-  e.currentTarget.style.display = "none";
-};
-
 export const initials = (name: string) =>
   name
     .split(/\s+/)

@@ -104,7 +104,6 @@ const LEDGERS = [
 ] as const;
 
 const IdNum = z.object({ id: z.string(), value: z.number() });
-const IdStr = z.object({ id: z.string(), value: z.string() });
 const LobbyText = z.object({ cost: z.number(), label: z.string(), text: z.string() });
 
 // R30: a faction card. yes and no are the acts a want backs and fights, in the player's words; `match` and
@@ -296,7 +295,6 @@ const MemberSchema = z.object({
   patrons: z.array(z.string()),
   years: z.enum(YEARS),
   flags: z.array(z.enum(SEAT_FLAGS)),
-  portrait: z.string(),
   // Optional: packs stored before names carried them are re-validated on read.
   gender: z.enum(GENDERS).optional(),
   look: z.string().optional(),
@@ -445,12 +443,6 @@ export const PackSchema = z
       dismissed: z.string().nullable().optional(), // R29: the one above you sends for your seals
     }),
     lobby: z.object({ pork: LobbyText, favor: LobbyText, threat: LobbyText }),
-    // portraits: one entry per contact sheet, "done" or "failed"; the client polls it and stops when none are pending.
-    art: z.object({
-      masthead: z.string(),
-      crests: z.array(IdStr),
-      portraits: z.array(IdStr).default([]),
-    }),
     constitution: PackConstitutionSchema.optional(),
   })
   .refine((p) => p.members.length === p.chamber.size, "members must equal chamber.size")

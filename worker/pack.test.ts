@@ -26,9 +26,11 @@ function makeCitizens(): Citizen[] {
   return citizens;
 }
 
-test("fixture parses with generated citizens", () => {
-  const pack = { ...mini, citizens: makeCitizens() };
+test("fixture parses with generated citizens, and a stored pack's old art is dropped", () => {
+  const art = { masthead: "masthead.png", crests: [], portraits: [] };
+  const pack = { ...mini, citizens: makeCitizens(), art };
   const parsed = PackSchema.parse(pack);
+  expect("art" in parsed).toBe(false);
   expect(parsed.members.length).toBe(24);
   expect(parsed.citizens.length).toBe(250);
   expect(parsed.escalations.length).toBe(20);

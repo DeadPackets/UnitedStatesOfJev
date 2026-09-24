@@ -12,7 +12,7 @@ Write a scenario that ever existed or never did — Rome in 44 BC, Germany after
 |---|---|
 | Write | one text box, any language |
 | Match | Vectorize + Jev, under 2 s: a close pack loads, a near one is offered, otherwise build |
-| Build | a Cloudflare Workflow builds the pack — sources, factions, chamber, deck, art — polled every 2 s |
+| Build | a Cloudflare Workflow builds the pack — sources, factions, chamber, deck — polled every 2 s |
 | Seat | pick a faction and 3 of 8 promises; get a share code |
 | Term | 20 turns: draft a bill, whip, lobby, amend, post to the feed, vote, resolve the week's crisis |
 | Feed | one post a turn, 240 characters, optional: every citizen reacts, three answer, the rival answers back, 50 citizens judge the duel |
@@ -72,12 +72,12 @@ and the loop is in `docs/balance.md`.
 |---|---|---|
 | `DB` | D1 `usoj` | scenarios table: id, status, pack JSON, builds count |
 | `VEC` | Vectorize `usoj-scenarios` | 1024-dim, cosine, one vector per ready scenario |
-| `ART` | R2 `usoj-art` | mastheads, crests, portraits, immutable cache |
+| `ART` | R2 `usoj-art` | unused: the game makes no pictures; the bucket keeps the old ones |
 | `AI` | Workers AI | `@cf/baai/bge-m3` embeddings for matching |
 | `BUILD` | Workflow `ScenarioBuild` (`worker/build.ts`) | one step per pack row, status written to D1 after each |
 | `GAME` | Durable Object `GameDO` | one per game, unchanged shape plus `scenarioId` |
 | `BUILDS` | Durable Object `BuildsDO` | daily build counter |
-| `RL` | ratelimit `RL` | 40 req/min on `/api/*`, `/api/*/art/*` exempt |
+| `RL` | ratelimit `RL` | 40 req/min on `/api/*` |
 | `DAILY` | Workflow | `daily`, the cron-started build of tomorrow's term |
 | `DAILY_SECRET` | secret | signs the `usoj_id` cookie |
 | cron | trigger | `7 3 * * *`, one run a day |
@@ -90,13 +90,12 @@ and the loop is in `docs/balance.md`.
 | `openai/gpt-6-astra` | repair pass when validation still fails after one retry (no `reasoning: none`, it 400s) |
 | `x-ai/grok-4.7` | retried once on a benign refusal from Luna, per step |
 | `typesafe/jev-1.13` | judges whip counts, matching probabilities, semantic dedupe |
-| `meta/muse-image` | contact sheets (16 faces/call), masthead, crests |
 
 ## Costs
 
 Measured 2026-09-22 (`.superpowers/sdd/2026-09-22-any-polity-stage-a/task-6-report.md`, `task-9-report.md`):
 
-- **Build: ~$0.12** on the Luna path (OpenRouter usage figures), of which art is ~$0.05 at build time; portraits generate in the background after the pack is ready and never block play.
+- **Build: ~$0.07** on the Luna path: $0.12 measured (OpenRouter usage figures) less the ~$0.05 of pictures the build no longer makes.
 - **Term: $0.215, 145 requests, 349 s** for 20 turns, the midterm, four campaign turns and the test (`bun scripts/term.ts`), all 2xx. Stage B's own routes are 28% of that: a post is 4.1 s and $0.0024, the midterm 13.1 s and $0.0036, a campaign turn 1.6 s and $0.0023.
 
 Full step-by-step timings for both proof builds (Rome `v3nj3k`, Germany `1wybd8`) and the term's per-route latencies are in `docs/experiments.md`.
@@ -110,7 +109,6 @@ worker/engine.ts     pure game math, shared with the client
 worker/game.ts       GameDO: turn loop and state
 worker/build.ts      ScenarioBuild Workflow: the generation pipeline
 worker/gen/          plan, facts, frame, names, personas, deck, dedupe, validate
-worker/art.ts        dithering: seat coin, plate, crest, masthead
 worker/match.ts      Vectorize + Jev scenario matching
 worker/jev.ts         Jev client and question builders
 worker/luna.ts        Luna client and Zod schemas

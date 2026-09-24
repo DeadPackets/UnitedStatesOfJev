@@ -472,7 +472,7 @@ a.sr:focus {
   font: 600 13px var(--sans);
 }
 
-/* pack chamber: faction fills under a portrait coin, the vote read straight from the stylesheet */
+/* pack chamber: faction fills under the initials, the vote read straight from the stylesheet */
 .seats .seatc {
   transition:
     opacity 320ms var(--ease-out),
@@ -501,16 +501,8 @@ a.sr:focus {
 .seats .hit {
   pointer-events: fill;
 }
-.seats .coin {
-  opacity: 0;
-  transition: opacity var(--t-state) var(--ease-out);
-}
-.seats .coin.on {
-  opacity: 1;
-}
 .seats .seatg[data-vote] .well,
-.seats .seatg[data-vote] .ini,
-.seats .seatg[data-vote] .coin {
+.seats .seatg[data-vote] .ini {
   opacity: 0;
 }
 .seats .seatg[data-vote="yes"] .seatc {
@@ -654,15 +646,6 @@ a.sr:focus {
   max-width: 46ch;
   margin: 0;
   text-wrap: balance;
-}
-.masthead {
-  width: 100%;
-  aspect-ratio: 4 / 1;
-  object-fit: cover;
-  display: block;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--paper);
 }
 
 /* write */
@@ -836,26 +819,6 @@ a.sr:focus {
   font: 800 19px / 1.05 var(--display);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-}
-.crest {
-  flex: none;
-  width: 46px;
-  height: 46px;
-  position: relative;
-  display: grid;
-  place-items: center;
-  background: var(--paper);
-  outline: 1.5px solid var(--ink);
-  outline-offset: -1.5px;
-  font: 800 16px var(--display);
-  overflow: hidden;
-}
-.crest img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .chips {
   display: flex;
@@ -2048,18 +2011,6 @@ button.w:focus-visible {
   display: grid;
   place-items: center;
   font: 800 56px var(--display);
-}
-.plate img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity var(--t-surface) var(--ease-out);
-}
-.plate img.on {
-  opacity: 1;
 }
 .lobby button .t {
   display: grid;

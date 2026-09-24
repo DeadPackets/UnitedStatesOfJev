@@ -88,18 +88,6 @@ export async function failScenario(env: Env, id: string, message: string) {
     .run();
 }
 
-export async function markPortrait(env: Env, id: string, sheet: string, status: "done" | "failed") {
-  const row = await getScenario(env, id);
-  if (!row?.pack) return;
-  const portraits = [
-    ...row.pack.art.portraits.filter((p) => p.id !== sheet),
-    { id: sheet, value: status },
-  ];
-  await env.DB.prepare("UPDATE scenarios SET pack = ? WHERE id = ?")
-    .bind(JSON.stringify({ ...row.pack, art: { ...row.pack.art, portraits } }), id)
-    .run();
-}
-
 export async function listReady(env: Env, ids: string[]) {
   if (ids.length === 0) return [];
   const placeholders = ids.map(() => "?").join(",");

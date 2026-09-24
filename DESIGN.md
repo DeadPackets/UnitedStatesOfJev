@@ -7,7 +7,7 @@ Duotone: black ink on white paper, one red. A single deliberate look, no dark th
 | Token | Value | Role |
 |---|---|---|
 | --bg | #ffffff | page |
-| --paper | #f4f4f2 | portrait ground |
+| --paper | #f4f4f2 | seat and plate ground |
 | --tone | #e6e6e3 | halftone dots, whip-bar track, faint chips |
 | --ink | #0b0b0b | text, seats, primary buttons, rules |
 | --ink-2 | #5b5b58 | secondary text (6.9:1 on white) |
@@ -68,14 +68,10 @@ Six point generators (`src/layouts.ts`), each producing `{x, y, angle}` per seat
 
 ## Seat coin and plate
 
-Faces are full-color dither, plates are ink. Both come from the same 4×4 contact sheet cell (`worker/art.ts`):
+The game draws no pictures: no faces, crests or mastheads.
 
-- **Seat coin** — the `face` render, 128 px, Floyd–Steinberg dithered to a 16-color palette picked per face by median cut. Shown at seat and hover size (44 to 96 px) in a round crop with a faction-color ring, a 1px ink rule outside it, and a thicker ring when selected. Initials in the faction color stand in until the face lands.
-- **Plate** — the `plate` render, 256 px, grayscale, luma normalized then leveled 10% to 85% (black point 0.10, white point 0.85), ordered 8×8 Bayer dither at 3 levels, printed in the pack's ink on its paper. Shown in the member drawer at 256 px with an ink rule top and bottom, faction color only in the name line.
-
-## Crest and masthead
-
-Same plate halftone treatment as the member plate (`worker/art.ts`): one crest per faction, ink is the faction's own color on the pack's paper; one masthead per pack, resized to 1600×400, ink on paper. Both generate at build time, in parallel with members and the deck; portraits generate after the pack is ready, in the background, and never block play.
+- **Seat coin** — the member's initials in the faction color on paper, in a round crop with a faction-color ring, a 1px ink rule outside it, and a thicker ring when selected.
+- **Plate** — the initials at 256 px in the member drawer, with an ink rule top and bottom, faction color only in the name line.
 
 ## Vocabulary rule
 

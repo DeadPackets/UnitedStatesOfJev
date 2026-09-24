@@ -12,7 +12,7 @@ import {
 import type { Member } from "../worker/pack";
 import type { GamePack } from "./api";
 import { BOX, minGap, points } from "./layouts";
-import { FILL_DEFS, art, fillFor, hideBroken, initials } from "./theme";
+import { FILL_DEFS, fillFor, initials } from "./theme";
 
 /** A seat on the floor: the pack's member or the game's, both without the persona prose. */
 export type Seated = Omit<Member, "bio" | "tell">;
@@ -43,9 +43,6 @@ export function orderMembers(
     );
 }
 
-const showImg = (e: { currentTarget: SVGImageElement }) => {
-  e.currentTarget.classList.add("on");
-};
 // A read-only floor passes no handler; a fresh arrow here would defeat the memo on every parent render.
 const NOOP = () => {};
 
@@ -99,7 +96,6 @@ export const Chamber = memo(
     const regions = useMemo(() => new Map(pack.regions.map((g) => [g.id, g.name])), [pack.regions]);
     // SVG ids are document-wide: the reveal and the drawer can hold a chamber each.
     const scope = useId();
-    const clip = `url(#${scope}coinclip)`;
     const [hover, setHover] = useState<number | null>(null);
     const groups = useRef(new Map<string, SVGGElement>());
     // Below 5 units a face is mud; the 4-unit band outside it keeps the pattern readable at every chamber size.
@@ -251,18 +247,6 @@ export const Chamber = memo(
                       {initials(m.name)}
                     </text>
                   ) : null}
-                  <image
-                    className="coin"
-                    href={art(pack.id, `members/${m.id}.png`)}
-                    x={s.x - face}
-                    y={s.y - face}
-                    width={face * 2}
-                    height={face * 2}
-                    clipPath={clip}
-                    preserveAspectRatio="xMidYMid slice"
-                    onLoad={showImg}
-                    onError={hideBroken}
-                  />
                 </g>
               ) : null}
               <circle
@@ -292,9 +276,7 @@ export const Chamber = memo(
         r,
         hit,
         face,
-        pack,
         scope,
-        clip,
         vocab,
       ],
     );
@@ -308,9 +290,6 @@ export const Chamber = memo(
         aria-label={`${vocab.chamber}, ${members.length} ${vocab.seat}`}
       >
         <defs>
-          <clipPath id={`${scope}coinclip`} clipPathUnits="objectBoundingBox">
-            <circle cx={0.5} cy={0.5} r={0.5} />
-          </clipPath>
           <FILL_DEFS factions={pack.factions} scope={scope} />
         </defs>
         {seatGroups}
@@ -348,17 +327,6 @@ export const Chamber = memo(
                     >
                       {initials(h.name)}
                     </text>
-                    <image
-                      className="coin on"
-                      href={art(pack.id, `members/${h.id}.png`)}
-                      x={14}
-                      y={10}
-                      width={26}
-                      height={26}
-                      clipPath={clip}
-                      preserveAspectRatio="xMidYMid slice"
-                      onError={hideBroken}
-                    />
                     <text x={54} y={20}>
                       {h.name}
                     </text>

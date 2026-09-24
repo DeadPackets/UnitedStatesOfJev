@@ -121,8 +121,6 @@ import {
   withdraw,
   WITHDRAW_COST,
 } from "./acts";
-import { portraitSheet, SHEET } from "./build";
-import { chunk } from "./gen/prompts";
 
 class Reject extends Error {
   constructor(
@@ -683,10 +681,6 @@ export class GameDO extends DurableObject<Env> {
     const slots = replacements(pack, game, draw);
     const personas = await newMembers(this.env, pack, slots).catch(() => []);
     applyMidterm(pack, game, draw, personas);
-    const fresh = game.members.filter((m) => slots.some((s) => s.id === m.id));
-    // Portraits never gate play: initials stand in until the sheets land (v3 spec §5).
-    for (const group of chunk(fresh, SHEET))
-      this.ctx.waitUntil(portraitSheet(this.env, pack.id, pack, group));
     const head = await halfTerm(this.env, pack, {
       ...record(pack, game),
       seats_lost: draw.lostOwn,

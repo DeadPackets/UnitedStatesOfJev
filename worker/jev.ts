@@ -17,7 +17,6 @@ export type Env = {
   OPENROUTER_API_KEY: string;
   DB: D1Database;
   VEC: VectorizeIndex;
-  ART: R2Bucket;
   AI: Ai;
   BUILD: Workflow;
   DAILY: Workflow;
@@ -64,8 +63,6 @@ export async function post(env: Env, path: string, body: unknown): Promise<any> 
     }
     if (r.ok) {
       const answer = await r.json();
-      // Only the two model endpoints are a prompt set. worker/art.ts:34 posts image bodies through this
-      // same function, and a base64 sheet is not a prompt.
       if (path === "systemone" || path === "chat/completions") {
         await recordGolden(env, path === "systemone" ? "jev" : "luna", body, answer);
       }

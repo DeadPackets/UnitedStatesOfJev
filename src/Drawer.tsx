@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { tween, useReduced } from "./motion";
 import type { GamePack, ViewBill, ViewMember } from "./api";
-import { art, initials as letters } from "./theme";
+import { initials as letters } from "./theme";
 import { useSheet } from "./Card";
 
 const TENURE = { long: "veteran", mid: "second term", new: "first term" } as const;
@@ -78,17 +78,6 @@ export function MemberDrawer({
     >
       <div className="plate" aria-hidden="true">
         <span>{letters(member.name)}</span>
-        <img
-          src={art(pack.id, `members/${member.id}-plate.png`)}
-          alt=""
-          loading="eager"
-          onLoad={(e) => {
-            e.currentTarget.classList.add("on");
-          }}
-          onError={(e) => {
-            e.currentTarget.remove();
-          }}
-        />
       </div>
       <div className="who">
         <h2>{member.name}</h2>

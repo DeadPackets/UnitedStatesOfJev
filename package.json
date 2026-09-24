@@ -12,7 +12,6 @@
     "format": "biome format --write"
   },
   "dependencies": {
-    "@cf-wasm/photon": "^0.4.0",
     "hono": "^4.11.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
