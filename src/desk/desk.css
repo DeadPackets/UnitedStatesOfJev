@@ -1782,6 +1782,11 @@
   .seat {
     cursor: pointer;
   }
+  .seat:focus-visible {
+    outline: none;
+    stroke: var(--accent);
+    stroke-width: 0.02;
+  }
   .pick .btn {
     margin-left: 0.5rem;
   }

@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   type CSSProperties,
+  type KeyboardEvent,
   type MouseEvent,
 } from "react";
 import type { ChamberFaction, Count } from "../../worker/desk";
@@ -24,7 +25,7 @@ export type SeatSpot = {
 };
 export type ChamberHandle = { reveal(count?: Count | null): void; spots: SeatSpot[] };
 export type TermsHandler = (faction: string) => void;
-type Seated = { id: string; faction: string };
+type Seated = { id: string; faction: string; name: string };
 
 const ROWS = [0.45, 0.56, 0.67, 0.78, 0.89, 1];
 export function layoutSeats(factions: ChamberFaction[]): SeatSpot[] {
@@ -200,10 +201,33 @@ export const Chamber = memo(
       }),
       [paint], // eslint-disable-line
     );
-    const click = (event: MouseEvent) => {
+    const names = useMemo(
+      () => new Map(members.map((member) => [member.id, member.name])),
+      [members],
+    );
+    const click = (event: MouseEvent | KeyboardEvent) => {
       const index = (event.target as Element).closest<SVGCircleElement>(".seat")?.dataset.i;
       const member = index === undefined ? null : bound[Number(index)];
       if (member) onSeat(member, Number(index));
+    };
+    // One seat is in the tab order at a time (a roving tabindex): the arrows walk the wedges, Enter opens the member.
+    const key = (event: KeyboardEvent) => {
+      const seat = (event.target as Element).closest<SVGCircleElement>(".seat");
+      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+      if (!seat) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        return click(event);
+      }
+      if (!step) return;
+      event.preventDefault();
+      const index = (Number(seat.dataset.i) + step + spots.length) % spots.length;
+      const next = stage.current!.querySelector<SVGCircleElement>(
+        `#hemi .seat[data-i="${index}"]`,
+      )!;
+      seat.tabIndex = -1;
+      next.tabIndex = 0;
+      next.focus();
     };
     return (
       <section className="stage sf" id="stage" ref={stage}>
@@ -220,12 +244,16 @@ export const Chamber = memo(
             preserveAspectRatio="xMidYMid meet"
             aria-label={label}
             onClick={click}
+            onKeyDown={key}
           >
             {spots.map((spot) => (
               <circle
                 key={spot.index}
                 className="seat"
                 data-i={spot.index}
+                role="button"
+                tabIndex={spot.index ? -1 : 0}
+                aria-label={`${names.get(bound[spot.index] ?? "") ?? "Empty seat"}, ${spot.faction.short}`}
                 cx={spot.x.toFixed(4)}
                 cy={spot.y.toFixed(4)}
                 r={radius}

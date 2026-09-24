@@ -18,6 +18,8 @@ type Props = {
 export function Review({ kicker, title, failed, lines, rows, resources, onBack }: Props) {
   const box = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
+    // The button that started the moment is gone: the keyboard lands where the next move is.
+    box.current!.querySelector<HTMLElement>("#back")!.focus({ preventScroll: true });
     if (reduced()) return;
     play(box.current!, { opacity: [0, 1], y: [14, 0] }, { duration: 0.3 }).catch(() => {});
     play(

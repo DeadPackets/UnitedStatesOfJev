@@ -200,6 +200,12 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
     onGame(phase.next);
     setPhase({ kind: "priced" });
   };
+  // Price it is disabled once the receipt is up, so the keyboard moves on to the receipt.
+  useEffect(() => {
+    if (phase.kind !== "priced") return;
+    const sign = document.getElementById("sign") as HTMLButtonElement | null;
+    (sign?.disabled ? document.getElementById("tear") : sign)?.focus({ preventScroll: true });
+  }, [phase.kind]);
   const tear = () => {
     clearMarks(deskRef.current!);
     setTorn(true);
@@ -257,6 +263,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
     setPhase({ kind: "idle" });
     setComposerKey((key) => key + 1);
     onReview(false);
+    requestAnimationFrame(() => document.getElementById("actx")?.focus({ preventScroll: true }));
   };
   const verdictReview = (title: string, voted: GameView, ...reviews: (ReviewLine[] | null)[]) => {
     const verdict = voted.desk.verdict!;

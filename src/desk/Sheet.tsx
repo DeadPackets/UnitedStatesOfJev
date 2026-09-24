@@ -94,7 +94,8 @@ type Props = {
 export function Sheet({ resources, turnWord, inForce, onWithdraw, onClose }: Props) {
   const sheet = useRef<HTMLElement>(null),
     scrim = useRef<HTMLDivElement>(null),
-    closing = useRef(false);
+    closing = useRef(false),
+    opener = useRef(document.activeElement as HTMLElement | null);
   useLayoutEffect(() => {
     const el = sheet.current!,
       cards = el.querySelector<HTMLElement>(".rks")!;
@@ -140,16 +141,14 @@ export function Sheet({ resources, turnWord, inForce, onWithdraw, onClose }: Pro
           },
           260 + i * 90,
         );
-        card
-          .querySelectorAll(".tr i")
-          .forEach((bar, j) =>
-            bar.animate([{ transform: "scaleY(0)" }, { transform: "none" }], {
-              duration: 480,
-              delay: 380 + i * 90 + j * 40,
-              easing: "cubic-bezier(.22,1,.36,1)",
-              fill: "backwards",
-            }),
-          );
+        card.querySelectorAll(".tr i").forEach((bar, j) =>
+          bar.animate([{ transform: "scaleY(0)" }, { transform: "none" }], {
+            duration: 480,
+            delay: 380 + i * 90 + j * 40,
+            easing: "cubic-bezier(.22,1,.36,1)",
+            fill: "backwards",
+          }),
+        );
       });
     }
     return () => {
@@ -160,6 +159,7 @@ export function Sheet({ resources, turnWord, inForce, onWithdraw, onClose }: Pro
   const close = () => {
     if (closing.current) return;
     closing.current = true;
+    opener.current?.focus({ preventScroll: true });
     if (reduced()) return onClose();
     scrim.current!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" });
     sheet
