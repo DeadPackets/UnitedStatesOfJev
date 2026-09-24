@@ -1,7 +1,7 @@
 // The desk's view contract: what the worker sends the React desk (docs/mocks/v4/feel/desk.html) on every read of a
 // game. Types, and deskView: the mapping from a pack and a game to what the desk draws. game.ts view() adds it;
 // the client reads these fields and never derives a number the engine owns.
-import { billOf, commit, instrumentOf, previewOf, vetoRows } from "./acts";
+import { available, billOf, commit, instrumentOf, previewOf, vetoRows } from "./acts";
 import { checkEmblem } from "./emblem";
 import {
   AGAINST_AT,
@@ -11,6 +11,7 @@ import {
   WARN_TURNS,
   actTokens,
   applyVote,
+  belowLine,
   effectiveWhip,
   glanceOf,
   hash,
@@ -28,7 +29,7 @@ import {
   type WireLine,
 } from "./engine";
 import type { Emblem } from "./emblem";
-import type { Glance, LineIcon, Pack, ResourceIcon, Verb } from "./pack";
+import { VERBS, type Glance, type LineIcon, type Pack, type ResourceIcon, type Verb } from "./pack";
 import { parseThemeTokens, type ThemeTokens, type Tint } from "./tokens";
 
 /** One group on a rim: home groups on the left, abroad on the right, in pack order. */
@@ -147,6 +148,7 @@ export interface DeskView {
   verdict: Verdict | null;
   review: ReviewLine[] | null;
   floor: Floor | null;
+  shut: string | null; // a ledger under its line shuts instruments: which, and what the clerk can still price
 }
 
 type Holder = ReturnType<typeof holdersOf>[number];
@@ -394,16 +396,22 @@ function reviewOf(pack: Pack, game: Game, previous: Game): ReviewLine[] {
   // The wire is one turn's lines; a request that opened a new turn's wire wrote all of it.
   const wire =
     previous.wireTurn === game.wireTurn ? game.wire.slice(previous.wire.length) : game.wire;
-  const title = previous.tag?.title ?? "";
+  // The vote's wire names only the bill, and the tag is gone by then: its reason is the verdict, as on the receipt.
+  const bill = game.bills.at(-1);
+  const voted = bill?.votes && !previous.bills.at(-1)?.votes ? bill : null;
+  const title = previous.tag?.title ?? voted?.title ?? "";
+  const verdict = voted
+    ? `The ${pack.vocabulary.bill} ${voted.passed && !voted.struck ? pack.vocabulary.pass : pack.vocabulary.fail}`
+    : undefined;
   const resources = RESOURCES.flatMap((key): ReviewLine[] => {
     const from = Math.round(previous.ledgers[key]),
       to = Math.round(game.ledgers[key]);
     if (from === to) return [];
     const cause = wire.find((line) => line.kind === "ledger" && line.ledger === key)?.cause ?? "";
-    const why = reasonOf(cause, title, to > from ? "Paid in" : "Spent");
+    const why = reasonOf(cause, title, verdict ?? (to > from ? "Paid in" : "Spent"));
     return [{ ...resourceLine(pack, key, to - from, why), from, to }];
   });
-  const groups = groupLines(pack, previous, game, wire, title).map((line) => {
+  const groups = groupLines(pack, previous, game, wire, title, verdict).map((line) => {
     const to = Math.round(game.holders[line.id].support);
     return { ...line, from: to - line.delta, to };
   });
@@ -438,6 +446,20 @@ function floorOf(pack: Pack, game: Game): Floor | null {
       })) ?? null,
     lobbied: Object.keys(bill.offers),
   };
+}
+
+// Said before any clerk call: the clerk's answer for a shut instrument is a refusal the player could not see coming.
+function shutOf(pack: Pack, game: Game): string | null {
+  const offered = VERBS.filter((verb) => instrumentOf(pack, verb)?.available);
+  const open = offered.filter((verb) => available(pack, game, verb));
+  if (open.length === offered.length) return null;
+  const low = belowLine(pack, game)
+    .filter((key) => key !== "chest")
+    .map((key) => `${resourceName(pack, key)} is at ${Math.round(game.ledgers[key])}`)
+    .join(" and ");
+  return open.length
+    ? `${low}, so the clerk prices only these kinds of act: ${open.map((verb) => instrumentOf(pack, verb)!.name).join(", ")}.`
+    : `${low}, so the clerk can price nothing. End the ${pack.vocabulary.turn}.`;
 }
 
 /** Everything the desk draws for this game, from the pack's words and the game's numbers; the client derives nothing. */
@@ -488,5 +510,6 @@ export function deskView(pack: Pack, game: Game, previous?: Game): DeskView {
     verdict: verdictOf(pack, game),
     review: previous ? reviewOf(pack, game, previous) : null,
     floor: floorOf(pack, game),
+    shut: shutOf(pack, game),
   };
 }

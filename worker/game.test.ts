@@ -1557,5 +1557,9 @@ for (const verb of ["decree", "law"] as const) {
       moved(bill.passed && !bill.struck ? receipt.pass : receipt.fail, street),
     );
     expect(voted.body.desk.verdict.order).toHaveLength(voted.body.members.length);
+    // the tag is gone at the vote, so the reason is the verdict, never the bill's bare title
+    expect(voted.body.desk.review.map((line: { why: string }) => line.why)).not.toContain(
+      bill.title,
+    );
   });
 }

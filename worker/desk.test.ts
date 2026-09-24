@@ -111,3 +111,19 @@ test("a law's receipt counts every seat, names each hesitant one, and its defeat
   expect(hesitant).toEqual([...hesitant].sort()); // every sure seat is called before any hesitant one
   expect(verdict.order.filter((seat) => seat.yes)).toHaveLength(verdict.yes);
 });
+
+for (const [file, ruler] of [
+  ["westeros", "baratheon"],
+  ["biden-2021", "dem"],
+] as const) {
+  test(`${file}: at 0 authority the desk names what the clerk can still price before any call`, async () => {
+    const pack = await load(file);
+    const game = seat(pack, ruler);
+    expect(deskView(pack, game).shut).toBeNull();
+    game.ledgers.authority = 0;
+    const shut = deskView(pack, game).shut!;
+    const name = (verb: Verb) => pack.constitution!.instruments[verb]!.name;
+    expect(shut).toContain(`${name("spend")}, ${name("proclaim")}`);
+    expect(shut).not.toContain(name("decree"));
+  });
+}
