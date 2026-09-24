@@ -1177,28 +1177,31 @@ test("each response does its own thing and a coup ends the run", () => {
   }
 });
 
-for (const [per, paid] of [
-  ["turn", [5, 10, 10]],
-  ["once", [5, 5, 5]],
+for (const [ledger, per, start, paid] of [
+  ["chest", "turn", null, [5, 10, 10]],
+  ["chest", "once", null, [5, 5, 5]],
+  ["authority", "turn", null, [5, 10, 10]],
+  ["authority", "turn", 198, [2, 2, 2]],
 ] as const) {
-  test(`a home group that gives per ${per} pays while it agrees`, () => {
+  test(`a home group that gives ${ledger} per ${per} from ${start ?? "the start"} pays while it agrees`, () => {
     const g = game();
     const p: Pack = {
       ...pack,
       constitution: {
         ...pack.constitution!,
         holders: pack.constitution!.holders.map((h) =>
-          h.id === "guard" ? { ...h, gives: { ledger: "chest" as const, amount: 5, per } } : h,
+          h.id === "guard" ? { ...h, gives: { ledger, amount: 5, per } } : h,
         ),
       },
     };
-    const chest = g.ledgers.chest,
+    if (start !== null) g.ledgers[ledger] = start;
+    const was = g.ledgers[ledger],
       guard = g.holders.guard;
     const got = [guard.line, guard.line, guard.line - 1].map((s) => {
       guard.support = s;
       busy(g);
       endTurn(p, g);
-      return g.ledgers.chest - chest;
+      return g.ledgers[ledger] - was;
     });
     expect(got).toEqual([...paid]);
   });

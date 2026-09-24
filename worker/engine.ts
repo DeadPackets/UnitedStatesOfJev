@@ -1549,7 +1549,7 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
     }
     const l = h.gives.ledger,
       was = game.ledgers[l];
-    game.ledgers[l] = round1(clamp(was + h.gives.amount, 0, 9999));
+    game.ledgers[l] = round1(clamp(was + h.gives.amount, 0, l === "authority" ? 200 : 9999));
     wire.push({ kind: "ledger", ledger: l, delta: round1(game.ledgers[l] - was), cause: h.name });
   }
 

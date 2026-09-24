@@ -178,7 +178,7 @@ const HolderSchema = z.object({
   redLines: z.array(z.string()).default([]),
   gives: z
     .object({
-      ledger: z.enum(["treasury", "chest"]),
+      ledger: z.enum(["treasury", "chest", "authority"]),
       amount: z.number(),
       per: z.enum(["turn", "once"]),
     })
