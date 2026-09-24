@@ -436,7 +436,10 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
   // Stable, so the chamber never repaints mid-moment for a new handler; it reads the phase through a ref.
   const seatClick = useRef<(member: string, index: number) => void>(() => {});
   seatClick.current = (member, index) => {
-    if (phase.kind === "picking") return void price(phase.text, "favour", member);
+    if (phase.kind === "picking") {
+      if (eligible?.has(member)) price(phase.text, "favour", member);
+      return;
+    }
     if (!frozen.current) setSeat({ member, index });
   };
   const onSeat = useCallback(
@@ -460,6 +463,8 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
         (view.resources.find((card) => card.key === line.id)?.value ?? 0) + line.delta >= 0,
     );
   const calm = phase.kind === "idle" || phase.kind === "priced";
+  // The clerks' time left this turn: pricing, a term and a lobby take 1, the vote 1, Amend 3 (so 4 with its vote).
+  const clerks = shown.calls.cap - shown.calls.spent;
   const busy = !calm || acting;
   const chamberRow =
     pack.constitution?.holders.find((holder) => holder.members === "seats")?.id ?? null;
@@ -638,13 +643,15 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
               onReveal={() => {}}
               onSign={sign}
               onTear={tear}
-              onAmend={amend}
+              onAmend={clerks >= 4 ? amend : undefined}
             />
           ) : floor ? (
             <FloorSlip
               floor={floor}
               size={pack.chamber.size}
               busy={busy}
+              clerks={clerks}
+              turnWord={words.turn}
               onVote={callVote}
               onAmend={() => run(() => api.amend(game))}
               onAdopt={(draft) => run(() => api.adopt(game, draft))}
@@ -659,6 +666,11 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
               </span>
               {shown.pending ? <small>{shown.pending}</small> : null}
               {view.shut ? <small className="shut">{view.shut}</small> : null}
+              {clerks < 1 ? (
+                <small className="shut">
+                  The clerks have done all they can this {words.turn}. End the {words.turn}.
+                </small>
+              ) : null}
             </div>
           )}
         </div>
@@ -666,9 +678,9 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           key={composerKey}
           instruments={shown.instruments}
           priced={(receipt?.verb as VerbKey | undefined) ?? null}
-          priceable={!busy && !receipt && !floor}
+          priceable={!busy && !receipt && !floor && clerks > 0}
           endLabel={`End ${words.turn} ${shown.turn}`}
-          endable={!busy && openEvent < 0 && !floor}
+          endable={!busy && openEvent < 0}
           onPrice={(text) => price(text)}
           onEnd={endTurn}
         />
@@ -699,6 +711,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
             offered: !!floor?.lobbied.includes(seated.id),
             costs: shown.lobbyCosts,
             authority: authority?.value ?? 0,
+            clerks,
             word: (authority?.name ?? "authority").toLowerCase(),
           }}
           busy={busy}
@@ -713,7 +726,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           faction={termsFaction}
           row={termsRow}
           costs={costs}
-          busy={busy}
+          busy={busy || clerks < 1}
           onTake={(kind) => {
             setTerms(null);
             run(() => api.negotiate(game, termsFaction.id, kind));

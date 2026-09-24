@@ -256,6 +256,7 @@ type MemberProps = {
     costs: Record<string, number>;
     authority: number;
     word: string;
+    clerks: number; // a lobby and a favour each take the clerks' time
   };
   busy: boolean;
   onLobby: (kind: string) => void;
@@ -315,7 +316,7 @@ export function MemberFile({
       {member.glance ? <GlanceTags glance={member.glance} /> : null}
       <div className="fc-t fc-act st">
         <h3>{words.lobby}</h3>
-        {lobby.open && !lobby.offered ? (
+        {lobby.open && !lobby.offered && lobby.clerks > 0 ? (
           <div className="lob">
             {kinds.map((kind) => (
               <button
@@ -333,10 +334,16 @@ export function MemberFile({
           <p className="fc-note">
             {lobby.offered
               ? "Already offered something on this one."
-              : `Works on a ${words.bill} waiting for its vote.`}
+              : lobby.open
+                ? "The clerks have no time left this turn."
+                : `Works on a ${words.bill} waiting for its vote.`}
           </p>
         )}
-        <button className="btn" disabled={busy || member.loyalty >= 100} onClick={onFavour}>
+        <button
+          className="btn"
+          disabled={busy || member.loyalty >= 100 || lobby.clerks < 1}
+          onClick={onFavour}
+        >
           <Icon id="i-hand" />
           Do a favour
         </button>

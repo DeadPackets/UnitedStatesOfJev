@@ -269,13 +269,24 @@ type FloorProps = {
   floor: Floor;
   size: number;
   busy: boolean;
+  clerks: number; // the clerks' time left this turn: the vote takes 1, Amend 3 and then the vote
+  turnWord: string;
   onVote: () => void;
   onAmend: () => void;
   onAdopt: (draft: number) => void;
 };
 
 /** A law signed and waiting for its vote (not in the mock): the clerks' drafts as stubs, Amend once, Call the vote. */
-export function FloorSlip({ floor, size, busy, onVote, onAmend, onAdopt }: FloorProps) {
+export function FloorSlip({
+  floor,
+  size,
+  busy,
+  clerks,
+  turnWord,
+  onVote,
+  onAmend,
+  onAdopt,
+}: FloorProps) {
   const count = floor.count;
   return (
     <div className="rc floor" id="pb">
@@ -326,15 +337,24 @@ export function FloorSlip({ floor, size, busy, onVote, onAmend, onAdopt }: Floor
             <div className="rl">
               <span className="nm">Click a seat to lobby it</span>
             </div>
+            <div className="rl">
+              <span className="nm">End the {turnWord} and it dies unvoted</span>
+            </div>
           </div>
         </div>
       )}
       <div className="acts">
-        <button className="btn accent" id="callvote" disabled={busy} onClick={onVote}>
+        <button
+          className="btn accent"
+          id="callvote"
+          disabled={busy || clerks < 1}
+          title={clerks < 1 ? "The clerks have no time left for a vote this turn" : undefined}
+          onClick={onVote}
+        >
           <Icon id="i-ballot" />
           Call the vote
         </button>
-        {floor.drafts === null ? (
+        {floor.drafts === null && clerks >= 4 ? (
           <button className="btn" id="amend" disabled={busy} onClick={onAmend}>
             Amend
           </button>
