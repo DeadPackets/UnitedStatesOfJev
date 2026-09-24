@@ -146,7 +146,7 @@ if (import.meta.main) {
     console.log(`| ${r.name} | ${r.value} | ${r.target} | ${r.ok ? "pass" : "FAIL"} |`);
   const per = (pick: (t: TurnLog) => number) =>
     Math.round(turns.reduce((a, t) => a + pick(t), 0) / Math.max(1, turns.length));
-  const spent = turns.reduce((a, t) => a + t.jev.cost, 0);
+  const spent = turns.reduce((a, t) => a + t.jev.cost + (t.jev.lunaCost ?? 0), 0);
   console.log(
     `\nJev: ${per((t) => t.jev.tokens)} input tokens and ${per((t) => t.jev.ms)} ms the average turn, largest single call ${Math.max(0, ...turns.map((t) => t.jev.worst))} tokens`,
   );

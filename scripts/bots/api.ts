@@ -9,7 +9,7 @@ export class Bot {
   calls = 0;
   ms = 0;
   whip: Whip | null = null;
-  used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
+  used = { tokens: 0, cost: 0, calls: 0, worst: 0, lunaTokens: 0, lunaCost: 0 };
 
   constructor(readonly base: string) {}
 
@@ -39,6 +39,8 @@ export class Bot {
             cost: u.cost + n.cost,
             calls: u.calls + n.calls,
             worst: Math.max(u.worst, n.worst),
+            lunaTokens: u.lunaTokens + (n.lunaTokens ?? 0),
+            lunaCost: u.lunaCost + (n.lunaCost ?? 0),
           };
         }
         return g;

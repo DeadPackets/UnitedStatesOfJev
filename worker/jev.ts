@@ -69,6 +69,11 @@ export async function post(env: Env, path: string, body: unknown): Promise<any> 
       if (path === "systemone" || path === "chat/completions") {
         await recordGolden(env, path === "systemone" ? "jev" : "luna", body, answer);
       }
+      if (path === "chat/completions") {
+        const usage = (answer as { usage?: { total_tokens?: number; cost?: number } }).usage;
+        meter.lunaTokens += Number(usage?.total_tokens ?? 0);
+        meter.lunaCost += Number(usage?.cost ?? 0);
+      }
       return answer;
     }
     const text = await r.text();
@@ -96,11 +101,15 @@ export const meter = {
   cost: 0,
   calls: 0,
   worst: 0,
+  lunaTokens: 0,
+  lunaCost: 0,
   reset() {
     this.tokens = 0;
     this.cost = 0;
     this.calls = 0;
     this.worst = 0;
+    this.lunaTokens = 0;
+    this.lunaCost = 0;
   },
 };
 

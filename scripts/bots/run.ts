@@ -24,7 +24,7 @@ export type TurnLog = {
   holders: { id: string; support: number; line: number; weight: number }[];
   acts: { verb: string; expected: Record<string, number>; realised: Record<string, number> }[];
   whip: Whip | null;
-  jev: { tokens: number; cost: number; calls: number; worst: number; ms: number };
+  jev: Bot["used"] & { ms: number };
   pending: string | null;
   wire: unknown[];
 };
@@ -88,7 +88,7 @@ export async function runTerm(
   const cap = TURNS_PER_TERM + HARD_STOP;
   const started = performance.now();
   let steps = 0;
-  bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
+  bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0, lunaTokens: 0, lunaCost: 0 };
   while (g.stage === "session" || g.stage === "midterm") {
     if (++steps > cap)
       throw new Error(`the term took more than ${cap} steps and never reached the test`);
@@ -133,7 +133,7 @@ export async function runTerm(
       pending: (g as never as { pending?: string | null }).pending ?? null,
       wire: (g as never as { wire?: unknown[] }).wire ?? [],
     });
-    bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0 };
+    bot.used = { tokens: 0, cost: 0, calls: 0, worst: 0, lunaTokens: 0, lunaCost: 0 };
     if (g.turn === turn && g.stage === "session") throw new Error(`turn ${turn} did not advance`);
   }
   if (g.stage === "test") g = await bot.test(g);
@@ -147,6 +147,8 @@ export async function runTerm(
       cost: last.jev.cost + u.cost,
       calls: last.jev.calls + u.calls,
       worst: Math.max(last.jev.worst, u.worst),
+      lunaTokens: last.jev.lunaTokens + u.lunaTokens,
+      lunaCost: last.jev.lunaCost + u.lunaCost,
     };
   }
   return g;
@@ -196,8 +198,8 @@ for (const policy of chosen) {
         const from = turns.length;
         g = await runTerm(bot, policy, g, turns, seed, run);
         terms++;
-        // The meter sees Jev only, not Luna or the portraits, so a term never counts for less than its measured whole.
-        const measured = turns.slice(from).reduce((a, t) => a + t.jev.cost, 0);
+        // The meter sees Jev and Luna, not the portraits, so a term never counts for less than its measured whole.
+        const measured = turns.slice(from).reduce((a, t) => a + t.jev.cost + t.jev.lunaCost, 0);
         spent += Math.max(measured, TERM_USD);
         if (terms === 1) term1Won = (g.test as never as { won?: boolean } | undefined)?.won ?? null;
         if (spent > BUDGET_USD) throw new Error("budget");
