@@ -1121,6 +1121,22 @@ test("a term taken on this turn's law survives re-pricing it: charged once, the 
   ).toBe(409);
 });
 
+test("a pledge taken on a law is not kept by that same law passing", async () => {
+  const { game, post } = await priceHesitant(tideCard);
+  expect(
+    (await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "pledge" })).status,
+  ).toBe(200);
+  game.tag!.tags.push("harbor-tolls"); // the law on the floor carries the pledged subject
+  for (const m of game.members) m.mood = 1;
+  await post("acts", { turn: 1 });
+  game.bills[0].constitutional = 0; // the stub's 0.9 would strike it, and a struck law keeps nothing anyway
+  expect((await post("bills/1/vote", { turn: 1 })).body.bills[0]).toMatchObject({
+    passed: true,
+    struck: false,
+  });
+  expect(game.promises["harbor-tolls"].state).toBe("pending");
+});
+
 test("a post is not offered while the appointment's veto holder refuses", async () => {
   const { do_, game, post } = await priceHesitant(tideCard);
   const c = do_.pack.constitution;

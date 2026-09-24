@@ -230,6 +230,7 @@ export interface Game {
       window: number;
       share: number;
       authored: boolean;
+      pledgedOn?: number; // lead ruling: a Negotiate pledge, never kept by a law of the turn it was made on
     }
   >;
   members: Member[];
@@ -1618,6 +1619,7 @@ function pendingItem(
 export function keepPromise(pack: Pack, game: Game, tag: string) {
   const p = game.promises[tag];
   if (!p || p.state !== "pending") return;
+  if (p.pledgedOn === game.term * TURNS_PER_TERM + game.turn) return;
   if (++p.passed < 2) return;
   p.state = "kept";
   moveSupport(pack, game, [ownHolder(pack).id], PROMISE_LOYALTY, p.label);
