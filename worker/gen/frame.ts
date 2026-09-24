@@ -1,9 +1,5 @@
 import { z } from "zod";
-import { luna } from "../luna";
-import type { Env } from "../jev";
-import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS, scaleSeats } from "../pack";
-import { CONTENT_RULE, FRAME_RULES, HISTORIAN, sourceBlock, type GenCtx } from "./prompts";
-import { NeedsRepair, frame as check } from "./validate";
+import { ESCALATION_KEYS, FILLS, FONT_PAIRS, LAYOUTS } from "../pack";
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const id = z.string().regex(/^[a-z0-9_-]+$/);
@@ -128,75 +124,5 @@ export const FrameSchema = z.object({
 });
 export type Frame = z.infer<typeof FrameSchema>;
 
-const SYSTEM = [HISTORIAN, CONTENT_RULE, FRAME_RULES].join("\n");
-
 // One Jev call asks a question per member plus 250 citizens; 72 seats keeps that call under the 64k answer cap.
 export const MAX_CHAMBER = 72;
-
-// Same formula as the prompt's chamber-size rule, enforced in code: the facts sheet's largest body (the chamber
-// itself, not a sub-committee) beats Luna's guess when both are known.
-export function clampChamberSize(realSize: number): number {
-  return Math.min(MAX_CHAMBER, Math.max(24, Math.round(realSize / 8)));
-}
-
-function realChamberSize(facts: GenCtx["facts"]): number | null {
-  const sizes = facts.bodies.map((b) => b.size).filter((n): n is number => n != null && n > 0);
-  return sizes.length ? Math.max(...sizes) : null;
-}
-
-// Rescale factions (largest remainder, same as the prompt asks Luna for), threshold and supermajority to the
-// clamped size so the pack stays internally consistent after the override.
-function clampChamber(f: Frame, size: number): Frame {
-  if (size === f.chamber.size) return f;
-  const ratio = size / f.chamber.size;
-  const seats = scaleSeats(Object.fromEntries(f.factions.map((x) => [x.id, x.seats])), size);
-  const threshold = Math.min(size, Math.max(1, Math.round(f.chamber.threshold * ratio)));
-  const supermajority = Math.min(
-    size,
-    Math.max(threshold + 1, Math.round(f.chamber.supermajority * ratio)),
-  );
-  return {
-    ...f,
-    chamber: { ...f.chamber, size, threshold, supermajority },
-    factions: f.factions.map((x) => ({ ...x, seats: seats[x.id] })),
-  };
-}
-
-// Validate, then clamp. The Astra repair path in build.ts lands here too, so a repaired frame gets the
-// same treatment as one Luna wrote.
-export function settle(
-  f: Frame,
-  facts: GenCtx["facts"],
-  expectStart?: string | null,
-): { frame: Frame; violations: string[] } {
-  const violations = check(f, facts, expectStart);
-  const real = realChamberSize(facts);
-  const size = real != null ? clampChamberSize(real) : Math.min(MAX_CHAMBER, f.chamber.size);
-  return { frame: clampChamber(f, size), violations };
-}
-
-export async function frame(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
-  // The calendar step has already fixed the term from the sheet's anchor, so the model is told the start date
-  // rather than asked for one. Only a scenario with no dated anchor leaves the choice to the model.
-  const cal = ctx.calendar;
-  const user = [
-    sourceBlock(ctx, ctx.facts),
-    cal
-      ? `The term begins on ${cal.start_date} and one turn is one ${cal.unit}. Use exactly that start_date.`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-  let f = await luna(env, FrameSchema, "frame", SYSTEM, user, 9000);
-  const violations = check(f, ctx.facts, cal?.start_date);
-  if (violations.length) {
-    const retry = `${user}\n\nAn earlier attempt returned this pack:\n${JSON.stringify(f)}\n\nValidation found these violations:\n- ${violations.join("\n- ")}\n\nReturn the corrected full pack. Keep everything else the same.`;
-    f = await luna(env, FrameSchema, "frame", SYSTEM, retry, 9000);
-  }
-  const settled = settle(f, ctx.facts, cal?.start_date);
-  if (settled.violations.length) throw new NeedsRepair(settled.violations, JSON.stringify(f));
-  return {
-    frame: settled.frame,
-    calendar: cal ?? { start_date: settled.frame.start_date, unit: "week" },
-  };
-}

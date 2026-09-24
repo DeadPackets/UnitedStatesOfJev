@@ -3,6 +3,7 @@ import { mkFacts, mkFrame } from "./fixture";
 import type { GenCtx } from "./prompts";
 
 let rename: string | null = "Ossin Venn";
+let hates: { tag: string; red_line: boolean }[] = [{ tag: "Bribes", red_line: true }];
 const seen: { must_differ_from?: string[]; rows: { id: string; name: string }[] }[] = [];
 
 mock.module("../luna", () => ({
@@ -17,6 +18,9 @@ mock.module("../luna", () => ({
         core_issues: [req.tags[0]],
         tell: "Taps the bench twice.",
         patrons: [],
+        wants: ["Dock wages"],
+        hates,
+        strike: "Votes against the harbour bill.",
       })),
     };
   },
@@ -75,5 +79,37 @@ describe("membersStep", () => {
     await expect(membersStep({} as never, ctx(["Bella Blue"]))).rejects.toThrow(
       /carries the real name/,
     );
+  });
+});
+
+describe("member glance cards", () => {
+  test.each([
+    [
+      [
+        { tag: "Bribes", red_line: true },
+        { tag: "Harbour tax", red_line: false },
+      ],
+      [
+        { tag: "Bribes", redLine: true },
+        { tag: "Harbour tax", redLine: false },
+      ],
+    ],
+    [
+      [
+        { tag: "Bribes", red_line: true },
+        { tag: "Harbour tax", red_line: true },
+      ],
+      undefined,
+    ],
+    [[{ tag: "Harbour tax", red_line: false }], undefined],
+  ])("hates %j give the member card the hates %j", async (written, shown) => {
+    hates = written;
+    const { members } = await membersStep({} as never, ctx(["Kira Vance"]));
+    expect(members![0].glance?.hates).toEqual(shown);
+    if (shown)
+      expect(members![0].glance).toMatchObject({
+        wants: ["Dock wages"],
+        strike: "Votes against the harbour bill.",
+      });
   });
 });

@@ -54,6 +54,15 @@ export async function putStatus(env: Env, id: string, step: string, fragment?: s
   }
 }
 
+// A readable piece of the world for the build screen. Parallel steps each add theirs; the step column stays as it is.
+export async function putFragment(env: Env, id: string, fragment: Record<string, unknown>) {
+  await env.DB.prepare(
+    "UPDATE scenarios SET fragments = json_insert(COALESCE(fragments, '[]'), '$[#]', json(?)) WHERE id = ?",
+  )
+    .bind(JSON.stringify(fragment), id)
+    .run();
+}
+
 export async function putPack(env: Env, id: string, pack: Pack) {
   await env.DB.prepare(
     "UPDATE scenarios SET status = 'ready', step = 'ready', pack = ? WHERE id = ?",
