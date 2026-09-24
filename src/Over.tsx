@@ -57,7 +57,7 @@ export default function Over({ game, act, busy, onNew }: { game: GameView; act: 
       {r ? (
         <div className="ledger" style={{ "--i": 4 } as any}>
           <div><div className="k">Terms served</div><div className="v num">{game.terms.length}</div></div>
-          <div><div className="k">{v.approval}</div><div className="v"><Num value={Math.round(national(pack, game.ledgers.popularity))} />%</div></div>
+          <div><div className="k">{v.approval}</div><div className="v"><Num value={Math.round(national(pack, game.regions))} />%</div></div>
           <div><div className="k">Best streak</div><div className="v num">{game.bestStreak}</div></div>
         </div>
       ) : null}

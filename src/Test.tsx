@@ -34,7 +34,7 @@ export default function Test({ game, act, busy, onDone }: Props) {
   // 40 s over the whole room, and no faster than one holder can be read
   const beat = n ? Math.min(2400, Math.max(700, 40000 / n)) : 0;
   const REGION_MS = 14000;   // TUNE, the country's own clock inside the walk
-  const mandate = rows.slice(0, shown).reduce((a, r) => a + r.weight * r.stance, 0);
+  const mandate = rows.slice(0, shown).reduce((a, r) => a + (r.weight * r.support) / 100, 0);
 
   useEffect(() => {
     if (!n || done) return;
@@ -113,8 +113,8 @@ export default function Test({ game, act, busy, onDone }: Props) {
         <ul className="causes" aria-label="The room, holder by holder">
           {rows.map((r, i) => (
             <li key={r.id} className={i < shown ? "rise" : "wait"}>
-              <b className="num">{i < shown ? (r.weight * r.stance * 100).toFixed(1) : "·"}</b>
-              <span>{r.name}, {r.counted ? `${r.weight.toFixed(2)} of the room` : "not counted"}{i < shown ? `, at ${Math.round(r.stance * 100)}` : ""}</span>
+              <b className="num">{i < shown ? (r.weight * r.support).toFixed(1) : "·"}</b>
+              <span>{r.name}, {r.counted ? `${r.weight.toFixed(2)} of the room` : "not counted"}{i < shown ? `, at ${Math.round(r.support)}` : ""}</span>
             </li>
           ))}
         </ul>

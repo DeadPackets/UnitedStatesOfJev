@@ -34,11 +34,13 @@ test("the view strips personas, citizens and the deck", () => {
 test("the view carries the room, the instruments and the bar", () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 55 });
   const game: Game = newGame("g-view", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  game.holders.guard.resistance = 50;
+  game.holders.council.support = 33;
   const v = view(pack, { game, prose: {} });
-  expect(v.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league"]);
+  expect(v.holders.map((h) => h.id)).toEqual(["council", "guard", "street", "league", "own"]);
   expect(v.holders.find((h) => h.id === "council")!.weight).toBe(0.4);
-  expect(v.holders.find((h) => h.id === "guard")!.nearest).toBe(true);   // 50 of 55 against 0 of 60, 70 and 50
+  expect(v.holders.find((h) => h.id === "council")!).toMatchObject({ support: 33, line: 32, nearest: true });   // 1 over its line
+  expect(Object.keys(v.ledgers).sort()).toEqual(["authority", "chest", "treasury"]);
+  expect(Object.keys(v.regions)).toHaveLength(pack.regions.length);
   expect(v.instruments.law!.name).toBe("a decree of the council");
   expect(v.instruments.force!.affordable).toBe(true);
   expect(v.bar).toBeCloseTo(0.5, 5);
@@ -54,7 +56,7 @@ test("a pack with no constitution ships the v3 room of chamber and street", () =
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 56 });
   const game: Game = newGame("g-bare", code, bare, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], bare.calendar);
   const v = view(bare, { game, prose: {} });
-  expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street"]);
+  expect(v.holders.map((h) => h.id)).toEqual(["chamber", "street", "own"]);   // R24: loyalty lives on your own side
   expect(Object.keys(v.instruments)).toEqual(["law", "proclaim"]);   // the two doors v3 had, so its screens still work
   expect(v.bar).toBeCloseTo(0.5, 5);
   expect(v.ruler.role).toBe("Consul");     // the start's seat_title, since no constitution names one
@@ -96,10 +98,13 @@ test("create() picks the start by faction id, not array position, when starts ar
   expect(pickStart(shuffled, 99)).toBeUndefined();
 });
 
-test("a game stored before the feed or the v4 ledgers existed still loads", async () => {
+test("a game stored before the feed, the v4 ledgers or R24 existed still loads", async () => {
   const code = encodeCode({ scenario: scenarioTag(pack.id), faction: 0, promises: [0, 1, 2], seed: 7 });
-  const { posts: _none, ledgers, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
-  const old = { ...rest, ledgers: { approval: ledgers.popularity, capital: 40, party: 55, chest: 3 },
+  const { posts: _none, ledgers: _l, regions, holders: _h, ...rest } = newGame("g-old", code, pack, "harborites", ["dockworker-pay", "tariffs", "fish-quotas"], pack.calendar);
+  // A stored holder read the old way: stance 0..1 and resistance against a resistance line.
+  const holders = { guard: { id: "guard", stance: 0.62, resistance: 30, line: 55, response: "coup", weight: 0, warnedAt: null } };
+  const inForce = [{ id: "l1", verb: "law", title: "The levy", perTurn: [], term: 1, turn: 1, repealConsent: "chamber", sunset: null }];
+  const old = { ...rest, holders, inForce, ledgers: { approval: regions, capital: 40, party: 45, chest: 3 },
     stage: "campaign", campaign: { drafts: [], messages: [], turns: [], rival: [], intent: {} } };
   const row = { v: JSON.stringify({ game: old, prose: {} }) };
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => [row] }) } } } as any;
@@ -110,9 +115,13 @@ test("a game stored before the feed or the v4 ledgers existed still loads", asyn
   expect(r.status).toBe(200);
   const v = await r.json() as any;
   expect(v.posts).toEqual([]);
-  expect(v.ledgers.authority).toBe(40);
-  expect(v.ledgers.loyalty).toBe(55);
-  expect(v.ledgers.treasury).toBe(0);
+  expect(v.ledgers).toEqual({ treasury: 0, authority: 40, chest: 3 });
+  expect(v.regions).toEqual(regions);                                         // popularity is the public's regions
+  const holder = (id: string) => v.holders.find((h: { id: string }) => h.id === id);
+  expect(holder("own").support).toBe(45);                                     // loyalty is your own side's support
+  expect(holder("guard")).toMatchObject({ support: 62, line: 40 });           // stance 0.62 is support 62
+  expect(holder("council").support).toBe(41.7);                               // the chamber counts its seats
+  expect(v.inForce[0].repealVetoes).toEqual(["chamber"]);                     // R29: repealConsent is now repealVetoes
   expect(v.stage).toBe("test");
   expect("campaign" in v).toBe(false);
 });
@@ -251,7 +260,7 @@ test("the midterm swaps the seats it lost and ships the new members in the view"
   await playTo(post, game, 10);
   expect(game.stage).toBe("midterm");
   // A tanked ledger settles the draw before the roll: the government's seats fall, the opposition's hold.
-  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
+  for (const r of pack.regions) game.regions[r.id] = -999;
   const before = current().members.map((m) => m.id);
 
   const r = await post("midterm", { turn: 11 });
@@ -281,7 +290,7 @@ test("a midterm that is not a wipeout hands the chamber back to the session", as
   const { game, background, post } = seatedGame(9);
   game.stage = "midterm";
   game.marks.midterm = ["seat-01", "seat-11", "seat-12", "seat-13", "seat-19", "seat-20"];   // one government seat in six
-  for (const r of pack.regions) game.ledgers.popularity[r.id] = -999;
+  for (const r of pack.regions) game.regions[r.id] = -999;
 
   const { status, body } = await post("midterm", { turn: game.turn });
   expect(status).toBe(200);
@@ -458,24 +467,41 @@ test("a card on the desk holds the boundary", async () => {
   expect(r.body.error).toContain("card");
 });
 
-test("the test reads each holder in its own Jev call, and an early test names its caller", async () => {
+test("a card may be declined with no clerk's time and no act; a relief card may not (R33)", async () => {
+  stubModels(0.9);
+  const { game, post } = seatedGame(24);
+  game.events.push({ id: "gen-01", turn: 1, relief: false, kind: "crisis", stances: ["Hold", "Pay"] });
+  const r = await post("events/0/decline", { turn: 1 });
+  expect(r.status).toBe(200);
+  expect(r.body.events[0]).toMatchObject({ stance: -1, declined: true });
+  expect([game.calls, game.acts.length]).toEqual([0, 0]);
+  expect((await post("events/0/decline", { turn: 1 })).status).toBe(409);
+  game.events.push({ id: "relief-x", turn: 1, relief: true, kind: "relief", stances: ["Take it"] });
+  expect((await post("events/1/decline", { turn: 1 })).status).toBe(409);
+});
+
+test("the final vote reads the support on the board and calls no model; an early test names its caller", async () => {
   for (const early of [undefined, "guard"]) {
     stubModels(0.9);
-    const sizes: number[] = [];
+    let questions = 0;
     const stub = globalThis.fetch;
     globalThis.fetch = (async (url: string, init: RequestInit) => {
-      const q = JSON.parse(String(init.body)).questions;
-      if (q) sizes.push(Object.keys(q).length);
+      if (JSON.parse(String(init.body)).questions) questions++;
       return stub(url, init);
     }) as unknown as typeof fetch;
     const { game, post } = seatedGame(23);
     game.stage = "test";
     game.earlyTest = early;
+    game.holders.council.support = 100;
     const r = await post("test", {});
     expect(r.status).toBe(200);
-    expect(sizes.sort((a, b) => a - b)).toEqual([1, 1, pack.chamber.size, 50]);   // guard, league, council, street sample
+    expect(questions).toBe(0);
     if (early) expect([r.body.stage, r.body.test, r.body.result]).toEqual(["session", undefined, undefined]);   // survived: the term goes on
-    else expect(r.body.test.holders.length).toBe(4);
+    else {
+      expect(r.body.test.holders.length).toBe(5);
+      const street = r.body.test.holders.find((h: { id: string }) => h.id === "street");
+      expect(r.body.test.mandate).toBeCloseTo(0.4 + (0.6 * street.support) / 100, 5);
+    }
   }
 });
 
@@ -539,24 +565,123 @@ test("price then commit moves the ledgers once, and a second commit has nothing 
   expect((await post("acts", { turn: 1 })).status).toBe(409);
 });
 
-test("committing a law tables it, counts the whip once and prints the band", async () => {
+test("pricing a law counts the whip and previews the vote; the vote agrees with it", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(62);
   lawTag = true;
-  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
+  const priced = await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
+  expect(game.calls).toBe(2);                       // R30: the price call and the whip count, both at price
+  const p = priced.body.tag.preview;
+  expect(p.need).toBe(pack.chamber.supermajority);  // the stub answers the filibuster at 0.9
+  expect(p.factions.reduce((a: number, f: any) => a + f.for + f.against + f.hesitant, 0)).toBe(game.members.length);
   const r = await post("acts", { turn: 1 });
   lawTag = false;
   expect(r.status).toBe(200);
+  expect(game.calls).toBe(2);                       // signing a counted law spends no clerk time
   expect(r.body.bills).toHaveLength(1);
-  expect(r.body.bills[0].needed).toBe(pack.chamber.supermajority);   // the stub answers the filibuster at 0.9
+  expect(r.body.bills[0].expected).toBe(p.expected);
   expect(r.body.bills[0].band[0]).toBeLessThanOrEqual(r.body.bills[0].expected);
   expect(r.body.bills[0].band[1]).toBeGreaterThanOrEqual(r.body.bills[0].expected);
-  expect(game.calls).toBe(2);                       // one for the price call, one for the whip count
   expect((await post("bills", { turn: 1, text: "anything at all here" })).status).toBe(404);
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(200);
   const authority = game.ledgers.authority;
   expect((await post("bills/1/vote", { turn: 1 })).status).toBe(409);   // a decided bill is never voted twice
   expect(game.ledgers.authority).toBe(authority);
+});
+
+for (const mood of [1, -1]) {
+  test(`with every seat sure (mood ${mood}) the vote is exactly the preview's for`, async () => {
+    stubModels(0.9);
+    const { game, post } = seatedGame(65);
+    for (const m of game.members) { m.mood = mood; m.loyalty = 100; }
+    lawTag = true;
+    const p = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview;
+    await post("acts", { turn: 1 });
+    lawTag = false;
+    expect(p.for).toBe(mood > 0 ? game.members.length : 0);
+    expect((await post("bills/1/vote", { turn: 1 })).body.bills[0].yes).toBe(p.for);
+  });
+}
+
+test("the preview follows a seat moved after pricing, so it still matches the vote", async () => {
+  stubModels(0.9);
+  const { game, post, view } = seatedGame(65);
+  for (const m of game.members) { m.mood = -1; m.loyalty = 100; }
+  lawTag = true;
+  expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview.for).toBe(0);
+  for (const m of game.members) m.mood = 1;   // as a card's seat mark would, before the act is signed
+  const shown = (view() as any).tag.preview.for;
+  await post("acts", { turn: 1 });
+  lawTag = false;
+  expect(shown).toBe(game.members.length);
+  expect((await post("bills/1/vote", { turn: 1 })).body.bills[0].yes).toBe(shown);
+});
+
+// R30: every seat at 0.5 hesitates; a term pays, spends one clerk unit and lifts the faction's seats over the for line.
+const tideCard = {
+  base: "Net-owners of the outer reefs", redLine: "Closing the reef", redMatch: [],
+  wants: [{ want: "Toll relief", yes: ["Cut the harbour tolls"], no: ["Raise the harbour tolls"], match: { yes: ["harbor-tolls"], no: [] } }],
+  price: { takes: "a post", refuses: "nothing" }, face: { name: "Mira Salt", role: "Reef speaker", line: "Cut the tolls." },
+  rival: "harborites", tension: "Wants low tolls, but needs the harbour dredged.",
+};
+for (const [term, paid] of [
+  ["pledge", (g: Game) => g.promises["harbor-tolls"]?.state === "pending" && g.promises["harbor-tolls"].window === g.turn + 4],
+  ["post", (g: Game) => g.inForce.some((l) => l.id === "appoint-tidebound")],
+  ["money", (g: Game, chest: number) => g.ledgers.chest === chest - 12],   // 2 a seat for 6 hesitant seats
+] as [string, (g: Game, chest: number) => boolean][]) {
+  test(`negotiating a ${term} with a hesitant faction moves its seats to for`, async () => {
+    stubModels(0.9);
+    const { do_, game, post } = seatedGame(67);
+    do_.pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card: tideCard } : f)) };
+    for (const m of game.members) { m.mood = -0.4; m.loyalty = 100; }
+    lawTag = true;
+    const row = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+    lawTag = false;
+    expect(row.hesitant).toBe(6);
+    const [calls, chest] = [game.calls, game.ledgers.chest];
+    const r = await post("acts/negotiate", { turn: 1, faction: "tidebound", term });
+    expect(r.status).toBe(200);
+    expect(game.calls).toBe(calls + 1);
+    expect(paid(game, chest)).toBe(true);
+    expect(r.body.tag.preview.factions.find((f: any) => f.id === "tidebound")).toMatchObject({ for: 6, hesitant: 0 });
+    expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term })).status).toBe(409);   // once an act
+  });
+}
+
+const priceHesitant = async (card: typeof tideCard, text = "Raise the harbour levy on the wharf.") => {
+  stubModels(0.9);
+  const { do_, game, post } = seatedGame(67);
+  do_.pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card } : f)) };
+  for (const m of game.members) { m.mood = -0.4; m.loyalty = 100; }
+  lawTag = true;
+  const row = (await post("acts/price", { turn: 1, text })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+  lawTag = false;
+  return { do_, game, post, row };
+};
+
+test("a term taken on this turn's law survives re-pricing it: charged once, the lift kept", async () => {
+  const { game, post } = await priceHesitant(tideCard);
+  const chest = game.ledgers.chest;
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "money" })).status).toBe(200);
+  lawTag = true;
+  const row = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf, and say so." })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+  lawTag = false;
+  expect(game.ledgers.chest).toBe(chest - 12);
+  expect(row).toMatchObject({ for: 6, hesitant: 0 });
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "money" })).status).toBe(409);
+});
+
+test("a post is not offered while the appointment's veto holder refuses", async () => {
+  const { do_, game, post } = await priceHesitant(tideCard);
+  const c = do_.pack.constitution;
+  do_.pack = { ...do_.pack, constitution: { ...c, instruments: { ...c.instruments, appoint: { ...c.instruments.appoint, vetoes: ["guard"] } } } };
+  game.holders.guard.support = game.holders.guard.line - 1;
+  expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term: "post" })).status).toBe(409);
+});
+
+test("a faction whose card refuses payment is never offered money", async () => {
+  const { row } = await priceHesitant({ ...tideCard, price: { takes: "a post", refuses: "Payment of any kind" } });
+  expect(row.terms.map((t: { kind: string }) => t.kind)).toEqual(["pledge", "post"]);
 });
 
 test("a favour names a seat, and a body that names none is a 400", async () => {
@@ -573,8 +698,10 @@ test("a favour names a seat, and a body that names none is a 400", async () => {
 test("force is refused while the army will not carry it", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(64);
-  game.holders.guard.stance = 0.2;
-  expect((await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." })).status).toBe(400);
+  game.holders.guard.support = 20;
+  const r = await post("acts/price", { turn: 1, verb: "force", text: "Turn the watch out on the north quay." });
+  expect(r.status).toBe(409);
+  expect(r.body.error).toContain("will not agree");
 });
 
 test("another term comes with two cards the last term never saw", async () => {
@@ -613,11 +740,12 @@ test("the holders an act moved are read again before the turn ends", async () =>
   const { game, post } = seatedGame(68);
   expect((await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status).toBe(200);
   await post("acts", { turn: 1 });               // serves guard, hits league, bypasses the council
-  expect(game.holders.league.stance).toBe(0.5);
+  expect(game.holders.league.support).toBe(42);
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.stance).toBeCloseTo(0.9, 5);   // the stub answers 0.9 to every stance question
-  expect(game.holders.street.stance).toBe(0.5);             // the street never moved, so it was never asked
+  expect(game.holders.league.support).toBe(45);             // Jev reads 90, and the re-read moves it at most 3 (R33)
+  const read = r.body.wire.filter((w: { cause: string }) => w.cause === "read again at the turn's end").map((w: { id: string }) => w.id);
+  expect(read).not.toContain("street");                     // the street never moved, so it was never asked
   expect(game.turn).toBe(2);
 });
 
@@ -629,7 +757,7 @@ test("the read never spends more than the turn has left", async () => {
   game.calls = 6;
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.stance).toBe(0.5);             // nothing left to spend, so nothing was asked
+  expect(game.holders.league.support).toBe(42);             // nothing left to spend, so nothing was asked
 });
 
 test("last turn's wire moves no holder into this turn's read", async () => {
@@ -638,10 +766,10 @@ test("last turn's wire moves no holder into this turn's read", async () => {
   await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." });
   await post("acts", { turn: 1 });
   await post("turn/end", { turn: 1 });
-  game.holders.league.stance = 0.5;
+  game.holders.league.support = 50;
   game.events = [];
   expect((await post("turn/end", { turn: 2 })).status).toBe(200);
-  expect(game.holders.league.stance).toBe(0.5);
+  expect(game.holders.league.support).toBe(50);
 });
 
 test("the clerks stop at six calls a turn, whichever route asks", async () => {
@@ -713,6 +841,7 @@ test("a game saved before the daily existed loads as free play with an empty log
   const ctx = { storage: { sql: { exec: () => ({ toArray: () => rows }) } } };
   const do_ = new (GameDO as any)(ctx, {});
   do_.ctx = ctx;
+  do_.pack = pack;
   const loaded = await do_.load();
   expect(loaded.game.mode).toBe("free");
   expect(loaded.game.day).toBeNull();

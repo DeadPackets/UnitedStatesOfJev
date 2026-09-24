@@ -145,10 +145,10 @@ test("the oath waits until every page has been shown, in any order", () => {
 
 test("the mandate is the weighted sum over the counted holders only", () => {
   const holders = [
-    { id: "senate", weight: 0.3, stance: 0.6 },
-    { id: "plebs", weight: 0.5, stance: 0.4 },
-    { id: "patricians", weight: 0.2, stance: 0.8 },
-    { id: "legions", weight: 0, stance: 0.1 },
+    { id: "senate", weight: 0.3, support: 60 },
+    { id: "plebs", weight: 0.5, support: 40 },
+    { id: "patricians", weight: 0.2, support: 80 },
+    { id: "legions", weight: 0, support: 10 },
   ];
   expect(mandateOf(holders)).toBeCloseTo(0.54, 5);
   expect(mandateOf([])).toBe(0);

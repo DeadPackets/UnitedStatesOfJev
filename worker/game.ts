@@ -4,7 +4,8 @@ import {
   earlyTest, effectiveWhip, encodeCode, endTerm, endTurn, expectedYes, LOBBY_COSTS, lobbyCost, nationalPopularity,
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
-  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, foreignStorylet, type PriceTag,
+  pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, declineEvent, foreignStorylet, moveSupport, publicHolder,
+  REREAD_MAX, seedHolders, actTokens, type PriceTag, type WhipCount,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -13,9 +14,9 @@ import {
   voteState, whipQuestions, whipState, type Env,
 } from "./jev";
 import { endPlay, getScenario } from "./db";
-import { packView, VERBS, type Citizen, type Pack, type Verb } from "./pack";
+import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, commit, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, billOf, blocker, commit, keepDeals, negotiate, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -29,7 +30,6 @@ export function pickStart(pack: Pack, f: number) {
 
 type Prose = { ending?: { title: string; body: string } };
 type Saved = { game: Game; prose: Prose };
-type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 type Amendment = BillDraft & { expected: number; count: WhipCount };
 // Per-region approval move from the citizen call, for the map animation. Not persisted: it is one frame.
 type Extra = { deltas?: Record<string, number>; usage?: { tokens: number; cost: number; calls: number; worst: number } };
@@ -64,7 +64,9 @@ export class GameDO extends DurableObject<Env> {
         switch (parts[0]) {
           case "bills": extra = await this.bill(game, pack, parts, body); break;
           case "acts": extra = await this.acts(game, pack, parts, body); break;
-          case "events": extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
+          case "events":
+            if (parts[2] === "decline") { this.decline(game, pack, Number(parts[1])); break; }
+            extra = await this.event(game, pack, Number(parts[1]), Number(body.stance)); break;
           case "midterm": await this.midterm(game, pack); break;
           case "test": await this.term(s, pack); break;
           case "turn": if (parts[1] !== "end") throw new Reject(404, "Unknown action"); await this.end(game, pack); break;
@@ -132,7 +134,7 @@ export class GameDO extends DurableObject<Env> {
     const row = this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS game(k TEXT PRIMARY KEY, v TEXT); SELECT v FROM game WHERE k='game'").toArray()[0];
     const saved = row ? JSON.parse(row.v as string) as Saved : null;
     if (!saved?.game) throw new Reject(404, "No such game.");
-    migrate(saved.game);
+    migrate(saved.game, await this.loadPack(saved.game.pack));
     return (this.saved = saved);
   }
 
@@ -190,6 +192,7 @@ export class GameDO extends DurableObject<Env> {
       case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined, body.memberId as string | undefined);
       case "": return this.doAct(game, pack);
       case "withdraw": return this.undoAct(game, pack, String(body.id ?? ""));
+      case "negotiate": return this.deal(game, pack, String(body.faction ?? ""), String(body.term ?? ""));
       default: throw new Reject(404, "Unknown action");
     }
   }
@@ -199,8 +202,9 @@ export class GameDO extends DurableObject<Env> {
     if (!tag) throw new Reject(409, "Nothing is priced.");
     if (tag.verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
+    refuse(pack, game, tag.verb, actTokens(tag));
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
-    if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    if (tag.verb === "law" && !tag.count && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     if (tag.verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
     if (tag.verb === "proclaim" && !spendCalls(game, 2)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     commit(pack, game, tag);
@@ -213,17 +217,32 @@ export class GameDO extends DurableObject<Env> {
         bill.whip[m.id] = r.answers[m.id]?.noul ?? bill.whip[m.id];
       }
     }
-    if (tag.verb === "law") {
+    // A law priced with its whip count is tabled counted; one priced without (no clerk time left then) counts now.
+    if (tag.verb === "law" && !tag.count) {
       const bill = game.bills.at(-1)!;
       Object.assign(bill, await this.count(game, pack, bill));
     }
     return {};
   }
 
+  // R30: a hesitant faction's term on the priced law. It spends clerks' time and calls no model: the terms come from its card.
+  private deal(game: Game, pack: Pack, faction: string, kind: string): Extra {
+    const tag = game.tag;
+    const preview = tag && previewOf(pack, game, tag);
+    if (!tag || !preview) throw new Reject(409, `Price a ${pack.vocabulary.bill} first.`);
+    const row = preview.factions.find((candidate) => candidate.id === faction);
+    const term = row?.terms?.find((offer) => offer.kind === kind);
+    if (!term) throw new Reject(409, "They offer no such terms on this act.");
+    if (!canAfford(pack, game, term.cost)) throw new Reject(402, "There is not enough to pay for that.");
+    if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    negotiate(pack, game, tag, faction, term);
+    return {};
+  }
+
   private undoAct(game: Game, pack: Pack, id: string): Extra {
     const law = game.inForce.find((l) => l.id === id);
     if (!law) throw new Reject(404, "No such act.");
-    if (law.repealConsent !== "none") throw new Reject(409, "That one needs a repeal.");
+    if (law.repealVetoes.length) throw new Reject(409, "That one needs a repeal.");
     if (!canAfford(pack, game, { authority: WITHDRAW_COST, treasury: 0, chest: 0 })) throw new Reject(402, "There is not enough to pay for that.");
     withdraw(pack, game, id);
     return {};
@@ -234,6 +253,7 @@ export class GameDO extends DurableObject<Env> {
     const text = raw.trim().slice(0, 1200);
     if (text.length < 12) throw new Reject(400, "Write a little more.");
     if (verb && !available(pack, game, verb)) throw new Reject(400, "That instrument is not available.");
+    if (verb) refuse(pack, game, verb);
     if (verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
     const seat = memberId ? game.members.find((m) => m.id === memberId) : undefined;
@@ -254,7 +274,14 @@ export class GameDO extends DurableObject<Env> {
       return {};
     }
     game.refusal = null;
-    game.tag = priceTag(pack, game, q, seat?.id ?? null);
+    const tag = priceTag(pack, game, q, seat?.id ?? null);
+    keepDeals(game, tag);
+    // R30: a law is counted at price, so the preview shows before signing; signing then spends no clerk time.
+    if (tag.verb === "law" && spendCalls(game)) {
+      tag.count = await this.count(game, pack, billOf(game, tag));
+      tag.preview = previewOf(pack, game, tag);
+    }
+    game.tag = tag;
     return {};
   }
 
@@ -390,11 +417,21 @@ export class GameDO extends DurableObject<Env> {
     return { deltas: applyCitizens(pack, game, nouls(citizens.answers, "")) };
   }
 
+  // R33: no answer, no clerk's time, no act; only the relief card, which asks nothing, cannot be declined.
+  private decline(game: Game, pack: Pack, i: number) {
+    if (game.stage !== "session" && game.stage !== "midterm") throw new Reject(409, "Not now.");
+    const event = game.events[i];
+    if (!event) throw new Reject(404, "No such card.");
+    if (event.stance !== undefined) throw new Reject(409, "That card is already answered.");
+    if (event.kind === "relief") throw new Reject(409, "There is nothing to decline.");
+    pushWire(game, declineEvent(pack, game, event));
+  }
+
   // §8: one call per holder, each with that holder's own numbers, and only the ones this turn moved.
   private async readHolders(game: Game, pack: Pack) {
     // The wire still holds last turn's tick until this turn's first push.
     const wire = game.wireTurn === game.turn ? game.wire : [];
-    const moved = new Set(wire.filter((w) => w.kind === "resistance" && w.id).map((w) => w.id!));
+    const moved = new Set(wire.filter((w) => w.kind === "support" && w.id).map((w) => w.id!));
     const rows = holdersOf(pack).filter((h) => moved.has(h.id)).slice(0, callsLeft(game));
     if (!rows.length) return;
     spendCalls(game, rows.length);
@@ -406,7 +443,11 @@ export class GameDO extends DurableObject<Env> {
       const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, sample));
       return [h.id, holderStance(pack, h, r.answers)] as const;
     }));
-    for (const [id, s] of reads) if (game.holders[id]) game.holders[id].stance = clamp(s, 0, 1);
+    // R33: a nudge toward Jev's read, at most 3 either way, never an overwrite (the chamber still moves in whole seats).
+    for (const [id, s] of reads) {
+      const h = game.holders[id];
+      if (h) pushWire(game, moveSupport(pack, game, [id], clamp(clamp(s, 0, 1) * 100 - h.support, -REREAD_MAX, REREAD_MAX), "read again at the turn's end"));
+    }
   }
 
   private async end(game: Game, pack: Pack) {
@@ -427,19 +468,8 @@ export class GameDO extends DurableObject<Env> {
   private async term(s: Saved, pack: Pack) {
     const { game } = s;
     if (game.stage !== "test") throw new Reject(409, `The ${pack.vocabulary.test} is not due yet.`);
-    const hs = holdersOf(pack);
-    // One call per holder, each with that holder's own numbers: the v3 single call measured 93% of the cap.
-    const reads = await Promise.all(hs.map(async (h) => {
-      const rows = {
-        seats: h.members === "seats" ? game.members : [],
-        citizens: h.members === "citizens" ? streetSample(game, pack.citizens, HOLDER_SAMPLE) : [],
-      };
-      const r = await jev(this.env, holderState(pack, game, h), holderQuestions(pack, game, h, rows));
-      return [h.id, holderStance(pack, h, r.answers)] as const;
-    }));
-    const stances = Object.fromEntries(reads);
-    const result = game.earlyTest ? earlyTest(pack, game, game.earlyTest, stances) : runTest(pack, game, stances);
-    endTerm(pack, game, result);
+    // R24: the final vote is the support each group already shows, so it calls no model.
+    endTerm(pack, game, game.earlyTest ? earlyTest(pack, game, game.earlyTest) : runTest(pack, game));
   }
 
   // Luna's last page, written once: after the test, and after a term impeachment or a lame duck cuts short.
@@ -455,12 +485,24 @@ export class GameDO extends DurableObject<Env> {
   }
 }
 
-// Every v3 save reaches v4 through here: the four old ledgers become five.
-export function migrate(game: Game): void {
+// Every v3 save reaches v4 through here: the four old ledgers become five, and R24 makes the five three.
+export function migrate(game: Game, pack: Pack): void {
   const g = game as unknown as Record<string, unknown>;
-  const L = g.ledgers as Record<string, unknown>;
+  let L = g.ledgers as Record<string, unknown>;
   if (L && L.capital !== undefined) {
-    g.ledgers = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
+    L = { treasury: 0, authority: L.capital, chest: L.chest, loyalty: L.party, popularity: L.approval };
+  }
+  // R24: popularity becomes the public group's regions, loyalty your own group's support, stance 0..1 support 0..100.
+  if (L && (L.loyalty !== undefined || L.popularity !== undefined)) {
+    game.ledgers = { treasury: Number(L.treasury ?? 0), authority: Number(L.authority ?? 0), chest: Number(L.chest ?? 0) };
+    game.regions = (L.popularity as Record<string, number>) ?? {};
+    const seeded = seedHolders(pack, game, Number(L.loyalty ?? 50));
+    const old = (game.holders ?? {}) as Record<string, { stance?: number; warnedAt?: number | null }>;
+    const kept = (h: Holder) => h.members !== "seats" && h.id !== publicHolder(pack)?.id && old[h.id]?.stance !== undefined;
+    game.holders = Object.fromEntries(holdersOf(pack).map((h) => [h.id, {
+      ...seeded[h.id], ...(kept(h) ? { support: Math.round(old[h.id].stance! * 100) } : {}),
+    }]));
+    game.warnings = [];   // a warning over resistance is not a warning under support
   }
   // The campaign stage is gone: a save caught in it goes to the test it was heading for.
   if (g.stage === "campaign") { game.stage = "test"; delete g.campaign; }
@@ -470,6 +512,12 @@ export function migrate(game: Game): void {
   game.holders ??= {};
   game.warnings ??= [];
   game.inForce ??= [];
+  // R29: a row saved with repealConsent names the chamber or no one; "army" was never written on a repeal.
+  for (const law of game.inForce as (typeof game.inForce[number] & { repealConsent?: string })[]) {
+    const consent = law.repealConsent;
+    law.repealVetoes ??= consent && consent !== "none" ? [consent] : [];
+    delete law.repealConsent;
+  }
   game.wire ??= [];
   game.pending ??= null;
   game.tag ??= null;
@@ -519,19 +567,23 @@ const room = (pack: Pack, game: Game): HolderView[] => {
   return holdersOf(pack).map((h) => {
     const s = game.holders[h.id];
     return {
-      id: h.id, name: h.name, where: h.where, stance: s?.stance ?? h.stance, resistance: s?.resistance ?? 0,
-      line: s?.line ?? h.line, response: s?.response ?? h.response, weight: s?.weight ?? weightOf(pack, h.id),
+      id: h.id, name: h.name, where: h.where, support: s?.support ?? 50, line: s?.line ?? h.line, response: s?.response ?? h.response, weight: s?.weight ?? weightOf(pack, h.id),
       levers: h.levers, warnedAt: s?.warnedAt ?? null, nearest: h.id === near,
       persona: { name: h.persona.name, role: h.persona.role },
     };
   });
 };
 
+const refuse = (pack: Pack, game: Game, verb: Verb, tokens?: Set<string>) => {
+  const refusing = blocker(pack, game, verb, tokens);
+  if (refusing) throw new Reject(409, `${refusing.name} will not agree: ${refusing.reason}.`);
+};
+
 const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, InstrumentView>> => {
   const out: Partial<Record<Verb, InstrumentView>> = {};
   for (const v of VERBS) {
     const i = instrumentOf(pack, v);
-    if (i) out[v] = { ...i, affordable: available(pack, game, v) && canAfford(pack, game, i.price) };
+    if (i) out[v] = { ...i, affordable: available(pack, game, v) && !blocker(pack, game, v) && canAfford(pack, game, i.price) };
   }
   return out;
 };
@@ -543,6 +595,8 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
   const start = pack.starts.find((x) => x.faction === game.faction);
   return {
     ...rest, ...extra,
+    // Recounted on every read: a card answered after pricing can move seats, and the preview must match the draw.
+    tag: game.tag?.count ? { ...game.tag, preview: previewOf(pack, game, game.tag) } : game.tag,
     // R22 and the share grid are read off the run log, because five places write game.result and none of them own this.
     ...(game.result ? { result: { ...game.result, ...runStyle(pack, game) } } : {}),
     scenario: game.pack, pack: pv,

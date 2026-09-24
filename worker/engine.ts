@@ -1,4 +1,4 @@
-import type { Consent, Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
+import type { Card, Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -24,22 +24,27 @@ export interface Bill extends BillDraft {
   passed?: boolean; struck?: boolean; vetoed?: boolean;
   headline?: { title: string; lede: string }; quotes?: { name: string; text: string }[];
   rates?: InForce["perTurn"]; keeps?: string[]; sunset?: number | null;   // the price tag's, applied on a pass
+  shift?: Record<string, number>;   // R30: per chamber faction, added to each seat's chance: its card, then negotiated terms
 }
+export type WhipCount = Pick<Bill, "whip" | "blocs" | "patrons" | "filibuster" | "constitutional" | "vetoes">;
 export interface Event {
   id: string; turn: number; relief: boolean; stances: string[];
   kind?: "crisis" | "relief" | "foreign" | "swan";
   holder?: string;
   card?: { title: string; body: string; stances: string[] };
   stance?: number; scores?: Record<string, number>; outcome?: string;
+  declined?: boolean;   // R33: closed with no answer; stance is -1
 }
-export interface HolderRow { id: string; name: string; weight: number; stance: number; counted: boolean }
+export interface HolderRow { id: string; name: string; weight: number; support: number; counted: boolean }
 export interface TestResult {
   mandate: number; bar: number; won: boolean; holders: HolderRow[]; early?: string;
   seats: { id: string; p: number; yes: boolean }[];
   regions: { id: string; weight: number; p: number; yes: boolean }[];
 }
+// R24: one number per group, support 0 to 100, and a line: under the line it warns, two turns later it strikes.
+// The public group's support is its regions' weighted mean; the chamber's is its share of seats backing the ruler.
 export interface HolderState {
-  id: string; stance: number; resistance: number; line: number;
+  id: string; support: number; line: number;
   response: HolderResponse; weight: number; warnedAt: number | null;
 }
 export interface Warning { holder: string; response: HolderResponse; at: number; fires: number; number: number }
@@ -71,8 +76,13 @@ export interface PriceTag {
   member: string | null;   // the seat a favour is aimed at; code picks it from the body, never Luna
   promises: { tag: string; label: string; window: number }[];
   sunset: number | null; template: ActTemplate | null;
-  stances: { id: string; name: string; stance: number; resistance: number; line: number }[];
+  stances: { id: string; name: string; support: number; line: number; reason?: string }[];
+  vetoes?: Veto[];
+  // R30, a law only: the whip count taken at price, each faction's shift, and the preview they give.
+  count?: WhipCount; shift?: Record<string, number>; preview?: Preview | null;
+  negotiated?: string[];   // the factions that already took terms on this act
 }
+export interface Veto { id: string; name: string; agrees: boolean; reason: string }
 export interface Refusal { line: string; test: "power" | "era"; cost: number }
 export interface Act {
   term: number; turn: number; verb: Verb; title: string; reading: string; credibility: number; charge: Price;
@@ -84,7 +94,8 @@ export interface Game {
   id: string; code: string; pack: string; faction: string; seed: number; calendar: Calendar;
   term: number; turn: number; stage: "session" | "midterm" | "test" | "won" | "over";
   phase: "draft" | "whip" | "over";
-  ledgers: { treasury: number; authority: number; chest: number; loyalty: number; popularity: Record<string, number> };
+  ledgers: Record<Resource, number>;
+  regions: Record<string, number>;   // R24: the public group's support by region
   patrons: Record<string, number>;   // -2..2
   blocs: Record<string, number>;     // last measured approval 0..1, the Director's prerequisites read it
   holders: Record<string, HolderState>;
@@ -105,6 +116,7 @@ export interface Game {
   wire: WireLine[];   // this turn's lines
   pending: string | null;
   tag: PriceTag | null;
+  deals?: { term: number; turn: number; factions: string[] };   // R30: the factions that took terms on this turn's law
   refusal: Refusal | null;
   acts: Act[];
   rival: RivalMove | null;
@@ -122,12 +134,14 @@ export interface Game {
   result?: { ending: Ending; score: number };
 }
 
-// kind says what moved (planning brief ruling 7): a resistance move has no ledger, so Stage C's wire reads
-// kind, never a borrowed ledger name.
-export interface WireLine { kind: "ledger" | "resistance" | "promise" | "card"; ledger?: LedgerV4; id?: string | null; delta: number; cause: string }
+// kind says what moved: a resource (ledger) or a group's support (id, plus region for the public group). A
+// support line on the public group or your own also names popularity or loyalty: the hue the share grid prints.
+export interface WireLine { kind: "ledger" | "support" | "promise" | "card"; ledger?: LedgerV4; id?: string | null; region?: string; delta: number; cause: string }
 
-// Spec §4. The pack may move a line; these are the defaults the generator is told to use.
-export const LEDGER_LINES: Record<LedgerV4, number> = { treasury: 0, authority: 0, chest: 0, loyalty: 20, popularity: 30 };   // TUNE
+// R24: three resources remain; loyalty and popularity are groups' support now.
+export const RESOURCES = ["treasury", "authority", "chest"] as const;
+export type Resource = (typeof RESOURCES)[number];
+export const LEDGER_LINES: Record<Resource, number> = { treasury: 0, authority: 0, chest: 0 };   // TUNE
 // TUNE: treasury matches the 40 authority a start holds (four levies deep); chest is one turn's patron cap, ten notices at 2
 export const TREASURY_START = 40;
 export const CHEST_START = 20;
@@ -142,16 +156,11 @@ export const PROMISE_LOYALTY = 5;    // TUNE, §4: a promise kept
 export const FAVOUR_REPAID = 1;      // TUNE, §4: a favour repaid
 export const CHEST_CAP = 20;         // TUNE, §4: the patrons' payout, capped a turn
 
-export const ledgerLine = (pack: Pack, l: LedgerV4): number => pack.constitution?.ledgers[l].line ?? LEDGER_LINES[l];
+export const ledgerLine = (pack: Pack, l: Resource): number => pack.constitution?.ledgers[l].line ?? LEDGER_LINES[l];
 
-export function ledgerValue(pack: Pack, game: Game, l: LedgerV4): number {
-  return l === "popularity" ? nationalPopularity(pack, game) : game.ledgers[l];
-}
-
-export function belowLine(pack: Pack, game: Game): LedgerV4[] {
-  // LEDGER_LINES keeps LEDGERS_V4's order; a value import of ./pack here cycles through TEMPERAMENTS.
-  return (Object.keys(LEDGER_LINES) as LedgerV4[]).filter((l) => {
-    const v = ledgerValue(pack, game, l), line = ledgerLine(pack, l);
+export function belowLine(pack: Pack, game: Game): Resource[] {
+  return RESOURCES.filter((l) => {
+    const v = game.ledgers[l], line = ledgerLine(pack, l);
     return line > 0 ? v < line : v <= 0;   // §4: a raised line fails under it, a 0 line fails at 0
   });
 }
@@ -172,11 +181,14 @@ export function pay(_pack: Pack, game: Game, price: Price, cause: string): WireL
 }
 
 export const TURNS_PER_TERM = 20;
-export const RESIST_BYPASS = 12;   // TUNE, C2: an act a holder could have stopped
-export const RESIST_HIT = 8;       // TUNE, C2: an act that costs a holder something
-export const RESIST_SERVE = 10;    // TUNE, C2: a favour or a service
-export const RESIST_DECAY = 1;     // TUNE, C2: a turn, toward 0
-export const RESIST_CARRY = 0.5;   // TUNE, R21: what a new term inherits
+// R24: C2's resistance numbers, now support lost or won. Resistance decayed 1 a turn; support does not decay,
+// and R33's End turn re-read is what drifts it.
+export const SUPPORT_BYPASS = 12;   // TUNE: an act a holder could have stopped
+export const SUPPORT_HIT = 8;       // TUNE: an act that costs a holder something
+export const SUPPORT_SERVE = 10;    // TUNE: a favour or a service
+// A pack from before R24 set a resistance line L on a stance near 0.5: its support line is 100 - L, kept at
+// least this far under the day-one support so no old holder opens warning.
+export const LEGACY_ROOM = 10;      // TUNE
 
 export const JEV_CALLS = 6;       // TUNE, C5: the seventh act waits for the next turn
 export const REFUSAL_COST = 1;    // TUNE, R8
@@ -198,10 +210,13 @@ export function pushWire(game: Game, lines: WireLine[]): void {
   game.wire = [...game.wire, ...lines];
 }
 export const WARN_TURNS = 2;   // TUNE, R4
-export const RIOT_HIT = 8;         // TUNE, popularity in every region
+export const IDLE_COST = 2;        // R33: End turn with no act signed
+export const REREAD_MAX = 3;       // R33: how far End turn's re-read may move a group an act moved
+export const DECLINE_COST = 3;     // R33: declining a card, with the group its answers would please most
+export const RIOT_HIT = 8;         // TUNE, R33: public support in every region
 export const LEVY_HIT = 10;        // TUNE, treasury
 export const EMBARGO_HIT = 8;      // TUNE, treasury
-export const EXCOMMUNICATE_HIT = 25;   // TUNE, loyalty
+export const EXCOMMUNICATE_HIT = 25;   // TUNE, R33: support on your own side
 export const STRIKE_HIT = 3;       // TUNE, authority when a law is struck
 export const LOBBY_COSTS = { pork: 10, favor: 15, threat: 20 } as const;
 export type LobbyAction = keyof typeof LOBBY_COSTS;
@@ -259,14 +274,11 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
   const game: Game = {
     id, code, pack: pack.id, faction: start.faction, seed: c.seed, calendar,
     term: 1, turn: 1, stage: "session", phase: "draft",
-    ledgers: {
-      treasury: TREASURY_START,
-      authority: start.capital, chest: CHEST_START, loyalty: start.party,
-      popularity: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
-    },
+    ledgers: { treasury: TREASURY_START, authority: start.capital, chest: CHEST_START },
+    regions: Object.fromEntries(pack.regions.map((g) => [g.id, clamp(Math.round(50 + leanOf(pack, g.id, start.faction) * 15 + (r() - 0.5) * 6), 20, 80)])),
     patrons: Object.fromEntries(pack.patrons.map((p) => [p.id, 0])),
     blocs: Object.fromEntries(pack.blocs.map((b) => [b.id, 0.5])),
-    holders: seedHolders(pack),
+    holders: {},
     warnings: [],
     inForce: [],
     promises: Object.fromEntries(promises.map((t) => [t, {
@@ -282,6 +294,7 @@ export function newGame(id: string, code: string, pack: Pack, faction: string, p
     tag: null, refusal: null, acts: [], rival: null,
     calls: 0, swing: 0, quiet: 0, drift: {}, media: 0, trust: 1, emergency: null, extra: [], wireTurn: 1,
   };
+  game.holders = seedHolders(pack, game, start.party);
   // §6: a start that needs more than HANDICAP_SHORTFALL seats it does not hold opens with less authority.
   if (shortfall(pack, start.faction) > HANDICAP_SHORTFALL) {
     game.ledgers.authority = clamp(game.ledgers.authority - HANDICAP, 0, 200);
@@ -300,38 +313,83 @@ const v3Room = (pack: Pack): Holder[] => (["seats", "citizens"] as const).map((m
     members, stance: 0.5, line: 100, response: "none", levers: [], wants: [], redLines: [], gives: null, responses: [],
   };
 });
-export const holdersOf = (pack: Pack): Holder[] => pack.constitution?.holders ?? v3Room(pack);
+// R24: loyalty is your own group's support. A pack that names no own group gets one, so the loyalty a v3 or
+// early v4 pack played with still has a home; its line is the old loyalty line.
+export const OWN = "own";
+const ownOf = (pack: Pack): Holder => {
+  const f = pack.factions.find((x) => x.id === pack.constitution?.ruler.faction);
+  const name = f?.name ?? "your own side";
+  return {
+    id: OWN, name, where: "home", persona: { name: f?.leader ?? name, role: "leader of your own side", bio: "", tell: "" },
+    members: "none", stance: 0.5, support: 50, line: pack.constitution?.ledgers.loyalty?.line ?? 20, response: "none",
+    levers: [], wants: [], redLines: [], gives: null, responses: [],
+  };
+};
+export const holdersOf = (pack: Pack): Holder[] => {
+  const hs = pack.constitution?.holders ?? v3Room(pack);
+  const own = pack.constitution?.ownGroup;
+  return own && hs.some((h) => h.id === own) ? hs : [...hs, ownOf(pack)];
+};
 export const weightOf = (pack: Pack, id: string): number => pack.constitution
   ? pack.constitution.retention.weights.find((w) => w.id === id)?.value ?? 0
   : id === "chamber" ? 1 - pack.chamber.alpha : id === "street" ? pack.chamber.alpha : 0;
+export const publicHolder = (pack: Pack): Holder | null => {
+  const hs = holdersOf(pack);
+  return hs.find((h) => h.id === pack.constitution?.publicGroup) ?? hs.find((h) => h.members === "citizens") ?? null;
+};
+export const ownHolder = (pack: Pack): Holder => {
+  const hs = holdersOf(pack);
+  return hs.find((h) => h.id === pack.constitution?.ownGroup) ?? hs.find((h) => h.id === OWN)!;
+};
+export const chamberHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h) => h.members === "seats") ?? null;
 
 // Every holder opens near even: the live Biden pack stored every stance at 0, which no ruler can pass the test from.
 export const STANCE_LO = 0.3, STANCE_HI = 0.7;   // TUNE
 
-export function seedHolders(pack: Pack): Record<string, HolderState> {
-  return Object.fromEntries(holdersOf(pack).map((h) => [h.id, {
-    id: h.id, stance: clamp(h.stance, STANCE_LO, STANCE_HI), resistance: 0, line: h.line, response: h.response,
-    weight: weightOf(pack, h.id), warnedAt: null,
-  }]));
+// R24: the chamber backs the ruler with the seats on the government's side, counted whole.
+const chamberShare = (pack: Pack, game: Game) =>
+  pack.chamber.size ? round1((game.members.filter((m) => ownSide(pack, game, m.faction)).length / pack.chamber.size) * 100) : 50;
+
+// `party` is the start's loyalty: it opens the own group a pack did not name.
+export function seedHolders(pack: Pack, game: Game, party: number): Record<string, HolderState> {
+  const pub = publicHolder(pack)?.id;
+  return Object.fromEntries(holdersOf(pack).map((h) => {
+    const support = h.members === "seats" ? chamberShare(pack, game)
+      : h.id === pub ? round1(nationalPopularity(pack, game))
+      : h.id === OWN ? party
+      : h.support ?? Math.round(clamp(h.stance, STANCE_LO, STANCE_HI) * 100);
+    const line = h.support !== undefined ? h.line : Math.max(0, Math.min(100 - h.line, Math.round(support) - LEGACY_ROOM));
+    return [h.id, { id: h.id, support, line, response: h.response, weight: weightOf(pack, h.id), warnedAt: null }];
+  }));
 }
 
-// _pack is unread today; Stage B's price tag names the holder from it.
-const moveResistance = (_pack: Pack, game: Game, ids: string[], d: number, cause: string): WireLine[] => {
+// A support line on these two groups also carries the hue the share grid prints.
+const hueOf = (pack: Pack, id: string): { ledger?: LedgerV4 } =>
+  id === publicHolder(pack)?.id ? { ledger: "popularity" } : id === ownHolder(pack).id ? { ledger: "loyalty" } : {};
+
+// The one support writer. The public group moves region by region; the chamber moves in whole seats.
+export function moveSupport(pack: Pack, game: Game, ids: string[], d: number, cause: string): WireLine[] {
   const out: WireLine[] = [];
+  if (!d) return out;
+  const pub = publicHolder(pack)?.id, n = pack.chamber.size;
   for (const id of ids) {
     const h = game.holders[id];
     if (!h) continue;
-    const before = h.resistance;
-    h.resistance = clamp(round1(h.resistance + d), 0, 100);
-    if (h.resistance !== before) out.push({ kind: "resistance", id, delta: round1(h.resistance - before), cause });
+    if (id === pub) { out.push(...movePopularity(pack, game, [], d, cause)); continue; }
+    const was = h.support;
+    h.support = chamberHolder(pack)?.id === id && n
+      ? round1((clamp(Math.round((was * n) / 100) + Math.round((d * n) / 100), 0, n) / n) * 100)
+      : clamp(round1(was + d), 0, 100);
+    if (h.support !== was) out.push({ kind: "support", id, ...hueOf(pack, id), delta: round1(h.support - was), cause });
   }
   return out;
-};
-// The only public popularity writer: an empty list moves every region. bump stays private beneath it.
+}
+// The public group's support by region: an empty list moves every region. bump stays private beneath it.
 export function movePopularity(pack: Pack, game: Game, ids: string[], delta: number, cause: string): WireLine[] {
   const rs = ids.length ? pack.regions.filter((r) => ids.includes(r.id)) : pack.regions;
   if (!delta) return [];
-  return rs.map((r) => ({ kind: "ledger" as const, ledger: "popularity" as const, id: r.id, delta: bump(game, r.id, delta), cause }));
+  const id = publicHolder(pack)?.id ?? null;
+  return rs.map((r) => ({ kind: "support" as const, id, ledger: "popularity" as const, region: r.id, delta: bump(pack, game, r.id, delta), cause }));
 }
 
 export const RIVAL_HIT = 2;   // TUNE: what the rival takes out of the weakest region every turn
@@ -350,9 +408,9 @@ export function rivalMove(pack: Pack, game: Game): { move: RivalMove; wire: Wire
   const f = id ? pack.factions.find((x) => x.id === id) : undefined;
   if (!f) return null;
   const home = holdersOf(pack).filter((h) => h.where === "home");
-  const backer = [...home].sort((a, b) =>
-    (game.holders[b.id]?.resistance ?? 0) / (b.line || 1) - (game.holders[a.id]?.resistance ?? 0) / (a.line || 1))[0];
-  const weakest = [...pack.regions].sort((a, b) => (game.ledgers.popularity[a.id] ?? 50) - (game.ledgers.popularity[b.id] ?? 50))[0];
+  const room = (id: string) => (game.holders[id] ? game.holders[id].support - game.holders[id].line : 100);
+  const backer = [...home].sort((a, b) => room(a.id) - room(b.id))[0];
+  const weakest = [...pack.regions].sort((a, b) => (game.regions[a.id] ?? 50) - (game.regions[b.id] ?? 50))[0];
   const where = weakest?.name ?? pack.place;
   const line = `${f.leader}, backed by ${backer?.name ?? f.name}, worked ${where} this ${pack.vocabulary.turn}.`;
   const wire = movePopularity(pack, game, weakest ? [weakest.id] : [], -RIVAL_HIT, `${f.leader} in ${where}`);
@@ -373,49 +431,63 @@ export function capSwing(pack: Pack, game: Game, deltas: Record<string, number>)
   return Object.fromEntries(Object.entries(deltas).map(([id, d]) => [id, round1(d * k) || 0]));   // never -0
 }
 
-export const raiseResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
-  moveResistance(pack, game, ids, Math.abs(amount), cause);
-export const easeResistance = (pack: Pack, game: Game, ids: string[], amount: number, cause: string) =>
-  moveResistance(pack, game, ids, -Math.abs(amount), cause);
-
 export const CAMPAIGN_FROM = 17;  // TUNE, C4: the turn the last stretch of the term starts on
-export const ARMY_STANCE = 0.5;   // spec §2: force needs the army at or over this
+// R29: the army is whoever force moves, never whoever can end the run: a palace with coup or dismiss is not an army.
+export const armyHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h) => h.levers.includes("force")) ?? null;
 
-// The army is whoever can end the run by force, else whoever force moves.
-export const armyHolder = (pack: Pack): Holder | null =>
-  holdersOf(pack).find((h) => h.response === "coup") ?? holdersOf(pack).find((h) => h.levers.includes("force")) ?? null;
+// R29: a group agrees while its support is at or over its line. The army's agreement is what force and
+// emergency powers need.
+export const agrees = (game: Game, id: string): boolean => !game.holders[id] || game.holders[id].support >= game.holders[id].line;
+
+// R30: an act's machine tags as a card reads them: its subjects, the promises it keeps, whom it serves and hits, its verb.
+export const actTokens = (a: { verb: Verb; tags: string[]; keeps?: string[]; serves?: string[]; hits?: string[] }): Set<string> =>
+  new Set([...a.tags, ...(a.keeps ?? []), ...(a.serves ?? []).map((id) => `serves:${id}`), ...(a.hits ?? []).map((id) => `hits:${id}`), `verb:${a.verb}`]);
+
+export interface Lean { lean: -2 | -1 | 0 | 1; reason: string }
+// The red line first, then each want in order; the first the act touches decides and gives the reason.
+export function cardLean(card: Card | undefined, tokens: Set<string>): Lean {
+  const touches = (cardTags: string[]) => cardTags.some((cardTag) => tokens.has(cardTag));
+  if (!card) return { lean: 0, reason: "" };
+  if (touches(card.redMatch)) return { lean: -2, reason: `Red line: ${card.redLine}` };
+  for (const want of card.wants) {
+    if (touches(want.match.no)) return { lean: -1, reason: `Fights ${want.no[0] ?? want.want}` };
+    if (touches(want.match.yes)) return { lean: 1, reason: `Backs ${want.yes[0] ?? want.want}` };
+  }
+  return { lean: 0, reason: "" };
+}
+export const CARD_MOVE: Record<Lean["lean"], number> = { 1: 4, 0: 0, [-1]: -5, [-2]: -10 };   // TUNE, the mock's numbers
 
 export function armyAllows(pack: Pack, game: Game): boolean {
   const a = armyHolder(pack);
-  return !a || (game.holders[a.id]?.stance ?? a.stance) >= ARMY_STANCE;
+  return !a || agrees(game, a.id);
 }
 
-// The plate the Desk marks: the holder closest to its own line, measured as a share of it.
+// The plate the Desk marks: the holder closest to its own line.
 export function nearestLine(game: Game): string | null {
   const rows = Object.values(game.holders).filter((h) => h.line > 0);
   if (!rows.length) return null;
-  return rows.sort((a, b) => b.resistance / b.line - a.resistance / a.line)[0].id;
+  return rows.sort((a, b) => a.support - a.line - (b.support - b.line))[0].id;
 }
 
-// R4: a holder over its line plays a warning card with the number, and fires two turns later if still over.
+// R4 and R24: a holder under its line plays a warning card with the number, and strikes two turns later if still under.
 export function advanceWarnings(pack: Pack, game: Game): { warned: Warning[]; fired: Warning[]; wire: WireLine[] } {
   const warned: Warning[] = [], fired: Warning[] = [], wire: WireLine[] = [];
   for (const h of Object.values(game.holders)) {
-    const over = h.resistance >= h.line;
+    const under = h.support < h.line;
     const open = game.warnings.find((w) => w.holder === h.id);
-    if (!over) {
+    if (!under) {
       if (open) game.warnings = game.warnings.filter((w) => w !== open);
       h.warnedAt = null;
       continue;
     }
     if (!open) {
-      const w: Warning = { holder: h.id, response: h.response, at: game.turn, fires: game.turn + WARN_TURNS, number: h.resistance };
+      const w: Warning = { holder: h.id, response: h.response, at: game.turn, fires: game.turn + WARN_TURNS, number: h.support };
       game.warnings.push(w);
       h.warnedAt = game.turn;
       warned.push(w);
       continue;
     }
-    open.number = h.resistance;
+    open.number = h.support;
     if (game.turn >= open.fires) {
       game.warnings = game.warnings.filter((w) => w !== open);
       h.warnedAt = null;
@@ -427,17 +499,18 @@ export function advanceWarnings(pack: Pack, game: Game): { warned: Warning[]; fi
 }
 
 export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
-  const wire: WireLine[] = [], L = game.ledgers, name = pack.constitution?.holders.find((h) => h.id === w.holder)?.name ?? w.holder;
-  const drop = (l: "treasury" | "chest" | "loyalty", d: number) => {
+  const wire: WireLine[] = [], L = game.ledgers, name = holdersOf(pack).find((h) => h.id === w.holder)?.name ?? w.holder;
+  const drop = (l: "treasury" | "chest", d: number) => {
     const was = L[l];
-    L[l] = round1(clamp(was - d, 0, l === "loyalty" ? 100 : 9999));
+    L[l] = round1(clamp(was - d, 0, 9999));
     wire.push({ kind: "card", ledger: l, delta: round1(L[l] - was), cause: name });
   };
+  const card = (lines: WireLine[]) => wire.push(...lines.map((x) => ({ ...x, kind: "card" as const })));
   switch (w.response) {
-    case "riot": for (const r of pack.regions) wire.push({ kind: "card", ledger: "popularity", id: r.id, delta: bump(game, r.id, -RIOT_HIT), cause: name }); break;
+    case "riot": card(movePopularity(pack, game, [], -RIOT_HIT, name)); break;
     case "refuse_levy": drop("treasury", LEVY_HIT); break;
     case "embargo": drop("treasury", EMBARGO_HIT); break;
-    case "excommunicate": drop("loyalty", EXCOMMUNICATE_HIT); break;
+    case "excommunicate": card(moveSupport(pack, game, [ownHolder(pack).id], -EXCOMMUNICATE_HIT, name)); break;
     case "strike": {
       // R11: a court strikes the act the ruler just put in force, not an old one it has lived with.
       const law = game.inForce.at(-1);
@@ -447,10 +520,11 @@ export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
       break;
     }
     case "early_test": game.earlyTest = w.holder; game.stage = "test"; game.phase = "over"; break;
-    case "coup": {
+    case "coup":
+    case "dismiss": {
       game.stage = "over"; game.phase = "over";
       game.terms.push(termPoints(game, 0));
-      game.result = { ending: "coup", score: score(game) };
+      game.result = { ending: w.response === "coup" ? "coup" : "dismissed", score: score(game) };
       break;
     }
     case "none": break;
@@ -461,17 +535,21 @@ export function fireResponse(pack: Pack, game: Game, w: Warning): WireLine[] {
 const loyaltyFor = (start: Pack["starts"][number], faction: string, own: string) =>
   faction === own ? 100 : (start.hostile ?? []).includes(faction) ? 25 : start.coalition.includes(faction) ? 70 : 0;
 
+// R24: the public group's support, its regions averaged by weight.
 export function nationalPopularity(pack: Pack, game: Game): number {
   let w = 0, sum = 0;
-  for (const r of pack.regions) { w += r.weight; sum += r.weight * (game.ledgers.popularity[r.id] ?? 50); }
+  for (const r of pack.regions) { w += r.weight; sum += r.weight * (game.regions[r.id] ?? 50); }
   return w ? sum / w : 50;
 }
 export const popularity = (pack: Pack, game: Game) => { const a = nationalPopularity(pack, game); return a >= 55 ? "popular" : a <= 45 ? "unpopular" : "evenly split"; };
 // Returns the move that landed, so the wire prints a clamped move as it happened and not as it was asked.
-const bump = (game: Game, region: string, d: number) => {
-  const was = game.ledgers.popularity[region] ?? 50;
-  game.ledgers.popularity[region] = clamp(round1(was + d), 0, 100);
-  return round1(game.ledgers.popularity[region] - was);
+// Every region write lands here, so the public group's number never lags its regions.
+const bump = (pack: Pack, game: Game, region: string, d: number) => {
+  const was = game.regions[region] ?? 50;
+  game.regions[region] = clamp(round1(was + d), 0, 100);
+  const pub = publicHolder(pack)?.id;
+  if (pub && game.holders[pub]) game.holders[pub].support = round1(nationalPopularity(pack, game));
+  return round1(game.regions[region] - was);
 };
 
 // Up to 8 lines of record, for citizen and test calls and for Luna.
@@ -519,7 +597,7 @@ export const STYLE_LINES: Record<Square, string> = {
 export function biggestMove(wire: WireLine[], turn: number): RunRow {
   const sums = new Map<LedgerV4, { delta: number; cause: string; top: number }>();
   for (const l of wire) {
-    if (l.kind !== "ledger" || !l.ledger) continue;
+    if ((l.kind !== "ledger" && l.kind !== "support") || !l.ledger) continue;
     const size = Math.abs(l.delta);
     const cur = sums.get(l.ledger) ?? { delta: 0, cause: l.cause, top: 0 };
     cur.delta += size;
@@ -539,7 +617,7 @@ export function runStyle(pack: Pack, game: Game): RunStyle {
   let lead: Square = "quiet", most = 0;
   for (const [s, n] of counts) if (n > most) { most = n; lead = s; }
   // A v3 pack has no constitution, so its name is the bare id, and the name opens a sentence.
-  const name = (s: Square) => { const n = s === "quiet" ? "nothing" : pack.constitution?.ledgers[s].name ?? s; return n[0].toUpperCase() + n.slice(1); };
+  const name = (s: Square) => { const n = s === "quiet" ? "nothing" : pack.constitution?.ledgers[s]?.name ?? s; return n[0].toUpperCase() + n.slice(1); };
   const decisive = log.filter((r) => r.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, DECISIVE).sort((a, b) => a.turn - b.turn)
     .map((r) => ({ turn: r.turn, line: `${r.cause}. ${name(r.ledger)} moved ${Math.round(r.delta)}.` }));
   const grid: RunStyle["grid"] = log.map((r) => ({ ledger: r.ledger }));
@@ -567,7 +645,7 @@ const seeded = <T,>(game: Game, salt: number, xs: T[], n: number): T[] => {
 };
 
 export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
-  hostile_press: { verdict: (pack, game) => { for (const r of pack.regions) bump(game, r.id, -1); } },
+  hostile_press: { verdict: (pack, game) => { for (const r of pack.regions) bump(pack, game, r.id, -1); } },
   supermajority_era: { supermajority: () => true },
   recession: { start: (pack, game) => { game.economy = "recession"; for (const p of pack.patrons.slice(0, 2)) game.patrons[p.id] = -1; } },
   scandal_season: { start: (_pack, game) => { for (const m of seeded(game, 0x5ca2, game.members, 4)) m.situation = INVESTIGATION; } },
@@ -590,10 +668,10 @@ export const ESCALATION_EFFECTS: Record<EscalationKey, EscalationEffects> = {
     turn: (_pack, game) => { game.ledgers.authority = clamp(game.ledgers.authority - 2, 0, 200); },
   },
   famine: {
-    start: (pack, game) => { game.marks.famine = seeded(game, 0xfa11, pack.regions, 10).map((r) => r.id); for (const id of game.marks.famine) bump(game, id, -2); },
-    turn: (_pack, game) => { for (const id of (game.marks.famine ?? []).slice(0, 3)) bump(game, id, -0.5); },
+    start: (pack, game) => { game.marks.famine = seeded(game, 0xfa11, pack.regions, 10).map((r) => r.id); for (const id of game.marks.famine) bump(pack, game, id, -2); },
+    turn: (pack, game) => { for (const id of (game.marks.famine ?? []).slice(0, 3)) bump(pack, game, id, -0.5); },
   },
-  succession_crisis: { start: (_pack, game) => { game.ledgers.loyalty = 35; } },
+  succession_crisis: { start: (pack, game) => { const h = game.holders[ownHolder(pack).id]; if (h) h.support = 35; } },
   foreign_meddling: {
     start: (pack, game) => { game.marks.meddling = seeded(game, 0xf0e1, pack.regions, 2).map((r) => r.id); },
     test: (game, regions) => { for (const id of game.marks.meddling ?? []) { const r = regions.find((x) => x.id === id); if (r) r.p = clamp(r.p - 0.05, 0, 1); } },
@@ -615,13 +693,14 @@ export function applyEscalation(pack: Pack, game: Game, key: EscalationKey): voi
 export function threshold(pack: Pack, game: Game, bill: Bill): number {
   const forced = on(game).some((e) => e.supermajority?.(bill));
   const veto = Object.values(bill.vetoes ?? {}).some((v) => v >= 0.6);
-  return forced || veto || (bill.filibuster ?? 0) >= 0.5 ? pack.chamber.supermajority : pack.chamber.threshold;
+  const written = pack.constitution?.instruments.law.vetoes.includes("chamber_supermajority") ?? false;   // R29
+  return forced || veto || written || (bill.filibuster ?? 0) >= 0.5 ? pack.chamber.supermajority : pack.chamber.threshold;
 }
 
 export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
   const out: Record<string, number> = {};
   for (const m of game.members) {
-    let p = (bill.whip?.[m.id] ?? 0) + m.mood;
+    let p = (bill.whip?.[m.id] ?? 0) + m.mood + (bill.shift?.[m.faction] ?? 0);
     for (const e of on(game)) p += e.whip?.(game, m) ?? 0;
     if (m.loyalty > 0 && m.loyalty < 30) p = Math.min(p, 0.15);   // a coalition partner under 30 votes as opposition
     if (game.revolt === game.turn && m.faction === game.faction) p = Math.min(p, REVOLT_WHIP);
@@ -630,12 +709,54 @@ export function effectiveWhip(game: Game, bill: Bill): Record<string, number> {
   return out;
 }
 export const expectedYes = (whip: Record<string, number>) => Object.values(whip).reduce((a, b) => a + b, 0);
-export const drawVotes = (whip: Record<string, number>) => Object.fromEntries(Object.keys(whip).map((id) => [id, roll() < whip[id]]));
+// R30: seeded by the game, term and bill, so the draw behind the preview is fixed once the act is priced.
+export const voteSeed = (game: Game, bill: Bill) => hash(`${game.seed}:${game.term}:${bill.id}`);
+export const drawVotes = (whip: Record<string, number>, seed: number) => {
+  const draw = rng(seed);
+  return Object.fromEntries(Object.keys(whip).map((id) => [id, draw() < whip[id]]));
+};
+
+// R30: what a chamber faction's card adds to each of its seats' chance of a yes.
+export const CARD_SHIFT: Record<Lean["lean"], number> = { 1: 0.1, 0: 0, [-1]: -0.1, [-2]: -0.3 };   // TUNE
+export function cardShift(pack: Pack, tokens: Set<string>): Record<string, number> {
+  const shift: Record<string, number> = {};
+  for (const faction of pack.factions) {
+    const { lean } = cardLean(faction.card, tokens);
+    if (lean) shift[faction.id] = CARD_SHIFT[lean];
+  }
+  return shift;
+}
+
+export const FOR_AT = 2 / 3, AGAINST_AT = 1 / 3;   // TUNE: a seat this sure either way is counted; between them it hesitates
+// R30: what a hesitant faction will take for its seats on this act (acts.ts termsOf).
+export interface Term { kind: "pledge" | "post" | "money"; label: string; cost: Price; tag?: string; due?: number }
+export interface FactionCount { id: string; name: string; for: number; against: number; hesitant: number; reason: string; terms?: Term[] }
+export interface Preview { need: number; expected: number; for: number; factions: FactionCount[] }
+
+// R30: the vote preview reads effectiveWhip, the same per-seat chances applyVote draws from.
+export function votePreview(pack: Pack, game: Game, bill: Bill, tokens: Set<string>): Preview | null {
+  if (!game.members.length) return null;
+  const whip = effectiveWhip(game, bill);
+  const factions = pack.factions.flatMap((faction): FactionCount[] => {
+    const chances = game.members.filter((member) => member.faction === faction.id).map((member) => whip[member.id]);
+    if (!chances.length) return [];
+    const inFavour = chances.filter((chance) => chance >= FOR_AT).length;
+    const against = chances.filter((chance) => chance <= AGAINST_AT).length;
+    const average = mean(chances);
+    let reason = cardLean(faction.card, tokens).reason;
+    if (!reason && average >= FOR_AT) reason = "Votes with you on this";
+    else if (!reason && average <= AGAINST_AT) reason = "Votes against you on this";
+    else if (!reason) reason = "Nothing in it decides them";
+    return [{ id: faction.id, name: faction.name, for: inFavour, against, hesitant: chances.length - inFavour - against, reason }];
+  });
+  const seatsInFavour = factions.reduce((total, faction) => total + faction.for, 0);
+  return { need: threshold(pack, game, bill), expected: round1(expectedYes(whip)), for: seatsInFavour, factions };
+}
 
 export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   const whip = effectiveWhip(game, bill);
   const th = threshold(pack, game, bill);
-  const votes = drawVotes(whip);
+  const votes = drawVotes(whip, voteSeed(game, bill));
   const yes = Object.values(votes).filter(Boolean).length;
   const passed = yes >= th;
   const struck = passed && (bill.constitutional ?? 0) >= (first(game, "struckAt") ?? 0.7);
@@ -647,7 +768,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
   pushWire(game, [{ kind: "ledger", ledger: "authority", delta: round1(L.authority - was), cause: bill.title }]);
   const own = game.members.filter((m) => m.faction === game.faction);
   const ownYes = own.filter((m) => votes[m.id]).length;
-  L.loyalty = clamp(L.loyalty + (passed ? (yes - ownYes > ownYes ? -6 : 3) : -2), 0, 100);
+  pushWire(game, moveSupport(pack, game, [ownHolder(pack).id], passed ? (yes - ownYes > ownYes ? -6 : 3) : -2, bill.title));
 
   game.streak = passed && !struck ? game.streak + 1 : 0;
   game.bestStreak = Math.max(game.bestStreak, game.streak);
@@ -661,7 +782,7 @@ export function applyVote(pack: Pack, game: Game, bill: Bill): void {
     for (const t of new Set([...bill.tags, ...(bill.keeps ?? [])])) keepPromise(pack, game, t);
     if (bill.rates?.length) enact(game, {
       id: `law-${game.term}-${bill.id}`, verb: "law", title: bill.title, perTurn: bill.rates,
-      repealConsent: pack.constitution?.instruments.law.consent ?? "chamber", sunset: bill.sunset ?? null,
+      repealVetoes: pack.constitution?.instruments.law.vetoes ?? ["chamber"], sunset: bill.sunset ?? null,
     });
   }
   for (const e of on(game)) e.verdict?.(pack, game, bill);
@@ -688,7 +809,7 @@ export interface TurnEnd { wire: WireLine[]; warned: Warning[]; fired: Warning[]
 export interface InForce {
   id: string; verb: Verb; title: string; term: number; turn: number;
   perTurn: { ledger: LedgerV4; id?: string | null; delta: number }[];
-  repealConsent: Consent; sunset: number | null;   // turns of life, authored into the text
+  repealVetoes: string[]; sunset: number | null;   // R29: who must agree to repeal it (none: it can be withdrawn); turns of life
 }
 
 export const inForceAge = (game: Game, law: InForce) => (game.term - law.term) * TURNS_PER_TERM + (game.turn - law.turn);
@@ -711,12 +832,10 @@ export function applyRates(pack: Pack, game: Game): WireLine[] {
   for (const law of [...game.inForce]) {
     if (law.sunset !== null && inForceAge(game, law) >= law.sunset) { repeal(game, law.id); continue; }
     for (const rate of law.perTurn) {
-      if (rate.ledger === "popularity") {
-        const regions = rate.id ? pack.regions.filter((r) => r.id === rate.id) : pack.regions;
-        for (const r of regions) wire.push({ kind: "ledger", ledger: "popularity", id: r.id, delta: bump(game, r.id, rate.delta), cause: law.title });
-        continue;
-      }
-      const hi = rate.ledger === "authority" ? 200 : rate.ledger === "loyalty" ? 100 : 9999;
+      // R24: a popularity rate is the public group's support in its region (or all), a loyalty rate your own group's.
+      if (rate.ledger === "popularity") { wire.push(...movePopularity(pack, game, rate.id ? [rate.id] : [], rate.delta, law.title)); continue; }
+      if (rate.ledger === "loyalty") { wire.push(...moveSupport(pack, game, [ownHolder(pack).id], rate.delta, law.title)); continue; }
+      const hi = rate.ledger === "authority" ? 200 : 9999;
       const was = game.ledgers[rate.ledger];
       game.ledgers[rate.ledger] = round1(clamp(was + rate.delta, 0, hi));
       wire.push({ kind: "ledger", ledger: rate.ledger, delta: round1(game.ledgers[rate.ledger] - was), cause: law.title });
@@ -743,11 +862,12 @@ export function decayPromises(pack: Pack, game: Game): WireLine[] {
     if (p.state === "kept") continue;
     if (game.turn < p.window + shift) continue;
     p.state = "broken";
+    const id = publicHolder(pack)?.id ?? null;
     for (const r of pack.regions) {
-      const d = -round1((game.ledgers.popularity[r.id] ?? 50) * p.share);
+      const d = -round1((game.regions[r.id] ?? 50) * p.share);
       if (!d) continue;
-      bump(game, r.id, d);
-      wire.push({ kind: "promise", ledger: "popularity", id: r.id, delta: d, cause: p.label });
+      bump(pack, game, r.id, d);
+      wire.push({ kind: "promise", id, ledger: "popularity", region: r.id, delta: d, cause: p.label });
     }
   }
   return wire;
@@ -759,22 +879,21 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
   const wire: WireLine[] = [];
   game.revolt = null;
   wire.push(...applyRates(pack, game));
+  // R33: a turn with no signed act costs the public group (else your own side) 2; a turn with one gives nothing.
+  // Kept out of the quiet count below, so idle turns still owe the player a card.
+  const idle = game.acts.some((a) => a.term === game.term && a.turn === game.turn) ? []
+    : moveSupport(pack, game, [publicHolder(pack)?.id ?? ownHolder(pack).id], -IDLE_COST, "no act was signed this turn");
 
-  for (const h of Object.values(game.holders)) h.resistance = clamp(round1(h.resistance - RESIST_DECAY), 0, 100);
   // R19: the powers are held only while the turns last and the army's stance allows them.
   if (game.emergency !== null && (game.turn > game.emergency || !armyAllows(pack, game))) game.emergency = null;
-  // After the decay, so the pushed holder is still at its line when the warnings read it.
-  if (belowLine(pack, game).includes("popularity")) {
-    const caller = Object.values(game.holders).find((h) => h.response === "early_test") ?? Object.values(game.holders).find((h) => h.response === "coup");
-    if (caller) caller.resistance = Math.max(caller.resistance, caller.line);
-  }
 
   const warnings = advanceWarnings(pack, game);
   wire.push(...warnings.wire);
 
   // §4: under its line the faction votes as opposition for the turn about to be played, and the class doubles.
-  // The revolt renews every turn loyalty stays under; the class doubles once a term, not once a turn.
-  if (belowLine(pack, game).includes("loyalty")) {
+  // The revolt renews every turn your own group stays under; the class doubles once a term, not once a turn.
+  const own = game.holders[ownHolder(pack).id];
+  if (own && own.support < own.line) {
     game.revolt = game.turn + 1;
     if (!game.marks.doubled) {
       const cls = new Set(game.marks.midterm ?? []);
@@ -784,18 +903,28 @@ export function endTurn(pack: Pack, game: Game): TurnEnd {
     }
   }
 
+  // R29: a home group pays what it gives (a levy, a tithe, a company's grant) while it agrees; "once" pays once a run.
+  for (const h of holdersOf(pack)) {
+    if (h.where !== "home" || !h.gives || !agrees(game, h.id)) continue;
+    const gave = game.marks.gave ?? [];
+    if (h.gives.per === "once") { if (gave.includes(h.id)) continue; game.marks.gave = [...gave, h.id]; }
+    const l = h.gives.ledger, was = game.ledgers[l];
+    game.ledgers[l] = round1(clamp(was + h.gives.amount, 0, 9999));
+    wire.push({ kind: "ledger", ledger: l, delta: round1(game.ledgers[l] - was), cause: h.name });
+  }
+
   wire.push(...decayPromises(pack, game));
   for (const e of on(game)) e.turn?.(pack, game);
 
   const voted = game.turn;
   // game.wire still holds last turn's tick until this turn's first push, and that tick is not this turn's move.
   const acted = game.wireTurn === game.turn ? game.wire : [];
-  game.quiet = [...acted, ...wire].some((w) => w.kind === "ledger") ? 0 : game.quiet + 1;
+  game.quiet = [...acted, ...wire].some((w) => w.kind === "ledger" || w.kind === "support") ? 0 : game.quiet + 1;
   // After the quiet count: the rival moves every turn, so counting it would keep the FicMachine floor from firing.
   const rival = game.stage === "session" || game.stage === "midterm" ? rivalMove(pack, game) : null;
   game.rival = rival?.move ?? null;
   if (rival) wire.push(...rival.wire);
-  pushWire(game, wire);
+  pushWire(game, [...idle, ...wire]);
   game.calls = 0; game.swing = 0; game.tag = null; game.refusal = null;
   game.turn += 1;
   if (game.result) { game.stage = "over"; game.phase = "over"; }
@@ -828,9 +957,9 @@ export function keepPromise(pack: Pack, game: Game, tag: string) {
   if (!p || p.state !== "pending") return;
   if (++p.passed < 2) return;
   p.state = "kept";
-  game.ledgers.loyalty = clamp(game.ledgers.loyalty + PROMISE_LOYALTY, 0, 100);
+  moveSupport(pack, game, [ownHolder(pack).id], PROMISE_LOYALTY, p.label);
   game.ledgers.authority = clamp(game.ledgers.authority + PROMISE_AUTHORITY, 0, 200);
-  for (const r of pack.regions) bump(game, r.id, 4);
+  for (const r of pack.regions) bump(pack, game, r.id, 4);
 }
 
 export const FAVOR_OWED = "Took a favor from the government and has not repaid it.";
@@ -846,7 +975,7 @@ export function applyLobby(pack: Pack, game: Game, bill: Bill, member: Member, a
   if (action === "favor") member.memory = [...member.memory, FAVOR_OWED].slice(-5);
   const p = first(game, "leak");
   const leak = p !== undefined && roll() < p;
-  if (leak) for (const r of pack.regions) bump(game, r.id, -2);
+  if (leak) for (const r of pack.regions) bump(pack, game, r.id, -2);
   return { cost, offer, leak };
 }
 
@@ -874,7 +1003,7 @@ export function applyCitizens(pack: Pack, game: Game, approve: Record<string, nu
     raw[r.id] = round1(clamp((m - 0.5) * 10, -6, 6));
   }
   const deltas = capSwing(pack, game, raw);
-  for (const [id, d] of Object.entries(deltas)) if (d) bump(game, id, d);
+  for (const [id, d] of Object.entries(deltas)) if (d) bump(pack, game, id, d);
   for (const [id, xs] of bloc) if (xs.length) game.blocs[id] = round1(clamp(mean(xs) + (game.drift[id] ?? 0), 0, 1));
   return deltas;
 }
@@ -929,7 +1058,7 @@ export function applyPost(pack: Pack, game: Game, turn: number, text: string,
     }
   }
   const regions = capSwing(pack, game, raw);
-  for (const [id, d] of Object.entries(regions)) if (d) bump(game, id, d);
+  for (const [id, d] of Object.entries(regions)) if (d) bump(pack, game, id, d);
   const votes = Object.values(agree);
   const mine = votes.filter((v) => v === "government").length;
   const post: Post = {
@@ -983,7 +1112,7 @@ export function regionIntent(pack: Pack, intent: Record<string, number>): Record
 // v2 §7: half the seat's fate is the region's approval, half is its citizens' intent. The odds flip for a
 // seat the government does not hold.
 export function holdP(pack: Pack, game: Game, m: Member, byRegion: Record<string, number>): number {
-  const base = 0.5 * sigmoid(((game.ledgers.popularity[m.region] ?? 50) - 50) / 8) + 0.5 * (byRegion[m.region] ?? 0.5);
+  const base = 0.5 * sigmoid(((game.regions[m.region] ?? 50) - 50) / 8) + 0.5 * (byRegion[m.region] ?? 0.5);
   return clamp(ownSide(pack, game, m.faction) ? base : 1 - base, 0, 1);
 }
 
@@ -1050,6 +1179,10 @@ export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas
       memory: [], loyalty: loyaltyFor(start, slot.faction, game.faction), mood: 0,
     };
   }
+  // R24: every seat that crossed to or from the government's side moves the chamber's support by one seat.
+  const ch = chamberHolder(pack);
+  const seats = draw.lost.reduce((a, l) => a + Number(ownSide(pack, game, l.to)) - Number(ownSide(pack, game, l.from)), 0);
+  if (ch && seats) moveSupport(pack, game, [ch.id], (seats * 100) / pack.chamber.size, pack.vocabulary.midterm);
   game.midterm = { up: draw.up.map((u) => u.seat), lost: draw.lost, lostOwn: draw.lostOwn, wipeout: draw.wipeout };
   if (draw.wipeout) {
     game.stage = "over"; game.phase = "over";
@@ -1066,7 +1199,7 @@ export function applyMidterm(pack: Pack, game: Game, draw: MidtermDraw, personas
 const VALUE: Record<Condition["ledger"], (pack: Pack, game: Game, id?: string | null) => number> = {
   approval: (pack, game) => nationalPopularity(pack, game),
   capital: (_p, game) => game.ledgers.authority,
-  party: (_p, game) => game.ledgers.loyalty,
+  party: (pack, game) => game.holders[ownHolder(pack).id]?.support ?? 50,
   chest: (_p, game) => game.ledgers.chest,
   bloc: (_p, game, id) => game.blocs[id ?? ""] ?? 0.5,
   patron: (_p, game, id) => game.patrons[id ?? ""] ?? 0,
@@ -1096,16 +1229,17 @@ function pick(pack: Pack, game: Game, pool: Storylet[]): Storylet | null {
 export const FIC_TURNS = 3;       // TUNE: after this many turns with no ledger move a card must fire
 export const SWAN_CHANCE = 0.06;  // TUNE, R20: one unweighted roll a turn, about one a term
 export const FOREIGN_PRICE = 6;   // TUNE: what conceding to a foreign power costs the treasury
-export const FOREIGN_AT = 0.5;    // TUNE: the share of its line at which an abroad holder moves
+export const FOREIGN_AT = 5;      // TUNE: an abroad holder moves when its support is this close to its line
 
 export const deckOf = (pack: Pack, game: Game): Storylet[] => [...pack.deck, ...game.extra];
 
 // R20: a foreign move comes from the abroad holder's own state, not from the deck.
 export function foreignPending(pack: Pack, game: Game): Holder | null {
   const rows = holdersOf(pack).filter((h) => h.where === "abroad" && h.responses.length);
-  const over = rows.filter((h) => (game.holders[h.id]?.resistance ?? 0) >= h.line * FOREIGN_AT);
-  if (!over.length) return null;
-  return over.sort((a, b) => (game.holders[b.id]?.resistance ?? 0) - (game.holders[a.id]?.resistance ?? 0))[0];
+  const room = (id: string) => (game.holders[id] ? game.holders[id].support - game.holders[id].line : 100);
+  const near = rows.filter((h) => room(h.id) < FOREIGN_AT);
+  if (!near.length) return null;
+  return near.sort((a, b) => room(a.id) - room(b.id))[0];
 }
 
 export const foreignStorylet = (_pack: Pack, game: Game, h: Holder): Storylet => ({
@@ -1121,12 +1255,12 @@ export function resolveForeign(pack: Pack, game: Game, event: Event, stance: num
   const id = `gives-${h.id}`;
   if (stance !== 0) {
     repeal(game, id);
-    return raiseResistance(pack, game, [h.id], RESIST_BYPASS, `${h.name} was refused`);
+    return moveSupport(pack, game, [h.id], -SUPPORT_BYPASS, `${h.name} was refused`);
   }
   const wire = pay(pack, game, { authority: 0, treasury: FOREIGN_PRICE, chest: 0 }, `${h.name} was given what it asked`);
-  wire.push(...easeResistance(pack, game, [h.id], RESIST_SERVE, h.name));
+  wire.push(...moveSupport(pack, game, [h.id], SUPPORT_SERVE, h.name));
   if (h.gives && h.gives.per === "turn" && !game.inForce.some((l) => l.id === id)) {
-    enact(game, { id, verb: "favour", title: `${h.name} pays`, perTurn: [{ ledger: h.gives.ledger, delta: h.gives.amount }], repealConsent: "none", sunset: null });
+    enact(game, { id, verb: "favour", title: `${h.name} pays`, perTurn: [{ ledger: h.gives.ledger, delta: h.gives.amount }], repealVetoes: [], sunset: null });
   }
   return wire;
 }
@@ -1210,6 +1344,27 @@ export function resolveEvent(pack: Pack, game: Game, event: Event, stance: numbe
   for (const e of card?.results ?? []) applyEffect(pack, game, e, card?.memory);
 }
 
+// R33: the group a card's answers would please most. A foreign move pleases its own power; a deck card, the group
+// its fixed results raise most, else the patrons where it scores them, else the public.
+export function declineTarget(pack: Pack, game: Game, event: Event): string | null {
+  if (event.kind === "foreign" && event.holder) return event.holder;
+  const pub = publicHolder(pack)?.id ?? null;
+  const patrons = holdersOf(pack).find((h) => h.members === "patrons")?.id ?? null;
+  const groupOf = (l: Effect["ledger"]) =>
+    l === "approval" || l === "bloc" ? pub : l === "party" ? ownHolder(pack).id : l === "patron" ? patrons ?? pub : l === "seat" ? chamberHolder(pack)?.id ?? null : null;
+  const card = deckOf(pack, game).find((s) => s.id === event.id);
+  const best = (card?.results ?? []).filter((e) => (e.delta ?? 0) > 0 && groupOf(e.ledger)).sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
+  return (best && groupOf(best.ledger)) || (card?.scored.includes("patrons") ? patrons : null) || pub || ownHolder(pack).id;
+}
+
+// R33: every crisis, foreign move and black swan can be declined: no answer and no resource, 3 support with that group.
+export function declineEvent(pack: Pack, game: Game, event: Event): WireLine[] {
+  event.stance = -1;
+  event.declined = true;
+  const id = declineTarget(pack, game, event);
+  return id ? moveSupport(pack, game, [id], -DECLINE_COST, "declined to act") : [];
+}
+
 const SEAT_MARK: Record<string, { mood: number; loyalty: number }> = {
   hostile: { mood: -0.2, loyalty: -40 }, favor: { mood: 0.3, loyalty: 10 },
   courted: { mood: 0.2, loyalty: 10 }, "kept-word": { mood: 0.05, loyalty: 10 },
@@ -1219,9 +1374,9 @@ function applyEffect(pack: Pack, game: Game, e: Effect, memory?: string | null) 
   // The deck prompt asks for -15..15; a stored pack that ignored it may not zero a ledger from one card.
   const d = clamp(e.delta ?? 0, -15, 15), L = game.ledgers;
   switch (e.ledger) {
-    case "approval": for (const r of pack.regions) bump(game, r.id, d); break;
+    case "approval": for (const r of pack.regions) bump(pack, game, r.id, d); break;
     case "capital": L.authority = clamp(L.authority + d, 0, 200); break;
-    case "party": L.loyalty = clamp(L.loyalty + d, 0, 100); break;
+    case "party": moveSupport(pack, game, [ownHolder(pack).id], d, "a card"); break;
     case "chest": L.chest = clamp(round1(L.chest + d), 0, 9999); break;
     case "bloc": if (e.id && e.id in game.blocs) game.blocs[e.id] = clamp(game.blocs[e.id] + d, 0, 1); break;
     case "patron": if (e.id && e.id in game.patrons) game.patrons[e.id] = clamp(game.patrons[e.id] + d, -2, 2); break;
@@ -1266,37 +1421,36 @@ export const testBar = (pack: Pack, game: Game): number =>
 
 function result(pack: Pack, game: Game, rows: HolderRow[], theBar: number, early?: string): TestResult {
   const counted = rows.filter((r) => r.counted);
-  const mandate = counted.reduce((a, r) => a + r.weight * r.stance, 0);
-  const chamber = rows.find((r) => holdersOf(pack).find((h) => h.id === r.id)?.members === "seats");
-  const street = rows.find((r) => holdersOf(pack).find((h) => h.id === r.id)?.members === "citizens");
-  const loyalty = chamber?.stance ?? mandate, pub = street?.stance ?? mandate;
-  const regions = pack.regions.map((r) => ({ id: r.id, weight: r.weight, p: pub })).sort((a, b) => b.weight - a.weight);
+  // R24: the final vote is each voting group's support times its weight.
+  const mandate = counted.reduce((a, r) => a + (r.weight * r.support) / 100, 0);
+  const ch = chamberHolder(pack);
+  const p = (game.holders[ch?.id ?? ""]?.support ?? 50) / 100;
+  // The chamber's support is its seats backing you, so the walk shows exactly that many yes seats, loyalest last.
+  const backing = Math.round(p * game.members.length);
+  const seats = [...game.members].sort((a, b) => a.loyalty - b.loyalty)
+    .map((m, i, all) => ({ id: m.id, p, yes: i >= all.length - backing }));
+  const regions = pack.regions.map((r) => ({ id: r.id, weight: r.weight, p: (game.regions[r.id] ?? 50) / 100 })).sort((a, b) => b.weight - a.weight);
   // foreign_meddling shades the marked regions in the reveal only: the mandate above is already decided on
-  // the holders' stances, which is what "decided on the means" means.
+  // the holders' support, which is what "decided on the means" means.
   for (const e of on(game)) e.test?.(game, regions);
   return {
     mandate, bar: theBar, won: mandate >= theBar, holders: rows,
     ...(early ? { early } : {}),
-    seats: game.members.map((m) => ({ id: m.id, p: loyalty, yes: roll() < loyalty })).sort((a, b) => a.p - b.p),
+    seats,
     regions: regions.map((r) => ({ ...r, yes: roll() < r.p })),
   };
 }
 
-const holderRows = (pack: Pack, game: Game, stances: Record<string, number>): HolderRow[] =>
+const holderRows = (pack: Pack, game: Game): HolderRow[] =>
   holdersOf(pack).map((h) => ({
     id: h.id, name: h.name, weight: game.holders[h.id]?.weight ?? weightOf(pack, h.id),
-    stance: clamp(stances[h.id] ?? game.holders[h.id]?.stance ?? 0.5, 0, 1),
+    support: game.holders[h.id]?.support ?? 50,
     counted: (game.holders[h.id]?.weight ?? weightOf(pack, h.id)) > 0,
   }));
 
-// Spec §6: decided on the means. The draws in `seats` and `regions` are the reveal, never the verdict.
-export function runTest(pack: Pack, game: Game, stances: Record<string, number>): TestResult {
-  const rows = holderRows(pack, game, stances);
-  for (const h of holdersOf(pack)) {
-    const s = game.holders[h.id];
-    if (s && stances[h.id] !== undefined) s.stance = clamp(stances[h.id], 0, 1);
-  }
-  return result(pack, game, rows, testBar(pack, game));
+// Spec §6: decided on the means. The draws in `regions` are the reveal, never the verdict.
+export function runTest(pack: Pack, game: Game): TestResult {
+  return result(pack, game, holderRows(pack, game), testBar(pack, game));
 }
 
 export const EARLY_WEIGHT = 0.3;   // TUNE: what an uncounted holder brings to the test it calls
@@ -1304,8 +1458,8 @@ export const EARLY_WEIGHT = 0.3;   // TUNE: what an uncounted holder brings to t
 // R4 and §6: the same formula, the current term's bar, the caller's weight renormalised with the others.
 // No rounding: three counted holders rounded to 0.333 sum to 0.999 and the mandate reads these numbers.
 // An early test is the failure of the survival path, so it is judged on the term's bar, never SURVIVAL_BAR.
-export function earlyTest(pack: Pack, game: Game, holderId: string, stances: Record<string, number>): TestResult {
-  const rows = holderRows(pack, game, stances).map((r) =>
+export function earlyTest(pack: Pack, game: Game, holderId: string): TestResult {
+  const rows = holderRows(pack, game).map((r) =>
     r.id === holderId ? { ...r, weight: Math.max(r.weight, EARLY_WEIGHT), counted: true } : r);
   const total = rows.filter((r) => r.counted).reduce((a, r) => a + r.weight, 0) || 1;
   const norm = rows.map((r) => (r.counted ? { ...r, weight: r.weight / total } : r));
@@ -1331,9 +1485,11 @@ export function endTerm(pack: Pack, game: Game, test: TestResult): void {
   // §6: only a lost early test ends the term; a won one resumes it where the fired warning stopped the turn.
   if (test.early && test.won) {
     game.earlyTest = undefined;
-    // Survived: the caller steps back under its line, so it does not warn again the next turn on the same grievance.
+    // Survived: the caller comes back up to its line, so it does not warn again the next turn on the same grievance.
+    // Half a seat on top, so the chamber's whole-seat rounding cannot leave it one seat short.
     const h = game.holders[test.early];
-    if (h) h.resistance = Math.min(h.resistance, Math.max(0, h.line - 1));
+    const need = h ? h.line - h.support : 0;
+    if (need > 0) moveSupport(pack, game, [test.early], need + (chamberHolder(pack)?.id === test.early ? 50 / pack.chamber.size : 0), "survived the early vote");
     if (game.turn > TURNS_PER_TERM) game.stage = "test";
     else { game.stage = game.turn === 11 ? "midterm" : "session"; game.phase = "draft"; }   // 11: turn 10's half-term was skipped
     return;
@@ -1348,7 +1504,7 @@ export function endTerm(pack: Pack, game: Game, test: TestResult): void {
 export const remainingEscalations = (pack: Pack, game: Game): EscalationKey[] =>
   pack.escalations.map((e) => e.key).filter((k) => !game.escalations.includes(k));
 
-// R21: laws, appointments, favours, decayed resistance and persona memory carry; the class is reseeded.
+// R21: laws, appointments, favours, every group's support and persona memory carry; the class is reseeded.
 export function continueTerm(pack: Pack, game: Game): void {
   game.term += 1; game.turn = 1; game.stage = "session"; game.phase = "draft";
   game.bills = []; game.posts = []; game.events = []; game.streak = 0; game.bestStreak = 0;
@@ -1364,7 +1520,7 @@ export function continueTerm(pack: Pack, game: Game): void {
     game.director.seen.push(s.id);
   }
   game.inForce = game.inForce.filter((l) => l.sunset === null || inForceAge(game, l) < l.sunset);
-  for (const h of Object.values(game.holders)) { h.resistance = round1(h.resistance * RESIST_CARRY); h.warnedAt = null; }
+  for (const h of Object.values(game.holders)) h.warnedAt = null;
   for (const [tag, p] of Object.entries(game.promises)) {
     if (!p.authored) { p.passed = 0; p.state = "pending"; }
     else if (p.state === "pending") p.window -= TURNS_PER_TERM;   // an open window carries its turns left
@@ -1376,13 +1532,13 @@ export function continueTerm(pack: Pack, game: Game): void {
   const add = remainingEscalations(pack, game).slice(0, 2);
   game.escalations.push(...add);
   for (const k of add) applyEscalation(pack, game, k);
-  if (!add.length) for (const r of pack.regions) bump(game, r.id, -2);
+  if (!add.length) for (const r of pack.regions) bump(pack, game, r.id, -2);
 }
 
 // Not in game.ts: tsconfig.app.json sees engine.ts and cannot see the Durable Object.
 export type HolderView = {
-  id: string; name: string; where: "home" | "abroad"; stance: number; resistance: number; line: number;
+  id: string; name: string; where: "home" | "abroad"; support: number; line: number;
   response: HolderResponse; weight: number; levers: Verb[]; warnedAt: number | null; nearest: boolean;
   persona: { name: string; role: string };
 };
-export type InstrumentView = { name: string; consent: Consent; price: Price; available: boolean; affordable: boolean };
+export type InstrumentView = { name: string; vetoes: string[]; price: Price; available: boolean; affordable: boolean };

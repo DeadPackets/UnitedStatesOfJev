@@ -46,11 +46,11 @@ const can = (g: GameView, v: Verb) => {
   const i = (g as never as { instruments?: Partial<Record<Verb, { available: boolean; affordable?: boolean }>> }).instruments?.[v];
   return !!i?.available && i.affordable !== false;
 };
-const holders = (g: GameView) => (g as never as { holders?: { id: string; name: string; resistance: number; line: number; weight: number }[] }).holders ?? [];
-const nearestLine = (g: GameView) => holders(g).slice().sort((a, b) => (b.resistance - b.line) - (a.resistance - a.line))[0];
+const holders = (g: GameView) => (g as never as { holders?: { id: string; name: string; support: number; line: number; weight: number }[] }).holders ?? [];
+const nearestLine = (g: GameView) => holders(g).slice().sort((a, b) => (a.support - a.line) - (b.support - b.line))[0];
 const heaviest = (g: GameView) => holders(g).slice().sort((a, b) => b.weight - a.weight)[0];
 const weakestRegion = (g: GameView) => {
-  const pop = (g.ledgers as never as { popularity?: Record<string, number> }).popularity ?? {};
+  const pop = (g as never as { regions?: Record<string, number> }).regions ?? {};
   return Object.entries(pop).sort((a, b) => a[1] - b[1])[0]?.[0];
 };
 // Stage B's price call takes a memberId and nothing else: every other target is named in the text itself.
@@ -85,7 +85,7 @@ export const POLICIES: Policy[] = [
       const out: BotAct[] = [];
       if (can(g, "appoint") && g.turn === 1) out.push({ verb: "appoint", text: "Put a loyal officer at the head of the security service." });
       if (can(g, "decree")) out.push({ verb: "decree", text: pick(ORDERS, g.turn) });
-      const over = holders(g).find((h) => h.resistance >= h.line);
+      const over = holders(g).find((h) => h.support < h.line);
       if (over && can(g, "force")) out.push({ verb: "force", text: `Put a curfew on the districts where ${over.name} will not settle.` });
       return out.length ? out : [{ verb: firstAvailable(g, ["law", "proclaim"]) ?? "law", text: pick(WORKS, g.turn) }];
     },

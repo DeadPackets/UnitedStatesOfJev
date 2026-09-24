@@ -9,23 +9,23 @@ const RESPONSE: Record<string, string> = {
   embargo: "can embargo", none: "cannot remove you",
 };
 
-/** One plate per holder: its support, the resistance against its line, and the one nearest its line marked. */
+/** One plate per holder: its support against its line, and the one nearest its line marked. */
 export function HolderPlate({ h, warned, onPick }: { h: H; warned: boolean; onPick: (id: string) => void }) {
-  const over = h.resistance >= h.line;
+  const over = h.support < h.line;
   return (
     <button className={`plateh ${h.nearest ? "near" : ""} ${over ? "over" : ""}`} onClick={() => onPick(h.id)}
-      aria-label={`${h.name}, support ${Math.round(h.stance * 100)} percent, resistance ${Math.round(h.resistance)} of ${h.line}, ${RESPONSE[h.response] ?? h.response}`}>
+      aria-label={`${h.name}, support ${Math.round(h.support)} of 100, its line ${h.line}, ${RESPONSE[h.response] ?? h.response}`}>
       <span className="ph">
         <Icon name={h.where === "abroad" ? "abroad" : "seat"} sm />
         <b>{h.name}</b>
         {h.weight ? <span className="chip faint num">{h.weight.toFixed(2)}</span> : null}
       </span>
-      <span className="mood num">{Math.round(h.stance * 100)}%<small> support</small></span>
+      <span className="mood num">{Math.round(h.support)}<small> support</small></span>
       <span className="res" aria-hidden="true">
-        <i style={{ width: `${Math.min(100, h.resistance)}%` }} />
+        <i style={{ width: `${Math.min(100, h.support)}%` }} />
         <b style={{ left: `${Math.min(100, h.line)}%` }} />
       </span>
-      <span className="small num" aria-hidden="true">resistance {Math.round(h.resistance)} of {h.line}</span>
+      <span className="small num" aria-hidden="true">line {h.line}</span>
       <span className="small muted">{warned ? "Warned" : h.nearest ? "Nearest its line" : RESPONSE[h.response] ?? h.response}</span>
     </button>
   );

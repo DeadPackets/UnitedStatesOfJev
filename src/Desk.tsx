@@ -274,8 +274,8 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
               <ul className="causes" aria-label="The arithmetic, holder by holder">
                 {counted.map((h) => (
                   <li key={h.id}>
-                    <b className="num">{(h.weight * h.stance * 100).toFixed(1)}</b>
-                    <span>{h.name}, {h.weight.toFixed(2)} of the room at {Math.round(h.stance * 100)}, moved by {h.levers.map((l) => game.instruments[l]?.name ?? l).join(", ")}</span>
+                    <b className="num">{(h.weight * h.support).toFixed(1)}</b>
+                    <span>{h.name}, {h.weight.toFixed(2)} of the room at {Math.round(h.support)}, moved by {h.levers.map((l) => game.instruments[l]?.name ?? l).join(", ")}</span>
                   </li>
                 ))}
               </ul>
@@ -305,7 +305,7 @@ export default function Desk({ game, act, busy, onQuit, onRolled }: DeskProps) {
         onLobby={lobby} onClose={() => { setPick(null); setBefore(null); }} /> : null}
       {card && !rolling ? (
         <Card key={card.id} pack={pack} event={card} kind={KIND[card.kind ?? "generic"] ?? "crisis"}
-          holders={game.holders.map((h) => ({ id: h.id, name: h.name, stance: h.stance }))}
+          holders={game.holders.map((h) => ({ id: h.id, name: h.name, stance: h.support / 100 }))}
           turn={card.turn} busy={busy} onStance={stance} onClose={() => setAnswered(null)} />
       ) : null}
       {warning && warnedHolder ? (

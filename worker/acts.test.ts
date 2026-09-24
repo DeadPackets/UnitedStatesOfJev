@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
-import { available, CAMPAIGN_DISCOUNT, commit, consentOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
-import { applyVote, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
+import { available, blocker, CAMPAIGN_DISCOUNT, commit, discountOf, instrumentOf, previewOf, priceTag, vetoesOf, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { applyVote, armyHolder, CAMPAIGN_FROM, encodeCode, newGame, scenarioTag, type Game, type Quote } from "./engine";
 import { PackSchema, type Citizen, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
 
@@ -54,10 +54,10 @@ test("the last four turns of the term cut the price of an act that serves a test
   expect(t.discounted).toBe(true);
 });
 
-test("consent and availability come from the constitution and the failure lines", () => {
+test("vetoes and availability come from the constitution and the failure lines", () => {
   const g = game();
-  expect(consentOf(pack, g, "law")).toBe("chamber");
-  expect(consentOf(pack, g, "force")).toBe("army");
+  expect(vetoesOf(pack, g, "law")).toEqual(["chamber"]);
+  expect(vetoesOf(pack, g, "force")).toEqual(["guard"]);    // an old pack's consent "army" is the holder force moves
   expect(available(pack, g, "force")).toBe(true);
   g.ledgers.authority = 0;
   g.ledgers.treasury = 0;
@@ -68,35 +68,121 @@ test("consent and availability come from the constitution and the failure lines"
   expect(available(pack, g, "spend")).toBe(true);
 });
 
-test("the tag prints each named holder's last stance", () => {
-  const g = game();
-  g.holders.league.resistance = 30;
-  const t = priceTag(pack, g, quote({ serves: ["council"], hits: ["league"] }));
-  expect(t.stances.map((s) => s.id)).toEqual(["council", "league"]);
-  expect(t.stances[1]).toEqual({ id: "league", name: "the Grain League", stance: 0.5, resistance: 30, line: 50 });
+// R29: every veto holder must agree; a group agrees at or over its line, the chamber while its backing seats carry the vote.
+const vetoed = (vetoes: string[]): Pack => ({ ...pack, constitution: { ...pack.constitution!, instruments: {
+  ...pack.constitution!.instruments, decree: { ...pack.constitution!.instruments.decree, vetoes } } } });
+for (const [vetoes, set, blocked] of [
+  [[], {}, undefined],
+  [["guard"], { guard: 55 }, undefined],
+  [["guard"], { guard: 54 }, "guard"],
+  [["guard", "league"], { guard: 60, league: 10 }, "league"],
+  [["chamber"], { council: 13 / 24 * 100 }, undefined],
+  [["chamber"], { council: 12 / 24 * 100 }, "council"],
+  [["chamber_supermajority"], { council: 15 / 24 * 100 }, "council"],
+] as [string[], Record<string, number>, string | undefined][]) {
+  test(`a decree vetoed by ${vetoes.join(" and ") || "no one"} with ${JSON.stringify(set)} is blocked by ${blocked ?? "no one"}`, () => {
+    const g = game();
+    for (const [id, s] of Object.entries(set)) { g.holders[id].support = s; g.holders[id].line = id === "guard" ? 55 : g.holders[id].line; }
+    const p = vetoed(vetoes);
+    expect(blocker(p, g, "decree")?.id).toBe(blocked);
+    expect(priceTag(p, g, quote()).vetoes!.find((v) => !v.agrees)?.id).toBe(blocked);
+  });
+}
+
+test("the palace that can dismiss you is not the army: force is vetoed by the holder force moves", () => {
+  const palace = { ...pack.constitution!.holders[1], id: "palace", name: "The Palace", levers: ["appoint"], response: "dismiss" as const };
+  const p = PackSchema.parse({ ...mini, citizens: pack.citizens,
+    constitution: { ...mini.constitution, holders: [palace, ...mini.constitution.holders] } });
+  expect(armyHolder(p)!.id).toBe("guard");
+  expect(vetoesOf(p, game(), "force")).toEqual(["guard"]);
 });
 
-test("a decree is paid for, raises resistance where it hits and eases it where it serves", () => {
+test("the tag prints each named holder's support and line", () => {
   const g = game();
-  g.holders.council.resistance = 20;
+  g.holders.league.support = 43;
+  const t = priceTag(pack, g, quote({ serves: ["council"], hits: ["league"] }));
+  expect(t.stances.map((s) => s.id)).toEqual(["council", "league"]);
+  expect(t.stances[1]).toEqual({ id: "league", name: "the Grain League", support: 43, line: 40 });
+});
+
+// R30: a card answers an act the clerk did not aim at its group: red line first, then each want in order.
+const card = {
+  base: "Grain factors of the upper quay", redLine: "Troops on the quay", redMatch: ["verb:force"],
+  wants: [{ want: "Low tariffs", yes: ["Cut the grain tariff"], no: ["Raise the grain tariff"], match: { yes: ["tariffs"], no: ["serves:street"] } }],
+  price: { takes: "a seat on the harbour board", refuses: "cash" }, face: { name: "Ada Voss", role: "League factor", line: "Cut it and we pay." },
+  rival: "street", tension: "Wants free trade, but hoards grain in a famine.",
+};
+const carded: Pack = { ...pack, constitution: { ...pack.constitution!,
+  holders: pack.constitution!.holders.map((h) => (h.id === "league" ? { ...h, card } : h)) } };
+for (const [over, move, reason] of [
+  [{ tags: ["tariffs"] }, 4, "Backs Cut the grain tariff"],
+  [{ tags: ["tariffs"], serves: ["street"] }, -5, "Fights Raise the grain tariff"],     // the first want decides: its no before its yes
+  [{ verb: "force", tags: ["tariffs"] }, -10, "Red line: Troops on the quay"],
+  [{ tags: ["fish-quotas"] }, 0, undefined],
+  [{ tags: ["tariffs"], hits: ["league"] }, -8, undefined],                            // named by the clerk: SUPPORT_HIT only
+] as [Partial<Quote>, number, string | undefined][]) {
+  test(`a carded group answers ${JSON.stringify(over)} by ${move}`, () => {
+    const g = game();
+    g.holders.league.support = 50;
+    const tag = priceTag(carded, g, quote(over));
+    expect(tag.stances.find((s) => s.id === "league")?.reason).toBe(reason);
+    commit(carded, g, tag);
+    expect(g.holders.league.support).toBe(50 + move);
+  });
+}
+
+// R30: a chamber faction's card shifts its seats' chances, and the preview buckets them from the same numbers.
+const floor: Pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound"
+  ? { ...f, card: { ...card, redMatch: ["piracy"], wants: [{ ...card.wants[0], match: { yes: ["tariffs"], no: ["fish-quotas"] } }] } } : f)) };
+for (const [tags, bucket, reason] of [
+  [["harbor-tolls"], "hesitant", "Nothing in it decides them"],       // 0.6
+  [["tariffs"], "for", "Backs Cut the grain tariff"],                  // 0.7
+  [["fish-quotas"], "hesitant", "Fights Raise the grain tariff"],      // 0.5
+  [["piracy"], "against", "Red line: Troops on the quay"],             // 0.3
+] as [string[], "for" | "against" | "hesitant", string][]) {
+  test(`a law on ${tags} puts the carded faction's seats ${bucket}`, () => {
+    const g = game();
+    for (const m of g.members) { m.mood = 0; m.loyalty = 100; }
+    const tag = priceTag(floor, g, quote({ verb: "law", tags }));
+    tag.count = { whip: Object.fromEntries(g.members.map((m) => [m.id, 0.6])) };
+    const row = previewOf(floor, g, tag)!.factions.find((f) => f.id === "tidebound")!;
+    expect(row[bucket]).toBe(6);
+    expect(row.reason).toBe(reason);
+  });
+}
+
+test("a veto group refuses an act over its red line whatever its support", () => {
+  const g = game();
+  g.holders.league.support = 90;
+  const p: Pack = { ...carded, constitution: { ...carded.constitution!, instruments: { ...carded.constitution!.instruments,
+    force: { ...carded.constitution!.instruments.force, vetoes: ["league"] } } } };
+  expect(priceTag(p, g, quote({ verb: "force" })).vetoes).toEqual([{ id: "league", name: "the Grain League", agrees: false, reason: "Red line: Troops on the quay" }]);
+  expect(priceTag(p, g, quote({ verb: "force", tags: [] })).vetoes![0].agrees).toBe(false);
+  expect(blocker(p, g, "force")).toBeUndefined();          // with no act in hand, only its support counts
+});
+
+test("a decree is paid for, costs support where it hits and wins it where it serves", () => {
+  const g = game();
+  g.holders.guard.support = 40;
+  const street = g.holders.street.support;
   const before = g.ledgers.authority;
-  const tag = priceTag(pack, g, quote({ serves: ["council"], hits: ["league", "street"] }));
+  const tag = priceTag(pack, g, quote({ serves: ["guard"], hits: ["league", "street"] }));
   const wire = commit(pack, g, tag);
   expect(g.ledgers.authority).toBe(before - 3);
-  expect(g.holders.league.resistance).toBe(8);        // RESIST_HIT
-  expect(g.holders.street.resistance).toBe(8);
-  expect(g.holders.council.resistance).toBe(22);      // 20, eased 10 for the service, then 12 for the bypass
-  expect(g.holders.guard.resistance).toBe(0);         // it was neither served nor hit
-  expect(wire.some((w) => w.kind === "resistance")).toBe(true);
+  expect(g.holders.league.support).toBe(42);          // SUPPORT_HIT 8
+  expect(g.holders.street.support).toBeCloseTo(street - 8, 0);
+  expect(g.holders.guard.support).toBe(50);           // SUPPORT_SERVE 10
+  expect(g.holders.own.support).toBe(55);             // it was neither served nor hit
+  expect(wire.some((w) => w.kind === "support")).toBe(true);
   expect(g.acts.at(-1)).toMatchObject({ turn: 1, verb: "decree", title: "Raise the harbour levy", credibility: 1 });
   expect(g.tag).toBeNull();
 });
 
-test("a decree that could have been a law raises the chamber's resistance on top", () => {
+test("a decree that could have been a law costs the chamber seats on top", () => {
   const g = game();
   const tag = priceTag(pack, g, quote({ hits: [] }));
   commit(pack, g, tag);
-  expect(g.holders.council.resistance).toBe(12);      // RESIST_BYPASS: the council could have made this
+  expect(g.holders.council.support).toBe(29.2);       // SUPPORT_BYPASS 12 is 3 of 24 seats: 10 back you, then 7
 });
 
 test("an act with a rate goes on the books and can be withdrawn for authority", () => {
@@ -105,7 +191,7 @@ test("an act with a rate goes on the books and can be withdrawn for authority", 
   commit(pack, g, tag);
   expect(g.inForce).toHaveLength(1);
   expect(g.inForce[0].perTurn[0].delta).toBe(6);
-  expect(g.inForce[0].repealConsent).toBe("none");
+  expect(g.inForce[0].repealVetoes).toEqual([]);
   const id = g.inForce[0].id;
   const a = g.ledgers.authority;
   withdraw(pack, g, id);
@@ -136,7 +222,7 @@ test("a law tag puts a bill on the floor, and its rate and promise wait for the 
   expect(g.bills[0].tags).toEqual(["tariffs"]);
   expect(g.bills[0].title).toBe("Raise the harbour levy");
   expect(g.phase).toBe("whip");
-  expect(g.holders.council.resistance).toBe(0);   // a law is the chamber's own door, so no bypass rise
+  expect(g.holders.council.support).toBe(41.7);   // a law is the chamber's own door, so no bypass cost
   expect(g.inForce).toEqual([]);
   expect(g.promises.tariffs.passed).toBe(0);
   g.bills[0].whip = Object.fromEntries(g.members.map((m) => [m.id, 1]));
@@ -160,26 +246,26 @@ import { SPEND_LIFT } from "./acts";
 test("spending on two regions lifts only those two, scaled by credibility", () => {
   const g = game();
   g.ledgers.treasury = 40;
-  const before = { ...g.ledgers.popularity };
+  const before = { ...g.regions };
   const two = [pack.regions[0].id, pack.regions[1].id];
   const tag = priceTag(pack, g, quote({
-    verb: "spend", credibility: 0.8, regions: two, serves: ["street"],
+    verb: "spend", credibility: 0.8, regions: two, serves: ["guard"],
     cost: { authority: 0, treasury: 20, chest: 0 },
   }));
   commit(pack, g, tag);
   expect(g.ledgers.treasury).toBe(20);
   const lift = Math.round((20 * SPEND_LIFT * 0.8) / 2 * 10) / 10;
-  expect(g.ledgers.popularity[two[0]]).toBeCloseTo(before[two[0]] + lift, 1);
-  expect(g.ledgers.popularity[two[1]]).toBeCloseTo(before[two[1]] + lift, 1);
-  expect(g.ledgers.popularity[pack.regions[2].id]).toBeCloseTo(before[pack.regions[2].id], 5);
+  expect(g.regions[two[0]]).toBeCloseTo(before[two[0]] + lift, 1);
+  expect(g.regions[two[1]]).toBeCloseTo(before[two[1]] + lift, 1);
+  expect(g.regions[pack.regions[2].id]).toBeCloseTo(before[pack.regions[2].id], 5);
 });
 
 test("a spend that names no region is spread over the whole polity", () => {
   const g = game();
   g.ledgers.chest = 30;
-  const before = { ...g.ledgers.popularity };
+  const before = { ...g.regions };
   commit(pack, g, priceTag(pack, g, quote({ verb: "spend", cost: { authority: 0, treasury: 0, chest: 12 } })));
-  for (const r of pack.regions) expect(g.ledgers.popularity[r.id]).toBeGreaterThan(before[r.id]);
+  for (const r of pack.regions) expect(g.regions[r.id]).toBeGreaterThan(before[r.id]);
 });
 
 test("the campaign discount cuts a price and never what the money buys", () => {
@@ -193,14 +279,14 @@ test("the campaign discount cuts a price and never what the money buys", () => {
   expect(late.charge.treasury).toBe(early.charge.treasury);   // a spend's own sum is outside the discount
   commit(pack, g, early);
   commit(pack, h, late);
-  expect(h.ledgers.popularity[one]).toBeCloseTo(g.ledgers.popularity[one], 5);
+  expect(h.regions[one]).toBeCloseTo(g.regions[one], 5);
 });
 
-test("an appointment lowers the post's resistance and a second one replaces the first", () => {
+test("an appointment wins the post's support and a second one replaces the first", () => {
   const g = game();
-  g.holders.guard.resistance = 40;
+  g.holders.guard.support = 40;
   commit(pack, g, priceTag(pack, g, quote({ verb: "appoint", title: "A captain of the watch", serves: ["guard"] })));
-  expect(g.holders.guard.resistance).toBe(30);           // RESIST_SERVE
+  expect(g.holders.guard.support).toBe(50);              // SUPPORT_SERVE
   expect(g.inForce.map((l) => l.id)).toEqual(["appoint-guard"]);
   expect(g.inForce[0].verb).toBe("appoint");
 
@@ -242,28 +328,27 @@ test("a favour lifts the member and leaves a favour owed", () => {
 import { FORCE_ARMY_EASE, FORCE_ARMY_RISE, FORCE_POP_HIT, FORCE_RESENT } from "./acts";
 import { armyAllows, endTurn } from "./engine";
 
-test("force needs the army's stance, and the army is paid in resistance either way", () => {
+test("force needs the army's support, and moves the army's support either way", () => {
   const g = game();
-  expect(armyAllows(pack, g)).toBe(true);      // the guard opens at stance 0.5
-  g.holders.guard.resistance = 20;
-  const before = { ...g.ledgers.popularity };
-  const one = [pack.regions[0].id];
-  commit(pack, g, priceTag(pack, g, quote({ verb: "force", title: "The watch turned out", regions: one, hits: ["street"] })));
-  expect(g.holders.guard.resistance).toBe(20 - FORCE_ARMY_EASE);
-  // RESIST_HIT 8 from touch(), the street's own answer, and what the holder it fell on goes on resenting.
-  expect(g.holders.street.resistance).toBe(8 + FORCE_POP_HIT + FORCE_RESENT);
-  expect(g.ledgers.popularity[one[0]]).toBeCloseTo(before[one[0]] - FORCE_POP_HIT, 1);
-  expect(g.holders.street.stance).toBe(0.5);   // force moves resistance, never stance
+  expect(armyAllows(pack, g)).toBe(true);      // the guard opens at 50
+  const before = { ...g.regions };
+  const [one, two] = [pack.regions[0].id, pack.regions[1].id];
+  commit(pack, g, priceTag(pack, g, quote({ verb: "force", title: "The watch turned out", regions: [one], hits: ["street"] })));
+  expect(g.holders.guard.support).toBe(50 + FORCE_ARMY_EASE);
+  // Every region pays SUPPORT_HIT 8 from touch(), the street's own answer and the resentment of the group it fell
+  // on; the region it fell in pays FORCE_POP_HIT once more.
+  expect(g.regions[two]).toBeCloseTo(before[two] - 8 - FORCE_POP_HIT - FORCE_RESENT, 1);
+  expect(g.regions[one]).toBeCloseTo(before[one] - 8 - FORCE_POP_HIT - FORCE_RESENT - FORCE_POP_HIT, 1);
 });
 
 test("an unwilling army is turned out anyway and resents it", () => {
   const h = game();
-  h.holders.guard.stance = 0.2;
+  h.holders.guard.support = 20;
   expect(armyAllows(pack, h)).toBe(false);
-  expect(available(pack, h, "force")).toBe(false);
-  expect(pack.constitution!.instruments.force.consent).toBe("army");
+  expect(blocker(pack, h, "force")?.id).toBe("guard");
+
   commit(pack, h, priceTag(pack, h, quote({ verb: "force", title: "A curfew" })));
-  expect(h.holders.guard.resistance).toBe(FORCE_ARMY_RISE);
+  expect(h.holders.guard.support).toBe(20 - FORCE_ARMY_RISE);
 });
 
 import { DRIFT_GAIN, DRIFT_LOSS, EMERGENCY_COST, EMERGENCY_TURNS, MEDIA_STEP, TRUST_STEP } from "./acts";
@@ -290,10 +375,10 @@ test("emergency powers cost a lot, set the chamber aside, and lapse when the arm
   expect(tag.charge.authority).toBe(3 + EMERGENCY_COST);
   commit(pack, g, tag);
   expect(g.emergency).toBe(g.turn + EMERGENCY_TURNS);
-  expect(consentOf(pack, g, "law")).toBe("none");
-  g.holders.guard.stance = 0.2;
+  expect(vetoesOf(pack, g, "law")).toEqual([]);
+  g.holders.guard.support = 20;
   expect(armyAllows(pack, g)).toBe(false);
   endTurn(pack, g);
   expect(g.emergency).toBeNull();
-  expect(consentOf(pack, g, "law")).toBe("chamber");
+  expect(vetoesOf(pack, g, "law")).toEqual(["chamber"]);
 });
