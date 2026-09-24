@@ -1,7 +1,7 @@
-// The golden run: three prompts through the local worker, each to a ready pack, then one data sheet and one packed
+// The golden run: the three prompts, or the ones named, through the local worker, each to a ready pack, then one data sheet and one packed
 // world per prompt and one CSV row per build under docs/generation/golden/<day>/. Repeat it with the same command.
 //   bun run dev            (another shell; the local D1 migrated first)
-//   bun scripts/golden-builds.ts [baseUrl]
+//   bun scripts/golden-builds.ts [baseUrl] [slug ...]   (slugs pick some prompts; their run goes to <day>-<slugs>)
 //   bun scripts/golden-builds.ts --sheets [day]   (writes the sheets and README again from that day's runs.csv; no build)
 // Stops with exit 2 when the OpenRouter key's own meter passes the money cap; stop `bun run dev` then, since the
 // Workflows run inside it.
@@ -10,15 +10,19 @@ import { PackSchema, type Pack } from "../worker/pack";
 
 const SHEETS_ONLY = process.argv[2] === "--sheets";
 const BASE = (SHEETS_ONLY ? "" : (process.argv[2] ?? "http://localhost:5173")).replace(/\/$/, "");
-const MONEY_CAP = 6; // dollars for the whole run
 const TARGETS = { seconds: 220, dollars: 0.9, firstReadable: 90 };
-const PROMPTS: Record<string, string> = {
+const ALL_PROMPTS: Record<string, string> = {
   "ottoman-1908": "The Ottoman Empire after the Young Turk Revolution, 1908",
   "westeros-298": "Westeros, 298 AC",
   "fridge-parliament": "The Parliament of the Fridge",
 };
+const ONLY = SHEETS_ONLY ? [] : process.argv.slice(3);
+const PROMPTS = Object.fromEntries(
+  Object.entries(ALL_PROMPTS).filter(([slug]) => !ONLY.length || ONLY.includes(slug)),
+);
+const MONEY_CAP = Math.min(6, 3 * Object.keys(PROMPTS).length); // dollars for the whole run
 const DAY = (SHEETS_ONLY && process.argv[3]) || new Date().toISOString().slice(0, 10);
-const OUT = `docs/generation/golden/${DAY}`;
+const OUT = `docs/generation/golden/${DAY}${ONLY.length ? `-${ONLY.join("-")}` : ""}`;
 
 // The key is read only to ask OpenRouter for its meter; it is never printed or written.
 const key = readFileSync(".dev.vars", "utf8").match(
@@ -397,10 +401,10 @@ writeFileSync(
   `${OUT}/README.md`,
   `# Golden run ${DAY}
 
-Three prompts built end to end by generation v2 through the local worker (\`bun scripts/golden-builds.ts <baseUrl>\`), all three at once.
+The golden prompts built end to end by generation v2 through the local worker (\`bun scripts/golden-builds.ts <baseUrl> [slug ...]\`), ${rows.length} at once.
 Targets: total ${TARGETS.seconds} s (the plan estimates 250 to 290 s), first readable about ${TARGETS.firstReadable} s from the world step's start, about $${TARGETS.dollars} a world.
 "First readable" is the roster fragment, counted from the build's start; "bible" is also counted from the world step's start, as SPEED.md did.
-Dollars per build are the ledger (Opus and Grok only). The key meter for the whole run (Opus, Grok and Luna, three builds) was **$${spent}**.
+Dollars per build are the ledger (Opus and Grok only). The key meter for the whole run (Opus, Grok and Luna, every build) was **$${spent}**.
 
 ${table(
   [
