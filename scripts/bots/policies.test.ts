@@ -3,10 +3,10 @@ import { OWN_FAILURE, POLICIES, STYLES, mulberry } from "./policies";
 
 const view = (over: Record<string, unknown> = {}) => ({
   id: "g", turn: 3, term: 1, stage: "session", bar: 0.53,
-  ledgers: { treasury: 40, authority: 9, chest: 12, loyalty: 60, popularity: { r1: 44, r2: 61 } },
+  ledgers: { treasury: 40, authority: 9, chest: 12 }, regions: { r1: 44, r2: 61 },
   holders: [
-    { id: "army", name: "the legions", stance: 0.4, resistance: 55, line: 60, weight: 0, levers: ["force", "favour"], where: "home" },
-    { id: "senate", name: "the senate", stance: 0.5, resistance: 20, line: 70, weight: 0.4, levers: ["law"], where: "home" },
+    { id: "army", name: "the legions", support: 55, line: 50, weight: 0, levers: ["force", "favour"], where: "home" },
+    { id: "senate", name: "the senate", support: 60, line: 30, weight: 0.4, levers: ["law"], where: "home" },
   ],
   instruments: {
     decree: { name: "decree", available: true, affordable: true }, law: { name: "law", available: true, affordable: true },

@@ -15,7 +15,7 @@ export const TERM_MS = 1_200_000;   // TUNE: 20 minutes, the wall clock a single
 
 export type TurnLog = {
   run: string; policy: string; seed: number; term: number; turn: number; bar: number;
-  ledgers: unknown; holders: { id: string; stance: number; resistance: number; line: number; weight: number }[];
+  ledgers: unknown; holders: { id: string; support: number; line: number; weight: number }[];
   acts: { verb: string; expected: Record<string, number>; realised: Record<string, number> }[];
   whip: Whip | null;
   jev: { tokens: number; cost: number; calls: number; worst: number; ms: number };
@@ -40,7 +40,7 @@ const diff = (before: Record<string, number>, after: Record<string, number>) => 
   return out;
 };
 const holdersOf = (g: GameView) => ((g as never as { holders?: TurnLog["holders"] }).holders ?? [])
-  .map((h) => ({ id: h.id, stance: h.stance, resistance: h.resistance, line: h.line, weight: h.weight }));
+  .map((h) => ({ id: h.id, support: h.support, line: h.line, weight: h.weight }));
 // The expected effect at commit time is the pack's own price for that verb, which the view prices per turn.
 const priceOf = (g: GameView, verb: string): Record<string, number> => {
   const p = (g as never as { instruments?: Record<string, { price?: Record<string, number> }> }).instruments?.[verb]?.price ?? {};

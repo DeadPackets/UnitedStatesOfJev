@@ -65,7 +65,7 @@ while (g.stage === "session" || g.stage === "midterm" || g.stage === "test") {
     console.log(`\n${V.test} in ${ms(t0)}`);
     const t = g.test;
     if (t) {
-      for (const h of t.holders) console.log(`  ${h.counted ? "x" : " "} ${h.name.padEnd(24)} weight ${h.weight.toFixed(2)} stance ${h.stance.toFixed(3)}`);
+      for (const h of t.holders) console.log(`  ${h.counted ? "x" : " "} ${h.name.padEnd(24)} weight ${h.weight.toFixed(2)} support ${h.support.toFixed(1)}`);
       console.log(`  mandate ${t.mandate.toFixed(3)} against a bar of ${t.bar.toFixed(3)} -> ${t.won ? "WON" : "LOST"}`);
     } else console.log(`  an early test was survived; the term goes on at ${V.turn} ${g.turn}`);
     continue;
@@ -144,9 +144,9 @@ while (g.stage === "session" || g.stage === "midterm" || g.stage === "test") {
 
   g = await api(`/games/${g.id}/turn/end`, { turn });
   const L = g.ledgers;
-  const nat = g.pack.regions.reduce((a, r) => a + r.weight * (L.popularity[r.id] ?? 50), 0) / g.pack.regions.reduce((a, r) => a + r.weight, 0);
-  console.log(`     ledgers treasury ${L.treasury} authority ${L.authority} chest ${L.chest} loyalty ${L.loyalty} popularity ${nat.toFixed(1)}` +
-    ` | calls ${g.calls.spent}/${g.calls.cap} | room ${g.holders.map((h) => `${h.id} ${Math.round(h.resistance)}/${h.line}`).join(" ")}`);
+  const nat = g.pack.regions.reduce((a, r) => a + r.weight * (g.regions[r.id] ?? 50), 0) / g.pack.regions.reduce((a, r) => a + r.weight, 0);
+  console.log(`     ledgers treasury ${L.treasury} authority ${L.authority} chest ${L.chest} popularity ${nat.toFixed(1)}` +
+    ` | calls ${g.calls.spent}/${g.calls.cap} | room ${g.holders.map((h) => `${h.id} ${Math.round(h.support)}/${h.line}`).join(" ")}`);
   for (const w of g.wire.slice(0, 4)) console.log(`     wire ${w.kind} ${w.ledger ?? w.id ?? ""} ${w.delta > 0 ? "+" : ""}${w.delta} (${w.cause})`);
   if (g.pending) console.log(`     next: ${g.pending}`);
   timings.push(performance.now() - t0);
