@@ -174,7 +174,7 @@ You write the people of the chamber. Each row already has its name, gender, look
 - core_issues: 1 to 3 ids from the tags list.
 - tell: one visible habit a whip would read, at most 18 words.
 - patrons: 0 to 2 ids from the patrons list.
-- wants: 1 to 3 tags of acts this member wants from the ruler, each 1 to 3 words ("Dock wages").
+- wants: 1 to 3 tags of acts this member wants from the ruler, each 1 to 3 words ("Dock wages"). Wants and hates are words the player reads, never ids from the tags list.
 - hates: 1 to 3 tags of acts this member fights, exactly one with red_line true: the act that turns them for good. A member who takes no money has the hate tag "Bribes".
 - strike: one short line, third person, on what they do when they turn on the ruler.
 Every row is a different person: different work, different route into politics, different habit. Two rows must never read as the same person.

@@ -154,6 +154,12 @@ function FileShell({
   );
 }
 
+// A tag a model wrote as an id ("thermostat-down") or in lower case still reads as words.
+const words = (tag: string) => {
+  const text = tag.replaceAll("-", " ");
+  return text[0].toUpperCase() + text.slice(1);
+};
+
 function GlanceTags({ glance }: { glance: Glance }) {
   const red = glance.hates.find((hate) => hate.redLine);
   return (
@@ -164,7 +170,7 @@ function GlanceTags({ glance }: { glance: Glance }) {
           {glance.wants.map((want) => (
             <li key={want} className="tg tw">
               <Icon id="i-check" />
-              <span>{want}</span>
+              <span>{words(want)}</span>
             </li>
           ))}
         </ul>
@@ -177,13 +183,13 @@ function GlanceTags({ glance }: { glance: Glance }) {
             .map((hate) => (
               <li key={hate.tag} className="tg th">
                 <Icon id="i-x" />
-                <span>{hate.tag}</span>
+                <span>{words(hate.tag)}</span>
               </li>
             ))}
           {red ? (
             <li className="tg red">
               <Icon id="i-flame" />
-              <span>{red.tag}</span>
+              <span>{words(red.tag)}</span>
               <small>Red line</small>
             </li>
           ) : null}
