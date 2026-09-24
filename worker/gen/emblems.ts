@@ -1,11 +1,12 @@
 // One emblem per group, drawn by the model as allowlisted SVG shapes, then three guards before any reaches the desk
 // (owner, 2026-09-24): Stage 0's sanitizer; a second call that judges each emblem at 28 px and, in a known story or
 // history, against its known device (Decision 9); and the line icon for every emblem that fails, is filtered or never
-// arrives. Nothing here throws: emblems are decoration, and a build never fails for one.
+// arrives. A model stop never fails a build, since emblems are decoration; the build's budget still stops it.
 import type { z } from "zod";
 import { sanitizeEmblem, type Emblem } from "../emblem";
-import { ModelStop, type Caller } from "./openrouter";
+import { GROK, ModelStop, OPUS, nullOnStop, type Caller } from "./openrouter";
 import { EmblemReplySchema, EmblemReviewSchema } from "./schemas";
+import { worldCall } from "./world";
 import { EMBLEM_SYSTEM, REVIEW_SYSTEM } from "./writing";
 
 export type EmblemGroup = { id: string; name: string; identity: string };
@@ -55,23 +56,30 @@ export async function emblemsFor(
   world: EmblemWorld,
   groups: EmblemGroup[],
 ): Promise<{ emblems: Record<string, Emblem>; report: EmblemReport }> {
-  const ask = (namesOnly: boolean) =>
-    call({
-      name: namesOnly ? "emblems-names" : "emblems",
-      schema: EmblemReplySchema,
-      system: EMBLEM_SYSTEM,
-      user: brief(world, groups, namesOnly),
-      maxTokens: 24000,
-    });
+  // The fridge brief tripped the filter on its botulinum text; the same call with names only passed (emblems-report.md).
+  // When that is filtered too, Grok draws them once: the owner's content-filter fallback. Each is a new call, not a retry.
+  const attempts = [
+    { name: "emblems", namesOnly: false, model: OPUS },
+    { name: "emblems-names", namesOnly: true, model: OPUS },
+    { name: "emblems-grok", namesOnly: false, model: GROK },
+  ];
   let namesOnly = false;
   let reply: z.infer<typeof EmblemReplySchema> | null = null;
-  try {
-    reply = await ask(false);
-  } catch (error) {
-    // The fridge brief tripped the filter on its botulinum text; the same call with names only passed (emblems-report.md).
-    if (error instanceof ModelStop && error.reason === "content_filter") {
-      namesOnly = true;
-      reply = await ask(true).catch(() => null);
+  for (const attempt of attempts) {
+    try {
+      reply = await call({
+        name: attempt.name,
+        schema: EmblemReplySchema,
+        system: EMBLEM_SYSTEM,
+        user: brief(world, groups, attempt.namesOnly),
+        maxTokens: 24000,
+        model: attempt.model,
+      });
+      namesOnly = attempt.namesOnly;
+      break;
+    } catch (error) {
+      if (!(error instanceof ModelStop)) throw error;
+      if (error.reason !== "content_filter") break;
     }
   }
   const drawn: Record<string, Emblem> = {};
@@ -98,7 +106,7 @@ export async function emblemsFor(
       motif: motifs.get(id),
       emblem,
     }));
-    review = await call({
+    review = await worldCall(call, {
       name: "emblem-review",
       schema: EmblemReviewSchema,
       system: REVIEW_SYSTEM,
@@ -106,8 +114,8 @@ export async function emblemsFor(
       maxTokens: 8000,
       strict: true,
     })
-      .then((answer) => answer.emblems)
-      .catch(() => null);
+      .then((answer) => answer.data.emblems)
+      .catch(nullOnStop);
   }
   const { kept, dropped: refused } = keepEmblems(drawn, review, world.kind);
   return {

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import type { Emblem } from "../emblem";
 import { emblemsFor, keepEmblems } from "./emblems";
-import { ModelStop, type Caller, type CallRequest } from "./openrouter";
+import { GROK, ModelStop, OPUS, type Caller, type CallRequest } from "./openrouter";
 
 const disc: Emblem = {
   size: 64,
@@ -47,12 +47,13 @@ const drawn = (id: string, elements: unknown[]) => ({
 });
 const circle = { tag: "circle", cx: 32, cy: 32, r: 26, fill: "ink" };
 
-// A fake Opus: the first emblem call can be filtered; the review says every emblem it sees is legible and fits.
-function fake(options: { filterFirst?: boolean; failReview?: boolean; emblems: unknown[] }) {
+// A fake Opus: named calls can be filtered on Opus (Grok is never filtered); the review says every emblem it sees is
+// legible and fits.
+function fake(options: { filtered?: string[]; failReview?: boolean; emblems: unknown[] }) {
   const requests: CallRequest<unknown>[] = [];
   const call = (async (request: CallRequest<unknown>) => {
     requests.push(request);
-    if (request.name === "emblems" && options.filterFirst)
+    if (options.filtered?.includes(request.name) && request.model !== GROK)
       throw new ModelStop("content_filter", "filtered");
     if (request.name === "emblem-review") {
       if (options.failReview) throw new ModelStop("invalid", "bad review");
@@ -66,20 +67,45 @@ function fake(options: { filterFirst?: boolean; failReview?: boolean; emblems: u
   return { call, requests };
 }
 
-test("a filtered emblem call is resent once with names only, and its emblems are sanitized and reviewed", async () => {
-  const model = fake({
-    filterFirst: true,
-    emblems: [drawn("lions", [circle]), drawn("stags", [circle])],
-  });
-  const { emblems, report } = await emblemsFor(model.call, world, groups);
-  expect(model.requests.map((request) => request.name)).toEqual([
-    "emblems",
-    "emblems-names",
-    "emblem-review",
-  ]);
-  expect(model.requests[1].user).not.toContain("The richest house");
-  expect(Object.keys(emblems)).toEqual(["lions", "stags"]);
-  expect(report).toMatchObject({ asked: 2, drawn: 2, kept: 2, namesOnly: true });
+// The fridge: its emblem call and the names-only resend were both filtered, so Grok, the owner's fallback, draws them.
+test.each([
+  ["the names-only resend passes", ["emblems"], "emblems-names emblem-review", true],
+  [
+    "the resend is filtered too, so Grok draws once from the full brief",
+    ["emblems", "emblems-names"],
+    "emblems-names emblems-grok emblem-review",
+    false,
+  ],
+  [
+    "the review is filtered as well, so Grok reviews",
+    ["emblems", "emblems-names", "emblem-review"],
+    "emblems-names emblems-grok emblem-review emblem-review",
+    false,
+  ],
+])(
+  "a filtered emblem call: when %s, the emblems are sanitized, reviewed and kept",
+  async (_label, filtered, calls, namesOnly) => {
+    const model = fake({ filtered, emblems: [drawn("lions", [circle]), drawn("stags", [circle])] });
+    const { emblems, report } = await emblemsFor(model.call, world, groups);
+    expect(model.requests.map((request) => request.name).join(" ")).toBe(`emblems ${calls}`);
+    expect(model.requests[1].user).not.toContain("The richest house");
+    const grok = model.requests.find((request) => request.name === "emblems-grok");
+    if (grok)
+      expect(grok).toMatchObject({
+        model: GROK,
+        user: expect.stringContaining("The richest house"),
+      });
+    expect(model.requests.at(-1)?.model).toBe(filtered.includes("emblem-review") ? GROK : OPUS);
+    expect(Object.keys(emblems)).toEqual(["lions", "stags"]);
+    expect(report).toMatchObject({ asked: 2, drawn: 2, kept: 2, namesOnly });
+  },
+);
+
+test("the build's budget is not a model stop: it stops the emblems instead of dropping them to line icons", async () => {
+  const call = (async () => {
+    throw new Error("This world ran past its build budget.");
+  }) as unknown as Caller;
+  await expect(emblemsFor(call, world, groups)).rejects.toThrow("budget");
 });
 
 test("an emblem the sanitizer refuses, or one never drawn, falls back to the line icon with its reason", async () => {
