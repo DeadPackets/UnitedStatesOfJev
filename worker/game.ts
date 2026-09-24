@@ -91,6 +91,7 @@ import {
   type Env,
 } from "./jev";
 import { endPlay, getScenario } from "./db";
+import { deskView } from "./desk";
 import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import {
   amendBill,
@@ -225,7 +226,7 @@ export class GameDO extends DurableObject<Env> {
       } finally {
         this.busy = false;
       }
-      return this.reply(s, pack, extra);
+      return this.reply(s, pack, extra, before.game);
     } catch (e) {
       if (e instanceof Reject) return Response.json({ error: e.message }, { status: e.status });
       if (e instanceof UpstreamError)
@@ -236,7 +237,7 @@ export class GameDO extends DurableObject<Env> {
     }
   }
 
-  private async reply(s: Saved, pack?: Pack, extra: Extra = {}) {
+  private async reply(s: Saved, pack?: Pack, extra: Extra = {}, previous?: Game) {
     // Off in production: BOTS is set only by the measurement config, so no player ever sees a token count.
     if (this.env.BOTS === "1")
       extra = {
@@ -250,7 +251,7 @@ export class GameDO extends DurableObject<Env> {
           lunaCost: meter.lunaCost,
         },
       };
-    return Response.json(view(pack ?? (await this.loadPack(s.game.pack)), s, extra));
+    return Response.json(view(pack ?? (await this.loadPack(s.game.pack)), s, extra, previous));
   }
 
   /* ---------- storage ---------- */
@@ -1031,7 +1032,7 @@ const instrumentRows = (pack: Pack, game: Game): Partial<Record<Verb, Instrument
 };
 
 // Personas never leave the Worker: members lose bio and tell, citizens keep five fields, the deck stays behind.
-export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
+export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}, previous?: Game) {
   const { director: _hidden, members, bills, extra: _deck, ...rest } = game;
   const pv = packView(pack);
   const start = pack.starts.find((x) => x.faction === game.faction);
@@ -1044,6 +1045,7 @@ export function view(pack: Pack, { game, prose }: Saved, extra: Extra = {}) {
     ...(game.result ? { result: { ...game.result, ...runStyle(pack, game) } } : {}),
     scenario: game.pack,
     pack: pv,
+    desk: deskView(pack, game, previous),
     // What an offer costs this term, priced here so the drawer never reads the pack's own number.
     lobbyCosts: Object.fromEntries(
       (Object.keys(LOBBY_COSTS) as LobbyAction[]).map((k) => [k, lobbyCost(game, k)]),

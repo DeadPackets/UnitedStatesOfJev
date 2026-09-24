@@ -7,6 +7,7 @@ import {
   encodeCode,
   hash,
   newGame,
+  publicHolder,
   scenarioTag,
   SUPPORT_HIT,
   SURVIVAL_BAR,
@@ -14,6 +15,7 @@ import {
 } from "./engine";
 import { PackSchema, type Citizen, type Glance, type Pack } from "./pack";
 import mini from "./fixtures/mini.json";
+import { DEFAULT_THEME_TOKENS } from "./tokens";
 
 const citizens = (): Citizen[] =>
   Array.from({ length: 250 }, (_, i) => ({
@@ -1509,3 +1511,51 @@ test("a daily run writes its grid to the play row exactly once, and a free run w
   await run("daily", 2);
   expect(writes).toHaveLength(1);
 });
+
+test("a pack stored before R36 gets the default theme and a line icon and tint on every rim row", () => {
+  const { view } = seatedGame(80);
+  const desk = view().desk;
+  expect(desk.theme).toEqual(DEFAULT_THEME_TOKENS);
+  for (const row of desk.rim)
+    expect([row.icon, row.tint.light, row.tint.dark].every(Boolean)).toBe(true);
+  expect(desk.rim.every((row) => row.emblem === null)).toBe(true);
+});
+
+// What the review of the signing request moved is what the receipt showed; per-turn rates wait for End turn and the
+// final vote line is derived. A vote also reads the citizens (Jev), which moves the public group on its own line.
+const moved = (lines: { target: string; id: string; delta: number; why: string }[], skip = "") =>
+  lines
+    .filter(
+      (line) => line.target !== "finalVote" && !line.why.startsWith("Every ") && line.id !== skip,
+    )
+    .map((line) => `${line.target}:${line.id}:${line.delta}`)
+    .sort();
+for (const verb of ["decree", "law"] as const) {
+  test(`a ${verb} lands at signing exactly as its receipt showed`, async () => {
+    stubModels(0.9);
+    const { game, post } = seatedGame(81);
+    // Every seat sure, so the real draw is the simulated one (the receipt forces hesitant seats one way).
+    for (const member of game.members) {
+      member.mood = 1;
+      member.loyalty = 100;
+    }
+    lawTag = verb === "law";
+    const priced = await post("acts/price", {
+      turn: 1,
+      text: "Raise the harbour levy on the wharf.",
+    });
+    const receipt = priced.body.desk.receipt;
+    const signed = await post("acts", { turn: 1 });
+    lawTag = false;
+    expect(moved(receipt.now).length).toBeGreaterThan(0);
+    expect(moved(signed.body.desk.review)).toEqual(moved(receipt.now));
+    if (verb !== "law") return;
+    const voted = await post("bills/1/vote", { turn: 1 });
+    const bill = voted.body.bills[0];
+    const street = publicHolder(pack)?.id ?? "";
+    expect(moved(voted.body.desk.review, street)).toEqual(
+      moved(bill.passed && !bill.struck ? receipt.pass : receipt.fail, street),
+    );
+    expect(voted.body.desk.verdict.order).toHaveLength(voted.body.members.length);
+  });
+}

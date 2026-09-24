@@ -18,6 +18,28 @@ import type {
   WireLine,
 } from "../worker/engine";
 import type { Citizen, Pack, PackView, Verb } from "../worker/pack";
+import type {
+  ChamberFaction,
+  Count,
+  DeskView,
+  Receipt,
+  ReceiptLine,
+  ResourceCard,
+  ReviewLine,
+  RimRow,
+  Verdict,
+} from "../worker/desk";
+export type {
+  ChamberFaction,
+  Count,
+  DeskView,
+  Receipt,
+  ReceiptLine,
+  ResourceCard,
+  ReviewLine,
+  RimRow,
+  Verdict,
+};
 
 /** What `GET /api/scenarios/:id` sends: `packView`, a Pack without citizens or member prose. */
 export type { PackView };
@@ -59,6 +81,7 @@ export type GameView = Omit<
   ledgers: Game["ledgers"];
   scenario: string;
   pack: PackView;
+  desk: DeskView;
   members: ViewMember[];
   bills: ViewBill[];
   citizens: Pick<Citizen, "id" | "region" | "bloc" | "name" | "weight">[];
@@ -164,6 +187,10 @@ export const api = {
   amend: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/amend`, { turn: g.turn }),
   adopt: (g: GameView, i: number) =>
     call<GameView>(`/games/${g.id}/bills/${g.turn}/amend/${i}`, { turn: g.turn }),
+  negotiate: (g: GameView, faction: string, term: string) =>
+    call<GameView>(`/games/${g.id}/acts/negotiate`, { turn: g.turn, faction, term }),
+  decline: (g: GameView, i: number) =>
+    call<GameView>(`/games/${g.id}/events/${i}/decline`, { turn: g.turn }),
   vote: (g: GameView) => call<GameView>(`/games/${g.id}/bills/${g.turn}/vote`, { turn: g.turn }),
   withdraw: (g: GameView, id: string) =>
     call<GameView>(`/games/${g.id}/acts/withdraw`, { turn: g.turn, id }),
