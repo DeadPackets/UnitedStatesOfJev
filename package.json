@@ -7,7 +7,9 @@
     "build": "tsc -b && vite build",
     "deploy": "vite build && wrangler deploy",
     "test": "bun test worker src scripts",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "prepare": "git config core.hooksPath .githooks",
+    "format": "biome format --write"
   },
   "dependencies": {
     "@cf-wasm/photon": "^0.4.0",
@@ -17,6 +19,7 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.14",
     "@cloudflare/vite-plugin": "^1.52.1",
     "@types/bun": "^1.4.2",
     "@types/react": "^19.2.7",

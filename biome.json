@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": [
+      "src/**",
+      "worker/**",
+      "scripts/**",
+      "*.ts",
+      "*.json",
+      "!worker-configuration.d.ts"
+    ]
+  },
+  "formatter": { "indentStyle": "space", "lineWidth": 100 },
+  "linter": { "enabled": false },
+  "assist": { "enabled": false }
+}

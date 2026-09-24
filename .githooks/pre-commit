@@ -1,0 +1,6 @@
+#!/bin/sh
+# Format only what is staged, then re-stage it so the commit holds the formatted text.
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$files" ] && exit 0
+bunx biome format --write --no-errors-on-unmatched --files-ignore-unknown=true $files || exit 1
+git add $files
