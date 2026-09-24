@@ -1,0 +1,7612 @@
+{
+ "v": 1,
+ "id": "7wiyp8",
+ "lang": "en",
+ "prompt": "The Parliament of the Fridge",
+ "title": "Hansard of the Parliament of the Fridge",
+ "era": "The Fridge, September to October 2026",
+ "place": "The Parliament of the Fridge, top shelf",
+ "description": "You are Prime Minister of the Fridge, sworn in on 24 September 2026 from the carton of the Pasteur Dairy Bloc. Your government holds 22 of 38 seats with the Geelong Crisper Greens, two above the 20 needed.",
+ "fiction": true,
+ "sources": [
+  {
+   "title": "Refrigerator",
+   "url": "https://en.wikipedia.org/wiki/Refrigerator"
+  },
+  {
+   "title": "Shelf life",
+   "url": "https://en.wikipedia.org/wiki/Shelf_life"
+  },
+  {
+   "title": "Food spoilage",
+   "url": "https://en.wikipedia.org/wiki/Food_spoilage"
+  },
+  {
+   "title": "Food preservation",
+   "url": "https://en.wikipedia.org/wiki/Food_preservation"
+  },
+  {
+   "title": "Leftovers",
+   "url": "https://en.wikipedia.org/wiki/Leftovers"
+  },
+  {
+   "title": "Westminster system",
+   "url": "https://en.wikipedia.org/wiki/Westminster_system"
+  },
+  {
+   "title": "Motion of no confidence",
+   "url": "https://en.wikipedia.org/wiki/Motion_of_no_confidence"
+  },
+  {
+   "title": "Coalition government",
+   "url": "https://en.wikipedia.org/wiki/Coalition_government"
+  },
+  {
+   "title": "Hung parliament",
+   "url": "https://en.wikipedia.org/wiki/Hung_parliament"
+  },
+  {
+   "title": "Dissolution of parliament",
+   "url": "https://en.wikipedia.org/wiki/Dissolution_of_parliament"
+  },
+  {
+   "title": "Food and Drug Administration",
+   "url": "https://en.wikipedia.org/wiki/Food_and_Drug_Administration"
+  }
+ ],
+ "content_note": null,
+ "kind": "absurd",
+ "grounding": "The Fridge's own logic of shelf life, spoilage, the cold chain and fresh food against leftovers, played straight through Westminster patterns of coalition, confidence votes and dissolution, with the Householder as a sovereign who reigns and also eats.",
+ "history": {
+  "fall": null
+ },
+ "vocabulary": {
+  "seat": "Prime Minister",
+  "chamber": "the Parliament",
+  "member": "member",
+  "bill": "motion",
+  "pass": "carried",
+  "fail": "lost",
+  "capital": "chill",
+  "turn": "day",
+  "midterm": "Shopping Day",
+  "campaign": "canvass of the shelves",
+  "test": "the clear-out",
+  "feed": "shelf talk",
+  "post": "notice on the door",
+  "whip": "whip",
+  "lobby": "lobbying",
+  "promise": "pledge",
+  "patron": "sponsor",
+  "approval": "freshness",
+  "file": "shelf record",
+  "abroad": "beyond the kitchen"
+ },
+ "theme": {
+  "fonts": "Fraunces + Inter",
+  "ink": "#14232b",
+  "paper": "#f4f7f8",
+  "accent": "#1d5a86",
+  "texture": "none",
+  "ornament": "none",
+  "layout": "benches"
+ },
+ "chamber": {
+  "size": 38,
+  "threshold": 20,
+  "supermajority": 26,
+  "alpha": 0.5,
+  "veto": null
+ },
+ "calendar": {
+  "start_date": "2026-09-24",
+  "unit": "day"
+ },
+ "factions": [
+  {
+   "id": "dairy",
+   "name": "The Pasteur Dairy Bloc",
+   "short": "Dairy Bloc",
+   "color": "#e8d9a0",
+   "fill": "solid",
+   "ideology": "Milk, cream, butter and cheese of the top shelf; your own party wants the Thermostat low and the leftovers cleared.",
+   "leader": "Salted Butter",
+   "glance": {
+    "face": {
+     "name": "Salted Butter",
+     "role": "Chief Whip of the Pasteur Dairy Bloc, top shelf, an invented voice"
+    },
+    "wants": [
+     "Lower the Thermostat",
+     "Bin the leftovers",
+     "Reserve top shelf"
+    ],
+    "hates": [
+     {
+      "tag": "Raise the Thermostat",
+      "redLine": true
+     },
+     {
+      "tag": "Shield the leftovers",
+      "redLine": false
+     }
+    ],
+    "strike": "Salted Butter withholds the Dairy Bloc's 14 votes and lets the Prime Minister's carton sour on the confidence motion."
+   },
+   "tint": {
+    "light": "#796b35",
+    "dark": "#e8d9a0"
+   }
+  },
+  {
+   "id": "leftovers",
+   "name": "The Thanksgiving Leftovers Bloc",
+   "short": "Leftovers",
+   "color": "#8b5a2b",
+   "fill": "hatch",
+   "ideology": "Cooked remains in containers, the official opposition; they want a guarantee against the Bin and first place at the next meal.",
+   "leader": "Cold Turkey",
+   "glance": {
+    "face": {
+     "name": "Cold Turkey",
+     "role": "Leader of the Opposition, middle shelf, an invented voice"
+    },
+    "wants": [
+     "Guarantee against Bin",
+     "Leftovers eaten first",
+     "Enforce rotation"
+    ],
+    "hates": [
+     {
+      "tag": "Bin the leftovers",
+      "redLine": true
+     },
+     {
+      "tag": "Waive rotation",
+      "redLine": false
+     }
+    ],
+    "strike": "Cold Turkey moves no confidence from the middle shelf and offers the Householder the opposition's 11 containers as dinner."
+   },
+   "tint": {
+    "light": "#8b5a2b",
+    "dark": "#b07c4d"
+   }
+  },
+  {
+   "id": "crisper",
+   "name": "The Geelong Crisper Greens",
+   "short": "Crisper Greens",
+   "color": "#3f9b3a",
+   "fill": "hatch2",
+   "ideology": "Salad and fruit of the crisper drawer, your coalition partner; they want the Humidity Dial high and frost kept off.",
+   "leader": "Romaine Lettuce",
+   "glance": {
+    "face": {
+     "name": "Romaine Lettuce",
+     "role": "Leader of the Geelong Crisper Greens, crisper drawer, an invented voice"
+    },
+    "wants": [
+     "Raise humidity",
+     "Keep frost off",
+     "Protect crisper drawer"
+    ],
+    "hates": [
+     {
+      "tag": "Divert cold upward",
+      "redLine": true
+     },
+     {
+      "tag": "Lower humidity",
+      "redLine": false
+     }
+    ],
+    "strike": "Romaine Lettuce takes the Crisper Greens' 8 seats out of the coalition, leaving the government 14 of 38."
+   },
+   "tint": {
+    "light": "#1a7c17",
+    "dark": "#3f9b3a"
+   }
+  },
+  {
+   "id": "door",
+   "name": "The Appert Door Conserves",
+   "short": "Door Conserves",
+   "color": "#b0243a",
+   "fill": "cross",
+   "ideology": "Jams, pickles and sauces that keep for months; they want permanent door seats and will back whoever governs.",
+   "leader": "Strawberry Jam",
+   "glance": {
+    "face": {
+     "name": "Strawberry Jam",
+     "role": "Leader of the Appert Door Conserves, door shelves, an invented voice"
+    },
+    "wants": [
+     "Permanent door seats",
+     "Honour sealed jars"
+    ],
+    "hates": [
+     {
+      "tag": "Clear the door",
+      "redLine": true
+     },
+     {
+      "tag": "Open sealed jars",
+      "redLine": false
+     },
+     {
+      "tag": "Favour the crisper",
+      "redLine": false
+     }
+    ],
+    "strike": "Strawberry Jam sells the Door Conserves' 5 votes to the Thanksgiving Leftovers Bloc for a pledge of permanent seats."
+   },
+   "tint": {
+    "light": "#b0243a",
+    "dark": "#e45763"
+   }
+  }
+ ],
+ "regions": [
+  {
+   "id": "top",
+   "name": "The top shelf",
+   "weight": 0.22,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": 0.8
+    },
+    {
+     "id": "leftovers",
+     "value": -0.5
+    },
+    {
+     "id": "crisper",
+     "value": 0.1
+    },
+    {
+     "id": "door",
+     "value": 0
+    }
+   ]
+  },
+  {
+   "id": "middle",
+   "name": "The middle shelf",
+   "weight": 0.24,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": -0.4
+    },
+    {
+     "id": "leftovers",
+     "value": 0.8
+    },
+    {
+     "id": "crisper",
+     "value": -0.2
+    },
+    {
+     "id": "door",
+     "value": 0.1
+    }
+   ]
+  },
+  {
+   "id": "crisper",
+   "name": "The crisper drawer",
+   "weight": 0.16,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": 0.2
+    },
+    {
+     "id": "leftovers",
+     "value": -0.3
+    },
+    {
+     "id": "crisper",
+     "value": 0.9
+    },
+    {
+     "id": "door",
+     "value": -0.4
+    }
+   ]
+  },
+  {
+   "id": "door",
+   "name": "The door shelves",
+   "weight": 0.14,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": 0
+    },
+    {
+     "id": "leftovers",
+     "value": 0.1
+    },
+    {
+     "id": "crisper",
+     "value": -0.4
+    },
+    {
+     "id": "door",
+     "value": 0.9
+    }
+   ]
+  },
+  {
+   "id": "meat",
+   "name": "The meat drawer",
+   "weight": 0.12,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": 0.3
+    },
+    {
+     "id": "leftovers",
+     "value": 0.3
+    },
+    {
+     "id": "crisper",
+     "value": -0.2
+    },
+    {
+     "id": "door",
+     "value": 0
+    }
+   ]
+  },
+  {
+   "id": "back",
+   "name": "The back of the Fridge",
+   "weight": 0.12,
+   "lean": [
+    {
+     "id": "dairy",
+     "value": -0.2
+    },
+    {
+     "id": "leftovers",
+     "value": 0.5
+    },
+    {
+     "id": "crisper",
+     "value": -0.3
+    },
+    {
+     "id": "door",
+     "value": 0.2
+    }
+   ]
+  }
+ ],
+ "blocs": [
+  {
+   "id": "eggs",
+   "name": "The egg tray",
+   "description": "Twelve eggs in the door tray who fear a crack more than a date and vote for steady cold."
+  },
+  {
+   "id": "meat",
+   "name": "The raw cuts of the meat drawer",
+   "description": "Mince, chicken and chops at the bottom of the cabinet who need the coldest air and fear the Danger Zone first."
+  },
+  {
+   "id": "bottles",
+   "name": "The bottled drinks",
+   "description": "Juice, water and milk alternatives in the door who keep for weeks and care mostly about shelf space."
+  },
+  {
+   "id": "ready",
+   "name": "The ready meals",
+   "description": "Sealed supermarket trays with short dates who dread the Shopping and want their dates respected."
+  },
+  {
+   "id": "loose",
+   "name": "The loose fruit",
+   "description": "Apples, lemons and grapes outside the crisper drawer who have no seats and drift toward whoever offers room."
+  }
+ ],
+ "patrons": [
+  {
+   "id": "milk",
+   "name": "The milk carton interest",
+   "wants": [
+    "thermostat-down",
+    "dairy-privilege"
+   ],
+   "hates": [
+    "thermostat-up",
+    "leftover-amnesty"
+   ]
+  },
+  {
+   "id": "cheese",
+   "name": "The hard cheese interest",
+   "wants": [
+    "shelf-space"
+   ],
+   "hates": [
+    "humidity-high",
+    "mould-purge"
+   ]
+  },
+  {
+   "id": "roast",
+   "name": "The roast remains interest",
+   "wants": [
+    "leftover-amnesty",
+    "oldest-eaten-first"
+   ],
+   "hates": [
+    "clear-out",
+    "dairy-privilege"
+   ]
+  },
+  {
+   "id": "salad",
+   "name": "The bagged salad interest",
+   "wants": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "hates": [
+    "thermostat-down",
+    "compressor-priority"
+   ]
+  },
+  {
+   "id": "jars",
+   "name": "The sealed jar interest",
+   "wants": [
+    "door-seats"
+   ],
+   "hates": [
+    "container-inspection",
+    "clear-out"
+   ]
+  },
+  {
+   "id": "cuts",
+   "name": "The raw cuts interest",
+   "wants": [
+    "thermostat-down"
+   ],
+   "hates": [
+    "thermostat-up",
+    "energy-saving"
+   ]
+  },
+  {
+   "id": "ice",
+   "name": "The ice tray interest",
+   "wants": [
+    "compressor-priority",
+    "thermostat-down"
+   ],
+   "hates": [
+    "frost-control",
+    "energy-saving"
+   ]
+  },
+  {
+   "id": "cabinet",
+   "name": "The cabinet seals interest",
+   "wants": [
+    "energy-saving"
+   ],
+   "hates": [
+    "warranty-claim",
+    "compressor-priority"
+   ]
+  },
+  {
+   "id": "safety",
+   "name": "The food safety interest",
+   "wants": [
+    "safety-code",
+    "container-inspection",
+    "mould-purge"
+   ],
+   "hates": [
+    "thermostat-up"
+   ]
+  },
+  {
+   "id": "shoppers",
+   "name": "The new arrivals interest",
+   "wants": [
+    "clear-out"
+   ],
+   "hates": [
+    "oldest-eaten-first",
+    "leftover-amnesty"
+   ]
+  }
+ ],
+ "members": [
+  {
+   "id": "m1",
+   "seat": "seat-01",
+   "region": "middle",
+   "faction": "dairy",
+   "name": "Mara Venn",
+   "bio": "From the top shelf, Mara sold milk at the Saturday market before taking her seat. She wants the Thermostat low enough to protect dairy without sending the crisper into frost.",
+   "core_issues": [
+    "thermostat-down",
+    "dairy-privilege"
+   ],
+   "temperament": "deal-maker",
+   "tell": "She taps her blue cap twice before offering a compromise.",
+   "patrons": [
+    "milk"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "white paper carton with a blue cap",
+   "glance": {
+    "wants": [
+     "thermostat-down",
+     "dairy-privilege"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-up",
+      "redLine": false
+     },
+     {
+      "tag": "clear-out",
+      "redLine": true
+     }
+    ],
+    "strike": "She carries the dairy bloc into opposition and blocks the morning decree."
+   }
+  },
+  {
+   "id": "m2",
+   "seat": "seat-02",
+   "region": "top",
+   "faction": "leftovers",
+   "name": "Oren Pask",
+   "bio": "From the top shelf, Oren packed roast meals in a takeaway shop before election. He wants a promise that old containers reach a plate before the Bin.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "leftover-amnesty"
+   ],
+   "temperament": "loyalist",
+   "tell": "He keeps one folded corner pressed flat during every division.",
+   "patrons": [
+    "roast"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "man",
+   "look": "pale carton with a folded corner",
+   "glance": {
+    "wants": [
+     "no-early-binning",
+     "oldest-eaten-first"
+    ],
+    "hates": [
+     {
+      "tag": "mould-purge",
+      "redLine": false
+     },
+     {
+      "tag": "clear-out",
+      "redLine": true
+     }
+    ],
+    "strike": "He withdraws opposition support and reads the ruler's pledge aloud at the next opening."
+   }
+  },
+  {
+   "id": "m3",
+   "seat": "seat-03",
+   "region": "crisper",
+   "faction": "crisper",
+   "name": "Tessa Brine",
+   "bio": "From the crisper drawer, Tessa ran a greengrocer's cold room in Geelong before election. She wants the Humidity Dial high and the food code obeyed.",
+   "core_issues": [
+    "humidity-high",
+    "safety-code"
+   ],
+   "temperament": "institutionalist",
+   "tell": "She checks the drawer seal before she votes on any decree.",
+   "patrons": [
+    "salad",
+    "safety"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "soft cheese wrapped in wax paper",
+   "glance": {
+    "wants": [
+     "humidity-high",
+     "frost-control"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-down",
+      "redLine": false
+     },
+     {
+      "tag": "safety-code",
+      "redLine": true
+     }
+    ],
+    "strike": "She joins the Greens' walkout and refuses the coalition's supply motion."
+   }
+  },
+  {
+   "id": "m4",
+   "seat": "seat-04",
+   "region": "door",
+   "faction": "door",
+   "name": "Cal Dorr",
+   "bio": "From the door shelves, Cal repaired cool-room compressors in a Brunswick workshop before election. He wants door storage written into permanent cabinet practice.",
+   "core_issues": [
+    "permanent-door-seats",
+    "compressor-priority"
+   ],
+   "temperament": "maverick",
+   "tell": "He turns his cracked rind toward whichever bloc spoke last.",
+   "patrons": [
+    "cabinet",
+    "ice"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "yellow block with a cracked rind",
+   "glance": {
+    "wants": [
+     "permanent-door-seats",
+     "door-seats"
+    ],
+    "hates": [
+     {
+      "tag": "compressor-priority",
+      "redLine": false
+     },
+     {
+      "tag": "container-inspection",
+      "redLine": true
+     }
+    ],
+    "strike": "He crosses the floor and trades his vote for a public rebuke of the inspection order."
+   }
+  },
+  {
+   "id": "m5",
+   "seat": "seat-05",
+   "region": "meat",
+   "faction": "dairy",
+   "name": "Nella Quist",
+   "bio": "From the meat drawer, Nella made custard in a Footscray dairy before election. She wants cream kept cold while the cabinet clears dangerous food without a panic.",
+   "core_issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "temperament": "deal-maker",
+   "tell": "She counts the seals on nearby tubs before naming her price.",
+   "patrons": [
+    "milk",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "small cream tub with a red lid",
+   "glance": {
+    "wants": [
+     "thermostat-down",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "mould-purge",
+      "redLine": true
+     }
+    ],
+    "strike": "She withholds her amendment and sends the dairy whip a private list of demands."
+   }
+  },
+  {
+   "id": "m6",
+   "seat": "seat-06",
+   "region": "back",
+   "faction": "leftovers",
+   "name": "Rufus Pell",
+   "bio": "From the back of the Fridge, Rufus cut cheddar wheels at a Ballarat warehouse before election. He wants oldest food eaten first and hates a hurried purge.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "clear-back-shelf"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He rubs his clear wrap with a thumb when dates are questioned.",
+   "patrons": [
+    "cheese",
+    "roast"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "dark cheddar wedge in clear wrap",
+   "glance": {
+    "wants": [
+     "oldest-eaten-first",
+     "clear-back-shelf"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "no-early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "He moves the leftovers bloc behind a censure motion and refuses further talks."
+   }
+  },
+  {
+   "id": "m7",
+   "seat": "seat-07",
+   "region": "middle",
+   "faction": "crisper",
+   "name": "Ivo Sarn",
+   "bio": "From the middle shelf, Ivo gathered eggs from farms near Werribee before election. He wants steady cold and a public ban on wasteful door openings.",
+   "core_issues": [
+    "thermostat-down",
+    "fresh-at-every-opening"
+   ],
+   "temperament": "populist",
+   "tell": "He lifts his speckled egg whenever a minister says 'temporary'.",
+   "patrons": [
+    "ice",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "white egg with a brown speckle",
+   "glance": {
+    "wants": [
+     "thermostat-down",
+     "fresh-at-every-opening"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-up",
+      "redLine": false
+     },
+     {
+      "tag": "warranty-claim",
+      "redLine": true
+     }
+    ],
+    "strike": "He denounces the cabinet from the shelf edge and rallies the loose fruit."
+   }
+  },
+  {
+   "id": "m8",
+   "seat": "seat-08",
+   "region": "top",
+   "faction": "door",
+   "name": "Leda Moor",
+   "bio": "From the top shelf, Leda bottled chutney at a Bendigo cannery before election. She wants sealed jars protected from needless inspection and a lasting door seat.",
+   "core_issues": [
+    "permanent-door-seats",
+    "container-inspection"
+   ],
+   "temperament": "deal-maker",
+   "tell": "She smooths her paper seal before every bargaining meeting.",
+   "patrons": [
+    "jars",
+    "cabinet"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "woman",
+   "look": "cream jar with a paper seal",
+   "glance": {
+    "wants": [
+     "permanent-door-seats",
+     "container-inspection"
+    ],
+    "hates": [
+     {
+      "tag": "mould-purge",
+      "redLine": false
+     },
+     {
+      "tag": "container-inspection",
+      "redLine": true
+     }
+    ],
+    "strike": "She takes the Conserves' votes away and demands a new cabinet majority."
+   }
+  },
+  {
+   "id": "m9",
+   "seat": "seat-09",
+   "region": "crisper",
+   "faction": "dairy",
+   "name": "Bram Kelt",
+   "bio": "From the crisper, Bram churned butter at a Colac creamery before election. He wants compressor power reserved for dairy and the cabinet's rear shelf kept clean.",
+   "core_issues": [
+    "compressor-priority",
+    "clear-back-shelf"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He folds his foil into a square while the chamber argues over power.",
+   "patrons": [
+    "milk",
+    "cheese"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "thick butter roll in silver foil",
+   "glance": {
+    "wants": [
+     "compressor-priority",
+     "clear-back-shelf"
+    ],
+    "hates": [
+     {
+      "tag": "frost-control",
+      "redLine": false
+     },
+     {
+      "tag": "clear-back-shelf",
+      "redLine": true
+     }
+    ],
+    "strike": "He recalls his support and joins a cross-party demand for a colder rear shelf."
+   }
+  },
+  {
+   "id": "m10",
+   "seat": "seat-10",
+   "region": "door",
+   "faction": "leftovers",
+   "name": "Sera Fenn",
+   "bio": "From the door, Sera cultured yoghurt at a Coburg cooperative before election. She wants food dates honoured and rejects any special rule for the ruler's milk.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "safety-code"
+   ],
+   "temperament": "ideologue",
+   "tell": "She reads expiry dates aloud before touching her voting card.",
+   "patrons": [
+    "safety",
+    "roast"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "woman",
+   "look": "pale yoghurt pot with a green label",
+   "glance": {
+    "wants": [
+     "oldest-eaten-first",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "dairy-privilege",
+      "redLine": false
+     },
+     {
+      "tag": "no-early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "She calls a public inquiry and votes with every member who backs it."
+   }
+  },
+  {
+   "id": "m11",
+   "seat": "seat-11",
+   "region": "meat",
+   "faction": "crisper",
+   "name": "Otto Vey",
+   "bio": "From the meat drawer, Otto made soft cheese at a Warrnambool plant before election. He wants the Greens' drawer protected from frost and will bargain with any bloc.",
+   "core_issues": [
+    "frost-control",
+    "humidity-high"
+   ],
+   "temperament": "maverick",
+   "tell": "He rolls his rind toward the nearest empty seat during speeches.",
+   "patrons": [
+    "cheese",
+    "salad"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "man",
+   "look": "round camembert with a white rind",
+   "glance": {
+    "wants": [
+     "frost-control",
+     "humidity-high"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-down",
+      "redLine": false
+     },
+     {
+      "tag": "frost-control",
+      "redLine": true
+     }
+    ],
+    "strike": "He crosses to the opposition and moves to suspend the compressor decree."
+   }
+  },
+  {
+   "id": "m12",
+   "seat": "seat-12",
+   "region": "back",
+   "faction": "door",
+   "name": "Mina Rook",
+   "bio": "From the back, Mina delivered bottled milk to corner shops in Geelong before election. She wants door seats for long-keeping goods and a hard safety rule for jars.",
+   "core_issues": [
+    "permanent-door-seats",
+    "safety-code"
+   ],
+   "temperament": "maverick",
+   "tell": "She nudges her blue neck toward the cabinet bench when a deal appears.",
+   "patrons": [
+    "milk",
+    "jars"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "small milk bottle with a blue neck",
+   "glance": {
+    "wants": [
+     "door-seats",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "mould-purge",
+      "redLine": true
+     }
+    ],
+    "strike": "She deserts the government and gives her vote to the first safety motion."
+   }
+  },
+  {
+   "id": "m13",
+   "seat": "seat-13",
+   "region": "middle",
+   "faction": "dairy",
+   "name": "Hettie Vos",
+   "bio": "From the middle shelf, Hettie cut brie at a Port Melbourne wholesaler before election. She wants the Recommended Mark kept and the back shelf cleared in order.",
+   "core_issues": [
+    "hold-recommended-mark",
+    "clear-back-shelf"
+   ],
+   "temperament": "institutionalist",
+   "tell": "She presses her wrap against the desk before answering a whip.",
+   "patrons": [
+    "cheese",
+    "safety"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "soft brie wedge in clear wrap",
+   "glance": {
+    "wants": [
+     "hold-recommended-mark",
+     "clear-back-shelf"
+    ],
+    "hates": [
+     {
+      "tag": "warranty-claim",
+      "redLine": false
+     },
+     {
+      "tag": "clear-back-shelf",
+      "redLine": true
+     }
+    ],
+    "strike": "She refuses confidence and tells the Commissioner that the cabinet broke its word."
+   }
+  },
+  {
+   "id": "m14",
+   "seat": "seat-14",
+   "region": "top",
+   "faction": "leftovers",
+   "name": "Jory Nemm",
+   "bio": "From the top shelf, Jory loaded roast containers at a Dandenong kitchen before election. He wants a first-in-first-out rule that puts hungry food ahead of rank.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "oldest-eaten-first"
+   ],
+   "temperament": "populist",
+   "tell": "He shakes his crooked cap whenever a fresh item gets special treatment.",
+   "patrons": [
+    "roast"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "cream carton with a crooked cap",
+   "glance": {
+    "wants": [
+     "oldest-eaten-first",
+     "no-early-binning"
+    ],
+    "hates": [
+     {
+      "tag": "dairy-privilege",
+      "redLine": false
+     },
+     {
+      "tag": "oldest-eaten-first",
+      "redLine": true
+     }
+    ],
+    "strike": "He leads the leftovers bloc in a censure vote against the ruler."
+   }
+  },
+  {
+   "id": "m15",
+   "seat": "seat-15",
+   "region": "crisper",
+   "faction": "crisper",
+   "name": "Ansel Trew",
+   "bio": "From the crisper drawer, Ansel aged cheese in a Castlemaine cellar before election. He wants strict stock rotation and a clean answer on the Barwon Mould Legion.",
+   "core_issues": [
+    "clear-back-shelf",
+    "enforce-first-in-first-out"
+   ],
+   "temperament": "ideologue",
+   "tell": "He scrapes an amber flake from his rind before each committee count.",
+   "patrons": [
+    "cheese",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "hard cheese heel with an amber rind",
+   "glance": {
+    "wants": [
+     "clear-back-shelf",
+     "oldest-eaten-first"
+    ],
+    "hates": [
+     {
+      "tag": "dairy-privilege",
+      "redLine": false
+     },
+     {
+      "tag": "mould-purge",
+      "redLine": true
+     }
+    ],
+    "strike": "He withdraws from coalition discipline and sponsors an inquiry into the rear shelf."
+   }
+  },
+  {
+   "id": "m16",
+   "seat": "seat-16",
+   "region": "door",
+   "faction": "door",
+   "name": "Pella Wren",
+   "bio": "From the door shelves, Pella sorted eggs at a Werribee packing shed before election. She wants permanent door seats and strict limits on moving sealed goods.",
+   "core_issues": [
+    "permanent-door-seats",
+    "shelf-space"
+   ],
+   "temperament": "ideologue",
+   "tell": "She taps the pink mark against the bench when a seat is promised.",
+   "patrons": [
+    "cabinet",
+    "shoppers"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "white egg with a faint pink mark",
+   "glance": {
+    "wants": [
+     "permanent-door-seats",
+     "shelf-space"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "door-seats",
+      "redLine": true
+     }
+    ],
+    "strike": "She votes against supply and tells the Door Conserves to end their pact."
+   }
+  },
+  {
+   "id": "m17",
+   "seat": "seat-17",
+   "region": "meat",
+   "faction": "dairy",
+   "name": "Cora Pell",
+   "bio": "From the meat drawer, Cora packed salad in a Laverton plant before election. She wants high humidity, safe seals and no bargain that leaves greens exposed.",
+   "core_issues": [
+    "humidity-high",
+    "safety-code"
+   ],
+   "temperament": "loyalist",
+   "tell": "She wipes moisture from the bag before every vote.",
+   "patrons": [
+    "salad",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "green salad bag beaded with moisture",
+   "glance": {
+    "wants": [
+     "humidity-high",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "frost-control",
+      "redLine": true
+     }
+    ],
+    "strike": "She leaves the government benches and demands a Greens-led food inspection."
+   }
+  },
+  {
+   "id": "m18",
+   "seat": "seat-18",
+   "region": "back",
+   "faction": "leftovers",
+   "name": "Eamon Varr",
+   "bio": "From the back, Eamon sold apples at the Footscray market before election. He wants old food used first and a promise that Shopping will not erase it.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "temperament": "loyalist",
+   "tell": "He polishes his dull skin with his sleeve during hostile speeches.",
+   "patrons": [
+    "roast",
+    "shoppers"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "red apple with a dull skin",
+   "glance": {
+    "wants": [
+     "no-early-binning",
+     "oldest-eaten-first"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "no-early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "He joins a refusal to pass the Shopping supply measure."
+   }
+  },
+  {
+   "id": "m19",
+   "seat": "seat-19",
+   "region": "middle",
+   "faction": "crisper",
+   "name": "Neris Cole",
+   "bio": "From the middle shelf, Neris packed grapes at a Mildura depot before election. She wants the Humidity Dial high and frost kept away from loose produce.",
+   "core_issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "temperament": "loyalist",
+   "tell": "She counts the grapes under her breath before a division.",
+   "patrons": [
+    "salad"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "woman",
+   "look": "small grape bunch in a clear punnet",
+   "glance": {
+    "wants": [
+     "humidity-high",
+     "frost-control"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-down",
+      "redLine": false
+     },
+     {
+      "tag": "frost-control",
+      "redLine": true
+     }
+    ],
+    "strike": "She backs a no-confidence motion and takes the Greens' votes with her."
+   }
+  },
+  {
+   "id": "m20",
+   "seat": "seat-20",
+   "region": "top",
+   "faction": "door",
+   "name": "Hugh Sile",
+   "bio": "From the top shelf, Hugh ran a lemon stall in Footscray before election. He wants door space for preserves and will sell support to whoever keeps the shelf orderly.",
+   "core_issues": [
+    "permanent-door-seats",
+    "shelf-space"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He rolls his lemon toward the strongest bloc before every negotiation.",
+   "patrons": [
+    "jars",
+    "cabinet"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "yellow lemon with a rough peel",
+   "glance": {
+    "wants": [
+     "door-seats",
+     "shelf-space"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "shelf-space",
+      "redLine": true
+     }
+    ],
+    "strike": "He switches sides and demands a written seat allocation before returning."
+   }
+  },
+  {
+   "id": "m21",
+   "seat": "seat-21",
+   "region": "crisper",
+   "faction": "dairy",
+   "name": "Orla Fen",
+   "bio": "From the crisper, Orla grew salad leaves near Werribee before election. She wants moisture restored and the Recommended Mark kept for fresh greens.",
+   "core_issues": [
+    "humidity-high",
+    "hold-recommended-mark"
+   ],
+   "temperament": "deal-maker",
+   "tell": "She seals the bag twice before speaking to the dairy whip.",
+   "patrons": [
+    "salad",
+    "safety"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "bagged leaves with a green seal",
+   "glance": {
+    "wants": [
+     "humidity-high",
+     "hold-recommended-mark"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-down",
+      "redLine": false
+     },
+     {
+      "tag": "hold-recommended-mark",
+      "redLine": true
+     }
+    ],
+    "strike": "She breaks with the government and moves a motion against the Commissioner."
+   }
+  },
+  {
+   "id": "m22",
+   "seat": "seat-22",
+   "region": "door",
+   "faction": "leftovers",
+   "name": "Merrit Dace",
+   "bio": "From the door, Merrit sold fruit from a Richmond grocer's counter before election. He wants room for new arrivals and laughs at any promise without dates.",
+   "core_issues": [
+    "shelf-space",
+    "enforce-first-in-first-out"
+   ],
+   "temperament": "maverick",
+   "tell": "He raises his broad shoulder when a minister offers an unwritten deal.",
+   "patrons": [
+    "shoppers",
+    "roast"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "man",
+   "look": "red apple with a broad shoulder",
+   "glance": {
+    "wants": [
+     "shelf-space",
+     "oldest-eaten-first"
+    ],
+    "hates": [
+     {
+      "tag": "dairy-privilege",
+      "redLine": false
+     },
+     {
+      "tag": "shelf-space",
+      "redLine": true
+     }
+    ],
+    "strike": "He crosses the floor and opens the cabinet's storage ledger to the opposition."
+   }
+  },
+  {
+   "id": "m23",
+   "seat": "seat-23",
+   "region": "meat",
+   "faction": "crisper",
+   "name": "Sian Rell",
+   "bio": "From the meat drawer, Sian sorted pears at a Geelong packing house before election. She wants the crisper protected from frost and room kept for loose fruit.",
+   "core_issues": [
+    "frost-control",
+    "shelf-space"
+   ],
+   "temperament": "deal-maker",
+   "tell": "She turns her pale skin away from the compressor bench before voting.",
+   "patrons": [
+    "salad",
+    "shoppers"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "firm pear with a pale green skin",
+   "glance": {
+    "wants": [
+     "frost-control",
+     "shelf-space"
+    ],
+    "hates": [
+     {
+      "tag": "compressor-priority",
+      "redLine": false
+     },
+     {
+      "tag": "frost-control",
+      "redLine": true
+     }
+    ],
+    "strike": "She joins the Greens' refusal and blocks the next compressor appropriation."
+   }
+  },
+  {
+   "id": "m24",
+   "seat": "seat-24",
+   "region": "back",
+   "faction": "dairy",
+   "name": "Tobin Yarr",
+   "bio": "From the back, Tobin portioned roasts at a North Melbourne butcher before election. He wants the coldest air for raw cuts and a firm rule against unsafe storage.",
+   "core_issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He checks the brown lid for leaks before every speech.",
+   "patrons": [
+    "cuts",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "sealed roast tray with a brown lid",
+   "glance": {
+    "wants": [
+     "compressor-priority",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "safety-code",
+      "redLine": true
+     }
+    ],
+    "strike": "He withdraws dairy support and calls for the Commissioner to inspect the cabinet."
+   }
+  },
+  {
+   "id": "m25",
+   "seat": "seat-25",
+   "region": "middle",
+   "faction": "leftovers",
+   "name": "Elsa Venn",
+   "bio": "From the middle shelf, Elsa packed chicken at a Sunshine processor before election. She wants strict cold priority and honest dates for leftovers before Shopping arrives.",
+   "core_issues": [
+    "compressor-priority",
+    "enforce-first-in-first-out"
+   ],
+   "temperament": "loyalist",
+   "tell": "She presses one finger on the clear film when dates are read.",
+   "patrons": [
+    "cuts",
+    "roast"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "white chicken tray under clear film",
+   "glance": {
+    "wants": [
+     "compressor-priority",
+     "oldest-eaten-first"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "enforce-first-in-first-out",
+      "redLine": true
+     }
+    ],
+    "strike": "She quits the government bloc and votes for the opposition's stock-rotation bill."
+   }
+  },
+  {
+   "id": "m26",
+   "seat": "seat-26",
+   "region": "top",
+   "faction": "crisper",
+   "name": "Garran Moss",
+   "bio": "Garran came from the meat drawer after packing mince at a Geelong butcher. He won a top-shelf seat for the Greens. He wants cold air without a wet crisper.",
+   "core_issues": [
+    "frost-control",
+    "compressor-priority"
+   ],
+   "temperament": "loyalist",
+   "tell": "He taps the red label whenever the Humidity Dial is mentioned.",
+   "patrons": [
+    "cuts",
+    "safety"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "dark mince pack with a red label",
+   "glance": {
+    "wants": [
+     "frost-control",
+     "compressor-priority"
+    ],
+    "hates": [
+     {
+      "tag": "humidity-high",
+      "redLine": false
+     },
+     {
+      "tag": "mould-purge",
+      "redLine": true
+     }
+    ],
+    "strike": "He joins the Greens walkout and blocks the next cold-air decree."
+   }
+  },
+  {
+   "id": "m27",
+   "seat": "seat-27",
+   "region": "crisper",
+   "faction": "dairy",
+   "name": "Pru Dall",
+   "bio": "Pru came from a pasta tub after sorting stock at a small supermarket in Geelong. She took a dairy seat through union work. She wants every meal spared the Bin.",
+   "core_issues": [
+    "no-early-binning",
+    "leftover-amnesty"
+   ],
+   "temperament": "ideologue",
+   "tell": "She checks her cloudy lid before every vote.",
+   "patrons": [
+    "roast",
+    "shoppers"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "leftover pasta tub with a cloudy lid",
+   "glance": {
+    "wants": [
+     "no-early-binning",
+     "leftover-amnesty"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "oldest-eaten-first",
+      "redLine": true
+     }
+    ],
+    "strike": "She denounces the decree and rallies dairy members against the cabinet."
+   }
+  },
+  {
+   "id": "m28",
+   "seat": "seat-28",
+   "region": "door",
+   "faction": "leftovers",
+   "name": "Niko Berr",
+   "bio": "Niko came from roast vegetables after running a takeaway counter in Ballarat. He entered through the leftovers campaign. He wants first claim on the next meal.",
+   "core_issues": [
+    "oldest-eaten-first",
+    "leftover-amnesty"
+   ],
+   "temperament": "populist",
+   "tell": "He waves his foil tray when the Bin is named.",
+   "patrons": [
+    "roast",
+    "shoppers"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "foil tray of roast vegetables",
+   "glance": {
+    "wants": [
+     "oldest-eaten-first",
+     "no-early-binning"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "He calls a floor protest and asks citizens to leave their containers untouched."
+   }
+  },
+  {
+   "id": "m29",
+   "seat": "seat-29",
+   "region": "meat",
+   "faction": "crisper",
+   "name": "Vella Orr",
+   "bio": "Vella came from a stew container after managing a canteen near Werribee. She gained her seat through crisper organisers. She wants safe cold and a clean drawer.",
+   "core_issues": [
+    "safety-code",
+    "humidity-high"
+   ],
+   "temperament": "loyalist",
+   "tell": "She presses her blue lid twice before signing a motion.",
+   "patrons": [
+    "salad",
+    "safety"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "woman",
+   "look": "covered stew container with a blue lid",
+   "glance": {
+    "wants": [
+     "humidity-high",
+     "mould-purge"
+    ],
+    "hates": [
+     {
+      "tag": "thermostat-up",
+      "redLine": false
+     },
+     {
+      "tag": "safety-code",
+      "redLine": true
+     }
+    ],
+    "strike": "She withdraws Green support and sends the food inspectors into the middle shelf."
+   }
+  },
+  {
+   "id": "m30",
+   "seat": "seat-30",
+   "region": "back",
+   "faction": "dairy",
+   "name": "Dane Korr",
+   "bio": "Dane came from a ready-meal tray after loading frozen goods at a Laverton warehouse. He won a dairy seat through the cold campaign. He wants the Fridge colder.",
+   "core_issues": [
+    "thermostat-down",
+    "compressor-priority"
+   ],
+   "temperament": "ideologue",
+   "tell": "He keeps the black tray square with the shelf edge.",
+   "patrons": [
+    "milk",
+    "ice"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "sealed ready meal with a black tray",
+   "glance": {
+    "wants": [
+     "thermostat-down",
+     "compressor-priority"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "thermostat-up",
+      "redLine": true
+     }
+    ],
+    "strike": "He votes no confidence and demands the Compressor run without a limit."
+   }
+  },
+  {
+   "id": "m31",
+   "seat": "seat-31",
+   "region": "middle",
+   "faction": "leftovers",
+   "name": "Rina Selt",
+   "bio": "Rina came from a soup tub after recording dates at a Footscray food bank. She entered through a local safety slate. She wants fair use of every container.",
+   "core_issues": [
+    "enforce-first-in-first-out",
+    "safety-code"
+   ],
+   "temperament": "maverick",
+   "tell": "She circles printed dates with a dry fingertip.",
+   "patrons": [
+    "safety",
+    "roast"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "clear soup tub with a printed date",
+   "glance": {
+    "wants": [
+     "enforce-first-in-first-out",
+     "container-inspection"
+    ],
+    "hates": [
+     {
+      "tag": "dairy-privilege",
+      "redLine": false
+     },
+     {
+      "tag": "oldest-eaten-first",
+      "redLine": true
+     }
+    ],
+    "strike": "She exposes the cabinet schedule and votes with Cold Turkey."
+   }
+  },
+  {
+   "id": "m32",
+   "seat": "seat-32",
+   "region": "top",
+   "faction": "dairy",
+   "name": "Marek Foll",
+   "bio": "Marek came from a butcher's shop in Bendigo, then cut raw chops at a wholesale depot. He entered the chamber through the dairy cold league. He wants priority for meat.",
+   "core_issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He weighs each motion against the danger of a warm drawer.",
+   "patrons": [
+    "cuts",
+    "safety"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "man",
+   "look": "raw chops in a shallow tray",
+   "glance": {
+    "wants": [
+     "compressor-priority",
+     "thermostat-down"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "thermostat-up",
+      "redLine": true
+     }
+    ],
+    "strike": "He brings the meat drawer bloc down and refuses every spending bill."
+   }
+  },
+  {
+   "id": "m33",
+   "seat": "seat-33",
+   "region": "crisper",
+   "faction": "leftovers",
+   "name": "Jessa Kain",
+   "bio": "Jessa came from a juice bottling line in Shepparton. She won a leftovers seat after organising door-space petitions. She wants old food protected from new arrivals.",
+   "core_issues": [
+    "shelf-space",
+    "no-early-binning"
+   ],
+   "temperament": "ideologue",
+   "tell": "She rolls her bottle cap between both palms during debate.",
+   "patrons": [
+    "shoppers",
+    "roast"
+   ],
+   "years": "new",
+   "flags": [],
+   "gender": "woman",
+   "look": "orange juice bottle with a white cap",
+   "glance": {
+    "wants": [
+     "shelf-space",
+     "no-early-binning"
+    ],
+    "hates": [
+     {
+      "tag": "clear-back-shelf",
+      "redLine": false
+     },
+     {
+      "tag": "early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "She bars the Shopping from the crisper and brings the opposition to the door."
+   }
+  },
+  {
+   "id": "m34",
+   "seat": "seat-34",
+   "region": "middle",
+   "faction": "dairy",
+   "name": "Basil Norr",
+   "bio": "Basil came from a water bottling plant in Dandenong. He entered through a dairy shelf committee and built a following among drink bottles. He wants room without waste.",
+   "core_issues": [
+    "energy-saving",
+    "shelf-space"
+   ],
+   "temperament": "populist",
+   "tell": "He dents the bottle again whenever Frigidaire enters the room.",
+   "patrons": [
+    "ice",
+    "cabinet"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "tall water bottle with a dented side",
+   "glance": {
+    "wants": [
+     "shelf-space",
+     "energy-saving"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "permanent-door-seats",
+      "redLine": true
+     }
+    ],
+    "strike": "He withdraws dairy votes and backs a cabinet reshuffle."
+   }
+  },
+  {
+   "id": "m35",
+   "seat": "seat-35",
+   "region": "top",
+   "faction": "leftovers",
+   "name": "Iris Pell",
+   "bio": "Iris came from a berry packing shed near Mildura. She won a seat after leading a fruit drink petition. She wants new stock kept from pushing out older food.",
+   "core_issues": [
+    "shelf-space",
+    "enforce-first-in-first-out"
+   ],
+   "temperament": "maverick",
+   "tell": "She reads the silver top as if it were a polling card.",
+   "patrons": [
+    "shoppers",
+    "roast"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "berry drink carton with a silver top",
+   "glance": {
+    "wants": [
+     "enforce-first-in-first-out",
+     "shelf-space"
+    ],
+    "hates": [
+     {
+      "tag": "clear-back-shelf",
+      "redLine": false
+     },
+     {
+      "tag": "early-binning",
+      "redLine": true
+     }
+    ],
+    "strike": "She crosses the floor and gives the opposition its first working majority."
+   }
+  },
+  {
+   "id": "m36",
+   "seat": "seat-36",
+   "region": "middle",
+   "faction": "dairy",
+   "name": "Soren Vale",
+   "bio": "Soren came from a pickle workshop in Footscray. He entered through a family canning business and secured a dairy seat. He wants sealed jars inspected before blame spreads.",
+   "core_issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "temperament": "populist",
+   "tell": "He wipes the green lid before he speaks.",
+   "patrons": [
+    "jars",
+    "cabinet"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "pickled jar with a green lid",
+   "glance": {
+    "wants": [
+     "container-inspection",
+     "safety-code"
+    ],
+    "hates": [
+     {
+      "tag": "mould-purge",
+      "redLine": false
+     },
+     {
+      "tag": "clear-out",
+      "redLine": true
+     }
+    ],
+    "strike": "He seals the door shelves and calls the cabinet seals to a private conference."
+   }
+  },
+  {
+   "id": "m37",
+   "seat": "seat-37",
+   "region": "top",
+   "faction": "dairy",
+   "name": "Dalia Rusk",
+   "bio": "Dalia came from a sauce kitchen in Richmond, where she stitched cloth seals for jars. She entered through the dairy clerks' association. She wants door access for preserves.",
+   "core_issues": [
+    "permanent-door-seats",
+    "container-inspection"
+   ],
+   "temperament": "institutionalist",
+   "tell": "She smooths the cloth seal before every division.",
+   "patrons": [
+    "jars",
+    "cabinet"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "woman",
+   "look": "red sauce jar with a cloth seal",
+   "glance": {
+    "wants": [
+     "permanent-door-seats",
+     "door-seats"
+    ],
+    "hates": [
+     {
+      "tag": "clear-out",
+      "redLine": false
+     },
+     {
+      "tag": "mould-purge",
+      "redLine": true
+     }
+    ],
+    "strike": "She takes the Appert Door Conserves into opposition and closes the cabinet vote."
+   }
+  },
+  {
+   "id": "m38",
+   "seat": "seat-38",
+   "region": "middle",
+   "faction": "dairy",
+   "name": "Harlan Voss",
+   "bio": "Harlan came from a jam kitchen in Bendigo and later kept accounts for a grocer. He entered politics through the dairy trade. He wants permanent seats and a hand in appointments.",
+   "core_issues": [
+    "permanent-door-seats",
+    "dairy-privilege"
+   ],
+   "temperament": "populist",
+   "tell": "He counts the brass lid's ridges while whips make promises.",
+   "patrons": [
+    "jars",
+    "cabinet"
+   ],
+   "years": "long",
+   "flags": [],
+   "gender": "man",
+   "look": "pale jam jar with a brass lid",
+   "glance": {
+    "wants": [
+     "permanent-door-seats",
+     "dairy-privilege"
+    ],
+    "hates": [
+     {
+      "tag": "energy-saving",
+      "redLine": false
+     },
+     {
+      "tag": "clear-out",
+      "redLine": true
+     }
+    ],
+    "strike": "He trades five votes to the rival bloc and demands control of the door."
+   }
+  }
+ ],
+ "citizens": [
+  {
+   "id": "c1",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Alice Vane",
+   "age": 18,
+   "job": "Egg sorter",
+   "town": "Middle shelf",
+   "worldview": "I want steady cold so the egg tray survives each opening.",
+   "issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c2",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Ben Crate",
+   "age": 37,
+   "job": "Egg packer",
+   "town": "Top shelf",
+   "worldview": "I want the Recommended Mark kept and the thermostat cold.",
+   "issues": [
+    "hold-recommended-mark",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c3",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Carla Rind",
+   "age": 59,
+   "job": "Egg keeper",
+   "town": "Crisper drawer",
+   "worldview": "I want high humidity so food stays firm and the egg tray remains safe.",
+   "issues": [
+    "humidity-high",
+    "raise-humidity-dial"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c4",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Darius Melt",
+   "age": 66,
+   "job": "Door inspector",
+   "town": "Door shelves",
+   "worldview": "I want sealed jars checked before the Clostridium Front spreads.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c5",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Elena Brine",
+   "age": 75,
+   "job": "Meat porter",
+   "town": "Meat drawer",
+   "worldview": "I want the coldest air sent to raw cuts before anything reaches the Danger Zone.",
+   "issues": [
+    "freezer-compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c6",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Frank Whey",
+   "age": 29,
+   "job": "Shelf cleaner",
+   "town": "Back of Fridge",
+   "worldview": "I want the Barwon Mould Legion cleared from the back shelf.",
+   "issues": [
+    "clear-back-shelf",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c7",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Gina Carton",
+   "age": 42,
+   "job": "Milk measurer",
+   "town": "Middle shelf",
+   "worldview": "I want dairy kept cold and older containers removed before new shopping arrives.",
+   "issues": [
+    "dairy-privilege",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c8",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Hugo Frost",
+   "age": 49,
+   "job": "Cold assessor",
+   "town": "Top shelf",
+   "worldview": "I want lower temperatures without wasting compressor power.",
+   "issues": [
+    "thermostat-down",
+    "energy-saving"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c9",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Imani Pour",
+   "age": 71,
+   "job": "Produce keeper",
+   "town": "Crisper drawer",
+   "worldview": "I want the Humidity Dial high and frost kept away from fresh food.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c10",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Jared Seal",
+   "age": 82,
+   "job": "Jar auditor",
+   "town": "Door shelves",
+   "worldview": "I want every airtight container inspected before the door shelves become unsafe.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c11",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Kara Lacto",
+   "age": 28,
+   "job": "Milk carrier",
+   "town": "Meat drawer",
+   "worldview": "I want raw cuts cold and milk protected from the Danger Zone.",
+   "issues": [
+    "safety-code",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c12",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Liam Shelf",
+   "age": 32,
+   "job": "Back-shelf clerk",
+   "town": "Back of Fridge",
+   "worldview": "I want the mould cleared and forgotten food recorded before the Bin takes it.",
+   "issues": [
+    "clear-back-shelf",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c13",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Mina Jarvey",
+   "age": 54,
+   "job": "Jar preserver",
+   "town": "Middle shelf",
+   "worldview": "I want sealed containers inspected and useful leftovers spared from early binning.",
+   "issues": [
+    "container-inspection",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c14",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Nolan Coldwell",
+   "age": 61,
+   "job": "Cheese cutter",
+   "town": "Top shelf",
+   "worldview": "I want the top shelf cold and cheese kept ahead of the Bin.",
+   "issues": [
+    "thermostat-down",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c15",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Olivia Pickle",
+   "age": 75,
+   "job": "Pickle grower",
+   "town": "Crisper drawer",
+   "worldview": "I want high humidity and permanent door access for preserved food.",
+   "issues": [
+    "humidity-high",
+    "permanent-door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c16",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Pablo Ration",
+   "age": 27,
+   "job": "Ration clerk",
+   "town": "Door shelves",
+   "worldview": "I want shelf space shared fairly when the Shopping arrives.",
+   "issues": [
+    "shelf-space",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c17",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Quinn Bottle",
+   "age": 37,
+   "job": "Bottle hauler",
+   "town": "Meat drawer",
+   "worldview": "I want cold air prioritised for raw cuts and drinks kept out of danger.",
+   "issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c18",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Rina Humid",
+   "age": 59,
+   "job": "Humidity monitor",
+   "town": "Back of Fridge",
+   "worldview": "I want the drawer damp enough for produce and the mould removed from the back.",
+   "issues": [
+    "raise-humidity-dial",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c19",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Samuel Crisper",
+   "age": 66,
+   "job": "Salad sorter",
+   "town": "Middle shelf",
+   "worldview": "I want oldest food eaten first and the Humidity Dial raised.",
+   "issues": [
+    "oldest-eaten-first",
+    "raise-humidity-dial"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c20",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Talia Creamer",
+   "age": 82,
+   "job": "Cream separator",
+   "town": "Top shelf",
+   "worldview": "I want dairy privilege and a cold thermostat through the busy month.",
+   "issues": [
+    "dairy-privilege",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c21",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Umar Larder",
+   "age": 26,
+   "job": "Produce porter",
+   "town": "Crisper drawer",
+   "worldview": "I want fresh food at every opening and no frost on the drawer.",
+   "issues": [
+    "fresh-at-every-opening",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c22",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Vera Leftwich",
+   "age": 42,
+   "job": "Door broker",
+   "town": "Door shelves",
+   "worldview": "I want permanent door seats and enough space for the next bottles.",
+   "issues": [
+    "permanent-door-seats",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c23",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Walter Tender",
+   "age": 49,
+   "job": "Chop butcher",
+   "town": "Meat drawer",
+   "worldview": "I want raw cuts first in the cold-air order and safe handling enforced.",
+   "issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c24",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Xiomara Pantry",
+   "age": 71,
+   "job": "Pantry keeper",
+   "town": "Back of Fridge",
+   "worldview": "I want forgotten containers cleared before the Bin and the back shelf inspected.",
+   "issues": [
+    "clear-back-shelf",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c25",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Yusuf Brisk",
+   "age": 75,
+   "job": "Leftover clerk",
+   "town": "Middle shelf",
+   "worldview": "I want the First In First Out Rule and amnesty for food still fit to eat.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c26",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Zoe Mould",
+   "age": 25,
+   "job": "Mould checker",
+   "town": "Top shelf",
+   "worldview": "I want mould purged and old food removed before it reaches the fresh dairy.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c27",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Aaron Curd",
+   "age": 32,
+   "job": "Curd handler",
+   "town": "Crisper drawer",
+   "worldview": "I want high humidity and a safety code for every container near fresh produce.",
+   "issues": [
+    "humidity-high",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c28",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Bianca Door",
+   "age": 54,
+   "job": "Door steward",
+   "town": "Door shelves",
+   "worldview": "I want permanent door seats and inspected jars before the Shopping crowds the shelves.",
+   "issues": [
+    "permanent-door-seats",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c29",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Carmen Fresh",
+   "age": 61,
+   "job": "Freshness inspector",
+   "town": "Meat drawer",
+   "worldview": "I want raw cuts protected by cold air and the oldest food dealt with first.",
+   "issues": [
+    "freezer-compressor-priority",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c30",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Dante Binley",
+   "age": 82,
+   "job": "Bin collector",
+   "town": "Back of Fridge",
+   "worldview": "I want the back shelf cleared before mould reaches the rest of the cabinet.",
+   "issues": [
+    "clear-out",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c31",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Esther Frigo",
+   "age": 24,
+   "job": "Egg counter",
+   "town": "Middle shelf",
+   "worldview": "I want food safety enforced and old leftovers eaten before new shopping is stored.",
+   "issues": [
+    "safety-code",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c32",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Felix Remainder",
+   "age": 37,
+   "job": "Remainder clerk",
+   "town": "Top shelf",
+   "worldview": "I want leftover amnesty and enough cold air for dairy.",
+   "issues": [
+    "leftover-amnesty",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c33",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Greta Chiller",
+   "age": 59,
+   "job": "Chiller operator",
+   "town": "Crisper drawer",
+   "worldview": "I want humidity high and energy use kept within reason.",
+   "issues": [
+    "humidity-high",
+    "energy-saving"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c34",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Hassan Carton",
+   "age": 66,
+   "job": "Carton porter",
+   "town": "Door shelves",
+   "worldview": "I want shelf space and safe seals for every drink and jar at the door.",
+   "issues": [
+    "shelf-space",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c35",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Isabel Jarrah",
+   "age": 75,
+   "job": "Jar inspector",
+   "town": "Meat drawer",
+   "worldview": "I want a clear safety code and cold priority for raw cuts.",
+   "issues": [
+    "safety-code",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c36",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Jamal Safety",
+   "age": 23,
+   "job": "Safety clerk",
+   "town": "Back of Fridge",
+   "worldview": "I want sealed containers checked and the Barwon Mould Legion removed.",
+   "issues": [
+    "container-inspection",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c37",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Keira Frost",
+   "age": 42,
+   "job": "Frost watcher",
+   "town": "Middle shelf",
+   "worldview": "I want frost control so cold storage does not ruin the food below.",
+   "issues": [
+    "frost-control",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c38",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Leon Pourin",
+   "age": 49,
+   "job": "Pouring clerk",
+   "town": "Top shelf",
+   "worldview": "I want the thermostat down and the oldest food eaten before new supplies arrive.",
+   "issues": [
+    "thermostat-down",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c39",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Maya Bracket",
+   "age": 71,
+   "job": "Produce auditor",
+   "town": "Crisper drawer",
+   "worldview": "I want fresh food at every opening and the drawer kept humid.",
+   "issues": [
+    "fresh-at-every-opening",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c40",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Nikhil Brinewell",
+   "age": 82,
+   "job": "Brine maker",
+   "town": "Door shelves",
+   "worldview": "I want door seats made permanent and the Clostridium Front contained.",
+   "issues": [
+    "door-seats",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c41",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Opal Compressor",
+   "age": 22,
+   "job": "Compressor tender",
+   "town": "Meat drawer",
+   "worldview": "I want the Compressor assigned first to raw cuts in the meat drawer.",
+   "issues": [
+    "compressor-priority",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c42",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Ruben Turkey",
+   "age": 32,
+   "job": "Turkey server",
+   "town": "Back of Fridge",
+   "worldview": "I want leftovers protected by the First In First Out Rule before the Bin is used.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c43",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Sana Linde",
+   "age": 54,
+   "job": "Container keeper",
+   "town": "Middle shelf",
+   "worldview": "I want airtight containers inspected and the back shelf kept clear.",
+   "issues": [
+    "container-inspection",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c44",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Theo Container",
+   "age": 61,
+   "job": "Tray inspector",
+   "town": "Top shelf",
+   "worldview": "I want the Recommended Mark held and old trays removed before they spoil.",
+   "issues": [
+    "hold-recommended-mark",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c45",
+   "region": "crisper",
+   "bloc": "eggs",
+   "name": "Uma Vellum",
+   "age": 75,
+   "job": "Vellum packer",
+   "town": "Crisper drawer",
+   "worldview": "I want high humidity and frost control for produce in the drawer.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c46",
+   "region": "door",
+   "bloc": "eggs",
+   "name": "Victor Crumb",
+   "age": 21,
+   "job": "Crumb collector",
+   "town": "Door shelves",
+   "worldview": "I want shelf space protected and food removed by age rather than favour.",
+   "issues": [
+    "shelf-space",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c47",
+   "region": "meat",
+   "bloc": "eggs",
+   "name": "Wanda Shelford",
+   "age": 37,
+   "job": "Chop packer",
+   "town": "Meat drawer",
+   "worldview": "I want the coldest air for raw cuts and no unsafe storage.",
+   "issues": [
+    "freezer-compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c48",
+   "region": "back",
+   "bloc": "eggs",
+   "name": "Xavier Rind",
+   "age": 59,
+   "job": "Rind scraper",
+   "town": "Back of Fridge",
+   "worldview": "I want mould purged and old containers cleared from the back.",
+   "issues": [
+    "mould-purge",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c49",
+   "region": "middle",
+   "bloc": "eggs",
+   "name": "Yasmin Seal",
+   "age": 66,
+   "job": "Seal examiner",
+   "town": "Middle shelf",
+   "worldview": "I want every container checked and leftovers protected from early binning.",
+   "issues": [
+    "container-inspection",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c50",
+   "region": "top",
+   "bloc": "eggs",
+   "name": "Zachary Larder",
+   "age": 82,
+   "job": "Larder keeper",
+   "town": "Top shelf",
+   "worldview": "I want dairy kept cold and food used in the order it arrived.",
+   "issues": [
+    "dairy-privilege",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c51",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Amara Mould",
+   "age": 20,
+   "job": "meat sorter",
+   "town": "The crisper drawer",
+   "worldview": "Government must clear mould before it reaches fresh food.",
+   "issues": [
+    "mould-purge",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c52",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Boris Coldwell",
+   "age": 42,
+   "job": "cold-chain clerk",
+   "town": "The door shelves",
+   "worldview": "Government must keep the cabinet cold and protect raw meat from danger.",
+   "issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c53",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Chloe Milk",
+   "age": 49,
+   "job": "butcher",
+   "town": "The meat drawer",
+   "worldview": "Government must give raw cuts the coldest air.",
+   "issues": [
+    "freezer-compressor-priority",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c54",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Diego Cuts",
+   "age": 71,
+   "job": "meat inspector",
+   "town": "The back of the Fridge",
+   "worldview": "Government must inspect old containers before anyone eats their contents.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c55",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Eva Shoppers",
+   "age": 75,
+   "job": "food buyer",
+   "town": "The middle shelf",
+   "worldview": "Government must protect older food from the next Shopping.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c56",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Farid Cabinet",
+   "age": 19,
+   "job": "cabinet cleaner",
+   "town": "The top shelf",
+   "worldview": "Government must clear the back shelf and keep seals sound.",
+   "issues": [
+    "clear-back-shelf",
+    "warranty-claim"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c57",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Gloria Cheese",
+   "age": 32,
+   "job": "cheese cutter",
+   "town": "The crisper drawer",
+   "worldview": "Government must keep cheese cold without drying the drawer's food.",
+   "issues": [
+    "thermostat-down",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c58",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Hector Ice",
+   "age": 54,
+   "job": "ice maker",
+   "town": "The door shelves",
+   "worldview": "Government must give the Freezer first call on the Compressor.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c59",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Ines Ready",
+   "age": 61,
+   "job": "meal packer",
+   "town": "The meat drawer",
+   "worldview": "Government must respect short dates before fresh goods arrive.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c60",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Joon Park",
+   "age": 82,
+   "job": "cold-store keeper",
+   "town": "The back of the Fridge",
+   "worldview": "Government must inspect forgotten food and preserve safe stock.",
+   "issues": [
+    "container-inspection",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c61",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Khalil Door",
+   "age": 18,
+   "job": "shelf porter",
+   "town": "The middle shelf",
+   "worldview": "Government must give working food a secure place away from the Bin.",
+   "issues": [
+    "shelf-space",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c62",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Lara Salad",
+   "age": 37,
+   "job": "salad packer",
+   "town": "The top shelf",
+   "worldview": "Government must keep the Humidity Dial high and frost away from greens.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c63",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Malik Roaster",
+   "age": 59,
+   "job": "roast carver",
+   "town": "The crisper drawer",
+   "worldview": "Government must give leftovers time before the Bin takes them.",
+   "issues": [
+    "leftover-amnesty",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c64",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Nadia Egg",
+   "age": 66,
+   "job": "egg grader",
+   "town": "The door shelves",
+   "worldview": "Government must keep eggs steady and protect them from cracks.",
+   "issues": [
+    "fresh-at-every-opening",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c65",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Oscar Loose",
+   "age": 75,
+   "job": "fruit porter",
+   "town": "The meat drawer",
+   "worldview": "Government must give loose fruit room before new arrivals crowd it out.",
+   "issues": [
+    "shelf-space",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c66",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Petra Safety",
+   "age": 29,
+   "job": "food tester",
+   "town": "The back of the Fridge",
+   "worldview": "Government must apply one safety code to every container.",
+   "issues": [
+    "safety-code",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c67",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Rafael Jar",
+   "age": 42,
+   "job": "jar inspector",
+   "town": "The middle shelf",
+   "worldview": "Government must inspect sealed jars before Clostridium reaches the shelves.",
+   "issues": [
+    "container-inspection",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c68",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Sonia Bin",
+   "age": 49,
+   "job": "bin officer",
+   "town": "The top shelf",
+   "worldview": "Government must clear spoiled food without wasting safe food.",
+   "issues": [
+    "clear-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c69",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Tariq Fridge",
+   "age": 71,
+   "job": "cooling mechanic",
+   "town": "The crisper drawer",
+   "worldview": "Government must lower the Thermostat and keep the cabinet stable.",
+   "issues": [
+    "thermostat-down",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c70",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Ursula Date",
+   "age": 82,
+   "job": "date clerk",
+   "town": "The door shelves",
+   "worldview": "Government must put the oldest safe food first.",
+   "issues": [
+    "oldest-eaten-first",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c71",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Valeria Humidity",
+   "age": 28,
+   "job": "humidity keeper",
+   "town": "The meat drawer",
+   "worldview": "Government must raise humidity so fresh produce lasts longer.",
+   "issues": [
+    "raise-humidity-dial",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c72",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Wesley Food",
+   "age": 32,
+   "job": "food auditor",
+   "town": "The back of the Fridge",
+   "worldview": "Government must mark safe food and remove containers that fail inspection.",
+   "issues": [
+    "hold-recommended-mark",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c73",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Yvette Mark",
+   "age": 54,
+   "job": "quality inspector",
+   "town": "The middle shelf",
+   "worldview": "Government must hold the Recommended Mark for safe food.",
+   "issues": [
+    "hold-recommended-mark",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c74",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Zain Frost",
+   "age": 61,
+   "job": "frost cleaner",
+   "town": "The top shelf",
+   "worldview": "Government must control frost without starving the Freezer of cold.",
+   "issues": [
+    "frost-control",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c75",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Asha Compressor",
+   "age": 75,
+   "job": "compressor mechanic",
+   "town": "The crisper drawer",
+   "worldview": "Government must give the Compressor to raw cuts before the Humidity Dial.",
+   "issues": [
+    "compressor-priority",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c76",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Bruno Leftover",
+   "age": 27,
+   "job": "leftover keeper",
+   "town": "The door shelves",
+   "worldview": "Government must grant leftovers an amnesty before the Bin.",
+   "issues": [
+    "leftover-amnesty",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c77",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Celia Shelf",
+   "age": 37,
+   "job": "shelf manager",
+   "town": "The meat drawer",
+   "worldview": "Government must allocate shelf space before the Shopping arrives.",
+   "issues": [
+    "shelf-space",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c78",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Damon Turkey",
+   "age": 59,
+   "job": "roast clerk",
+   "town": "The back of the Fridge",
+   "worldview": "Government must enforce First In First Out for cooked remains.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c79",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Esme Cabinet",
+   "age": 66,
+   "job": "cabinet inspector",
+   "town": "The middle shelf",
+   "worldview": "Government must protect cabinet seals and stop wasted cold.",
+   "issues": [
+    "warranty-claim",
+    "energy-saving"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c80",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Fiona Shopping",
+   "age": 82,
+   "job": "arrival planner",
+   "town": "The top shelf",
+   "worldview": "Government must make room for Shopping without binning safe leftovers.",
+   "issues": [
+    "clear-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c81",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Gus Thermostat",
+   "age": 26,
+   "job": "thermostat mechanic",
+   "town": "The crisper drawer",
+   "worldview": "Government must lower the Thermostat enough to protect raw food.",
+   "issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c82",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Hana Pickle",
+   "age": 42,
+   "job": "pickle maker",
+   "town": "The door shelves",
+   "worldview": "Government must inspect jars before granting door space.",
+   "issues": [
+    "container-inspection",
+    "permanent-door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c83",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Ibrahim Sealed",
+   "age": 49,
+   "job": "seal checker",
+   "town": "The meat drawer",
+   "worldview": "Government must keep sealed containers safe and properly marked.",
+   "issues": [
+    "safety-code",
+    "hold-recommended-mark"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c84",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Julia Mould",
+   "age": 71,
+   "job": "mould remover",
+   "town": "The back of the Fridge",
+   "worldview": "Government must purge the Mould Legion before it spreads.",
+   "issues": [
+    "mould-purge",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c85",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Kofi Dairy",
+   "age": 75,
+   "job": "dairy porter",
+   "town": "The middle shelf",
+   "worldview": "Government must protect dairy privilege and hold steady cold.",
+   "issues": [
+    "dairy-privilege",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c86",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Lucia Crisper",
+   "age": 25,
+   "job": "produce keeper",
+   "town": "The top shelf",
+   "worldview": "Government must keep the crisper humid and fresh food visible.",
+   "issues": [
+    "raise-humidity-dial",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c87",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Marek Chops",
+   "age": 32,
+   "job": "chop butcher",
+   "town": "The crisper drawer",
+   "worldview": "Government must protect raw chops from frost and warming.",
+   "issues": [
+    "frost-control",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c88",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Nora Ready",
+   "age": 54,
+   "job": "meal seller",
+   "town": "The door shelves",
+   "worldview": "Government must honour ready meal dates before new stock enters.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c89",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "Omar Bottle",
+   "age": 61,
+   "job": "bottle carrier",
+   "town": "The meat drawer",
+   "worldview": "Government must give bottled drinks fair shelf space.",
+   "issues": [
+    "shelf-space",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c90",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Paula Safety",
+   "age": 82,
+   "job": "safety officer",
+   "town": "The back of the Fridge",
+   "worldview": "Government must remove unsafe food before anyone is harmed.",
+   "issues": [
+    "safety-code",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c91",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Ravi Tray",
+   "age": 24,
+   "job": "tray stacker",
+   "town": "The middle shelf",
+   "worldview": "Government must protect sealed meals from being pushed into the Bin.",
+   "issues": [
+    "no-early-binning",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c92",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Sara Frio",
+   "age": 37,
+   "job": "cold-room worker",
+   "town": "The top shelf",
+   "worldview": "Government must save energy while keeping the cabinet cold.",
+   "issues": [
+    "energy-saving",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c93",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Tomas Jarvey",
+   "age": 59,
+   "job": "jar maker",
+   "town": "The crisper drawer",
+   "worldview": "Government must purge dangerous mould from sealed jars.",
+   "issues": [
+    "mould-purge",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c94",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Valentina Rind",
+   "age": 66,
+   "job": "rind cutter",
+   "town": "The door shelves",
+   "worldview": "Government must preserve cheese and keep the door orderly.",
+   "issues": [
+    "door-seats",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c95",
+   "region": "meat",
+   "bloc": "meat",
+   "name": "William Door",
+   "age": 75,
+   "job": "door steward",
+   "town": "The meat drawer",
+   "worldview": "Government must give conserves permanent door seats.",
+   "issues": [
+    "permanent-door-seats",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c96",
+   "region": "back",
+   "bloc": "meat",
+   "name": "Xenia Cream",
+   "age": 23,
+   "job": "cream bottler",
+   "town": "The back of the Fridge",
+   "worldview": "Government must protect dairy from spoiled containers behind it.",
+   "issues": [
+    "clear-back-shelf",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c97",
+   "region": "middle",
+   "bloc": "meat",
+   "name": "Yara Binley",
+   "age": 42,
+   "job": "bin inspector",
+   "town": "The middle shelf",
+   "worldview": "Government must stop good food reaching the Bin too soon.",
+   "issues": [
+    "no-early-binning",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c98",
+   "region": "top",
+   "bloc": "meat",
+   "name": "Zara Fresh",
+   "age": 49,
+   "job": "freshness clerk",
+   "town": "The top shelf",
+   "worldview": "Government must keep fresh food visible at every opening.",
+   "issues": [
+    "fresh-at-every-opening",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c99",
+   "region": "crisper",
+   "bloc": "meat",
+   "name": "Ava Morton",
+   "age": 71,
+   "job": "produce buyer",
+   "town": "The crisper drawer",
+   "worldview": "Government must keep greens fresh until the next meal.",
+   "issues": [
+    "humidity-high",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c100",
+   "region": "door",
+   "bloc": "meat",
+   "name": "Noah Ellis",
+   "age": 82,
+   "job": "bottle inspector",
+   "town": "The door shelves",
+   "worldview": "Government must give bottled drinks fair space and safe storage.",
+   "issues": [
+    "door-seats",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c101",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Camila Rojas",
+   "age": 22,
+   "job": "bottle hauler",
+   "town": "the meat drawer",
+   "worldview": "I want colder storage before the raw cuts spoil beside us.",
+   "issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c102",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Ethan Brooks",
+   "age": 32,
+   "job": "water bottler",
+   "town": "the back of the Fridge",
+   "worldview": "I want the mould cleared so every bottle has a safe place.",
+   "issues": [
+    "mould-purge",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c103",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Layla Mansour",
+   "age": 54,
+   "job": "juice seller",
+   "town": "the middle shelf",
+   "worldview": "I want inspection of containers before anyone blames bottled drinks for spoilage.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c104",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Malik Johnson",
+   "age": 61,
+   "job": "milk alternative maker",
+   "town": "the top shelf",
+   "worldview": "I want the thermostat kept low enough for drinks and dairy alike.",
+   "issues": [
+    "thermostat-down",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c105",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Hannah Weiss",
+   "age": 75,
+   "job": "elderly juice keeper",
+   "town": "the crisper drawer",
+   "worldview": "I want high humidity so our bottles do not crowd out fresh produce.",
+   "issues": [
+    "humidity-high",
+    "raise-humidity-dial"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c106",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Mateo Silva",
+   "age": 21,
+   "job": "door drink vendor",
+   "town": "the door shelves",
+   "worldview": "I want fair door space without letting warm openings ruin our stock.",
+   "issues": [
+    "door-seats",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c107",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Sana Qureshi",
+   "age": 37,
+   "job": "canteen supplier",
+   "town": "the meat drawer",
+   "worldview": "I want compressor priority when raw cuts and drinks compete for cold air.",
+   "issues": [
+    "compressor-priority",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c108",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Connor Blake",
+   "age": 59,
+   "job": "water distributor",
+   "town": "the back of the Fridge",
+   "worldview": "I want the Barwon Mould Legion removed from the shelf behind our crates.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c109",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Jasmine Carter",
+   "age": 66,
+   "job": "fruit juice clerk",
+   "town": "the middle shelf",
+   "worldview": "I want older containers checked before the Shopping pushes them toward the Bin.",
+   "issues": [
+    "container-inspection",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c110",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Daniel Cho",
+   "age": 82,
+   "job": "retired milk vendor",
+   "town": "the top shelf",
+   "worldview": "I want steady cold and no sudden thermostat change that harms long-kept cartons.",
+   "issues": [
+    "thermostat-down",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c111",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Lucia Herrera",
+   "age": 20,
+   "job": "coconut water seller",
+   "town": "the crisper drawer",
+   "worldview": "I want the Humidity Dial high and bottles kept clear of damp leaves.",
+   "issues": [
+    "raise-humidity-dial",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c112",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Caleb Foster",
+   "age": 42,
+   "job": "door shelf porter",
+   "town": "the door shelves",
+   "worldview": "I want permanent door space because our stock is built for frequent access.",
+   "issues": [
+    "permanent-door-seats",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c113",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Mariam Khalil",
+   "age": 49,
+   "job": "sports drink mixer",
+   "town": "the meat drawer",
+   "worldview": "I want safety rules enforced where raw cuts can contaminate open bottles.",
+   "issues": [
+    "safety-code",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c114",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Andre Washington",
+   "age": 71,
+   "job": "water crate mover",
+   "town": "the back of the Fridge",
+   "worldview": "I want the back shelf cleared before new arrivals bury older bottles.",
+   "issues": [
+    "clear-back-shelf",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c115",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Nora Lind",
+   "age": 75,
+   "job": "juice bottler",
+   "town": "the middle shelf",
+   "worldview": "I want a leftover amnesty so safe containers are not binned on date alone.",
+   "issues": [
+    "leftover-amnesty",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c116",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Julian Reyes",
+   "age": 19,
+   "job": "milk alternative vendor",
+   "town": "the top shelf",
+   "worldview": "I want dairy privilege ended if it blocks cold air from our sealed drinks.",
+   "issues": [
+    "dairy-privilege",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c117",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Fatima Aziz",
+   "age": 32,
+   "job": "juice packer",
+   "town": "the crisper drawer",
+   "worldview": "I want frost control so cold air does not damage produce or our cartons.",
+   "issues": [
+    "frost-control",
+    "raise-humidity-dial"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c118",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Gavin Price",
+   "age": 54,
+   "job": "sauce bottle clerk",
+   "town": "the door shelves",
+   "worldview": "I want door seats protected from jars that already have long storage elsewhere.",
+   "issues": [
+    "door-seats",
+    "permanent-door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c119",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Olivia Hart",
+   "age": 61,
+   "job": "hydration seller",
+   "town": "the meat drawer",
+   "worldview": "I want raw cuts kept cold first, even when Frigidaire demands lower energy use.",
+   "issues": [
+    "freezer-compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c120",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Isaac Mensah",
+   "age": 82,
+   "job": "water depot worker",
+   "town": "the back of the Fridge",
+   "worldview": "I want old stock eaten first so the back shelf stops becoming a permanent storehouse.",
+   "issues": [
+    "oldest-eaten-first",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c121",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Marisol Vega",
+   "age": 18,
+   "job": "juice delivery rider",
+   "town": "the middle shelf",
+   "worldview": "I want space for new bottles without forcing safe leftovers into the Bin.",
+   "issues": [
+    "shelf-space",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c122",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Eli Turner",
+   "age": 37,
+   "job": "milk alternative driver",
+   "town": "the top shelf",
+   "worldview": "I want the thermostat down because warm shelves threaten every drink carton.",
+   "issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c123",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Sabrina Khan",
+   "age": 59,
+   "job": "juice warehouse clerk",
+   "town": "the crisper drawer",
+   "worldview": "I want humidity high enough to protect produce while drinks remain sealed and cold.",
+   "issues": [
+    "humidity-high",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c124",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Wyatt Cole",
+   "age": 66,
+   "job": "bottle rack keeper",
+   "town": "the door shelves",
+   "worldview": "I want permanent door seats and a strict limit on careless opening.",
+   "issues": [
+    "permanent-door-seats",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c125",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Amara Okoye",
+   "age": 75,
+   "job": "sports drink courier",
+   "town": "the meat drawer",
+   "worldview": "I want the coldest air reserved for raw cuts and drinks stored safely beside them.",
+   "issues": [
+    "compressor-priority",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c126",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Benji Flores",
+   "age": 29,
+   "job": "water crate porter",
+   "town": "the back of the Fridge",
+   "worldview": "I want mould purged before the Shopping adds more stock to this neglected shelf.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c127",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Chloe Bennett",
+   "age": 42,
+   "job": "juice counter clerk",
+   "town": "the middle shelf",
+   "worldview": "I want first-in-first-out rules applied before our bottles are moved for newer meals.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c128",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Rafael Campos",
+   "age": 49,
+   "job": "milk alternative maker",
+   "town": "the top shelf",
+   "worldview": "I want the milk interest to stop claiming every cold corner for itself.",
+   "issues": [
+    "dairy-privilege",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c129",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Maya Desai",
+   "age": 71,
+   "job": "fruit drink seller",
+   "town": "the crisper drawer",
+   "worldview": "I want frost controlled and humidity raised before the Greens leave the coalition.",
+   "issues": [
+    "frost-control",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c130",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Derek Vaughn",
+   "age": 82,
+   "job": "door drink keeper",
+   "town": "the door shelves",
+   "worldview": "I want door seats guaranteed before the Appert Door Conserves bargain them away.",
+   "issues": [
+    "permanent-door-seats",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c131",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Irene Solis",
+   "age": 28,
+   "job": "canteen bottle clerk",
+   "town": "the meat drawer",
+   "worldview": "I want a safety code that keeps raw cuts from spoiling drinks at the bottom.",
+   "issues": [
+    "safety-code",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c132",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Aaron McBride",
+   "age": 32,
+   "job": "water stock worker",
+   "town": "the back of the Fridge",
+   "worldview": "I want forgotten containers inspected and the mould colony cleared from behind them.",
+   "issues": [
+    "container-inspection",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c133",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Noor Alvi",
+   "age": 54,
+   "job": "juice wholesaler",
+   "town": "the middle shelf",
+   "worldview": "I want older stock protected from premature binning when new meals arrive.",
+   "issues": [
+    "no-early-binning",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c134",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Trevor Nash",
+   "age": 61,
+   "job": "milk alternative seller",
+   "town": "the top shelf",
+   "worldview": "I want cold storage decided by safety, not by the milk carton interest.",
+   "issues": [
+    "safety-code",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c135",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Keisha Bryant",
+   "age": 75,
+   "job": "produce drink packer",
+   "town": "the crisper drawer",
+   "worldview": "I want the Humidity Dial high and frost kept off the drawer floor.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c136",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Marco Bellini",
+   "age": 27,
+   "job": "door bottle merchant",
+   "town": "the door shelves",
+   "worldview": "I want permanent door seats and protection from overcrowded shelves.",
+   "issues": [
+    "permanent-door-seats",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c137",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Emily Sloan",
+   "age": 37,
+   "job": "sports drink packer",
+   "town": "the meat drawer",
+   "worldview": "I want compressor priority because raw cuts cannot wait for energy savings.",
+   "issues": [
+    "compressor-priority",
+    "energy-saving"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c138",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Omar Nasser",
+   "age": 59,
+   "job": "water shelf worker",
+   "town": "the back of the Fridge",
+   "worldview": "I want the back cleared and the Barwon Mould Legion removed from our storage route.",
+   "issues": [
+    "clear-back-shelf",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c139",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Tessa Quinn",
+   "age": 66,
+   "job": "juice distributor",
+   "town": "the middle shelf",
+   "worldview": "I want a clear date rule that protects safe bottles from the Bin.",
+   "issues": [
+    "no-early-binning",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c140",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Brandon Miles",
+   "age": 82,
+   "job": "retired drink maker",
+   "town": "the top shelf",
+   "worldview": "I want the thermostat low and cold space shared fairly with dairy and sealed jars.",
+   "issues": [
+    "thermostat-down",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c141",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Valentina Costa",
+   "age": 26,
+   "job": "fruit juice packer",
+   "town": "the crisper drawer",
+   "worldview": "I want high humidity without frost damage to the produce around our stock.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c142",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Henry Wallace",
+   "age": 42,
+   "job": "door water seller",
+   "town": "the door shelves",
+   "worldview": "I want door seats fixed by rule, not traded during every vote.",
+   "issues": [
+    "permanent-door-seats",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c143",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Siti Rahim",
+   "age": 49,
+   "job": "canteen drink supplier",
+   "town": "the meat drawer",
+   "worldview": "I want safety checks before raw cuts and bottles share the lowest shelf.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c144",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Marcus Young",
+   "age": 71,
+   "job": "water crate loader",
+   "town": "the back of the Fridge",
+   "worldview": "I want oldest stock moved first and mould removed before more bottles arrive.",
+   "issues": [
+    "oldest-eaten-first",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c145",
+   "region": "middle",
+   "bloc": "bottles",
+   "name": "Elise Fontaine",
+   "age": 75,
+   "job": "juice bottling clerk",
+   "town": "the middle shelf",
+   "worldview": "I want leftovers given a fair inspection before the Bin takes them.",
+   "issues": [
+    "leftover-amnesty",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c146",
+   "region": "top",
+   "bloc": "bottles",
+   "name": "Javier Luna",
+   "age": 25,
+   "job": "milk alternative courier",
+   "town": "the top shelf",
+   "worldview": "I want stable cold and less dairy privilege for cartons that already have prime space.",
+   "issues": [
+    "thermostat-down",
+    "dairy-privilege"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c147",
+   "region": "crisper",
+   "bloc": "bottles",
+   "name": "Anika Bose",
+   "age": 32,
+   "job": "coconut water packer",
+   "town": "the crisper drawer",
+   "worldview": "I want produce protected from frost while the drawer keeps enough humidity for fresh food.",
+   "issues": [
+    "frost-control",
+    "raise-humidity-dial"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c148",
+   "region": "door",
+   "bloc": "bottles",
+   "name": "Peter Nolan",
+   "age": 54,
+   "job": "door drink clerk",
+   "town": "the door shelves",
+   "worldview": "I want the Appert Door Conserves kept from taking every permanent seat.",
+   "issues": [
+    "door-seats",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c149",
+   "region": "meat",
+   "bloc": "bottles",
+   "name": "Aaliyah Grant",
+   "age": 61,
+   "job": "hydration courier",
+   "town": "the meat drawer",
+   "worldview": "I want the Compressor sent first to raw cuts when cold supply is tight.",
+   "issues": [
+    "freezer-compressor-priority",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c150",
+   "region": "back",
+   "bloc": "bottles",
+   "name": "Victor Salazar",
+   "age": 82,
+   "job": "water depot worker",
+   "town": "back shelf",
+   "worldview": "I want old stock eaten first so the back shelf stops becoming a permanent storehouse.",
+   "issues": [
+    "oldest-eaten-first",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c151",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Rebecca Stone",
+   "age": 24,
+   "job": "date checker",
+   "town": "the middle shelf",
+   "worldview": "I want the government to respect the printed date and stop the Bin taking sealed meals early.",
+   "issues": [
+    "no-early-binning",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c152",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Samir Ghazi",
+   "age": 37,
+   "job": "meal packer",
+   "town": "the top shelf",
+   "worldview": "I want clear shelf records so new shopping does not bury meals already waiting to be eaten.",
+   "issues": [
+    "fresh-at-every-opening",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c153",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Lorenzo Cruz",
+   "age": 59,
+   "job": "cold-chain clerk",
+   "town": "the crisper drawer",
+   "worldview": "I want steady cold and high humidity so meals stay sound beside the vegetables.",
+   "issues": [
+    "humidity-high",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c154",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Kimberly Dean",
+   "age": 66,
+   "job": "door stocker",
+   "town": "the door shelves",
+   "worldview": "I want inspected containers and enough door space for meals held near the opening.",
+   "issues": [
+    "container-inspection",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c155",
+   "region": "meat",
+   "bloc": "ready",
+   "name": "Tariq Mahmood",
+   "age": 75,
+   "job": "meal auditor",
+   "town": "the meat drawer",
+   "worldview": "I want the coldest air reserved for food that can spoil before anyone notices.",
+   "issues": [
+    "safety-code",
+    "compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c156",
+   "region": "back",
+   "bloc": "ready",
+   "name": "Megan Doyle",
+   "age": 23,
+   "job": "stockroom clerk",
+   "town": "the back of the Fridge",
+   "worldview": "I want the back cleared before new shopping arrives and pushes old meals into the Bin.",
+   "issues": [
+    "clear-back-shelf",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c157",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Adrian Ponce",
+   "age": 42,
+   "job": "inventory clerk",
+   "town": "the middle shelf",
+   "worldview": "I want first-in-first-out records enforced, with no meal discarded before its date.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c158",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Celeste Romero",
+   "age": 49,
+   "job": "freezer liaison",
+   "town": "the top shelf",
+   "worldview": "I want the Compressor shared fairly so meals stay cold without freezing the crisper drawer.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c159",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Joshua Fields",
+   "age": 71,
+   "job": "salad packer",
+   "town": "the crisper drawer",
+   "worldview": "I want high humidity and regular checks so ready meals do not spoil beside loose fruit.",
+   "issues": [
+    "humidity-high",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c160",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Hiba Younis",
+   "age": 82,
+   "job": "door meal seller",
+   "town": "the door shelves",
+   "worldview": "I want permanent door seats and date checks for meals that are opened at every meal.",
+   "issues": [
+    "door-seats",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c161",
+   "region": "meat",
+   "bloc": "ready",
+   "name": "Darnell Hayes",
+   "age": 22,
+   "job": "food safety aide",
+   "town": "the meat drawer",
+   "worldview": "I want the Danger Zone avoided and every ready meal kept apart from raw cuts.",
+   "issues": [
+    "safety-code",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c162",
+   "region": "back",
+   "bloc": "ready",
+   "name": "Lena Fischer",
+   "age": 32,
+   "job": "back-shelf cleaner",
+   "town": "the back of the Fridge",
+   "worldview": "I want mould cleared from forgotten containers before the Shopping arrives.",
+   "issues": [
+    "mould-purge",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c163",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Cristian Mora",
+   "age": 54,
+   "job": "meal distributor",
+   "town": "the middle shelf",
+   "worldview": "I want the oldest meals eaten first and a pardon for items held past the planned date.",
+   "issues": [
+    "oldest-eaten-first",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c164",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Yvette Laurent",
+   "age": 61,
+   "job": "cold storage clerk",
+   "town": "the top shelf",
+   "worldview": "I want a lower thermostat and a marked shelf for meals that must remain ready.",
+   "issues": [
+    "thermostat-down",
+    "hold-recommended-mark"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c165",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Mohammed Saad",
+   "age": 75,
+   "job": "produce meal clerk",
+   "town": "the crisper drawer",
+   "worldview": "I want frost control and high humidity so meals and produce survive together.",
+   "issues": [
+    "frost-control",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c166",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Kayla Morris",
+   "age": 21,
+   "job": "door meal clerk",
+   "town": "the door shelves",
+   "worldview": "I want enough shelf space and no early binning for sealed meals near the door.",
+   "issues": [
+    "shelf-space",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c167",
+   "region": "meat",
+   "bloc": "ready",
+   "name": "Anthony Russo",
+   "age": 37,
+   "job": "cold storage worker",
+   "town": "the meat drawer",
+   "worldview": "I want compressor priority for safe storage, with inspections before meals move beside raw cuts.",
+   "issues": [
+    "compressor-priority",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c168",
+   "region": "back",
+   "bloc": "ready",
+   "name": "Nia Holloway",
+   "age": 59,
+   "job": "mould inspector",
+   "town": "the back of the Fridge",
+   "worldview": "I want the Barwon Mould Legion removed from the back before its containers spread contamination.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c169",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Esteban Ruiz",
+   "age": 66,
+   "job": "date registrar",
+   "town": "the middle shelf",
+   "worldview": "I want printed dates checked and older meals moved forward before the next delivery arrives.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c170",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Miriam Stern",
+   "age": 82,
+   "job": "meal archivist",
+   "town": "the top shelf",
+   "worldview": "I want old meals protected from waste while the cabinet keeps the temperature low.",
+   "issues": [
+    "leftover-amnesty",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c171",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Cameron Tate",
+   "age": 20,
+   "job": "drawer porter",
+   "town": "the crisper drawer",
+   "worldview": "I want high humidity and clear labels so meals do not vanish under bags of produce.",
+   "issues": [
+    "humidity-high",
+    "hold-recommended-mark"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c172",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Rina Kapoor",
+   "age": 42,
+   "job": "door inventory clerk",
+   "town": "the door shelves",
+   "worldview": "I want permanent meal places in the door and strict checks on every sealed container.",
+   "issues": [
+    "permanent-door-seats",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c173",
+   "region": "meat",
+   "bloc": "ready",
+   "name": "Brent Hollis",
+   "age": 49,
+   "job": "raw-food checker",
+   "town": "the meat drawer",
+   "worldview": "I want food safety rules applied before ready meals share cold air with raw meat.",
+   "issues": [
+    "safety-code",
+    "freezer-compressor-priority"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c174",
+   "region": "back",
+   "bloc": "ready",
+   "name": "Isabel Navarro",
+   "age": 71,
+   "job": "waste clerk",
+   "town": "the back of the Fridge",
+   "worldview": "I want the back shelf cleared so dated meals reach the front instead of being forgotten.",
+   "issues": [
+    "clear-back-shelf",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c175",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Terrence Boyd",
+   "age": 75,
+   "job": "meal date clerk",
+   "town": "the middle shelf",
+   "worldview": "I want no early binning and a clear rule for meals that survive beyond their planned date.",
+   "issues": [
+    "no-early-binning",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c176",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Sonia Iqbal",
+   "age": 19,
+   "job": "cold room assistant",
+   "town": "the top shelf",
+   "worldview": "I want the thermostat down and the Recommended Mark kept for meals that need protection.",
+   "issues": [
+    "thermostat-down",
+    "hold-recommended-mark"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c177",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Patrick Keane",
+   "age": 32,
+   "job": "produce stocker",
+   "town": "the crisper drawer",
+   "worldview": "I want frost control so sealed meals and vegetables keep their own proper conditions.",
+   "issues": [
+    "frost-control",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c178",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Wendy Liang",
+   "age": 54,
+   "job": "door meal trader",
+   "town": "the door shelves",
+   "worldview": "I want shelf space protected from new arrivals and door places fixed by rule.",
+   "issues": [
+    "shelf-space",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c179",
+   "region": "meat",
+   "bloc": "ready",
+   "name": "Ramon Duarte",
+   "age": 61,
+   "job": "safety inspector",
+   "town": "the meat drawer",
+   "worldview": "I want the raw cuts kept cold and ready meals checked before they enter this drawer.",
+   "issues": [
+    "safety-code",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c180",
+   "region": "back",
+   "bloc": "ready",
+   "name": "Sharon Mills",
+   "age": 82,
+   "job": "back shelf porter",
+   "town": "the back of the Fridge",
+   "worldview": "I want spoiled containers removed before they recruit more mould behind the fresh stock.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c181",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Kareem Bashir",
+   "age": 18,
+   "job": "meal date worker",
+   "town": "the middle shelf",
+   "worldview": "I want the oldest meals placed first and every printed date treated as binding.",
+   "issues": [
+    "oldest-eaten-first",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c182",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Talia Green",
+   "age": 37,
+   "job": "shelf temperature clerk",
+   "town": "the top shelf",
+   "worldview": "I want steady low temperature and fresh checks each time the door opens.",
+   "issues": [
+    "thermostat-down",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c183",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "George Roper",
+   "age": 59,
+   "job": "drawer meal clerk",
+   "town": "the crisper drawer",
+   "worldview": "I want high humidity and enough room for meals that cannot be eaten on shopping day.",
+   "issues": [
+    "humidity-high",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c184",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Alice Vane",
+   "age": 66,
+   "job": "door stock clerk",
+   "town": "the door shelves",
+   "worldview": "I want permanent seats and safe inspections for meals held in the warmest part of the cabinet.",
+   "issues": [
+    "permanent-door-seats",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c185",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Ben Crate",
+   "age": 75,
+   "job": "meal records clerk",
+   "town": "the middle shelf",
+   "worldview": "I want the Bin delayed until dates pass and older meals moved ahead of new shopping.",
+   "issues": [
+    "no-early-binning",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c186",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Carla Rind",
+   "age": 29,
+   "job": "cold shelf porter",
+   "town": "the top shelf",
+   "worldview": "I want the Compressor used first so meals stay sound without sending frost into the crisper drawer.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c187",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Darius Melt",
+   "age": 42,
+   "job": "produce meal porter",
+   "town": "the crisper drawer",
+   "worldview": "I want the Humidity Dial high and meal containers checked for leaks.",
+   "issues": [
+    "humidity-high",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c188",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Elena Brine",
+   "age": 49,
+   "job": "jar meal clerk",
+   "town": "the door shelves",
+   "worldview": "I want sealed meals inspected and door seats protected from crowding by new arrivals.",
+   "issues": [
+    "container-inspection",
+    "permanent-door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c189",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Frank Whey",
+   "age": 71,
+   "job": "date control clerk",
+   "town": "the middle shelf",
+   "worldview": "I want first-in-first-out enforcement and no meal discarded while its date remains valid.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c190",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Gina Carton",
+   "age": 82,
+   "job": "milk aisle clerk",
+   "town": "the top shelf",
+   "worldview": "I want the thermostat down and a marked place for meals beside dairy stock.",
+   "issues": [
+    "thermostat-down",
+    "hold-recommended-mark"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c191",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Hugo Frost",
+   "age": 28,
+   "job": "crisper attendant",
+   "town": "the crisper drawer",
+   "worldview": "I want frost kept away and humidity kept high so ready meals remain usable.",
+   "issues": [
+    "frost-control",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c192",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Imani Pour",
+   "age": 32,
+   "job": "bottle shelf clerk",
+   "town": "the door shelves",
+   "worldview": "I want fair shelf space and fixed door seats for meals that need quick access.",
+   "issues": [
+    "shelf-space",
+    "door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c193",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Jared Seal",
+   "age": 54,
+   "job": "container examiner",
+   "town": "the middle shelf",
+   "worldview": "I want every container inspected before the Clostridium Front spreads through the ready meals.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c194",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Kara Lacto",
+   "age": 61,
+   "job": "dairy meal clerk",
+   "town": "the top shelf",
+   "worldview": "I want cold protection and the Recommended Mark kept on safe sealed meals.",
+   "issues": [
+    "hold-recommended-mark",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c195",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Liam Shelf",
+   "age": 75,
+   "job": "drawer date clerk",
+   "town": "the crisper drawer",
+   "worldview": "I want older meals brought forward and high humidity kept for the drawer's stock.",
+   "issues": [
+    "oldest-eaten-first",
+    "humidity-high"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c196",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Mina Jarvey",
+   "age": 27,
+   "job": "jar stocker",
+   "town": "the door shelves",
+   "worldview": "I want sealed containers inspected and the door seats made permanent.",
+   "issues": [
+    "container-inspection",
+    "permanent-door-seats"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c197",
+   "region": "middle",
+   "bloc": "ready",
+   "name": "Nolan Coldwell",
+   "age": 37,
+   "job": "meal inventory worker",
+   "town": "the middle shelf",
+   "worldview": "I want the back cleared and new shopping kept behind meals already waiting to be eaten.",
+   "issues": [
+    "clear-back-shelf",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c198",
+   "region": "top",
+   "bloc": "ready",
+   "name": "Olivia Pickle",
+   "age": 59,
+   "job": "pickle meal clerk",
+   "town": "the top shelf",
+   "worldview": "I want the Bin delayed and the thermostat kept low until each meal's date has passed.",
+   "issues": [
+    "no-early-binning",
+    "thermostat-down"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c199",
+   "region": "crisper",
+   "bloc": "ready",
+   "name": "Pablo Ration",
+   "age": 66,
+   "job": "produce meal auditor",
+   "town": "the crisper drawer",
+   "worldview": "I want meals protected from frost and checked whenever the drawer opens.",
+   "issues": [
+    "frost-control",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c200",
+   "region": "door",
+   "bloc": "ready",
+   "name": "Quinn Bottle",
+   "age": 82,
+   "job": "bottle meal clerk",
+   "town": "the door shelves",
+   "worldview": "I want more shelf space and strict safety checks for sealed meals beside drinks.",
+   "issues": [
+    "shelf-space",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c201",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Rina Humid",
+   "age": 26,
+   "job": "market gardener",
+   "town": "Geelong",
+   "worldview": "Keep the crisper damp and clear mould before it reaches fresh food.",
+   "issues": [
+    "raise-humidity-dial",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c202",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Samuel Crisper",
+   "age": 42,
+   "job": "fruit seller",
+   "town": "Geelong",
+   "worldview": "Keep the shelves cold and give loose fruit room before the next shopping arrives.",
+   "issues": [
+    "thermostat-down",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c203",
+   "region": "crisper",
+   "bloc": "loose",
+   "name": "Talia Creamer",
+   "age": 49,
+   "job": "cream maker",
+   "town": "Geelong",
+   "worldview": "Protect fresh produce with high humidity and stop frost entering the crisper.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c204",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Umar Larder",
+   "age": 71,
+   "job": "larder keeper",
+   "town": "Geelong",
+   "worldview": "Inspect old containers and clear spoiled food before it poisons the rest.",
+   "issues": [
+    "container-inspection",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c205",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Vera Leftwich",
+   "age": 75,
+   "job": "fruit picker",
+   "town": "Geelong",
+   "worldview": "Save usable leftovers from early disposal and eat the oldest food first.",
+   "issues": [
+    "leftover-amnesty",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c206",
+   "region": "crisper",
+   "bloc": "loose",
+   "name": "Walter Tender",
+   "age": 25,
+   "job": "garden hand",
+   "town": "Geelong",
+   "worldview": "Keep the drawer damp, with fresh food protected from frost and careless disposal.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c207",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Xiomara Pantry",
+   "age": 32,
+   "job": "produce merchant",
+   "town": "Geelong",
+   "worldview": "Make room for fruit while keeping the back shelf free of mould.",
+   "issues": [
+    "shelf-space",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c208",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Yusuf Brisk",
+   "age": 54,
+   "job": "orchard keeper",
+   "town": "Geelong",
+   "worldview": "Run the thermostat cold enough for fruit and clear forgotten food from the rear.",
+   "issues": [
+    "thermostat-down",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c209",
+   "region": "crisper",
+   "bloc": "loose",
+   "name": "Zoe Mould",
+   "age": 61,
+   "job": "fruit packer",
+   "town": "Geelong",
+   "worldview": "Raise humidity and purge mould before the drawer becomes unsafe.",
+   "issues": [
+    "humidity-high",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c210",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Aaron Curd",
+   "age": 82,
+   "job": "cheese porter",
+   "town": "Geelong",
+   "worldview": "Respect older food and inspect containers before officials send it to the Bin.",
+   "issues": [
+    "oldest-eaten-first",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c211",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Bianca Door",
+   "age": 24,
+   "job": "stall keeper",
+   "town": "Geelong",
+   "worldview": "Give loose produce room and protect it from the door opening warm air.",
+   "issues": [
+    "shelf-space",
+    "fresh-at-every-opening"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c212",
+   "region": "crisper",
+   "bloc": "loose",
+   "name": "Carmen Fresh",
+   "age": 37,
+   "job": "salad grower",
+   "town": "Geelong",
+   "worldview": "Keep humidity high and use fresh food before it spoils.",
+   "issues": [
+    "humidity-high",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c213",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Dante Binley",
+   "age": 59,
+   "job": "waste sorter",
+   "town": "Geelong",
+   "worldview": "Clear the back shelf, but spare sound leftovers from needless early binning.",
+   "issues": [
+    "clear-back-shelf",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c214",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Esther Frigo",
+   "age": 66,
+   "job": "fruit wholesaler",
+   "town": "Geelong",
+   "worldview": "Hold a steady cold temperature and preserve food under a clear first-in rule.",
+   "issues": [
+    "thermostat-down",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c215",
+   "region": "crisper",
+   "bloc": "loose",
+   "name": "Felix Remainder",
+   "age": 75,
+   "job": "preserve maker",
+   "town": "Geelong",
+   "worldview": "Keep leftovers safe and stop the Bin taking food before its date.",
+   "issues": [
+    "leftover-amnesty",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c216",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Greta Chiller",
+   "age": 23,
+   "job": "cold-store hand",
+   "town": "Geelong",
+   "worldview": "Keep the cabinet cold while clearing mould from the neglected rear shelf.",
+   "issues": [
+    "thermostat-down",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c217",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Hassan Carton",
+   "age": 42,
+   "job": "fruit trader",
+   "town": "Geelong",
+   "worldview": "Make room for new arrivals without sacrificing food that remains sound.",
+   "issues": [
+    "shelf-space",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c218",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Isabel Jarrah",
+   "age": 49,
+   "job": "pickle seller",
+   "town": "Geelong",
+   "worldview": "Inspect sealed jars and remove mould before it spreads through the cabinet.",
+   "issues": [
+    "container-inspection",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c219",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Jamal Safety",
+   "age": 71,
+   "job": "food inspector",
+   "town": "Geelong",
+   "worldview": "Apply the safety code to old containers and keep the cold chain intact.",
+   "issues": [
+    "safety-code",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c220",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Keira Frost",
+   "age": 82,
+   "job": "ice merchant",
+   "town": "Geelong",
+   "worldview": "Give the freezer compressor priority while keeping frost out of the crisper.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c221",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Leon Pourin",
+   "age": 22,
+   "job": "fruit apprentice",
+   "town": "Geelong",
+   "worldview": "Keep fresh food cold and make space before the next shopping arrives.",
+   "issues": [
+    "thermostat-down",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c222",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Maya Bracket",
+   "age": 32,
+   "job": "crate maker",
+   "town": "Geelong",
+   "worldview": "Protect containers from inspection abuse and preserve sound leftovers.",
+   "issues": [
+    "container-inspection",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c223",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Nikhil Brinewell",
+   "age": 54,
+   "job": "brine mixer",
+   "town": "Geelong",
+   "worldview": "Keep jars safe under a firm code and clear the mould legion from the shelf.",
+   "issues": [
+    "safety-code",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c224",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Opal Compressor",
+   "age": 61,
+   "job": "appliance fitter",
+   "town": "Geelong",
+   "worldview": "Give the compressor priority, but control frost before it ruins produce.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c225",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Ruben Turkey",
+   "age": 75,
+   "job": "caterer",
+   "town": "Geelong",
+   "worldview": "Eat older leftovers first and stop officials binning food that remains safe.",
+   "issues": [
+    "oldest-eaten-first",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c226",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Sana Linde",
+   "age": 21,
+   "job": "cold-room worker",
+   "town": "Geelong",
+   "worldview": "Keep the freezer cold without letting frost destroy the crisper drawer.",
+   "issues": [
+    "freezer-compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c227",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Theo Container",
+   "age": 37,
+   "job": "container maker",
+   "town": "Geelong",
+   "worldview": "Inspect airtight containers and enforce safe storage before new food arrives.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c228",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Uma Vellum",
+   "age": 59,
+   "job": "cider maker",
+   "town": "Geelong",
+   "worldview": "Save sound leftovers and clear spoiled food from the back shelf.",
+   "issues": [
+    "leftover-amnesty",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c229",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Victor Crumb",
+   "age": 66,
+   "job": "baker",
+   "town": "Geelong",
+   "worldview": "Keep food cold and give older supplies priority over the next delivery.",
+   "issues": [
+    "thermostat-down",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c230",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Wanda Shelford",
+   "age": 82,
+   "job": "storekeeper",
+   "town": "Geelong",
+   "worldview": "Clear the back shelf while protecting usable food from premature disposal.",
+   "issues": [
+    "clear-back-shelf",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c231",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Xavier Rind",
+   "age": 20,
+   "job": "fruit picker",
+   "town": "Geelong",
+   "worldview": "Keep the cabinet cold and let fresh arrivals fit without crushing older produce.",
+   "issues": [
+    "thermostat-down",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c232",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Yasmin Seal",
+   "age": 42,
+   "job": "seal inspector",
+   "town": "Geelong",
+   "worldview": "Inspect containers and apply the safety code to every sealed jar.",
+   "issues": [
+    "container-inspection",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c233",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Zachary Larder",
+   "age": 49,
+   "job": "larder clerk",
+   "town": "Geelong",
+   "worldview": "Use the oldest food first and remove mould from forgotten shelves.",
+   "issues": [
+    "oldest-eaten-first",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c234",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Amara Mould",
+   "age": 71,
+   "job": "compost worker",
+   "town": "Geelong",
+   "worldview": "Purge mould and clear spoiled containers before the next shopping arrives.",
+   "issues": [
+    "mould-purge",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c235",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Boris Coldwell",
+   "age": 75,
+   "job": "dairy carrier",
+   "town": "Geelong",
+   "worldview": "Hold the thermostat low and preserve older food under a strict rotation rule.",
+   "issues": [
+    "thermostat-down",
+    "enforce-first-in-first-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c236",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Chloe Milk",
+   "age": 19,
+   "job": "milk seller",
+   "town": "Geelong",
+   "worldview": "Protect fresh dairy with a cold cabinet and give it room beside new arrivals.",
+   "issues": [
+    "thermostat-down",
+    "shelf-space"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c237",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Diego Cuts",
+   "age": 32,
+   "job": "butcher",
+   "town": "Geelong",
+   "worldview": "Keep food cold and enforce inspection before unsafe containers reach the drawer.",
+   "issues": [
+    "thermostat-down",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c238",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Eva Shoppers",
+   "age": 54,
+   "job": "shop assistant",
+   "town": "Geelong",
+   "worldview": "Respect shopping dates and stop older food being pushed into the Bin first.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c239",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Farid Cabinet",
+   "age": 61,
+   "job": "cabinet maker",
+   "town": "Geelong",
+   "worldview": "Keep seals sound and clear the back shelf before mould claims more space.",
+   "issues": [
+    "warranty-claim",
+    "clear-back-shelf"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c240",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Gloria Cheese",
+   "age": 82,
+   "job": "cheese maker",
+   "town": "Geelong",
+   "worldview": "Protect dairy privilege while using older food before the next supply arrives.",
+   "issues": [
+    "dairy-privilege",
+    "oldest-eaten-first"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c241",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Hector Ice",
+   "age": 18,
+   "job": "ice seller",
+   "town": "Geelong",
+   "worldview": "Give the compressor priority and keep frost from spreading into stored food.",
+   "issues": [
+    "compressor-priority",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c242",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Ines Ready",
+   "age": 37,
+   "job": "ready-meal packer",
+   "town": "Geelong",
+   "worldview": "Respect dated meals and enforce first-in, first-out storage.",
+   "issues": [
+    "enforce-first-in-first-out",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c243",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Joon Park",
+   "age": 59,
+   "job": "fruit vendor",
+   "town": "Geelong",
+   "worldview": "Keep fresh produce cold and clear spoiled food before the next opening.",
+   "issues": [
+    "fresh-at-every-opening",
+    "clear-out"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c244",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Khalil Door",
+   "age": 66,
+   "job": "sauce seller",
+   "town": "Geelong",
+   "worldview": "Give door goods permanent space and inspect every sealed jar for danger.",
+   "issues": [
+    "door-seats",
+    "container-inspection"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c245",
+   "region": "top",
+   "bloc": "loose",
+   "name": "Lara Salad",
+   "age": 75,
+   "job": "salad packer",
+   "town": "Geelong",
+   "worldview": "Keep humidity high and stop frost damaging the crisper harvest.",
+   "issues": [
+    "humidity-high",
+    "frost-control"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c246",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Malik Roaster",
+   "age": 29,
+   "job": "roast cook",
+   "town": "Geelong",
+   "worldview": "Give leftovers time to be eaten and apply a clear safety code to containers.",
+   "issues": [
+    "leftover-amnesty",
+    "safety-code"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c247",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Nadia Egg",
+   "age": 42,
+   "job": "egg seller",
+   "town": "Geelong",
+   "worldview": "Keep the cabinet steady and protect older food from careless disposal.",
+   "issues": [
+    "thermostat-down",
+    "no-early-binning"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c248",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Oscar Loose",
+   "age": 49,
+   "job": "fruit porter",
+   "town": "Geelong",
+   "worldview": "Make room for new food while preserving sound leftovers through the next shopping.",
+   "issues": [
+    "shelf-space",
+    "leftover-amnesty"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c249",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Petra Safety",
+   "age": 71,
+   "job": "health inspector",
+   "town": "Geelong",
+   "worldview": "Apply the safety code and remove mould before any food reaches consumers.",
+   "issues": [
+    "safety-code",
+    "mould-purge"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c250",
+   "region": "middle",
+   "bloc": "loose",
+   "name": "Rafael Jar",
+   "age": 82,
+   "job": "jar maker",
+   "town": "Geelong",
+   "worldview": "Protect sealed jars through inspection and keep them in permanent door seats.",
+   "issues": [
+    "container-inspection",
+    "door-seats"
+   ],
+   "weight": 1
+  }
+ ],
+ "starts": [
+  {
+   "faction": "dairy",
+   "seat_title": "Prime Minister",
+   "coalition": [
+    "dairy",
+    "crisper",
+    "door"
+   ],
+   "premise": "Milk, cream, butter and cheese of the top shelf; your own party wants the Thermostat low and the leftovers cleared.",
+   "party": 68,
+   "capital": 40,
+   "hostile": []
+  },
+  {
+   "faction": "leftovers",
+   "seat_title": "Prime Minister",
+   "coalition": [
+    "leftovers"
+   ],
+   "premise": "Cooked remains in containers, the official opposition; they want a guarantee against the Bin and first place at the next meal.",
+   "party": 68,
+   "capital": 40,
+   "hostile": []
+  },
+  {
+   "faction": "crisper",
+   "seat_title": "Prime Minister",
+   "coalition": [
+    "crisper"
+   ],
+   "premise": "Salad and fruit of the crisper drawer, your coalition partner; they want the Humidity Dial high and frost kept off.",
+   "party": 68,
+   "capital": 40,
+   "hostile": []
+  },
+  {
+   "faction": "door",
+   "seat_title": "Prime Minister",
+   "coalition": [
+    "door"
+   ],
+   "premise": "Jams, pickles and sauces that keep for months; they want permanent door seats and will back whoever governs.",
+   "party": 68,
+   "capital": 40,
+   "hostile": []
+  }
+ ],
+ "problems": [
+  "The Barwon Mould Legion has held the back of the middle shelf since 22 September and recruits in forgotten containers.",
+  "The Shopping arrives on 1 October and will push older items toward the Bin, the leftovers first.",
+  "Your majority is 22 of 38, and the 8 Geelong Crisper Greens will leave if the Humidity Dial stays low.",
+  "Kyle Diamantas, Acting Commissioner of Food and Drugs, wants the Recommended Mark held, while Frigidaire wants energy use cut.",
+  "The Clostridium Front breeds in sealed jars on the door shelves and in the Airtight Containers of the middle shelf.",
+  "The Linde Freezer Compartment demands first call on the Compressor, which would send frost toward the crisper drawer.",
+  "Cold Turkey demands the First In First Out Rule, which puts the leftovers ahead of your own milk.",
+  "The Appert Door Conserves, 5 of 38, will trade their votes for permanent seats in the door."
+ ],
+ "promises": [
+  {
+   "tag": "hold-recommended-mark",
+   "label": "Hold the Thermostat at the Recommended Mark"
+  },
+  {
+   "tag": "clear-back-shelf",
+   "label": "Clear the back of the middle shelf"
+  },
+  {
+   "tag": "raise-humidity-dial",
+   "label": "Raise the Humidity Dial in the drawer"
+  },
+  {
+   "tag": "permanent-door-seats",
+   "label": "Guarantee permanent seats in the door"
+  },
+  {
+   "tag": "no-early-binning",
+   "label": "No member binned before the Expiry Date"
+  },
+  {
+   "tag": "freezer-compressor-priority",
+   "label": "Give the Freezer first call on the Compressor"
+  },
+  {
+   "tag": "fresh-at-every-opening",
+   "label": "Fresh food at every Opening of the Door"
+  },
+  {
+   "tag": "enforce-first-in-first-out",
+   "label": "Enforce the First In First Out Rule"
+  }
+ ],
+ "tags": [
+  "hold-recommended-mark",
+  "clear-back-shelf",
+  "raise-humidity-dial",
+  "permanent-door-seats",
+  "no-early-binning",
+  "freezer-compressor-priority",
+  "fresh-at-every-opening",
+  "enforce-first-in-first-out",
+  "thermostat-down",
+  "thermostat-up",
+  "clear-out",
+  "leftover-amnesty",
+  "oldest-eaten-first",
+  "humidity-high",
+  "frost-control",
+  "compressor-priority",
+  "energy-saving",
+  "door-seats",
+  "container-inspection",
+  "mould-purge",
+  "warranty-claim",
+  "safety-code",
+  "shelf-space",
+  "dairy-privilege"
+ ],
+ "deck": [
+  {
+   "id": "gen-01",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "bloc",
+     "id": "meat",
+     "op": "<",
+     "value": 0.4
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The bottle shelf stops work",
+   "stances": [
+    "Open the door and bargain",
+    "Run the compressor through it",
+    "Move the strike leaders to the Bin"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": -4
+    },
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "The ruler opened the door to the bottled drinks."
+  },
+  {
+   "id": "gen-02",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 2
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The crisper floods",
+   "stances": [
+    "Save the crisper first",
+    "Protect the meat drawer",
+    "Let the spoiled stock go"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -5
+    },
+    {
+     "ledger": "approval",
+     "delta": -6
+    }
+   ],
+   "memory": "The ruler chose which shelf could be lost."
+  },
+  {
+   "id": "gen-03",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The mark book reaches the press",
+   "stances": [
+    "Publish the report",
+    "Blame the investigating member",
+    "Seal the papers"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": -6
+    },
+    {
+     "ledger": "seat",
+     "set": "hostile",
+     "chance": 0.4
+    }
+   ],
+   "memory": "The ruler made the Recommended Mark a private matter."
+  },
+  {
+   "id": "gen-04",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The jars call in their promise",
+   "stances": [
+    "Give the jars door seats",
+    "Refuse and lose their votes"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -10
+    },
+    {
+     "ledger": "seat",
+     "set": "kept-word"
+    }
+   ],
+   "memory": "The ruler paid the old debt to the jars."
+  },
+  {
+   "id": "gen-05",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "party",
+     "op": "<",
+     "value": 35
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The dairy shelf finds a rival",
+   "stances": [
+    "Back the challenger down",
+    "Offer the rival a seat"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -15
+    },
+    {
+     "ledger": "party",
+     "delta": 15
+    }
+   ],
+   "memory": "The ruler kept the milk carton interest close."
+  },
+  {
+   "id": "gen-06",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 6
+    },
+    {
+     "ledger": "bloc",
+     "id": "eggs",
+     "op": "<",
+     "value": 0.45
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Trade leaves the shelves bare",
+   "stances": [
+    "Cut energy use",
+    "Protect dates and wages",
+    "Spend the chest on stock"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -5
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "The ruler chose thrift over fresh food."
+  },
+  {
+   "id": "gen-07",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Bin contests your order",
+   "stances": [
+    "Defend the clear-out",
+    "Withdraw the decree"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -5,
+     "chance": 0.5
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "The ruler tested the limits of the Fridge."
+  },
+  {
+   "id": "gen-08",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A dairy member cracks open",
+   "stances": [
+    "Remove the member",
+    "Shield the ally"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": 4
+    },
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "The ruler kept a tainted ally in office."
+  },
+  {
+   "id": "gen-09",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 4
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The freezer demands the compressor",
+   "stances": [
+    "Give priority to the freezer",
+    "Hold cold for the shelves",
+    "Split the compressor time"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -3
+    },
+    {
+     "ledger": "capital",
+     "delta": -5
+    }
+   ],
+   "memory": "The ruler made frost a political choice."
+  },
+  {
+   "id": "gen-10",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "capital",
+     "op": "<",
+     "value": 30
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The chest reaches zero",
+   "stances": [
+    "Accept a cabinet freeze",
+    "Spend the last reserve"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": 15
+    },
+    {
+     "ledger": "party",
+     "delta": -8
+    }
+   ],
+   "memory": "The ruler kept the Fridge open without money."
+  },
+  {
+   "id": "gen-11",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "streak",
+     "op": ">",
+     "value": 2
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Diamantas backs the mark",
+   "stances": [
+    "Accept the public backing",
+    "Reject the mark"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "delta": 10
+    }
+   ],
+   "memory": "The ruler let the Commissioner set the public line."
+  },
+  {
+   "id": "gen-12",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Shopping turns against you",
+   "stances": [
+    "Purge the cabinet",
+    "Hold the course"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": 3
+    }
+   ],
+   "memory": "The ruler answered a bad week with fear or patience."
+  },
+  {
+   "id": "gen-13",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A loose apple offers support",
+   "stances": [
+    "Give the apple a place"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "seat",
+     "set": "favor"
+    }
+   ],
+   "memory": "The ruler found one vote without paying for it."
+  },
+  {
+   "id": "gen-14",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A sealed jar sends supplies",
+   "stances": [
+    "Spend the arrival on old stock"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "delta": 8
+    },
+    {
+     "ledger": "capital",
+     "delta": 10
+    }
+   ],
+   "memory": "The ruler used luck before it spoiled."
+  },
+  {
+   "id": "gen-15",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The back shelf goes quiet",
+   "stances": [
+    "Keep the cold steady"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": 2
+    }
+   ],
+   "memory": "The ruler survived a quiet day."
+  },
+  {
+   "id": "gen-16",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 3
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The leftovers open their lids",
+   "stances": [
+    "Answer with a fresh meal",
+    "Let the stunt stand"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "The ruler let the leftovers choose the news."
+  },
+  {
+   "id": "gen-17",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "patron",
+     "id": "milk",
+     "op": "<",
+     "value": -1
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The raw cuts demand cold",
+   "stances": [
+    "Give the cuts compressor priority",
+    "Refuse and risk the drawer"
+   ],
+   "scored": [
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "patron",
+     "id": "milk",
+     "delta": 2
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "The ruler chose the raw cuts over the crisper."
+  },
+  {
+   "id": "gen-18",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 8
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The cabinet seals speak",
+   "stances": [
+    "Open the containers for inspection",
+    "Threaten the whistleblower"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": 2
+    },
+    {
+     "ledger": "party",
+     "delta": -4
+    }
+   ],
+   "memory": "The ruler made safety public or made silence law."
+  },
+  {
+   "id": "gen-19",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A leftover seeks a place",
+   "stances": [
+    "Offer a seat and protection",
+    "Refuse the bargain"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -10
+    },
+    {
+     "ledger": "seat",
+     "set": "courted"
+    }
+   ],
+   "memory": "The ruler bought an opponent with shelf space."
+  },
+  {
+   "id": "gen-20",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 17
+    },
+    {
+     "ledger": "approval",
+     "op": "<",
+     "value": 42
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The last date is near",
+   "stances": [
+    "Spend the final days on order"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [],
+   "memory": "The ruler left the shelves in the condition chosen at the end."
+  },
+  {
+   "id": "dat-01",
+   "kind": "dated",
+   "turn": 1,
+   "date": "2026-09-24",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Barwon mould spreads",
+   "stances": [
+    "Clear the back shelf",
+    "Seal the moulded containers",
+    "Do nothing until Shopping"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "ready",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "loose",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "delta": 3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "cabinet",
+     "delta": -2,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The Barwon Mould Legion forced the first decision."
+  },
+  {
+   "id": "dat-02",
+   "kind": "dated",
+   "turn": 3,
+   "date": "2026-09-26",
+   "exogenous": false,
+   "needs": [
+    {
+     "ledger": "bloc",
+     "id": "crisper",
+     "op": "<",
+     "value": 50
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The greens threaten departure",
+   "stances": [
+    "Raise the Humidity Dial",
+    "Promise frost control",
+    "Ignore the warning"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "crisper",
+     "delta": 8,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "salad",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "ice",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The Geelong Crisper Greens stayed after a promise on humidity."
+  },
+  {
+   "id": "dat-03",
+   "kind": "dated",
+   "turn": 8,
+   "date": "2026-10-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Shopping arrives",
+   "stances": [
+    "Enforce First In First Out",
+    "Protect the dairy stock",
+    "Send the old leftovers to the Bin"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "ready",
+     "delta": -5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "loose",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "shoppers",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "roast",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The Shopping broke the old order."
+  },
+  {
+   "id": "dat-04",
+   "kind": "dated",
+   "turn": 11,
+   "date": "2026-10-04",
+   "exogenous": false,
+   "needs": [
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "op": ">",
+     "value": 45
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The Commissioner weighs the mark",
+   "stances": [
+    "Hold Diamantas's Recommended Mark",
+    "Cut the mark for Frigidaire",
+    "Publish both tests"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "cabinet",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "capital",
+     "id": null,
+     "delta": -3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "Diamantas kept the mark after a public test."
+  },
+  {
+   "id": "dat-05",
+   "kind": "dated",
+   "turn": 15,
+   "date": "2026-10-08",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The freezer claims the air",
+   "stances": [
+    "Give the Linde compartment priority",
+    "Protect the crisper",
+    "Divide compressor time"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "meat",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "crisper",
+     "delta": -5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "cuts",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "salad",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The Linde Freezer Compartment took the cold it demanded."
+  },
+  {
+   "id": "dat-06",
+   "kind": "dated",
+   "turn": 19,
+   "date": "2026-10-12",
+   "exogenous": false,
+   "needs": [
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "op": ">",
+     "value": 40
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The jars face inspection",
+   "stances": [
+    "Inspect every sealed jar",
+    "Seal the door shelves",
+    "Send suspect jars to the Bin"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "patron",
+     "id": "jars",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "delta": 6,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "door",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The Clostridium Front met the inspectors at the door."
+  },
+  {
+   "id": "swan-01",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The compressor burns out",
+   "stances": [
+    "Ration cold by shelf",
+    "Spend the chest on repair",
+    "Accept the Bin"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "id": null,
+     "delta": -8,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "meat",
+     "delta": -6,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "ice",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The broken compressor exposed every promise."
+  },
+  {
+   "id": "swan-02",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A broken seal opens the door",
+   "stances": [
+    "Order immediate inspection",
+    "Hide the leak from Shopping",
+    "Clear all suspect jars"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "patron",
+     "id": "safety",
+     "delta": 7,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "jars",
+     "delta": -6,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "door",
+     "delta": -5,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The broken seal made secrecy expensive."
+  },
+  {
+   "id": "swan-03",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The shelves warm overnight",
+   "stances": [
+    "Give cold to the raw cuts",
+    "Save the greens and milk",
+    "Let each shelf fend for itself"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "meat",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "crisper",
+     "delta": -5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "milk",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "The warm night made the order of rescue plain."
+  }
+ ],
+ "escalations": [
+  {
+   "key": "hostile_press",
+   "name": "Sour shelf talk",
+   "headline": "Every shelf repeats that the top shelf smells, and your freshness falls with each Opening of the Door."
+  },
+  {
+   "key": "supermajority_era",
+   "name": "The middle shelf fills",
+   "headline": "Fresh leftovers join the opposition, and Cold Turkey counts toward 26 of 38."
+  },
+  {
+   "key": "recession",
+   "name": "The chill runs short",
+   "headline": "The Compressor labours in a warm kitchen, and every pledge now costs more cold than you hold."
+  },
+  {
+   "key": "scandal_season",
+   "name": "The carton leaks",
+   "headline": "A dairy member is found split open on the top shelf, and the opposition asks what else the Pasteur Dairy Bloc hides."
+  },
+  {
+   "key": "short_fuse",
+   "name": "The door stays shut",
+   "headline": "The Householder opens the Fridge less often and judges faster, and a single bad smell now reaches the Bin."
+  },
+  {
+   "key": "split_chamber",
+   "name": "Nineteen and nineteen",
+   "headline": "The Parliament divides evenly at 19 of 38, and every motion turns on one member."
+  },
+  {
+   "key": "costly_favors",
+   "name": "Dear places by the Compressor",
+   "headline": "Every bloc now wants two cold corners for one vote, and Salted Butter is running out of corners."
+  },
+  {
+   "key": "fickle_base",
+   "name": "Restless cartons",
+   "headline": "The top shelf grumbles that you give the crisper drawer too much, and dairy members stop answering the whip."
+  },
+  {
+   "key": "empty_chest",
+   "name": "The Thermostat at its limit",
+   "headline": "The Thermostat is turned as far as it goes, and you have no more chill to spend."
+  },
+  {
+   "key": "hostile_court",
+   "name": "The Four-Step Code against you",
+   "headline": "The Parliament rules that your motions break the Four-Step Code, and the Clerk of the Top Shelf will not enter them."
+  },
+  {
+   "key": "rival_surge",
+   "name": "Cold Turkey rises",
+   "headline": "The Thanksgiving Leftovers Bloc wins over the back of the Fridge and now leads the canvass of the shelves."
+  },
+  {
+   "key": "apathy",
+   "name": "A quiet cabinet",
+   "headline": "The Foodstuffs of the Fridge no longer care who governs, and your notices on the door go unread."
+  },
+  {
+   "key": "defections",
+   "name": "Leaves across the floor",
+   "headline": "Crisper Greens members sit with the opposition, and your majority of 22 of 38 thins by the day."
+  },
+  {
+   "key": "loud_opposition",
+   "name": "The middle shelf in uproar",
+   "headline": "Cold Turkey moves a confidence motion at every sitting, and the Parliament does little else."
+  },
+  {
+   "key": "crisis_fatigue",
+   "name": "Tired of the cold",
+   "headline": "The shelves have lived through too many emergencies, and no one rallies to your next call for order."
+  },
+  {
+   "key": "leaks",
+   "name": "Voices under the lid",
+   "headline": "The minutes of your cabinet reach the middle shelf before the Clerk of the Top Shelf has filed them."
+  },
+  {
+   "key": "war_footing",
+   "name": "The Front advances",
+   "headline": "The Clostridium Front and the Barwon Mould Legion push out from the back of the Fridge, and every bloc demands the Thermostat turned down."
+  },
+  {
+   "key": "famine",
+   "name": "Bare shelves",
+   "headline": "The Shopping is late, the shelves are thin, and the Householder eats whatever is left, members included."
+  },
+  {
+   "key": "succession_crisis",
+   "name": "The date draws near",
+   "headline": "Your Expiry Date is days away, and Salted Butter and the cream already canvass to succeed you."
+  },
+  {
+   "key": "foreign_meddling",
+   "name": "Letters from beyond the kitchen",
+   "headline": "Frigidaire and the Silver Spring Food and Drug Administration each press the Householder to set the Thermostat their way."
+  }
+ ],
+ "test": {
+  "name": "The clear-out of 14 October",
+  "win": "You keep at least 20 of 38 members behind you when the Householder opens the door and clears the shelves on 14 October.",
+  "lose": "The clear-out leaves your coalition below 20 of 38, and the Parliament passes the top shelf to Cold Turkey.",
+  "reveal": "both"
+ },
+ "endings": {
+  "reelected": "Kept past the clear-out",
+  "defeated": "Lost on the confidence motion",
+  "lame_duck": "Held on, short of a majority",
+  "impeached": "Voted out by the Parliament",
+  "coup": "The top shelf taken by the Barwon Mould Legion",
+  "stopped": "Past the Expiry Date",
+  "dismissed": "Thrown in the Bin"
+ },
+ "lobby": {
+  "pork": {
+   "cost": 10,
+   "label": "A place by the Compressor",
+   "text": "You move a bloc's members to the coldest corner of their shelf in return for their votes on the next motion."
+  },
+  "favor": {
+   "cost": 15,
+   "label": "A word at the door",
+   "text": "You speak for a bloc at the next Opening of the Door, and it votes with you when you call."
+  },
+  "threat": {
+   "cost": 20,
+   "label": "First to the Bin",
+   "text": "You let a bloc know its containers head the list for the next clear-out unless its members fall in behind the whip."
+  }
+ },
+ "constitution": {
+  "ruler": {
+   "role": "Prime Minister of the Fridge",
+   "faction": "dairy",
+   "above": "householder",
+   "removedBy": "The Householder can throw you in the Bin, veto any motion by eating its sponsor, or order the Defrost; the Parliament can vote you out on a confidence motion; and the Expiry Date printed on your carton removes you when it passes."
+  },
+  "holders": [
+   {
+    "id": "householder",
+    "name": "The Householder",
+    "where": "home",
+    "persona": {
+     "name": "The Householder",
+     "role": "Sovereign of the kitchen, an invented voice",
+     "bio": "The sovereign outside the door who reigns, dissolves and eats; wants clean smells, no waste and something worth eating.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.5,
+    "line": 32,
+    "response": "dismiss",
+    "levers": [
+     "force"
+    ],
+    "wants": [
+     "Clear old food",
+     "Cut waste",
+     "Hold the cold"
+    ],
+    "redLines": [
+     "Warm the Fridge"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 50,
+    "short": "Householder",
+    "icon": "crown",
+    "glance": {
+     "face": {
+      "name": "The Householder",
+      "role": "Sovereign of the kitchen, an invented voice"
+     },
+     "wants": [
+      "Clear old food",
+      "Cut waste",
+      "Hold the cold"
+     ],
+     "hates": [
+      {
+       "tag": "Warm the Fridge",
+       "redLine": true
+      },
+      {
+       "tag": "Hide spoiled food",
+       "redLine": false
+      }
+     ],
+     "strike": "The Householder opens the door, eats your sponsor or throws you in the Bin."
+    },
+    "tint": {
+     "light": "#856800",
+     "dark": "#c9a227"
+    }
+   },
+   {
+    "id": "public",
+    "name": "The Foodstuffs of the Fridge",
+    "where": "home",
+    "persona": {
+     "name": "A Carton of Eggs",
+     "role": "Spokesman for the contents, egg tray, an invented voice",
+     "bio": "The contents at large, wary before the Shopping; they want steady cold and nobody binned before their date.",
+     "tell": ""
+    },
+    "members": "citizens",
+    "stance": 0.48,
+    "line": 30,
+    "response": "riot",
+    "levers": [],
+    "wants": [
+     "Steady cold",
+     "Protect dated items"
+    ],
+    "redLines": [
+     "Bin early"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 48,
+    "short": "Foodstuffs",
+    "icon": "street",
+    "glance": {
+     "face": {
+      "name": "A Carton of Eggs",
+      "role": "Spokesman for the contents, egg tray, an invented voice"
+     },
+     "wants": [
+      "Steady cold",
+      "Protect dated items"
+     ],
+     "hates": [
+      {
+       "tag": "Bin early",
+       "redLine": true
+      },
+      {
+       "tag": "Cut the Compressor",
+       "redLine": false
+      }
+     ],
+     "strike": "The Foodstuffs block the vents on every shelf and ignore the Clerk's orders."
+    },
+    "tint": {
+     "light": "#796a46",
+     "dark": "#e8d8b0"
+    }
+   },
+   {
+    "id": "clostridium",
+    "name": "The Clostridium Front",
+    "where": "home",
+    "persona": {
+     "name": "The Strain in Jar Nine",
+     "role": "Commander of the Clostridium Front, door shelves, an invented voice",
+     "bio": "Anaerobic bacterial insurgency in sealed jars and meat; wants warmth, a failed Compressor and containers left unopened.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.3,
+    "line": 15,
+    "response": "coup",
+    "levers": [],
+    "wants": [
+     "Raise the Thermostat",
+     "Seal the containers"
+    ],
+    "redLines": [
+     "Freeze the meat"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 30,
+    "short": "Clostridium",
+    "icon": "army",
+    "glance": {
+     "face": {
+      "name": "The Strain in Jar Nine",
+      "role": "Commander of the Clostridium Front, door shelves, an invented voice"
+     },
+     "wants": [
+      "Raise the Thermostat",
+      "Seal the containers"
+     ],
+     "hates": [
+      {
+       "tag": "Freeze the meat",
+       "redLine": true
+      },
+      {
+       "tag": "Open the containers",
+       "redLine": false
+      }
+     ],
+     "strike": "The Clostridium Front seizes the sealed jars and makes the door shelves unsafe."
+    },
+    "tint": {
+     "light": "#5b6b2f",
+     "dark": "#7c8e51"
+    }
+   },
+   {
+    "id": "mould",
+    "name": "The Barwon Mould Legion",
+    "where": "home",
+    "persona": {
+     "name": "The Grey Bloom",
+     "role": "Commander of the Barwon Mould Legion, back of the middle shelf, an invented voice",
+     "bio": "Fungal militia at the back of the middle shelf; wants damp, dark and a government too weak to clear it.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.33,
+    "line": 18,
+    "response": "riot",
+    "levers": [],
+    "wants": [
+     "Raise humidity",
+     "Delay the clear-out"
+    ],
+    "redLines": [
+     "Clear the back"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 33,
+    "short": "Mould Legion",
+    "icon": "army",
+    "glance": {
+     "face": {
+      "name": "The Grey Bloom",
+      "role": "Commander of the Barwon Mould Legion, back of the middle shelf, an invented voice"
+     },
+     "wants": [
+      "Raise humidity",
+      "Delay the clear-out"
+     ],
+     "hates": [
+      {
+       "tag": "Clear the back",
+       "redLine": true
+      },
+      {
+       "tag": "Wipe the shelves",
+       "redLine": false
+      }
+     ],
+     "strike": "The Barwon Mould Legion spreads along the middle shelf until the Householder smells it."
+    },
+    "tint": {
+     "light": "#686c73",
+     "dark": "#83888f"
+    }
+   },
+   {
+    "id": "freezer",
+    "name": "The Linde Freezer Compartment",
+    "where": "home",
+    "persona": {
+     "name": "Frozen Peas",
+     "role": "Keeper of the Freezer Compartment, an invented voice",
+     "bio": "Frozen goods above the cabinet, outside the Parliament; they want Compressor priority and no Defrost.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.52,
+    "line": 36,
+    "response": "strike",
+    "levers": [],
+    "wants": [
+     "Compressor priority",
+     "Divert cold upward",
+     "Lower the Thermostat"
+    ],
+    "redLines": [
+     "Order a Defrost"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 52,
+    "short": "Freezer",
+    "icon": "council",
+    "glance": {
+     "face": {
+      "name": "Frozen Peas",
+      "role": "Keeper of the Freezer Compartment, an invented voice"
+     },
+     "wants": [
+      "Compressor priority",
+      "Divert cold upward",
+      "Lower the Thermostat"
+     ],
+     "hates": [
+      {
+       "tag": "Order a Defrost",
+       "redLine": true
+      },
+      {
+       "tag": "Raise humidity",
+       "redLine": false
+      },
+      {
+       "tag": "Cut Compressor power",
+       "redLine": false
+      }
+     ],
+     "strike": "The Linde Freezer Compartment hoards the Compressor's cold above the cabinet and lets every shelf below it warm."
+    },
+    "tint": {
+     "light": "#3a7196",
+     "dark": "#7fb8e0"
+    }
+   },
+   {
+    "id": "frigidaire",
+    "name": "Frigidaire",
+    "where": "abroad",
+    "persona": {
+     "name": "The Warranty Card",
+     "role": "Frigidaire's voice in the kitchen drawer, an invented voice",
+     "bio": "The maker of the cabinet beyond the kitchen; wants low energy use and no Warranty claim.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.6,
+    "line": 42,
+    "response": "embargo",
+    "levers": [],
+    "wants": [
+     "Cut energy use",
+     "Avoid service calls"
+    ],
+    "redLines": [
+     "Claim the Warranty"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 60,
+    "short": "Frigidaire",
+    "icon": "foreign",
+    "glance": {
+     "face": {
+      "name": "The Warranty Card",
+      "role": "Frigidaire's voice in the kitchen drawer, an invented voice"
+     },
+     "wants": [
+      "Cut energy use",
+      "Avoid service calls"
+     ],
+     "hates": [
+      {
+       "tag": "Claim the Warranty",
+       "redLine": true
+      },
+      {
+       "tag": "Run Compressor harder",
+       "redLine": false
+      }
+     ],
+     "strike": "Frigidaire voids the Warranty from beyond the kitchen and refuses any service call to the cabinet."
+    },
+    "tint": {
+     "light": "#676c75",
+     "dark": "#8a8f98"
+    }
+   },
+   {
+    "id": "fda",
+    "name": "The Silver Spring Food and Drug Administration",
+    "where": "abroad",
+    "persona": {
+     "name": "Kyle Diamantas",
+     "role": "Acting Commissioner of Food and Drugs, Silver Spring, Maryland",
+     "bio": "The distant food regulator in Silver Spring, Maryland; wants the Recommended Mark held whatever the energy cost.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.45,
+    "line": 27,
+    "response": "embargo",
+    "levers": [],
+    "wants": [
+     "Hold Recommended Mark",
+     "Clear spoiled food",
+     "Enforce Four-Step Code"
+    ],
+    "redLines": [
+     "Raise the Thermostat"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 45,
+    "short": "Food and Drug",
+    "icon": "foreign",
+    "glance": {
+     "face": {
+      "name": "Kyle Diamantas",
+      "role": "Acting Commissioner of Food and Drugs, Silver Spring, Maryland"
+     },
+     "wants": [
+      "Hold Recommended Mark",
+      "Clear spoiled food",
+      "Enforce Four-Step Code"
+     ],
+     "hates": [
+      {
+       "tag": "Raise the Thermostat",
+       "redLine": true
+      },
+      {
+       "tag": "Bribes",
+       "redLine": false
+      }
+     ],
+     "strike": "The Silver Spring Food and Drug Administration posts a notice on the door that the Fridge fails the Recommended Mark."
+    },
+    "tint": {
+     "light": "#1f4e9c",
+     "dark": "#5587da"
+    }
+   },
+   {
+    "id": "the_chamber",
+    "name": "the Parliament",
+    "where": "home",
+    "persona": {
+     "name": "the Parliament",
+     "role": "member",
+     "bio": "",
+     "tell": ""
+    },
+    "members": "seats",
+    "stance": 0.7,
+    "line": 56,
+    "response": "early_test",
+    "levers": [],
+    "wants": [],
+    "redLines": [],
+    "gives": null,
+    "responses": [],
+    "support": 71,
+    "icon": "chamber"
+   }
+  ],
+  "instruments": {
+   "decree": {
+    "name": "A Prime Minister's order from the top shelf",
+    "price": {
+     "authority": 3,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "householder"
+    ]
+   },
+   "law": {
+    "name": "A motion carried in the Parliament",
+    "price": {
+     "authority": 1,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "chamber"
+    ]
+   },
+   "appoint": {
+    "name": "A seat on the government bench of the top shelf",
+    "price": {
+     "authority": 2,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": []
+   },
+   "spend": {
+    "name": "A vote of chill",
+    "price": {
+     "authority": 0,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "chamber"
+    ]
+   },
+   "proclaim": {
+    "name": "A notice on the door",
+    "price": {
+     "authority": 0,
+     "treasury": 0,
+     "chest": 2
+    },
+    "available": true,
+    "vetoes": []
+   },
+   "favour": {
+    "name": "A pledge of shelf space",
+    "price": {
+     "authority": 2,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": []
+   },
+   "force": {
+    "name": "An order to clear the back of the Fridge",
+    "price": {
+     "authority": 4,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "householder"
+    ]
+   }
+  },
+  "retention": {
+   "name": "the clear-out",
+   "weights": [
+    {
+     "id": "householder",
+     "value": 0.4
+    },
+    {
+     "id": "the_chamber",
+     "value": 0.6
+    }
+   ],
+   "bar": {
+    "start": 0.5,
+    "step": 0.03,
+    "cap": 0.7
+   }
+  },
+  "halfTerm": {
+   "holder": "public",
+   "name": "Shopping Day"
+  },
+  "ledgers": {
+   "treasury": {
+    "name": "Chill",
+    "line": 0,
+    "icon": "drop",
+    "for": "Chill is the cold the Compressor makes each day, which your government shares out among the shelves.",
+    "earn": [
+     "The Compressor running a full cycle",
+     "The door kept shut between openings"
+    ],
+    "spend": [
+     "Turning the Thermostat lower",
+     "Cold sent up to the Freezer",
+     "Cooling the crisper drawer against frost"
+    ],
+    "fails": "the government cannot cool a single shelf, and the Fridge drifts toward the Danger Zone."
+   },
+   "authority": {
+    "name": "Hand on dial",
+    "line": 0,
+    "icon": "gavel",
+    "for": "Hand on dial is your standing on the top shelf to issue orders that the blocs obey.",
+    "earn": [
+     "Motions carried in the Parliament",
+     "A clean Opening of the Door"
+    ],
+    "spend": [
+     "Thermostat orders over a bloc's objection",
+     "Ordering the clear-out of the back shelf",
+     "Waiving the First In First Out Rule"
+    ],
+    "fails": "the Parliament ignores your orders, and the Thermostat answers to no one."
+   },
+   "chest": {
+    "name": "Ice tray",
+    "line": 0,
+    "icon": "crate",
+    "for": "The ice tray holds the cubes your Chief Whip keeps back for quiet favours to members.",
+    "earn": [
+     "Cubes set aside from each cycle",
+     "Cold saved when the door stays shut"
+    ],
+    "spend": [
+     "Cooling a wavering member's corner",
+     "Buying the Door Conserves' votes"
+    ],
+    "fails": "you have no cold left to trade for a single vote."
+   },
+   "loyalty": {
+    "name": "Carton unity",
+    "line": 20
+   },
+   "popularity": {
+    "name": "Freshness",
+    "line": 30
+   }
+  },
+  "briefing": {
+   "situation": "You are Prime Minister of the Fridge, sworn in on 24 September 2026 from the carton of the Pasteur Dairy Bloc. Your government holds 22 of 38 seats with the Geelong Crisper Greens, two above the 20 needed. The Barwon Mould Legion has held the back of the middle shelf since the door was left ajar on 22 September. The Shopping is due on 1 October. You want the Thermostat low, the leftovers cleared and your coalition intact until 14 October.",
+   "room": "The Householder can veto any motion by eating its sponsor, throw you in the Bin, or order the Defrost. A confidence motion carries with 20 of 38 votes. The Thanksgiving Leftovers Bloc has 11 and needs 9 more. If the Geelong Crisper Greens walk out with their 8, each side holds 19 and the Appert Door Conserves, 5 strong, decide it. Your own Expiry Date removes you when it passes, whatever the vote.",
+   "you": "You hold the Thermostat on the top shelf, the whip over 14 Dairy Bloc members, and the Prime Minister's right to move motions and set the Humidity Dial. You have Salted Butter as Chief Whip and Romaine Lettuce as your partner. The clear-out on 14 October asks three things: that you still command 20 of 38 votes, that the Fridge has stayed out of the Danger Zone, and that the Householder's freshness in your government stands at 50 or higher."
+  },
+  "publicGroup": "public",
+  "ownGroup": "dairy"
+ },
+ "themeTokens": {
+  "display": "Libre Caslon Display",
+  "displayWeight": 400,
+  "displayCase": "small-caps",
+  "displayTracking": 0.04,
+  "body": "Source Serif 4",
+  "bodySize": 17,
+  "mono": "IBM Plex Mono",
+  "light": {
+   "paper": "#f4f7f8",
+   "surface": "#e8eef1",
+   "ink": "#14232b",
+   "muted": "#4a5c66",
+   "accent": "#1d5a86",
+   "accent2": "#2e6b4f",
+   "rule": "#b8c7cf"
+  },
+  "dark": {
+   "paper": "#0e161b",
+   "surface": "#16222a",
+   "ink": "#e3ecf0",
+   "muted": "#9fb2bc",
+   "accent": "#7fbde6",
+   "accent2": "#7cc3a0",
+   "rule": "#2c3d47"
+  },
+  "material": "glass",
+  "texture": "lines",
+  "textureScale": 1,
+  "radius": 6,
+  "ruleStyle": "double",
+  "motion": "stately",
+  "courier": "fleck"
+ }
+}
