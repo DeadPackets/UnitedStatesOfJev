@@ -16,6 +16,7 @@ import {
   glanceOf,
   hash,
   holdersOf,
+  OWN,
   rng,
   testBar,
   votePreview,
@@ -162,7 +163,10 @@ const RESOURCE_WORDS: Record<Resource, { name: string; icon: ResourceIcon }> = {
 
 const resourceName = (pack: Pack, key: Resource) =>
   pack.constitution?.ledgers[key]?.name ?? RESOURCE_WORDS[key].name;
-const shortName = (holder: Holder) => holder.short ?? holder.name;
+const shortName = (holder: Holder) => {
+  const name = holder.short ?? holder.name;
+  return name[0].toUpperCase() + name.slice(1);
+};
 // R24: the final vote is each voting group's support times its weight.
 const finalVote = (game: Game) =>
   Math.round(Object.values(game.holders).reduce((sum, h) => sum + h.weight * h.support, 0));
@@ -206,7 +210,12 @@ function rimRow(pack: Pack, game: Game, holder: Holder): RimRow {
     tint: tintOf(pack, holder.id, holder.tint),
     icon: iconOf(holder),
     emblem: checkEmblem(holder.emblem),
-    glance: glanceOf(holder) ?? null,
+    glance:
+      glanceOf(holder) ??
+      (holder.id === OWN
+        ? glanceOf(pack.factions.find((f) => f.id === pack.constitution?.ruler.faction) ?? {})
+        : null) ??
+      null,
   };
 }
 

@@ -583,9 +583,14 @@ export const OWN = "own";
 const ownOf = (pack: Pack): Holder => {
   const f = pack.factions.find((x) => x.id === pack.constitution?.ruler.faction);
   const name = f?.name ?? "your own side";
+  // The party's look for its row; the engine reads none of short, icon, tint or emblem.
   return {
     id: OWN,
     name,
+    short: f?.short,
+    icon: "party",
+    tint: f?.tint,
+    emblem: f?.emblem,
     where: "home",
     persona: { name: f?.leader ?? name, role: "leader of your own side", bio: "", tell: "" },
     members: "none",

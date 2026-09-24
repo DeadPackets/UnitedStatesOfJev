@@ -53,6 +53,19 @@ for (const [file, ruler, verb, veto] of [
   });
 }
 
+test("an own group named by its chamber party's id is one row with that party's short name, tint and card", async () => {
+  const pack = await load("biden-2021");
+  pack.constitution!.holders = pack.constitution!.holders.filter((holder) => holder.id !== "dem");
+  const party = pack.factions.find((faction) => faction.id === "dem")!;
+  const own = deskView(pack, seat(pack, "dem")).rim.filter((row) => row.id === "own");
+  expect(own).toHaveLength(1);
+  expect([own[0].name, own[0].tint, own[0].glance]).toEqual([
+    party.short,
+    party.tint!,
+    party.glance!,
+  ]);
+});
+
 test("an emblem that fails the check draws the line icon, and every row keeps one", async () => {
   const pack = await load("biden-2021");
   const game = seat(pack, "dem");
