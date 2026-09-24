@@ -17,7 +17,7 @@ import "./styles.css";
 export type Act = (fn: () => Promise<GameView>) => Promise<boolean>;
 type Screen = "landing" | "match" | "build" | "seat";
 
-const SCENARIO = /^\/s\/([a-z0-9]+)$/i;
+const SCENARIO = /^\/s\/([a-z0-9-]+)$/i;
 // Blocked storage is a browser setting, not a broken game: every read is a miss and every write is dropped.
 const store = {
   get: (k: string) => {
