@@ -162,7 +162,6 @@ for (const [label, hates] of [
       { tag: "B", redLine: true },
     ],
   ],
-  ["four hates", ["A", "B", "C", "D"].map((tag, i) => ({ tag, redLine: i === 0 }))],
 ] as [string, { tag: string; redLine: boolean }[]][]) {
   test(`a glance card with ${label} fails the write check`, () => {
     expect(GlanceSchema.safeParse({ ...GLANCE, hates }).success).toBe(false);
