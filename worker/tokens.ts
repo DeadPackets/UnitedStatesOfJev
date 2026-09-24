@@ -256,12 +256,15 @@ function fromOklch(lightness: number, chroma: number, hue: number): string {
 }
 
 // The foreground itself when it already reads on every background; otherwise the nearest colour of the same hue,
-// walked in OKLCH lightness away from the backgrounds, that does.
+// walked in OKLCH lightness away from the backgrounds, that does. null when no lightness of that hue reads on every
+// background (a dark paper with a light surface) or a colour is not six-digit hex: the caller keeps its default.
 export function fitContrast(
   foreground: string,
   backgrounds: string[],
   minimum = MIN_CONTRAST,
-): string {
+): string | null {
+  if (![foreground, ...backgrounds].every((colour) => ColourSchema.safeParse(colour).success))
+    return null;
   const passes = (colour: string) =>
     backgrounds.every((background) => contrastRatio(colour, background) >= minimum);
   const start = foreground.toLowerCase();
@@ -269,26 +272,37 @@ export function fitContrast(
   const [lightness, chroma, hue] = toOklch(start);
   const meanLuminance =
     backgrounds.reduce((sum, background) => sum + luminance(background), 0) / backgrounds.length;
-  // 0.179 is where black and white give the same contrast: above it darker text reads better.
-  const target = meanLuminance > 0.179 ? 0 : 1;
-  for (let step = 1; step <= 100; step++) {
-    const candidate = fromOklch(lightness + ((target - lightness) * step) / 100, chroma, hue);
-    if (passes(candidate)) return candidate;
-  }
-  return target === 0 ? "#000000" : "#ffffff";
+  // 0.179 is where black and white give the same contrast: above it darker text reads better, so that way is walked
+  // first. The other way still finds the mid-tone that reads between a light and a dark background.
+  const darker = meanLuminance > 0.179 ? 0 : 1;
+  // Steps of a thousandth: the band that reads on both white and black is under a hundredth of lightness wide.
+  const steps = 1000;
+  for (const target of [darker, 1 - darker])
+    for (let step = 1; step <= steps; step++) {
+      const candidate = fromOklch(lightness + ((target - lightness) * step) / steps, chroma, hue);
+      if (passes(candidate)) return candidate;
+    }
+  return null;
 }
 
-// Every text colour of each mode (ink, muted, accent) against both of its backgrounds (paper, surface).
+// Every text colour of each mode (ink, muted, accent) against both of its backgrounds (paper, surface). A mode where
+// one of them cannot read takes the default palette for that mode whole.
 export function fitThemeTokens(tokens: ThemeTokens): { tokens: ThemeTokens; fixes: string[] } {
   const fixes: string[] = [];
   const fitPalette = (mode: "light" | "dark"): Palette => {
     const palette = { ...tokens[mode] };
+    const changes: string[] = [];
     for (const key of ["ink", "muted", "accent"] as const) {
       const fitted = fitContrast(palette[key], [palette.paper, palette.surface]);
+      if (fitted === null) {
+        fixes.push(`${mode}: default palette, ${key} cannot read on its paper and surface`);
+        return DEFAULT_THEME_TOKENS[mode];
+      }
       if (fitted !== palette[key].toLowerCase())
-        fixes.push(`${mode}.${key} ${palette[key]} -> ${fitted}`);
+        changes.push(`${mode}.${key} ${palette[key]} -> ${fitted}`);
       palette[key] = fitted;
     }
+    fixes.push(...changes);
     return palette;
   };
   return { tokens: { ...tokens, light: fitPalette("light"), dark: fitPalette("dark") }, fixes };

@@ -23,14 +23,43 @@ for (const [label, foreground, backgrounds] of [
   ["the paper's own colour", "#f4f0e6", ["#f4f0e6"]],
   ["pure yellow on white", "#ffff00", ["#ffffff"]],
   ["upper-case hex", "#A79A82", ["#E8D7B0"]],
+  ["black on black", "#000000", ["#000000"]],
+  ["white on white", "#ffffff", ["#ffffff"]],
+  ["mid grey on itself", "#777777", ["#777777"]],
+  ["black on white and black", "#000000", ["#ffffff", "#000000"]],
 ] as [string, string, string[]][]) {
   test(`fitContrast lifts ${label} to ${MIN_CONTRAST}:1 on every background`, () => {
     const fitted = fitContrast(foreground, backgrounds);
     expect(fitted).toMatch(/^#[0-9a-f]{6}$/);
     for (const background of backgrounds)
-      expect(contrastRatio(fitted, background)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      expect(contrastRatio(fitted!, background)).toBeGreaterThanOrEqual(MIN_CONTRAST);
   });
 }
+
+for (const [label, foreground, backgrounds] of [
+  ["a colour name", "red", ["#ffffff"]],
+  ["a background carrying CSS", "#121a2b", ["#fff;background:url(x)"]],
+  ["two mid greys no lightness reads on", "#00ff00", ["#6f6f6f", "#7b7b7b"]],
+] as [string, string, string[]][]) {
+  test(`fitContrast gives null for ${label}`, () => {
+    expect(fitContrast(foreground, backgrounds)).toBeNull();
+  });
+}
+
+test("for any colours, fitContrast reads at 4.5:1 on every background or gives null", () => {
+  let seed = 1;
+  const colour = () => {
+    seed = (seed * 1103515245 + 12345) % 2 ** 31;
+    return `#${(seed % 0x1000000).toString(16).padStart(6, "0")}`;
+  };
+  for (let i = 0; i < 300; i++) {
+    const backgrounds = [colour(), colour()];
+    const fitted = fitContrast(colour(), backgrounds);
+    if (fitted === null) continue;
+    for (const background of backgrounds)
+      expect(contrastRatio(fitted, background)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+  }
+});
 
 test("a colour that already reads comes back unchanged", () => {
   expect(fitContrast("#121A2B", ["#f4f0e6", "#fbf9f3"])).toBe("#121a2b");
@@ -73,6 +102,16 @@ test("valid tokens with a faint muted colour are fitted, every text colour reads
         expect(contrastRatio(palette[key], background)).toBeGreaterThanOrEqual(MIN_CONTRAST);
   }
   expect(parseThemeTokens(first.tokens)).toEqual({ tokens: first.tokens, fixes: [] });
+});
+
+test("a mode whose text cannot read on its paper and surface takes the default palette for that mode", () => {
+  const result = parseThemeTokens({
+    ...valid,
+    dark: { ...valid.dark, paper: "#6f6f6f", surface: "#7b7b7b" },
+  });
+  expect(result.tokens.dark).toEqual(DEFAULT_THEME_TOKENS.dark);
+  expect(result.tokens.light.muted).not.toBe(DEFAULT_THEME_TOKENS.light.muted);
+  expect(result.fixes).toContain("dark: default palette, ink cannot read on its paper and surface");
 });
 
 test("the default theme needs no fix", () => {
