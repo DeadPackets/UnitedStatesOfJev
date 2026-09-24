@@ -13,7 +13,7 @@ import {
   type RosterPatch,
 } from "./schemas";
 import { qidsOf, wikidataFacts } from "./wikidata";
-import { fetchPage } from "./wikipedia";
+import { fetchPage, type Doc } from "./wikipedia";
 import { PLAN_SYSTEM, ROSTER_SYSTEM } from "./writing";
 
 const REPAIR_DOC_CHARACTERS = 90000;
@@ -106,7 +106,8 @@ export async function repairRoster(
 ): Promise<{ roster: Roster; gathered: Gathered }> {
   const rows = new Set(fails.map((fail) => fail.row));
   const failing = roster.groups.filter((group) => rows.has(group.id));
-  const needed = new Set<number>(fails.flatMap((fail) => fail.docs ?? []));
+  // The failing rows' own documents and pages come first (lesson 10), then the pages that name them, to the cap.
+  const own = new Set<number>(fails.flatMap((fail) => fail.docs ?? []));
   const docs = [...context.gathered.docs];
   const have = new Set(docs.map((doc) => doc.title));
   for (const group of failing.filter((group) => group.wiki && !have.has(group.wiki))) {
@@ -114,21 +115,27 @@ export async function repairRoster(
     if (page && !have.has(page.title)) {
       have.add(page.title);
       docs.push({ ...page, index: docs.length + 1 });
-      needed.add(docs.length);
+      own.add(docs.length);
     }
   }
-  for (const group of failing) if (group.doc) needed.add(group.doc);
+  for (const group of failing) if (group.doc) own.add(group.doc);
+  // Only a C5 row is a name; other rows are ids ("ah", "uk", "cup"), which match inside ordinary words.
   const names = [
-    ...fails.filter((fail) => fail.check === "C5" || fail.check === "C1").map((fail) => fail.row),
+    ...fails.filter((fail) => fail.check === "C5").map((fail) => fail.row),
     ...failing.map((group) => group.name),
   ].map((name) => fold(name.replace(/\s*\(.*\)$/, "")));
-  for (const doc of docs) {
-    const text = fold(doc.text);
-    if (names.some((name) => text.includes(name))) needed.add(doc.index);
+  const naming = docs
+    .filter((doc) => !own.has(doc.index) && names.some((name) => fold(doc.text).includes(name)))
+    .map((doc) => doc.index);
+  const shown: Doc[] = [];
+  let total = 0;
+  for (const index of [...own, ...naming]) {
+    const doc = docs.find((candidate) => candidate.index === index);
+    if (!doc || (shown.length && total + doc.text.length > REPAIR_DOC_CHARACTERS)) continue;
+    shown.push(doc);
+    total += doc.text.length;
   }
-  let shown = docs.filter((doc) => needed.has(doc.index));
-  if (shown.reduce((total, doc) => total + doc.text.length, 0) > REPAIR_DOC_CHARACTERS)
-    shown = shown.slice(0, 7);
+  shown.sort((first, second) => first.index - second.index);
   const plan = context.plan;
   const user = `${docBlock(shown)}
 

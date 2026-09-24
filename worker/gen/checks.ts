@@ -214,7 +214,11 @@ export function checkRoster(roster: Roster, context: RosterContext): Fail[] {
       );
     if (kind === 4 && !["record", "premise"].includes(group.grounding))
       fail("C2", group.id, "kind 4: record, or premise for the fantastic element's own groups");
-    // C3: an invented group in an open world is tied to an analogue and carries a proper noun of the world.
+    // C3: an invented group in an open world is tied to an analogue and carries a proper noun of the world. A real body
+    // under its own page's name, with a Wikidata founding date, already has one: C3 made the fridge's repair rename the
+    // FDA "The Silver Spring Food and Drug Administration".
+    const facts = factsOf(group.wiki);
+    const realBody = !!group.wiki && bare(group.name) === bare(group.wiki) && !!facts?.founded;
     if (kind >= 8 && !["record", "canon"].includes(group.grounding)) {
       if (!["analogue", "biology", "anthropology", "premise"].includes(group.grounding))
         fail(
@@ -222,7 +226,7 @@ export function checkRoster(roster: Roster, context: RosterContext): Fail[] {
           group.id,
           "open world: an invented group's grounding is analogue, biology, anthropology or premise",
         );
-      if (!hasProperNoun(group.name, lower))
+      if (!realBody && !hasProperNoun(group.name, lower))
         fail(
           "C3",
           group.id,
@@ -230,7 +234,6 @@ export function checkRoster(roster: Roster, context: RosterContext): Fail[] {
         );
     }
     // C4: Wikidata's dates win over the model's.
-    const facts = factsOf(group.wiki);
     const founded = facts?.founded ?? group.founded;
     const dissolved = facts?.dissolved ?? group.dissolved;
     const at = kind === 2 && plan.divergence ? plan.divergence : start;

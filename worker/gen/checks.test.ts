@@ -9,13 +9,14 @@ import {
 } from "./checks";
 import fixture from "./fixtures/fridge-roster.json";
 import type { Gathered } from "./gather";
-import { applyRosterPatch } from "./roster";
+import { applyRosterPatch, repairRoster } from "./roster";
+import type { Caller } from "./openrouter";
 import type { Group, Plan, Roster } from "./schemas";
 import type { WikidataFacts } from "./wikidata";
 
 const plan = fixture.plan as Plan;
 const roster = fixture.roster as Roster;
-// Each numbered document holds the quotes the fixture cites from it, and some lower-case words for the C3 row below.
+// Each numbered document holds the quotes the fixture cites from it, and some lower-case words for the C3 rows below.
 const docs = Array.from({ length: 10 }, (_, i) => ({
   index: i + 1,
   source: `Wikipedia: Page ${i + 1}`,
@@ -23,7 +24,9 @@ const docs = Array.from({ length: 10 }, (_, i) => ({
   text: `${roster.groups
     .filter((group) => group.doc === i + 1)
     .map((group) => group.quote)
-    .join(" ")} The crisper drawer vegetables sit in a humid drawer while the army marches.`,
+    .join(
+      " ",
+    )} The crisper drawer vegetables sit in a humid drawer while the army marches. A food and drug administration keeps it cold.`,
 }));
 const gathered: Gathered = {
   docs,
@@ -136,6 +139,23 @@ test("Wikidata wins: a body founded after the start fails C4, and a ruler out of
   expect(found.some((fail) => fail.check === "C8" && fail.row === "ruler")).toBe(true);
 });
 
+// The fridge's C3 repair renamed the FDA "The Silver Spring Food and Drug Administration".
+test.each([
+  ["a real body under its own page's name", "The Food and Drug Administration", "1906", false],
+  ["a page without a founding date", "The Food and Drug Administration", null, true],
+  ["a name that is not its page's", "The Cold Food Administration", "1906", true],
+])("C3 on %s fails: %p", (_label, name, founded, fails) => {
+  const wiki = "Food and Drug Administration";
+  const real = {
+    plan,
+    gathered: { ...gathered, qids: { [wiki]: "Q1" }, facts: { Q1: facts("Q1", { founded }) } },
+  };
+  const found = checkRoster(changed("crisper", { name, wiki }), real).filter(
+    (fail) => fail.check === "C3" && fail.row === "crisper",
+  );
+  expect(found.length > 0).toBe(fails);
+});
+
 // The Genghis build: the prompt named the man, the plan seated his chief minister.
 test.each([
   ["Genghis Khan", "Prime Minister of Mongolia", "Luvsannamsrain Oyun-Erdene", ["P1"]],
@@ -199,4 +219,46 @@ test("a repair patch replaces rows by id, takes out the rows it removes and can 
   expect(patched.groups.some((group) => group.id === "botulinum")).toBe(false);
   expect(patched.fall).toBeNull();
   expect(patched.chamber).toEqual(roster.chamber);
+});
+
+// Lesson 10: the repair reads the failing row's own document first; the old cut kept the first 7 by index instead.
+test("a roster repair shows the failing row's own document, then the pages that name it, to 90,000 characters", async () => {
+  const page = (index: number, text: string) => ({
+    index,
+    source: `Wikipedia: Page ${index}`,
+    title: `Page ${index}`,
+    text,
+  });
+  const long = "x".repeat(40000);
+  const many = [
+    page(1, `The Penicillium Mould ${long}`),
+    page(2, `The Penicillium Mould ${long}`),
+    page(3, `The Penicillium Mould ${long}`),
+    page(4, "Mouldy bread is not the group."),
+    page(5, "The Penicillium Mould grew on the cheese."),
+  ];
+  let shown = "";
+  const call = (async (request: { user: string }) => {
+    shown = request.user;
+    return {
+      groups: [],
+      remove: [],
+      excluded: [],
+      ruler: null,
+      fall: null,
+      fall_clear: false,
+      chamber: null,
+      chamber_clear: false,
+    };
+  }) as unknown as Caller;
+  const failing = changed("mould", { wiki: null, doc: 5 });
+  await repairRoster(
+    call,
+    failing,
+    [{ check: "C1", row: "mould", message: "quote not found", docs: [5] }],
+    { plan, gathered: { ...gathered, docs: many } },
+  );
+  expect([...shown.matchAll(/<document index="(\d+)"/g)].map((match) => Number(match[1]))).toEqual([
+    1, 2, 5,
+  ]);
 });
