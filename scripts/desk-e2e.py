@@ -521,7 +521,7 @@ def write_compare():
     e = html.escape
     (OUT / "mock").mkdir(exist_ok=True)
     rows = []
-    for name in report["shots"]:
+    for name in (n for n in report["shots"] if not n.startswith("golden-")):
         mock = MOCK / f"{name}.png"
         if mock.exists():
             shutil.copy(mock, OUT / "mock" / mock.name)
@@ -551,13 +551,25 @@ def write_compare():
     )
     keys = "".join(f"<li>{e(json.dumps(k))}</li>" for k in report["keyboard"]) or "<li>not run</li>"
     differences = "".join(f"<tr><td>{e(what)}</td><td>{e(why)}</td></tr>" for what, why in DIFFERENCES)
+    # One section per golden world: what the pack carries against what the desk drew, then its shots.
+    golden = "".join(
+        f"<section class='{'' if g['ok'] else 'bad'}'><h3>{e(g['id'])}: {e(g['what'])}</h3>"
+        f"<table><tr><td>Emblems in the pack (rim rows)</td><td>{e(', '.join(g['emblems in pack']) or 'none: line icons')}</td></tr>"
+        f"<tr><td>Emblems drawn on the rims</td><td>{e(', '.join(g['emblems drawn']) or 'none: line icons')}</td></tr>"
+        f"<tr><td>File discs (emblem shown)</td><td>{e(json.dumps(g['discs']))}</td></tr>"
+        f"<tr><td>Theme fonts (display, body, mono) / loaded</td><td>{e(json.dumps(g['tokens']))} / {e(', '.join(g['fonts']))}</td></tr>"
+        f"<tr><td>Acts</td><td>{e('; '.join(f'{a}: {r}' for a, r in g['acts']))}</td></tr>"
+        f"<tr><td>A member's card</td><td><pre>{e(g['member card'])}</pre></td></tr></table>"
+        f"<div class=grid>{''.join(f'<figure><figcaption>{e(CAPTIONS.get(n, n))}</figcaption><img src={chr(39)}{e(n)}.png{chr(39)} loading=lazy></figure>' for n in report['shots'] if n.startswith(g['id'] + '-') and not n.startswith(g['id'] + '-first'))}</div></section>"
+        for g in report["golden"]
+    ) or "<p>not run</p>"
     (OUT / "compare.html").write_text(f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Desk against mock</title>
 <style>body{{font:15px/1.45 system-ui,sans-serif;margin:0 auto;max-width:1600px;padding:16px;color:#1b1b1b;background:#fafaf7}}h1{{margin:0 0 4px}}h2{{margin-top:32px;border-bottom:2px solid #1b1b1b}}
 table{{border-collapse:collapse;width:100%}}td,th{{border-bottom:1px solid #ddd;padding:4px 8px;text-align:left;vertical-align:top}}tr.bad td{{background:#fde8e6}}
 .pair{{display:grid;grid-template-columns:1fr 1fr;gap:12px}}figure{{margin:0}}figcaption{{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em}}img{{width:100%;border:1px solid #ccc}}
-section{{margin:24px 0}}section h3{{margin:0}}section p{{margin:2px 0 8px;color:#555}}.none{{border:1px dashed #bbb;padding:24px;color:#777}}.big{{font-size:20px}}@media(max-width:900px){{.pair{{grid-template-columns:1fr}}}}</style>
+.grid{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}}pre{{white-space:pre-wrap;margin:0;font:13px/1.3 ui-monospace,monospace}}section.bad h3{{color:#b00}}section{{margin:24px 0}}section h3{{margin:0}}section p{{margin:2px 0 8px;color:#555}}.none{{border:1px dashed #bbb;padding:24px;color:#777}}.big{{font-size:20px}}@media(max-width:900px){{.pair{{grid-template-columns:1fr}}}}</style>
 <h1>The desk: app against the approved mock</h1>
-<p>What this is: <code>scripts/desk-e2e.py</code> drove the real game (the production build, real clerk calls) in Chrome at 1440x900: one Biden term to its end screen, one Westeros act, the screens around the desk, 1920x1080 and reduced motion. Each app screenshot sits beside the mock's screenshot of the same moment. To get a fresh copy: <code>bunx vite build &amp;&amp; bunx vite preview --port 4173</code>, then <code>uv run --with playwright python scripts/desk-e2e.py</code>.</p>
+<p>What this is: <code>scripts/desk-e2e.py</code> drove the real game (the production build, real clerk calls) in Chrome at 1440x900: one Biden term to its end screen, one Westeros act, the screens around the desk, 1920x1080, reduced motion, and one act and End turn on each golden world. Each app screenshot sits beside the mock's screenshot of the same moment. To get a fresh copy: <code>bunx vite build &amp;&amp; bunx vite preview --port 4173</code>, then <code>uv run --with playwright python scripts/desk-e2e.py</code>.</p>
 <p class=big><b>JS</b> {report['js_gzip_kb']} KB gzipped of the 200 KB budget · <b>{len(report['slow_moments'])}</b> moments under 58 fps · <b>{len(report['long_over_50ms'])}</b> long tasks over 50 ms · <b>{len(report['errors'])}</b> errors · <b>{report['contrast_failures']}</b> texts under 4.5:1</p>
 <h2>Every remaining difference from the mock, and why</h2><table><tr><th>What differs</th><th>Why</th></tr>{differences}</table>
 <h2>Frame rate per moment</h2><p>Frames per second while each moment runs, measured by the page itself on every animation frame. The display runs at 120 Hz here, so 120 is the ceiling; the budget is 60 (a row turns red under 58 or with a long task, a main-thread block of 50 ms or more, inside the moment). "1% low" is the rate of the slowest 1% of frames.</p>
@@ -570,6 +582,7 @@ section{{margin:24px 0}}section h3{{margin:0}}section p{{margin:2px 0 8px;color:
 <h2>JS per chunk (gzipped KB)</h2><table>{js}</table>
 <h2>Turns played</h2><ol>{turns}</ol>
 <h2>Errors</h2><p>Page errors, server errors and timeouts. The server's 4xx answers to a move (shown to the player as a toast) are in report.json under <code>answers</code>.</p><ul>{errors}</ul>
+<h2>Golden worlds</h2><p>Each world generation v2 wrote (docs/generation/golden/), seeded into local D1 and played on the desk: the emblems the pack carries against those drawn (placement A; the line icon where there is none), the world's fonts, a member's card (R36), a law and a decree priced and signed, and End turn. The mock never drew these worlds, so the shots stand alone. A red heading means the drawn emblems differ from the pack's.</p>{golden}
 <h2>Shots: app (left) and mock (right)</h2><p>The mock's shot is the approved design with its scripted numbers; the app's is this run's real game. Screens the mock never drew (the build wait, the seat, the midterm, the final vote, the end, a failed vote) show the app alone.</p>{''.join(rows)}""")
 
 
