@@ -3,7 +3,6 @@ import { api, type GameView } from "./api";
 import type { Act } from "./App";
 import { Num, national } from "./Ledger";
 import { squareClass } from "./rules";
-import { Ornament } from "./theme";
 
 /** Clipboard API first; the textarea covers an insecure origin or a denied permission. */
 async function copyText(s: string) {
@@ -43,9 +42,7 @@ export default function Over({
     <main className="over stagger press">
       <div className="mast" style={{ "--i": 0 } as any}>
         <b>{pack.title}</b>
-        <span className="flag">
-          <Ornament kind={pack.theme.ornament} />
-        </span>
+        <span className="flag" />
       </div>
       <h1 className={lost ? "lose" : ""} style={{ "--i": 1 } as any}>
         {r ? pack.endings[r.ending] : (game.ending?.title ?? pack.test.name)}

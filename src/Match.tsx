@@ -1,5 +1,4 @@
 import type { Offer } from "./api";
-import { Ornament } from "./theme";
 
 export default function Match({
   offers,
@@ -16,9 +15,7 @@ export default function Match({
     <main className="match press">
       <div className="mast">
         <b>The archive</b>
-        <span className="flag">
-          <Ornament kind="rule" />
-        </span>
+        <span className="flag" />
         <span>{offers.length === 1 ? "One match" : `${offers.length} matches`}</span>
       </div>
       <h1>Someone already wrote this era.</h1>

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { Faction, Pack } from "../worker/pack";
+import type { Faction } from "../worker/pack";
 import {
   DEFAULT_THEME_TOKENS,
   fitContrast,
@@ -88,96 +88,6 @@ export const initials = (name: string) =>
     .slice(0, 3)
     .toUpperCase();
 
-// ---- page theme ----
-
-const SERIF = new Set([
-  "Playfair Display",
-  "Cinzel",
-  "EB Garamond",
-  "Fraunces",
-  "Lora",
-  "Cormorant Garamond",
-]);
-// Google's css2 API returns 400 for a weight a family does not ship, so these four override the defaults below.
-const WEIGHTS: Record<string, string> = {
-  "Archivo Black": "",
-  "Space Grotesk": "600;700",
-  Oswald: "600;700",
-  "Cormorant Garamond": "600;700",
-};
-
-const famq = (name: string, fallback: string) => {
-  const w = WEIGHTS[name] ?? fallback;
-  return `family=${name.replace(/ /g, "+")}${w ? `:wght@${w}` : ""}`;
-};
-const stack = (name: string) =>
-  `"${name}", ${SERIF.has(name) ? "Georgia, serif" : "system-ui, sans-serif"}`;
-
-/**
- * Re-skins the page from the pack. Takes a partial, because the build's `frame` fragment carries
- * only fonts, ink, paper and accent; texture and ornament land with the pack.
- */
-export function applyTheme(t: Partial<Pack["theme"]>) {
-  const root = document.documentElement;
-  const set = (k: string, v?: string) => {
-    if (v) root.style.setProperty(k, v);
-  };
-  set("--ink", t.ink);
-  set("--paper", t.paper);
-  set("--bg", t.paper);
-  set("--accent", t.accent);
-  if (t.fonts) {
-    const [display, sans] = t.fonts.split(" + ");
-    set("--display", stack(display));
-    set("--sans", stack(sans));
-    let link = document.getElementById("packfonts") as HTMLLinkElement | null;
-    if (!link) {
-      link = document.createElement("link");
-      link.id = "packfonts";
-      link.rel = "stylesheet";
-      document.head.append(link);
-    }
-    link.href = `https://fonts.googleapis.com/css2?${famq(display, "700;800")}&${famq(sans, "400;500;600")}&display=swap`;
-  }
-  if (t.texture) root.dataset.texture = t.texture;
-  if (t.ornament) root.dataset.ornament = t.ornament;
-}
-
-/** Back to the stylesheet's own look: the next pack starts from the default, not from the last one. */
-export function resetTheme() {
-  const root = document.documentElement;
-  for (const k of ["--ink", "--paper", "--bg", "--accent", "--display", "--sans"])
-    root.style.removeProperty(k);
-  document.getElementById("packfonts")?.remove();
-  delete root.dataset.texture;
-  delete root.dataset.ornament;
-}
-
-type OrnamentKind = Pack["theme"]["ornament"];
-
-const ORNAMENTS: Record<OrnamentKind, string> = {
-  laurel:
-    "M12 21C7 18 5 13 6 5M12 21c5-3 7-8 6-16M6 10 3 9M7 14H4M9 18l-3 1M18 10l3-1M17 14h3M15 18l3 1",
-  eagle: "M2 9l10 4 10-4M7 12l5 6 5-6M12 13v6",
-  star: "M12 3l2.7 5.6 6.1.8-4.5 4.2 1.2 6-5.5-3-5.5 3 1.2-6L3.2 9.4l6.1-.8z",
-  crescent: "M15.5 3.5a9 9 0 100 17 11 11 0 010-17z",
-  cross: "M12 3v18M5 9h14",
-  gear: "M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2",
-  rule: "M2 12h7M15 12h7M12 9l3 3-3 3-3-3z",
-  none: "",
-};
-
-/** The masthead flourish: one ink glyph, no fill, so it prints on any paper. */
-export function Ornament({ kind }: { kind: OrnamentKind }) {
-  const d = ORNAMENTS[kind];
-  if (!d) return null;
-  return (
-    <svg className="orn" viewBox="0 0 24 24" width={22} height={22} aria-hidden="true">
-      <path d={d} />
-    </svg>
-  );
-}
-
 // ---- world tokens (level B): the palette in both modes, the fonts, radius, texture scale, material, motion, courier ----
 
 // The fixed colours (resources, danger, change), fitted per world at 4.6:1 on its grounds, as the mock did.
@@ -235,16 +145,27 @@ function paletteRules(palette: Palette, dark: boolean, tints: Tint[]): string {
   ].join(";");
 }
 
+// The curated body and mono faces that ship less than 400 to 700 (Google Fonts css2, checked 2026-09-24). Google
+// answers 400 for the whole request, dropping all three faces, when none of a family's asked weights exist.
+const WEIGHTS: Record<string, string> = {
+  Cardo: "400;700",
+  "Old Standard TT": "400;700",
+  Tajawal: "400;500;700",
+  "Space Mono": "400;700",
+  "Courier Prime": "400;700",
+  "DM Mono": "400;500",
+  "Share Tech Mono": "400",
+  VT323: "400",
+};
+
 /** Paints a world: its palette (both modes), its two or three fonts, radius, texture scale, material, motion and courier. */
 export function applyTokens(tokens: ThemeTokens, tints: Tint[] = []) {
   const root = document.documentElement;
-  // Seat and Build still paint the old pack theme inline, which would outrank these rules until Task 5 restyles them.
-  resetTheme();
   const families = [...new Set([tokens.display, tokens.body, tokens.mono ?? tokens.body])];
   const href = `https://fonts.googleapis.com/css2?${families
     .map(
       (family) =>
-        `family=${family.replace(/ /g, "+")}${family === tokens.display ? "" : ":wght@400;500;600;700"}`,
+        `family=${family.replace(/ /g, "+")}${family === tokens.display ? "" : `:wght@${WEIGHTS[family] ?? "400;500;600;700"}`}`,
     )
     .join("&")}&display=swap`;
   let fonts = document.getElementById("world-fonts") as HTMLLinkElement | null;

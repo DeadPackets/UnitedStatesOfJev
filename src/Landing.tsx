@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Daily } from "./api";
-import { Ornament } from "./theme";
 import { shareText, squareClass } from "./rules";
 
 export default function Landing({
@@ -31,9 +30,7 @@ export default function Landing({
     <main className="landing press">
       <div className="mast">
         <b>United States of Jev</b>
-        <span className="flag">
-          <Ornament kind="rule" />
-        </span>
+        <span className="flag" />
         <span>Any polity, one term</span>
       </div>
 
