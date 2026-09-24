@@ -40,9 +40,25 @@ const IdNum = z.object({ id: z.string(), value: z.number() });
 const IdStr = z.object({ id: z.string(), value: z.string() });
 const LobbyText = z.object({ cost: z.number(), label: z.string(), text: z.string() });
 
+// R30: a faction card. yes and no are the acts a want backs and fights, in the player's words; `match` and
+// `redMatch` are the machine tags the engine checks against a priced act: a pack tag or promise tag,
+// "serves:<holder id>", "hits:<holder id>" or "verb:<verb>". Optional, so a pack from before R30 loads.
+const Tags = z.array(z.string()).default([]);
+const CardSchema = z.object({
+  base: z.string(),
+  wants: z.array(z.object({
+    want: z.string(), yes: z.array(z.string()), no: z.array(z.string()),
+    match: z.object({ yes: Tags, no: Tags }).default({ yes: [], no: [] }),
+  })).max(3),
+  redLine: z.string(), redMatch: Tags,
+  price: z.object({ takes: z.string(), refuses: z.string() }),
+  face: z.object({ name: z.string(), role: z.string(), line: z.string() }),
+  rival: z.string(), tension: z.string(),
+});
 const FactionSchema = z.object({
   id: z.string(), name: z.string(), short: z.string(), color: z.string(),
   fill: z.enum(FILLS), ideology: z.string(), leader: z.string(),
+  card: CardSchema.optional(),
 });
 const RegionSchema = z.object({ id: z.string(), name: z.string(), weight: z.number(), lean: z.array(IdNum) });
 const BlocSchema = z.object({ id: z.string(), name: z.string(), description: z.string() });
@@ -70,6 +86,7 @@ const HolderSchema = z.object({
 // without it is a pack from before R24, whose stance and resistance line the engine maps on load.
 const HolderReadSchema = HolderSchema.extend({
   support: z.number().min(0).max(100).optional(),
+  card: CardSchema.optional(),
 });
 const LedgerNameSchema = z.object({ name: z.string(), line: z.number() });
 
@@ -226,6 +243,7 @@ export type Constitution = z.infer<typeof ConstitutionSchema>;
 export type Holder = z.infer<typeof HolderReadSchema>;
 export type Instrument = NonNullable<Pack["constitution"]>["instruments"]["law"];   // as the engine reads it: vetoes, not consent
 export type Price = z.infer<typeof PriceSchema>;
+export type Card = z.infer<typeof CardSchema>;
 
 // Largest remainder method, minimum one seat per faction that held any share.
 export function scaleSeats(shares: Record<string, number>, size: number): Record<string, number> {

@@ -5,7 +5,7 @@ import {
   newGame, PROMISE_SHARE, PROMISE_WINDOW, record, replacements, resolveEvent, rng, runMidterm, runTest, scenarioTag, score,
   holdersOf, threshold, TURNS_PER_TERM, testBar, canAfford, HANDICAP, HANDICAP_SHORTFALL, nearestLine, shortfall, weightOf,
   pay, pushWire, runStyle, REFUSAL_COST, spendCalls, JEV_CALLS, callsLeft, clamp, deckOf, declineEvent, foreignStorylet, moveSupport, publicHolder,
-  REREAD_MAX, seedHolders, type PriceTag,
+  REREAD_MAX, seedHolders, actTokens, type PriceTag,
   type Bill, type BillDraft, type Game, type LobbyAction, type Member, type Reaction, type HolderView, type InstrumentView,
 } from "./engine";
 import {
@@ -202,7 +202,7 @@ export class GameDO extends DurableObject<Env> {
     if (!tag) throw new Reject(409, "Nothing is priced.");
     if (tag.verb === "law" && game.phase !== "draft") throw new Reject(409, `A ${pack.vocabulary.bill} is already on the floor.`);
     if (!available(pack, game, tag.verb)) throw new Reject(400, "That instrument is not available.");
-    refuse(pack, game, tag.verb);
+    refuse(pack, game, tag.verb, actTokens(tag));
     if (!canAfford(pack, game, tag.charge)) throw new Reject(402, "There is not enough to pay for that.");
     if (tag.verb === "law" && !spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
     if (tag.verb === "proclaim" && game.posts.some((p) => p.turn === game.turn)) throw new Reject(409, "One a turn.");
@@ -551,8 +551,8 @@ const room = (pack: Pack, game: Game): HolderView[] => {
   });
 };
 
-const refuse = (pack: Pack, game: Game, verb: Verb) => {
-  const b = blocker(pack, game, verb);
+const refuse = (pack: Pack, game: Game, verb: Verb, tokens?: Set<string>) => {
+  const b = blocker(pack, game, verb, tokens);
   if (b) throw new Reject(409, `${b.name} will not agree: ${b.reason}.`);
 };
 

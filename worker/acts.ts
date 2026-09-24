@@ -1,5 +1,5 @@
 import {
-  agrees, armyHolder, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
+  actTokens, agrees, armyHolder, CARD_MOVE, cardLean, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
   publicHolder, pushWire, repeal, SUPPORT_BYPASS, SUPPORT_HIT, SUPPORT_SERVE, weightOf,
   type Game, type Member, type PriceTag, type Quote, type Veto, type WireLine,
 } from "./engine";
@@ -29,7 +29,8 @@ export function vetoesOf(pack: Pack, game: Game, verb: Verb): string[] {
 // R29, the rule this build chose: a group agrees while its support is at or over its line, the same line whose
 // crossing starts its warning. A law's chamber agrees through the floor vote, so it is not asked here; on any
 // other verb the chamber agrees while the seats backing you carry a vote (a supermajority where one is written).
-export function vetoRows(pack: Pack, game: Game, verb: Verb): Veto[] {
+// R30: a veto group whose red line the act crosses refuses whatever its support.
+export function vetoRows(pack: Pack, game: Game, verb: Verb, tokens?: Set<string>): Veto[] {
   return vetoesOf(pack, game, verb).flatMap((v): Veto[] => {
     if (CHAMBER.has(v)) {
       const ch = chamberHolder(pack);
@@ -40,6 +41,8 @@ export function vetoRows(pack: Pack, game: Game, verb: Verb): Veto[] {
     }
     const h = holdersOf(pack).find((x) => x.id === v), s = game.holders[v];
     if (!h || !s) return [];
+    const red = tokens ? cardLean(h.card, tokens) : null;
+    if (red?.lean === -2) return [{ id: v, name: h.name, agrees: false, reason: red.reason }];
     return [{ id: v, name: h.name, agrees: agrees(game, v), reason: `support ${Math.round(s.support)}, its line ${s.line}` }];
   });
 }
@@ -55,7 +58,8 @@ export function available(pack: Pack, game: Game, verb: Verb): boolean {
 }
 
 // The first group that will not agree: the act can be priced, so the tag shows who refuses, but not signed.
-export const blocker = (pack: Pack, game: Game, verb: Verb): Veto | undefined => vetoRows(pack, game, verb).find((v) => !v.agrees);
+export const blocker = (pack: Pack, game: Game, verb: Verb, tokens?: Set<string>): Veto | undefined =>
+  vetoRows(pack, game, verb, tokens).find((v) => !v.agrees);
 
 // C4: in the last four turns an act aimed at a holder that votes in the test costs less.
 export function discountOf(pack: Pack, game: Game, serves: string[]): number {
@@ -80,21 +84,23 @@ export function priceTag(pack: Pack, game: Game, q: Quote, member: string | null
   if (q.template === "emergency_powers") charge.authority += EMERGENCY_COST;
   // §7: credibility multiplies what the act wins, never what it costs.
   const revenue = q.revenue.map((r) => ({ ...r, delta: r.delta > 0 ? round1(r.delta * q.credibility) : r.delta }));
-  const named = [...q.serves, ...q.hits.filter((id) => !q.serves.includes(id))];
-  const stances = named.flatMap((id) => {
-    const h = holdersOf(pack).find((x) => x.id === id);
-    const s = game.holders[id];
-    return h && s ? [{ id, name: h.name, support: s.support, line: s.line }] : [];
-  });
+  const tokens = actTokens(q);
+  // The named holders, then every other holder whose card the act touches, with the card's reason (as touch() moves them).
+  const stances = holdersOf(pack).flatMap((h) => {
+    const s = game.holders[h.id], named = q.serves.includes(h.id) || q.hits.includes(h.id);
+    const { lean, reason } = named ? { lean: 0, reason: "" } : cardLean(h.card, tokens);
+    return s && (named || lean) ? [{ id: h.id, name: h.name, support: s.support, line: s.line, ...(reason ? { reason } : {}) }] : [];
+  }).sort((a, b) => rank(q, a.id) - rank(q, b.id));
   return {
     verb: q.verb, title: q.title, reading: q.reading, credibility: q.credibility,
     quoted: { authority: q.cost.authority, treasury: q.cost.treasury, chest: q.cost.chest },
     charge, discounted: d < 1, revenue,
     serves: q.serves, hits: q.hits, keeps: q.keeps, targets: q.targets, tags: q.tags, regions: q.regions,
     member, promises: q.promises, sunset: q.sunset, template: q.template, stances,
-    vetoes: vetoRows(pack, game, q.verb),
+    vetoes: vetoRows(pack, game, q.verb, tokens),
   };
 }
+const rank = (q: Quote, id: string) => (q.serves.includes(id) ? 0 : q.hits.includes(id) ? 1 : 2);
 
 export const WITHDRAW_COST = 2;   // TUNE, R11: a decree can be taken back for authority
 
@@ -106,6 +112,13 @@ function touch(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (tag.verb === "decree") {
     const ch = chamberHolder(pack);
     if (ch) wire.push(...moveSupport(pack, game, [ch.id], -SUPPORT_BYPASS, `${tag.title}, made without the chamber`));
+  }
+  // R30: a group the clerk did not name still answers by its card.
+  const tokens = actTokens(tag);
+  for (const h of holdersOf(pack)) {
+    if (tag.serves.includes(h.id) || tag.hits.includes(h.id)) continue;
+    const { lean, reason } = cardLean(h.card, tokens);
+    if (lean) wire.push(...moveSupport(pack, game, [h.id], CARD_MOVE[lean], `${tag.title}: ${reason}`));
   }
   return wire;
 }

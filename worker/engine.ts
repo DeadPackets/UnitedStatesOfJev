@@ -1,4 +1,4 @@
-import type { Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
+import type { Card, Holder, HolderResponse, LedgerV4, Pack, Member as PackMember, Price, Storylet, Verb } from "./pack";
 import { TEMPLATES } from "./gen/templates";
 import { turnOf, type Calendar } from "./gen/calendar-math";
 
@@ -74,7 +74,7 @@ export interface PriceTag {
   member: string | null;   // the seat a favour is aimed at; code picks it from the body, never Luna
   promises: { tag: string; label: string; window: number }[];
   sunset: number | null; template: ActTemplate | null;
-  stances: { id: string; name: string; support: number; line: number }[];
+  stances: { id: string; name: string; support: number; line: number; reason?: string }[];
   vetoes?: Veto[];
 }
 export interface Veto { id: string; name: string; agrees: boolean; reason: string }
@@ -432,6 +432,24 @@ export const armyHolder = (pack: Pack): Holder | null => holdersOf(pack).find((h
 // R29: a group agrees while its support is at or over its line. The army's agreement is what force and
 // emergency powers need.
 export const agrees = (game: Game, id: string): boolean => !game.holders[id] || game.holders[id].support >= game.holders[id].line;
+
+// R30: an act's machine tags as a card reads them: its subjects, the promises it keeps, whom it serves and hits, its verb.
+export const actTokens = (a: { verb: Verb; tags: string[]; keeps?: string[]; serves?: string[]; hits?: string[] }): Set<string> =>
+  new Set([...a.tags, ...(a.keeps ?? []), ...(a.serves ?? []).map((id) => `serves:${id}`), ...(a.hits ?? []).map((id) => `hits:${id}`), `verb:${a.verb}`]);
+
+export interface Lean { lean: -2 | -1 | 0 | 1; reason: string }
+// The red line first, then each want in order; the first the act touches decides and gives the reason.
+export function cardLean(card: Card | undefined, tokens: Set<string>): Lean {
+  const hit = (xs: string[]) => xs.some((x) => tokens.has(x));
+  if (!card) return { lean: 0, reason: "" };
+  if (hit(card.redMatch)) return { lean: -2, reason: `Red line: ${card.redLine}` };
+  for (const w of card.wants) {
+    if (hit(w.match.no)) return { lean: -1, reason: `Fights ${w.no[0] ?? w.want}` };
+    if (hit(w.match.yes)) return { lean: 1, reason: `Backs ${w.yes[0] ?? w.want}` };
+  }
+  return { lean: 0, reason: "" };
+}
+export const CARD_MOVE: Record<Lean["lean"], number> = { 1: 4, 0: 0, [-1]: -5, [-2]: -10 };   // TUNE, the mock's numbers
 
 export function armyAllows(pack: Pack, game: Game): boolean {
   const a = armyHolder(pack);

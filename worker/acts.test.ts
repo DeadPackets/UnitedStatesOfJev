@@ -105,6 +105,42 @@ test("the tag prints each named holder's support and line", () => {
   expect(t.stances[1]).toEqual({ id: "league", name: "the Grain League", support: 43, line: 40 });
 });
 
+// R30: a card answers an act the clerk did not aim at its group: red line first, then each want in order.
+const card = {
+  base: "Grain factors of the upper quay", redLine: "Troops on the quay", redMatch: ["verb:force"],
+  wants: [{ want: "Low tariffs", yes: ["Cut the grain tariff"], no: ["Raise the grain tariff"], match: { yes: ["tariffs"], no: ["serves:street"] } }],
+  price: { takes: "a seat on the harbour board", refuses: "cash" }, face: { name: "Ada Voss", role: "League factor", line: "Cut it and we pay." },
+  rival: "street", tension: "Wants free trade, but hoards grain in a famine.",
+};
+const carded: Pack = { ...pack, constitution: { ...pack.constitution!,
+  holders: pack.constitution!.holders.map((h) => (h.id === "league" ? { ...h, card } : h)) } };
+for (const [over, move, reason] of [
+  [{ tags: ["tariffs"] }, 4, "Backs Cut the grain tariff"],
+  [{ tags: ["tariffs"], serves: ["street"] }, -5, "Fights Raise the grain tariff"],     // the first want decides: its no before its yes
+  [{ verb: "force", tags: ["tariffs"] }, -10, "Red line: Troops on the quay"],
+  [{ tags: ["fish-quotas"] }, 0, undefined],
+  [{ tags: ["tariffs"], hits: ["league"] }, -8, undefined],                            // named by the clerk: SUPPORT_HIT only
+] as [Partial<Quote>, number, string | undefined][]) {
+  test(`a carded group answers ${JSON.stringify(over)} by ${move}`, () => {
+    const g = game();
+    g.holders.league.support = 50;
+    const tag = priceTag(carded, g, quote(over));
+    expect(tag.stances.find((s) => s.id === "league")?.reason).toBe(reason);
+    commit(carded, g, tag);
+    expect(g.holders.league.support).toBe(50 + move);
+  });
+}
+
+test("a veto group refuses an act over its red line whatever its support", () => {
+  const g = game();
+  g.holders.league.support = 90;
+  const p: Pack = { ...carded, constitution: { ...carded.constitution!, instruments: { ...carded.constitution!.instruments,
+    force: { ...carded.constitution!.instruments.force, vetoes: ["league"] } } } };
+  expect(priceTag(p, g, quote({ verb: "force" })).vetoes).toEqual([{ id: "league", name: "the Grain League", agrees: false, reason: "Red line: Troops on the quay" }]);
+  expect(priceTag(p, g, quote({ verb: "force", tags: [] })).vetoes![0].agrees).toBe(false);
+  expect(blocker(p, g, "force")).toBeUndefined();          // with no act in hand, only its support counts
+});
+
 test("a decree is paid for, costs support where it hits and wins it where it serves", () => {
   const g = game();
   g.holders.guard.support = 40;
