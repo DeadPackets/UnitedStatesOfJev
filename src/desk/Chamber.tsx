@@ -27,18 +27,22 @@ export type ChamberHandle = { reveal(count?: Count | null): void; spots: SeatSpo
 export type TermsHandler = (faction: string) => void;
 type Seated = { id: string; faction: string; name: string };
 
-const ROWS = [0.45, 0.56, 0.67, 0.78, 0.89, 1];
 export function layoutSeats(factions: ChamberFaction[]): SeatSpot[] {
   const size = factions.reduce((sum, faction) => sum + faction.seats, 0);
-  const total = ROWS.reduce((a, b) => a + b);
-  const counts = ROWS.map((radius) => Math.round((size * radius) / total));
-  counts[5] += size - counts.reduce((a, b) => a + b);
-  const points = ROWS.flatMap((radius, row) =>
-    Array.from({ length: counts[row] }, (_, j) => {
-      const angle = Math.PI * (1 - (counts[row] > 1 ? j / (counts[row] - 1) : 0.5));
-      return { x: radius * Math.cos(angle), y: -radius * Math.sin(angle), angle, row };
-    }),
-  ).sort((a, b) => b.angle - a.angle || a.row - b.row);
+  // Six rows from 0.45 to 1 at 72 seats and up (the mock's 100); a court of 24 in six rows reads as scattered dots.
+  const rowCount = Math.min(6, Math.max(2, Math.ceil(Math.sqrt(size / 2.8))));
+  const radii = Array.from({ length: rowCount }, (_, row) => 0.45 + (0.55 * row) / (rowCount - 1));
+  const total = radii.reduce((a, b) => a + b);
+  const counts = radii.map((radius) => Math.round((size * radius) / total));
+  counts[rowCount - 1] += size - counts.reduce((a, b) => a + b);
+  const points = radii
+    .flatMap((radius, row) =>
+      Array.from({ length: counts[row] }, (_, j) => {
+        const angle = Math.PI * (1 - (counts[row] > 1 ? j / (counts[row] - 1) : 0.5));
+        return { x: radius * Math.cos(angle), y: -radius * Math.sin(angle), angle, row };
+      }),
+    )
+    .sort((a, b) => b.angle - a.angle || a.row - b.row);
   let next = 0;
   return factions.flatMap((faction) =>
     points.slice(next, (next += faction.seats)).map((point, i) => ({
@@ -96,7 +100,14 @@ function paintLegend(
         row.hesitant && `${row.hesitant} hesitant`,
         row.against && `${row.against} against`,
       ];
-      item.append(dot, name, ` ${parts.filter(Boolean).join(", ")}: ${row.reason}`);
+      // Past three factions the reasons would crowd the hemicycle out; each stays in its entry's tooltip.
+      const brief = factions.length > 3;
+      item.append(
+        dot,
+        name,
+        ` ${parts.filter(Boolean).join(", ")}${brief ? "" : `: ${row.reason}`}`,
+      );
+      if (brief) item.title = row.reason;
       // One chip, so the legend keeps the mock's two lines; the terms open in their own card.
       if (row.terms?.length) {
         const chip = document.createElement("button");

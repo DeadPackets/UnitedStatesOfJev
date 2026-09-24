@@ -125,11 +125,12 @@ export const mix = (from: string, to: string, share: number) => {
 function paletteRules(palette: Palette, dark: boolean, tints: Tint[]): string {
   const tone = mix(palette.ink, palette.paper, dark ? 0.9 : 0.92);
   const grounds = [palette.paper, palette.surface, tone];
-  // Danger also sits on every rim row's deepest wash (16% of the group's hue), so it is fitted there too.
+  // Danger and the change colours also sit on every rim row's deepest wash (16% of the group's hue), so they are
+  // fitted there too.
   const washes = tints.map((tint) => mix(palette.surface, dark ? tint.dark : tint.light, 0.16));
   const fixed = Object.entries(FIXED[dark ? 1 : 0]).map(
     ([key, colour]) =>
-      `--${key}:${fitContrast(colour, key === "danger" ? [...grounds, ...washes] : grounds, 4.6) ?? colour}`,
+      `--${key}:${fitContrast(colour, ["danger", "up", "dn"].includes(key) ? [...grounds, ...washes] : grounds, 4.6) ?? colour}`,
   );
   return [
     `--paper:${palette.paper}`,

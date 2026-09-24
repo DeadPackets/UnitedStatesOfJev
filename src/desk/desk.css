@@ -933,12 +933,13 @@
     --heat: 0;
     --gc: var(--ink-2);
     position: relative;
-    flex: none;
+    /* the mock's fixed 4.75rem; a world with seven or more rows shares the rim's height instead */
+    flex: 0 1 4.75rem;
+    min-height: 0;
     display: grid;
     grid-template-columns: 2.25rem minmax(0, 1fr);
     column-gap: 0.5625rem;
     align-items: center;
-    height: 4.75rem;
     padding: 0.375rem 0.5rem 0.375rem 0.375rem;
     border-radius: calc(var(--r) + 0.25rem);
     cursor: pointer;
@@ -980,6 +981,12 @@
     display: grid;
     gap: 0.25rem;
     min-width: 0;
+  }
+  .rim.dense {
+    gap: 0.125rem;
+  }
+  .rim.dense .hb {
+    gap: 0;
   }
   .hn {
     min-width: 0;
@@ -1634,6 +1641,15 @@
   }
   .rks.f4 .rks {
     gap: 0.375rem;
+  }
+  .rks.f5 {
+    overflow-y: auto;
+  }
+  .rks.f5 .rk {
+    flex: none;
+  }
+  .rks.f5 .rk-g {
+    overflow: visible;
   }
 
   /* a group's tint: the row, file and seat carry both modes, the theme picks one */

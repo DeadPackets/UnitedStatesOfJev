@@ -645,6 +645,7 @@ a.sr:focus {
 }
 .takeseat .rail .btn {
   width: 100%;
+  white-space: normal;
 }
 .takeseat .rail {
   gap: var(--s4);

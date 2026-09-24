@@ -561,7 +561,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           factions={view.factions}
           members={shown.members}
           label={capitalise(pack.vocabulary.chamber)}
-          unit={`${pack.vocabulary.member}s`}
+          unit={`${pack.vocabulary.member.replace(/([^aeiou])y$/, "$1ie")}s`}
           need={count?.need ?? pack.chamber.threshold}
           count={count}
           eligible={eligible}

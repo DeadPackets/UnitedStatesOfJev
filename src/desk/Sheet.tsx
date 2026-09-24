@@ -102,10 +102,10 @@ export function Sheet({ resources, turnWord, inForce, onWithdraw, onClose }: Pro
     el.querySelector<HTMLElement>("#rs-x")!.focus({ preventScroll: true });
     // A short screen tightens the cards step by step before any text drops under 16 px.
     const over = () =>
-      [...cards.querySelectorAll<HTMLElement>(".rk")].some(
+      [...cards.querySelectorAll<HTMLElement>(".rk, .rk-g")].some(
         (card) => card.scrollHeight > card.clientHeight + 1,
       );
-    for (const fit of ["f1", "f2", "f3", "f4"]) {
+    for (const fit of ["f1", "f2", "f3", "f4", "f5"]) {
       if (!over()) break;
       cards.classList.add(fit);
     }

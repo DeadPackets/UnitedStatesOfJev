@@ -30,7 +30,9 @@ export const Rim = memo(function Rim({
   onOpen,
 }: Props) {
   return (
-    <aside className={`rim rim-${side === "home" ? "l" : "r"} sf`}>
+    <aside
+      className={`rim rim-${side === "home" ? "l" : "r"} sf${rows.length > 7 ? " dense" : ""}`}
+    >
       <h4>{heading}</h4>
       {rows.map((row) => {
         const tip = `Votes on you at ${testWord}: ${row.votes} of 100`;
