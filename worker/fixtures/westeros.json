@@ -1,0 +1,6770 @@
+{
+  "v": 1,
+  "id": "westeros",
+  "lang": "en",
+  "prompt": "The King on the Iron Throne, fifteen years after Robert's Rebellion",
+  "title": "The Iron Throne",
+  "era": "The Seven Kingdoms, 298 AC",
+  "place": "King's Landing",
+  "description": "Fifteen years ago you took the Iron Throne in a rebellion against the last Targaryen king. The realm is at peace, but the crown owes 6 million gold dragons, much of it to House Lannister and the Iron Bank. Your Hand, Jon Arryn, has just died, and you must choose another. Across the Narrow Sea, the last children of the old dynasty are growing up in exile.",
+  "fiction": true,
+  "sources": [],
+  "kind": "canon",
+  "grounding": "",
+  "history": {
+    "fall": null
+  },
+  "vocabulary": {
+    "seat": "King",
+    "chamber": "small council",
+    "member": "lord",
+    "bill": "edict",
+    "pass": "sealed",
+    "fail": "refused",
+    "capital": "influence",
+    "turn": "moon",
+    "midterm": "the Hand's tourney",
+    "campaign": "canvass",
+    "test": "the realm's fealty",
+    "feed": "the Herald",
+    "post": "raven",
+    "whip": "harbor whip",
+    "lobby": "petition",
+    "promise": "pledge",
+    "patron": "guild",
+    "approval": "standing",
+    "file": "Herald's roll",
+    "abroad": "across the Narrow Sea"
+  },
+  "theme": {
+    "fonts": "Cormorant Garamond + Work Sans",
+    "ink": "#1c1a15",
+    "paper": "#f3ead9",
+    "accent": "#2e6f8e",
+    "texture": "parchment",
+    "ornament": "rule",
+    "layout": "hemicycle"
+  },
+  "chamber": {
+    "size": 100,
+    "threshold": 50,
+    "supermajority": 67,
+    "alpha": 0.5,
+    "veto": null
+  },
+  "calendar": {
+    "start_date": "0298-01-01",
+    "unit": "month"
+  },
+  "factions": [
+    {
+      "id": "baratheon",
+      "name": "House Baratheon",
+      "short": "Baratheon",
+      "color": "#7a5d0e",
+      "fill": "solid",
+      "ideology": "House Baratheon",
+      "leader": "Stannis Baratheon",
+      "glance": {
+        "face": {
+          "name": "Stannis Baratheon",
+          "role": "Lord of Dragonstone, master of ships"
+        },
+        "wants": ["Honours for Stannis", "Land for storm lords", "Targaryens hunted"],
+        "hates": [
+          {
+            "tag": "A Lannister Hand",
+            "redLine": false
+          },
+          {
+            "tag": "Pardoning the Targaryens",
+            "redLine": true
+          }
+        ],
+        "strike": "Keeps the storm lords home"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "polygon",
+            "points": "24,26 40,26 37,44 32,56 27,44",
+            "fill": "ink"
+          },
+          {
+            "tag": "polygon",
+            "points": "25,28 12,23 22,34",
+            "fill": "ink"
+          },
+          {
+            "tag": "polygon",
+            "points": "39,28 52,23 42,34",
+            "fill": "ink"
+          },
+          {
+            "tag": "path",
+            "d": "M27 26 C22 18 18 13 13 5 M20 16 L8 14 M16 10 L20 3",
+            "strokeWidth": 4,
+            "fill": "none",
+            "stroke": "ink"
+          },
+          {
+            "tag": "path",
+            "d": "M37 26 C42 18 46 13 51 5 M44 16 L56 14 M48 10 L44 3",
+            "strokeWidth": 4,
+            "fill": "none",
+            "stroke": "ink"
+          },
+          {
+            "tag": "polygon",
+            "points": "25,25 25,16 28.5,20 32,13 35.5,20 39,16 39,25",
+            "fill": "accent"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#7a5d0e",
+        "dark": "#e3c15a"
+      }
+    },
+    {
+      "id": "smallfolk",
+      "name": "Smallfolk",
+      "short": "Smallfolk",
+      "color": "#6b4f33",
+      "fill": "hatch",
+      "ideology": "Smallfolk",
+      "leader": "Wat Heddle",
+      "glance": {
+        "face": {
+          "name": "Wat Heddle",
+          "role": "Baker in Flea Bottom, King's Landing"
+        },
+        "wants": ["Cheap bread", "Peace", "Safe roads"],
+        "hates": [
+          {
+            "tag": "Bread taxes",
+            "redLine": false
+          },
+          {
+            "tag": "Tourneys",
+            "redLine": false
+          },
+          {
+            "tag": "Burning the fields",
+            "redLine": true
+          }
+        ],
+        "strike": "Riots in King's Landing"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "line",
+            "x1": 30,
+            "y1": 42,
+            "x2": 20,
+            "y2": 20,
+            "strokeWidth": 4,
+            "fill": "ink",
+            "stroke": "ink"
+          },
+          {
+            "tag": "line",
+            "x1": 32,
+            "y1": 42,
+            "x2": 32,
+            "y2": 18,
+            "strokeWidth": 4,
+            "fill": "ink",
+            "stroke": "ink"
+          },
+          {
+            "tag": "line",
+            "x1": 34,
+            "y1": 42,
+            "x2": 44,
+            "y2": 20,
+            "strokeWidth": 4,
+            "fill": "ink",
+            "stroke": "ink"
+          },
+          {
+            "tag": "ellipse",
+            "transform": "rotate(-20 19 15)",
+            "cx": 19,
+            "cy": 15,
+            "rx": 5,
+            "ry": 11,
+            "fill": "ink"
+          },
+          {
+            "tag": "ellipse",
+            "cx": 32,
+            "cy": 12,
+            "rx": 5,
+            "ry": 11,
+            "fill": "ink"
+          },
+          {
+            "tag": "ellipse",
+            "transform": "rotate(20 45 15)",
+            "cx": 45,
+            "cy": 15,
+            "rx": 5,
+            "ry": 11,
+            "fill": "ink"
+          },
+          {
+            "tag": "polygon",
+            "points": "27,42 37,42 44,60 20,60",
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "rx": 2,
+            "x": 22,
+            "y": 38,
+            "width": 20,
+            "height": 7,
+            "fill": "ink"
+          },
+          {
+            "tag": "line",
+            "x1": 32,
+            "y1": 48,
+            "x2": 32,
+            "y2": 60,
+            "strokeWidth": 3,
+            "fill": "ink",
+            "stroke": "paper"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#6b4f33",
+        "dark": "#caa27a"
+      }
+    },
+    {
+      "id": "council",
+      "name": "Small council",
+      "short": "Council",
+      "color": "#3f5163",
+      "fill": "hatch2",
+      "ideology": "Small council",
+      "leader": "Petyr Baelish",
+      "glance": {
+        "face": {
+          "name": "Petyr Baelish",
+          "role": "Master of coin, King's Landing"
+        },
+        "wants": ["A Hand to work with", "Fewer tourneys", "Decrees in council"],
+        "hates": [
+          {
+            "tag": "Tourneys on credit",
+            "redLine": false
+          },
+          {
+            "tag": "Dismissing the council",
+            "redLine": true
+          }
+        ],
+        "strike": "Lets the realm stall"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "rect",
+            "rx": 7,
+            "x": 18,
+            "y": 30,
+            "width": 28,
+            "height": 28,
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "rx": 3,
+            "x": 18,
+            "y": 13,
+            "width": 6,
+            "height": 24,
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "rx": 3,
+            "x": 25.5,
+            "y": 7,
+            "width": 6,
+            "height": 28,
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "rx": 3,
+            "x": 33,
+            "y": 8,
+            "width": 6,
+            "height": 28,
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "rx": 2.75,
+            "x": 40.5,
+            "y": 14,
+            "width": 5.5,
+            "height": 22,
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "transform": "rotate(-35 20 40)",
+            "rx": 3.5,
+            "x": 6,
+            "y": 34,
+            "width": 18,
+            "height": 7,
+            "fill": "ink"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#3f5163",
+        "dark": "#9fb4c8"
+      }
+    },
+    {
+      "id": "houses",
+      "name": "Great houses",
+      "short": "Houses",
+      "color": "#44584c",
+      "fill": "cross",
+      "ideology": "Great houses",
+      "leader": "Eddard Stark",
+      "glance": {
+        "face": {
+          "name": "Eddard Stark",
+          "role": "Lord of Winterfell, Warden of the North"
+        },
+        "wants": ["Their own justice", "Asked before war", "Peace between houses"],
+        "hates": [
+          {
+            "tag": "Royal judges",
+            "redLine": false
+          },
+          {
+            "tag": "Calling the banners",
+            "redLine": false
+          },
+          {
+            "tag": "Seizing a castle",
+            "redLine": true
+          }
+        ],
+        "strike": "Rises against the throne"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "path",
+            "d": "M10 8 H54 V30 C54 46 44 54 32 60 C20 54 10 46 10 30 Z",
+            "fill": "ink"
+          },
+          {
+            "tag": "rect",
+            "x": 29,
+            "y": 8,
+            "width": 6,
+            "height": 50,
+            "fill": "paper"
+          },
+          {
+            "tag": "rect",
+            "x": 10,
+            "y": 26,
+            "width": 44,
+            "height": 6,
+            "fill": "paper"
+          },
+          {
+            "tag": "circle",
+            "cx": 32,
+            "cy": 29,
+            "r": 6,
+            "fill": "ink"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#44584c",
+        "dark": "#a9c2b0"
+      }
+    },
+    {
+      "id": "lannister",
+      "name": "House Lannister",
+      "short": "Lannister",
+      "color": "#9b2226",
+      "fill": "dots",
+      "ideology": "House Lannister",
+      "leader": "Tywin Lannister",
+      "glance": {
+        "face": {
+          "name": "Tywin Lannister",
+          "role": "Lord of Casterly Rock, Warden of the West"
+        },
+        "wants": ["Tywin as Hand", "Repaid first", "Joffrey as heir"],
+        "hates": [
+          {
+            "tag": "Stark as Hand",
+            "redLine": false
+          },
+          {
+            "tag": "Iron Bank first",
+            "redLine": false
+          },
+          {
+            "tag": "Setting Cersei aside",
+            "redLine": true
+          }
+        ],
+        "strike": "Keeps its men and gold home"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "polygon",
+            "points": "61,32 53.25,37.7 57.11,46.5 47.55,47.55 46.5,57.11 37.7,53.25 32,61 26.3,53.25 17.5,57.11 16.45,47.55 6.89,46.5 10.75,37.7 3,32 10.75,26.3 6.89,17.5 16.45,16.45 17.5,6.89 26.3,10.75 32,3 37.7,10.75 46.5,6.89 47.55,16.45 57.11,17.5 53.25,26.3",
+            "fill": "ink"
+          },
+          {
+            "tag": "circle",
+            "cx": 32,
+            "cy": 33,
+            "r": 17,
+            "fill": "paper"
+          },
+          {
+            "tag": "circle",
+            "cx": 32,
+            "cy": 33,
+            "r": 14,
+            "fill": "ink"
+          },
+          {
+            "tag": "circle",
+            "cx": 26.5,
+            "cy": 30,
+            "r": 2.8,
+            "fill": "paper"
+          },
+          {
+            "tag": "circle",
+            "cx": 37.5,
+            "cy": 30,
+            "r": 2.8,
+            "fill": "paper"
+          },
+          {
+            "tag": "polygon",
+            "points": "28,37 36,37 32,43",
+            "fill": "paper"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#9b2226",
+        "dark": "#ff8a80"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "id": "crownlands",
+      "name": "The Crownlands",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "north",
+      "name": "The North",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "vale",
+      "name": "The Vale",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "riverlands",
+      "name": "The Riverlands",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ironislands",
+      "name": "The Iron Islands",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "westerlands",
+      "name": "The Westerlands",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "reach",
+      "name": "The Reach",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "stormlands",
+      "name": "The Stormlands",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "dorne",
+      "name": "Dorne",
+      "weight": 0.1111111111111111,
+      "lean": [
+        {
+          "id": "baratheon",
+          "value": 0
+        },
+        {
+          "id": "smallfolk",
+          "value": 0
+        },
+        {
+          "id": "council",
+          "value": 0
+        },
+        {
+          "id": "houses",
+          "value": 0
+        },
+        {
+          "id": "lannister",
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "blocs": [
+    {
+      "id": "dockworkers",
+      "name": "Dockworkers",
+      "description": "Load and unload the harbor's ships, organized under the Keelwright Guild."
+    },
+    {
+      "id": "merchants",
+      "name": "Merchants",
+      "description": "Own the trading houses and warehouses along Northpier."
+    },
+    {
+      "id": "fisherfolk",
+      "name": "Fisherfolk",
+      "description": "Work the fishing fleets out of Saltmarsh and Isle Row."
+    },
+    {
+      "id": "clergy",
+      "name": "Clergy",
+      "description": "Keep the tide calendar and run the Uplands temples."
+    },
+    {
+      "id": "students",
+      "name": "Students",
+      "description": "Apprentices and scholars at the Ferry Quarter academies."
+    }
+  ],
+  "patrons": [
+    {
+      "id": "grand-exchange",
+      "name": "The Grand Exchange",
+      "wants": ["tariffs", "foreign-treaties"],
+      "hates": ["smuggling"]
+    },
+    {
+      "id": "keelwright-hall",
+      "name": "Keelwright Hall",
+      "wants": ["dockworker-pay", "guild-charters"],
+      "hates": ["tariffs"]
+    },
+    {
+      "id": "tide-temple",
+      "name": "The Tide Temple",
+      "wants": ["temple-funding", "festival-days"],
+      "hates": ["press-freedom"]
+    },
+    {
+      "id": "net-and-line",
+      "name": "Net and Line Co-op",
+      "wants": ["fish-quotas", "poor-relief"],
+      "hates": ["harbor-tolls"]
+    },
+    {
+      "id": "admiralty-club",
+      "name": "The Admiralty Club",
+      "wants": ["naval-defense", "piracy"],
+      "hates": ["poor-relief"]
+    },
+    {
+      "id": "silver-quay",
+      "name": "Silver Quay Bank",
+      "wants": ["currency", "land-reclamation"],
+      "hates": ["dockworker-pay"]
+    },
+    {
+      "id": "free-press-circle",
+      "name": "Free Press Circle",
+      "wants": ["press-freedom", "foreign-treaties"],
+      "hates": ["temple-funding"]
+    },
+    {
+      "id": "smugglers-rest",
+      "name": "The Smugglers' Rest",
+      "wants": ["smuggling", "harbor-tolls"],
+      "hates": ["naval-defense"]
+    },
+    {
+      "id": "uplands-charities",
+      "name": "Uplands Charities",
+      "wants": ["poor-relief", "guild-charters"],
+      "hates": ["currency"]
+    },
+    {
+      "id": "academy-league",
+      "name": "The Academy League",
+      "wants": ["festival-days", "shipping-rights"],
+      "hates": ["piracy"]
+    }
+  ],
+  "members": [
+    {
+      "id": "m1",
+      "seat": "seat-001",
+      "region": "north",
+      "faction": "baratheon",
+      "name": "Baratheon lord 1",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m2",
+      "seat": "seat-002",
+      "region": "vale",
+      "faction": "baratheon",
+      "name": "Baratheon lord 2",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m3",
+      "seat": "seat-003",
+      "region": "riverlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 3",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m4",
+      "seat": "seat-004",
+      "region": "ironislands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 4",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m5",
+      "seat": "seat-005",
+      "region": "westerlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 5",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m6",
+      "seat": "seat-006",
+      "region": "reach",
+      "faction": "baratheon",
+      "name": "Baratheon lord 6",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m7",
+      "seat": "seat-007",
+      "region": "stormlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 7",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m8",
+      "seat": "seat-008",
+      "region": "dorne",
+      "faction": "baratheon",
+      "name": "Baratheon lord 8",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m9",
+      "seat": "seat-009",
+      "region": "crownlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 9",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m10",
+      "seat": "seat-010",
+      "region": "north",
+      "faction": "baratheon",
+      "name": "Baratheon lord 10",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m11",
+      "seat": "seat-011",
+      "region": "vale",
+      "faction": "baratheon",
+      "name": "Baratheon lord 11",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m12",
+      "seat": "seat-012",
+      "region": "riverlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 12",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m13",
+      "seat": "seat-013",
+      "region": "ironislands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 13",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m14",
+      "seat": "seat-014",
+      "region": "westerlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 14",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m15",
+      "seat": "seat-015",
+      "region": "reach",
+      "faction": "baratheon",
+      "name": "Baratheon lord 15",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m16",
+      "seat": "seat-016",
+      "region": "stormlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 16",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m17",
+      "seat": "seat-017",
+      "region": "dorne",
+      "faction": "baratheon",
+      "name": "Baratheon lord 17",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m18",
+      "seat": "seat-018",
+      "region": "crownlands",
+      "faction": "baratheon",
+      "name": "Baratheon lord 18",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m19",
+      "seat": "seat-019",
+      "region": "north",
+      "faction": "baratheon",
+      "name": "Baratheon lord 19",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m20",
+      "seat": "seat-020",
+      "region": "vale",
+      "faction": "baratheon",
+      "name": "Baratheon lord 20",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m21",
+      "seat": "seat-021",
+      "region": "riverlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 1",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m22",
+      "seat": "seat-022",
+      "region": "ironislands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 2",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m23",
+      "seat": "seat-023",
+      "region": "westerlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 3",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m24",
+      "seat": "seat-024",
+      "region": "reach",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 4",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m25",
+      "seat": "seat-025",
+      "region": "stormlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 5",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m26",
+      "seat": "seat-026",
+      "region": "dorne",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 6",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m27",
+      "seat": "seat-027",
+      "region": "crownlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 7",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m28",
+      "seat": "seat-028",
+      "region": "north",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 8",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m29",
+      "seat": "seat-029",
+      "region": "vale",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 9",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m30",
+      "seat": "seat-030",
+      "region": "riverlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 10",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m31",
+      "seat": "seat-031",
+      "region": "ironislands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 11",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m32",
+      "seat": "seat-032",
+      "region": "westerlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 12",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m33",
+      "seat": "seat-033",
+      "region": "reach",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 13",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m34",
+      "seat": "seat-034",
+      "region": "stormlands",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 14",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m35",
+      "seat": "seat-035",
+      "region": "dorne",
+      "faction": "smallfolk",
+      "name": "Smallfolk lord 15",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m36",
+      "seat": "seat-036",
+      "region": "crownlands",
+      "faction": "council",
+      "name": "Council lord 1",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m37",
+      "seat": "seat-037",
+      "region": "north",
+      "faction": "council",
+      "name": "Council lord 2",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m38",
+      "seat": "seat-038",
+      "region": "vale",
+      "faction": "council",
+      "name": "Council lord 3",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m39",
+      "seat": "seat-039",
+      "region": "riverlands",
+      "faction": "council",
+      "name": "Council lord 4",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m40",
+      "seat": "seat-040",
+      "region": "ironislands",
+      "faction": "council",
+      "name": "Council lord 5",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m41",
+      "seat": "seat-041",
+      "region": "westerlands",
+      "faction": "council",
+      "name": "Council lord 6",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m42",
+      "seat": "seat-042",
+      "region": "reach",
+      "faction": "council",
+      "name": "Council lord 7",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m43",
+      "seat": "seat-043",
+      "region": "stormlands",
+      "faction": "council",
+      "name": "Council lord 8",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m44",
+      "seat": "seat-044",
+      "region": "dorne",
+      "faction": "council",
+      "name": "Council lord 9",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m45",
+      "seat": "seat-045",
+      "region": "crownlands",
+      "faction": "council",
+      "name": "Council lord 10",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m46",
+      "seat": "seat-046",
+      "region": "north",
+      "faction": "council",
+      "name": "Council lord 11",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m47",
+      "seat": "seat-047",
+      "region": "vale",
+      "faction": "council",
+      "name": "Council lord 12",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m48",
+      "seat": "seat-048",
+      "region": "riverlands",
+      "faction": "council",
+      "name": "Council lord 13",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m49",
+      "seat": "seat-049",
+      "region": "ironislands",
+      "faction": "council",
+      "name": "Council lord 14",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m50",
+      "seat": "seat-050",
+      "region": "westerlands",
+      "faction": "council",
+      "name": "Council lord 15",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m51",
+      "seat": "seat-051",
+      "region": "reach",
+      "faction": "houses",
+      "name": "House Stark",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m52",
+      "seat": "seat-052",
+      "region": "stormlands",
+      "faction": "houses",
+      "name": "House Arryn",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m53",
+      "seat": "seat-053",
+      "region": "dorne",
+      "faction": "houses",
+      "name": "House Tully",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m54",
+      "seat": "seat-054",
+      "region": "crownlands",
+      "faction": "houses",
+      "name": "House Tyrell",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m55",
+      "seat": "seat-055",
+      "region": "north",
+      "faction": "houses",
+      "name": "House Martell",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m56",
+      "seat": "seat-056",
+      "region": "vale",
+      "faction": "houses",
+      "name": "House Greyjoy",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m57",
+      "seat": "seat-057",
+      "region": "riverlands",
+      "faction": "houses",
+      "name": "Houses lord 7",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m58",
+      "seat": "seat-058",
+      "region": "ironislands",
+      "faction": "houses",
+      "name": "Houses lord 8",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m59",
+      "seat": "seat-059",
+      "region": "westerlands",
+      "faction": "houses",
+      "name": "Houses lord 9",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m60",
+      "seat": "seat-060",
+      "region": "reach",
+      "faction": "houses",
+      "name": "Houses lord 10",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m61",
+      "seat": "seat-061",
+      "region": "stormlands",
+      "faction": "houses",
+      "name": "Houses lord 11",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m62",
+      "seat": "seat-062",
+      "region": "dorne",
+      "faction": "houses",
+      "name": "Houses lord 12",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m63",
+      "seat": "seat-063",
+      "region": "crownlands",
+      "faction": "houses",
+      "name": "Houses lord 13",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m64",
+      "seat": "seat-064",
+      "region": "north",
+      "faction": "houses",
+      "name": "Houses lord 14",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m65",
+      "seat": "seat-065",
+      "region": "vale",
+      "faction": "houses",
+      "name": "Houses lord 15",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m66",
+      "seat": "seat-066",
+      "region": "riverlands",
+      "faction": "houses",
+      "name": "Houses lord 16",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m67",
+      "seat": "seat-067",
+      "region": "ironislands",
+      "faction": "houses",
+      "name": "Houses lord 17",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m68",
+      "seat": "seat-068",
+      "region": "westerlands",
+      "faction": "houses",
+      "name": "Houses lord 18",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m69",
+      "seat": "seat-069",
+      "region": "reach",
+      "faction": "houses",
+      "name": "Houses lord 19",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m70",
+      "seat": "seat-070",
+      "region": "stormlands",
+      "faction": "houses",
+      "name": "Houses lord 20",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m71",
+      "seat": "seat-071",
+      "region": "dorne",
+      "faction": "houses",
+      "name": "Houses lord 21",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m72",
+      "seat": "seat-072",
+      "region": "crownlands",
+      "faction": "houses",
+      "name": "Houses lord 22",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m73",
+      "seat": "seat-073",
+      "region": "north",
+      "faction": "houses",
+      "name": "Houses lord 23",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m74",
+      "seat": "seat-074",
+      "region": "vale",
+      "faction": "houses",
+      "name": "Houses lord 24",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m75",
+      "seat": "seat-075",
+      "region": "riverlands",
+      "faction": "houses",
+      "name": "Houses lord 25",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m76",
+      "seat": "seat-076",
+      "region": "ironislands",
+      "faction": "houses",
+      "name": "Houses lord 26",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m77",
+      "seat": "seat-077",
+      "region": "westerlands",
+      "faction": "houses",
+      "name": "Houses lord 27",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m78",
+      "seat": "seat-078",
+      "region": "reach",
+      "faction": "houses",
+      "name": "Houses lord 28",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m79",
+      "seat": "seat-079",
+      "region": "stormlands",
+      "faction": "houses",
+      "name": "Houses lord 29",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m80",
+      "seat": "seat-080",
+      "region": "dorne",
+      "faction": "houses",
+      "name": "Houses lord 30",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m81",
+      "seat": "seat-081",
+      "region": "crownlands",
+      "faction": "lannister",
+      "name": "Lannister lord 1",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m82",
+      "seat": "seat-082",
+      "region": "north",
+      "faction": "lannister",
+      "name": "Lannister lord 2",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m83",
+      "seat": "seat-083",
+      "region": "vale",
+      "faction": "lannister",
+      "name": "Lannister lord 3",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m84",
+      "seat": "seat-084",
+      "region": "riverlands",
+      "faction": "lannister",
+      "name": "Lannister lord 4",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m85",
+      "seat": "seat-085",
+      "region": "ironislands",
+      "faction": "lannister",
+      "name": "Lannister lord 5",
+      "bio": "",
+      "core_issues": ["no-lannister-as-hand-of-the-king"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m86",
+      "seat": "seat-086",
+      "region": "westerlands",
+      "faction": "lannister",
+      "name": "Lannister lord 6",
+      "bio": "",
+      "core_issues": ["stop-any-targaryen-landing"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m87",
+      "seat": "seat-087",
+      "region": "reach",
+      "faction": "lannister",
+      "name": "Lannister lord 7",
+      "bio": "",
+      "core_issues": ["cut-the-royal-household-s-spending"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m88",
+      "seat": "seat-088",
+      "region": "stormlands",
+      "faction": "lannister",
+      "name": "Lannister lord 8",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m89",
+      "seat": "seat-089",
+      "region": "dorne",
+      "faction": "lannister",
+      "name": "Lannister lord 9",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m90",
+      "seat": "seat-090",
+      "region": "crownlands",
+      "faction": "lannister",
+      "name": "Lannister lord 10",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m91",
+      "seat": "seat-091",
+      "region": "north",
+      "faction": "lannister",
+      "name": "Lannister lord 11",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m92",
+      "seat": "seat-092",
+      "region": "vale",
+      "faction": "lannister",
+      "name": "Lannister lord 12",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m93",
+      "seat": "seat-093",
+      "region": "riverlands",
+      "faction": "lannister",
+      "name": "Lannister lord 13",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m94",
+      "seat": "seat-094",
+      "region": "ironislands",
+      "faction": "lannister",
+      "name": "Lannister lord 14",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m95",
+      "seat": "seat-095",
+      "region": "westerlands",
+      "faction": "lannister",
+      "name": "Lannister lord 15",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m96",
+      "seat": "seat-096",
+      "region": "reach",
+      "faction": "lannister",
+      "name": "Lannister lord 16",
+      "bio": "",
+      "core_issues": ["pay-down-the-debt-to-the-iron-bank"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m97",
+      "seat": "seat-097",
+      "region": "stormlands",
+      "faction": "lannister",
+      "name": "Lannister lord 17",
+      "bio": "",
+      "core_issues": ["keep-the-king-s-peace-across-the-realm"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m98",
+      "seat": "seat-098",
+      "region": "dorne",
+      "faction": "lannister",
+      "name": "Lannister lord 18",
+      "bio": "",
+      "core_issues": ["hold-a-great-tourney-in-the-capital"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m99",
+      "seat": "seat-099",
+      "region": "crownlands",
+      "faction": "lannister",
+      "name": "Lannister lord 19",
+      "bio": "",
+      "core_issues": ["send-men-and-supplies-to-the-wall"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m100",
+      "seat": "seat-100",
+      "region": "north",
+      "faction": "lannister",
+      "name": "Lannister lord 20",
+      "bio": "",
+      "core_issues": ["bring-dorne-closer-to-the-throne"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    }
+  ],
+  "citizens": [
+    {
+      "id": "c-0",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 1",
+      "age": 20,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-1",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 2",
+      "age": 21,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-2",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 3",
+      "age": 22,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-3",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 4",
+      "age": 23,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-4",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 5",
+      "age": 24,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-5",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 6",
+      "age": 25,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-6",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 7",
+      "age": 26,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-7",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 8",
+      "age": 27,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-8",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 9",
+      "age": 28,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-9",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 10",
+      "age": 29,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-10",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 11",
+      "age": 30,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-11",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 12",
+      "age": 31,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-12",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 13",
+      "age": 32,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-13",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 14",
+      "age": 33,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-14",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 15",
+      "age": 34,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-15",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 16",
+      "age": 35,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-16",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 17",
+      "age": 36,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-17",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 18",
+      "age": 37,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-18",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 19",
+      "age": 38,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-19",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 20",
+      "age": 39,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-20",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 21",
+      "age": 40,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-21",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 22",
+      "age": 41,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-22",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 23",
+      "age": 42,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-23",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 24",
+      "age": 43,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-24",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 25",
+      "age": 44,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-25",
+      "region": "stormlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 26",
+      "age": 45,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-26",
+      "region": "dorne",
+      "bloc": "merchants",
+      "name": "Citizen 27",
+      "age": 46,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-27",
+      "region": "crownlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 28",
+      "age": 47,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-28",
+      "region": "north",
+      "bloc": "clergy",
+      "name": "Citizen 29",
+      "age": 48,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-29",
+      "region": "vale",
+      "bloc": "students",
+      "name": "Citizen 30",
+      "age": 49,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-30",
+      "region": "riverlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 31",
+      "age": 50,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-31",
+      "region": "ironislands",
+      "bloc": "merchants",
+      "name": "Citizen 32",
+      "age": 51,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-32",
+      "region": "westerlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 33",
+      "age": 52,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-33",
+      "region": "reach",
+      "bloc": "clergy",
+      "name": "Citizen 34",
+      "age": 53,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-34",
+      "region": "stormlands",
+      "bloc": "students",
+      "name": "Citizen 35",
+      "age": 54,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-35",
+      "region": "dorne",
+      "bloc": "dockworkers",
+      "name": "Citizen 36",
+      "age": 55,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-36",
+      "region": "crownlands",
+      "bloc": "merchants",
+      "name": "Citizen 37",
+      "age": 56,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-37",
+      "region": "north",
+      "bloc": "fisherfolk",
+      "name": "Citizen 38",
+      "age": 57,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-38",
+      "region": "vale",
+      "bloc": "clergy",
+      "name": "Citizen 39",
+      "age": 58,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-39",
+      "region": "riverlands",
+      "bloc": "students",
+      "name": "Citizen 40",
+      "age": 59,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-40",
+      "region": "ironislands",
+      "bloc": "dockworkers",
+      "name": "Citizen 41",
+      "age": 60,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-41",
+      "region": "westerlands",
+      "bloc": "merchants",
+      "name": "Citizen 42",
+      "age": 61,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-42",
+      "region": "reach",
+      "bloc": "fisherfolk",
+      "name": "Citizen 43",
+      "age": 62,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-43",
+      "region": "stormlands",
+      "bloc": "clergy",
+      "name": "Citizen 44",
+      "age": 63,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-44",
+      "region": "dorne",
+      "bloc": "students",
+      "name": "Citizen 45",
+      "age": 64,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-45",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 46",
+      "age": 65,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-46",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 47",
+      "age": 66,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-47",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 48",
+      "age": 67,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-48",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 49",
+      "age": 68,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-49",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 50",
+      "age": 69,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-50",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 51",
+      "age": 20,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-51",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 52",
+      "age": 21,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-52",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 53",
+      "age": 22,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-53",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 54",
+      "age": 23,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-54",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 55",
+      "age": 24,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-55",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 56",
+      "age": 25,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-56",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 57",
+      "age": 26,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-57",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 58",
+      "age": 27,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-58",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 59",
+      "age": 28,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-59",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 60",
+      "age": 29,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-60",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 61",
+      "age": 30,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-61",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 62",
+      "age": 31,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-62",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 63",
+      "age": 32,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-63",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 64",
+      "age": 33,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-64",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 65",
+      "age": 34,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-65",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 66",
+      "age": 35,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-66",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 67",
+      "age": 36,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-67",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 68",
+      "age": 37,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-68",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 69",
+      "age": 38,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-69",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 70",
+      "age": 39,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-70",
+      "region": "stormlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 71",
+      "age": 40,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-71",
+      "region": "dorne",
+      "bloc": "merchants",
+      "name": "Citizen 72",
+      "age": 41,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-72",
+      "region": "crownlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 73",
+      "age": 42,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-73",
+      "region": "north",
+      "bloc": "clergy",
+      "name": "Citizen 74",
+      "age": 43,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-74",
+      "region": "vale",
+      "bloc": "students",
+      "name": "Citizen 75",
+      "age": 44,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-75",
+      "region": "riverlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 76",
+      "age": 45,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-76",
+      "region": "ironislands",
+      "bloc": "merchants",
+      "name": "Citizen 77",
+      "age": 46,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-77",
+      "region": "westerlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 78",
+      "age": 47,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-78",
+      "region": "reach",
+      "bloc": "clergy",
+      "name": "Citizen 79",
+      "age": 48,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-79",
+      "region": "stormlands",
+      "bloc": "students",
+      "name": "Citizen 80",
+      "age": 49,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-80",
+      "region": "dorne",
+      "bloc": "dockworkers",
+      "name": "Citizen 81",
+      "age": 50,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-81",
+      "region": "crownlands",
+      "bloc": "merchants",
+      "name": "Citizen 82",
+      "age": 51,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-82",
+      "region": "north",
+      "bloc": "fisherfolk",
+      "name": "Citizen 83",
+      "age": 52,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-83",
+      "region": "vale",
+      "bloc": "clergy",
+      "name": "Citizen 84",
+      "age": 53,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-84",
+      "region": "riverlands",
+      "bloc": "students",
+      "name": "Citizen 85",
+      "age": 54,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-85",
+      "region": "ironislands",
+      "bloc": "dockworkers",
+      "name": "Citizen 86",
+      "age": 55,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-86",
+      "region": "westerlands",
+      "bloc": "merchants",
+      "name": "Citizen 87",
+      "age": 56,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-87",
+      "region": "reach",
+      "bloc": "fisherfolk",
+      "name": "Citizen 88",
+      "age": 57,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-88",
+      "region": "stormlands",
+      "bloc": "clergy",
+      "name": "Citizen 89",
+      "age": 58,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-89",
+      "region": "dorne",
+      "bloc": "students",
+      "name": "Citizen 90",
+      "age": 59,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-90",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 91",
+      "age": 60,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-91",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 92",
+      "age": 61,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-92",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 93",
+      "age": 62,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-93",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 94",
+      "age": 63,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-94",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 95",
+      "age": 64,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-95",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 96",
+      "age": 65,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-96",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 97",
+      "age": 66,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-97",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 98",
+      "age": 67,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-98",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 99",
+      "age": 68,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-99",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 100",
+      "age": 69,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-100",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 101",
+      "age": 20,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-101",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 102",
+      "age": 21,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-102",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 103",
+      "age": 22,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-103",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 104",
+      "age": 23,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-104",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 105",
+      "age": 24,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-105",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 106",
+      "age": 25,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-106",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 107",
+      "age": 26,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-107",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 108",
+      "age": 27,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-108",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 109",
+      "age": 28,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-109",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 110",
+      "age": 29,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-110",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 111",
+      "age": 30,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-111",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 112",
+      "age": 31,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-112",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 113",
+      "age": 32,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-113",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 114",
+      "age": 33,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-114",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 115",
+      "age": 34,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-115",
+      "region": "stormlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 116",
+      "age": 35,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-116",
+      "region": "dorne",
+      "bloc": "merchants",
+      "name": "Citizen 117",
+      "age": 36,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-117",
+      "region": "crownlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 118",
+      "age": 37,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-118",
+      "region": "north",
+      "bloc": "clergy",
+      "name": "Citizen 119",
+      "age": 38,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-119",
+      "region": "vale",
+      "bloc": "students",
+      "name": "Citizen 120",
+      "age": 39,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-120",
+      "region": "riverlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 121",
+      "age": 40,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-121",
+      "region": "ironislands",
+      "bloc": "merchants",
+      "name": "Citizen 122",
+      "age": 41,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-122",
+      "region": "westerlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 123",
+      "age": 42,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-123",
+      "region": "reach",
+      "bloc": "clergy",
+      "name": "Citizen 124",
+      "age": 43,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-124",
+      "region": "stormlands",
+      "bloc": "students",
+      "name": "Citizen 125",
+      "age": 44,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-125",
+      "region": "dorne",
+      "bloc": "dockworkers",
+      "name": "Citizen 126",
+      "age": 45,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-126",
+      "region": "crownlands",
+      "bloc": "merchants",
+      "name": "Citizen 127",
+      "age": 46,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-127",
+      "region": "north",
+      "bloc": "fisherfolk",
+      "name": "Citizen 128",
+      "age": 47,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-128",
+      "region": "vale",
+      "bloc": "clergy",
+      "name": "Citizen 129",
+      "age": 48,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-129",
+      "region": "riverlands",
+      "bloc": "students",
+      "name": "Citizen 130",
+      "age": 49,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-130",
+      "region": "ironislands",
+      "bloc": "dockworkers",
+      "name": "Citizen 131",
+      "age": 50,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-131",
+      "region": "westerlands",
+      "bloc": "merchants",
+      "name": "Citizen 132",
+      "age": 51,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-132",
+      "region": "reach",
+      "bloc": "fisherfolk",
+      "name": "Citizen 133",
+      "age": 52,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-133",
+      "region": "stormlands",
+      "bloc": "clergy",
+      "name": "Citizen 134",
+      "age": 53,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-134",
+      "region": "dorne",
+      "bloc": "students",
+      "name": "Citizen 135",
+      "age": 54,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-135",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 136",
+      "age": 55,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-136",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 137",
+      "age": 56,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-137",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 138",
+      "age": 57,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-138",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 139",
+      "age": 58,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-139",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 140",
+      "age": 59,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-140",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 141",
+      "age": 60,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-141",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 142",
+      "age": 61,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-142",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 143",
+      "age": 62,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-143",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 144",
+      "age": 63,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-144",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 145",
+      "age": 64,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-145",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 146",
+      "age": 65,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-146",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 147",
+      "age": 66,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-147",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 148",
+      "age": 67,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-148",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 149",
+      "age": 68,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-149",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 150",
+      "age": 69,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-150",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 151",
+      "age": 20,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-151",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 152",
+      "age": 21,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-152",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 153",
+      "age": 22,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-153",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 154",
+      "age": 23,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-154",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 155",
+      "age": 24,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-155",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 156",
+      "age": 25,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-156",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 157",
+      "age": 26,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-157",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 158",
+      "age": 27,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-158",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 159",
+      "age": 28,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-159",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 160",
+      "age": 29,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-160",
+      "region": "stormlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 161",
+      "age": 30,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-161",
+      "region": "dorne",
+      "bloc": "merchants",
+      "name": "Citizen 162",
+      "age": 31,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-162",
+      "region": "crownlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 163",
+      "age": 32,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-163",
+      "region": "north",
+      "bloc": "clergy",
+      "name": "Citizen 164",
+      "age": 33,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-164",
+      "region": "vale",
+      "bloc": "students",
+      "name": "Citizen 165",
+      "age": 34,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-165",
+      "region": "riverlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 166",
+      "age": 35,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-166",
+      "region": "ironislands",
+      "bloc": "merchants",
+      "name": "Citizen 167",
+      "age": 36,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-167",
+      "region": "westerlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 168",
+      "age": 37,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-168",
+      "region": "reach",
+      "bloc": "clergy",
+      "name": "Citizen 169",
+      "age": 38,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-169",
+      "region": "stormlands",
+      "bloc": "students",
+      "name": "Citizen 170",
+      "age": 39,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-170",
+      "region": "dorne",
+      "bloc": "dockworkers",
+      "name": "Citizen 171",
+      "age": 40,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-171",
+      "region": "crownlands",
+      "bloc": "merchants",
+      "name": "Citizen 172",
+      "age": 41,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-172",
+      "region": "north",
+      "bloc": "fisherfolk",
+      "name": "Citizen 173",
+      "age": 42,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-173",
+      "region": "vale",
+      "bloc": "clergy",
+      "name": "Citizen 174",
+      "age": 43,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-174",
+      "region": "riverlands",
+      "bloc": "students",
+      "name": "Citizen 175",
+      "age": 44,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-175",
+      "region": "ironislands",
+      "bloc": "dockworkers",
+      "name": "Citizen 176",
+      "age": 45,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-176",
+      "region": "westerlands",
+      "bloc": "merchants",
+      "name": "Citizen 177",
+      "age": 46,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-177",
+      "region": "reach",
+      "bloc": "fisherfolk",
+      "name": "Citizen 178",
+      "age": 47,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-178",
+      "region": "stormlands",
+      "bloc": "clergy",
+      "name": "Citizen 179",
+      "age": 48,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-179",
+      "region": "dorne",
+      "bloc": "students",
+      "name": "Citizen 180",
+      "age": 49,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-180",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 181",
+      "age": 50,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-181",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 182",
+      "age": 51,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-182",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 183",
+      "age": 52,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-183",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 184",
+      "age": 53,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-184",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 185",
+      "age": 54,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-185",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 186",
+      "age": 55,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-186",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 187",
+      "age": 56,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-187",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 188",
+      "age": 57,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-188",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 189",
+      "age": 58,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-189",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 190",
+      "age": 59,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-190",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 191",
+      "age": 60,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-191",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 192",
+      "age": 61,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-192",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 193",
+      "age": 62,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-193",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 194",
+      "age": 63,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-194",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 195",
+      "age": 64,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-195",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 196",
+      "age": 65,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-196",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 197",
+      "age": 66,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-197",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 198",
+      "age": 67,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-198",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 199",
+      "age": 68,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-199",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 200",
+      "age": 69,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-200",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 201",
+      "age": 20,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-201",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 202",
+      "age": 21,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-202",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 203",
+      "age": 22,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-203",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 204",
+      "age": 23,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-204",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 205",
+      "age": 24,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-205",
+      "region": "stormlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 206",
+      "age": 25,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-206",
+      "region": "dorne",
+      "bloc": "merchants",
+      "name": "Citizen 207",
+      "age": 26,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-207",
+      "region": "crownlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 208",
+      "age": 27,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-208",
+      "region": "north",
+      "bloc": "clergy",
+      "name": "Citizen 209",
+      "age": 28,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-209",
+      "region": "vale",
+      "bloc": "students",
+      "name": "Citizen 210",
+      "age": 29,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-210",
+      "region": "riverlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 211",
+      "age": 30,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-211",
+      "region": "ironislands",
+      "bloc": "merchants",
+      "name": "Citizen 212",
+      "age": 31,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-212",
+      "region": "westerlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 213",
+      "age": 32,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-213",
+      "region": "reach",
+      "bloc": "clergy",
+      "name": "Citizen 214",
+      "age": 33,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-214",
+      "region": "stormlands",
+      "bloc": "students",
+      "name": "Citizen 215",
+      "age": 34,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-215",
+      "region": "dorne",
+      "bloc": "dockworkers",
+      "name": "Citizen 216",
+      "age": 35,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-216",
+      "region": "crownlands",
+      "bloc": "merchants",
+      "name": "Citizen 217",
+      "age": 36,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-217",
+      "region": "north",
+      "bloc": "fisherfolk",
+      "name": "Citizen 218",
+      "age": 37,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-218",
+      "region": "vale",
+      "bloc": "clergy",
+      "name": "Citizen 219",
+      "age": 38,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-219",
+      "region": "riverlands",
+      "bloc": "students",
+      "name": "Citizen 220",
+      "age": 39,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-220",
+      "region": "ironislands",
+      "bloc": "dockworkers",
+      "name": "Citizen 221",
+      "age": 40,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-221",
+      "region": "westerlands",
+      "bloc": "merchants",
+      "name": "Citizen 222",
+      "age": 41,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-222",
+      "region": "reach",
+      "bloc": "fisherfolk",
+      "name": "Citizen 223",
+      "age": 42,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-223",
+      "region": "stormlands",
+      "bloc": "clergy",
+      "name": "Citizen 224",
+      "age": 43,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-224",
+      "region": "dorne",
+      "bloc": "students",
+      "name": "Citizen 225",
+      "age": 44,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-225",
+      "region": "crownlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 226",
+      "age": 45,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-226",
+      "region": "north",
+      "bloc": "merchants",
+      "name": "Citizen 227",
+      "age": 46,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-227",
+      "region": "vale",
+      "bloc": "fisherfolk",
+      "name": "Citizen 228",
+      "age": 47,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-228",
+      "region": "riverlands",
+      "bloc": "clergy",
+      "name": "Citizen 229",
+      "age": 48,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-229",
+      "region": "ironislands",
+      "bloc": "students",
+      "name": "Citizen 230",
+      "age": 49,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-230",
+      "region": "westerlands",
+      "bloc": "dockworkers",
+      "name": "Citizen 231",
+      "age": 50,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-231",
+      "region": "reach",
+      "bloc": "merchants",
+      "name": "Citizen 232",
+      "age": 51,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-232",
+      "region": "stormlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 233",
+      "age": 52,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-233",
+      "region": "dorne",
+      "bloc": "clergy",
+      "name": "Citizen 234",
+      "age": 53,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-234",
+      "region": "crownlands",
+      "bloc": "students",
+      "name": "Citizen 235",
+      "age": 54,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-235",
+      "region": "north",
+      "bloc": "dockworkers",
+      "name": "Citizen 236",
+      "age": 55,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-236",
+      "region": "vale",
+      "bloc": "merchants",
+      "name": "Citizen 237",
+      "age": 56,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-237",
+      "region": "riverlands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 238",
+      "age": 57,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-238",
+      "region": "ironislands",
+      "bloc": "clergy",
+      "name": "Citizen 239",
+      "age": 58,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-239",
+      "region": "westerlands",
+      "bloc": "students",
+      "name": "Citizen 240",
+      "age": 59,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-240",
+      "region": "reach",
+      "bloc": "dockworkers",
+      "name": "Citizen 241",
+      "age": 60,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-241",
+      "region": "stormlands",
+      "bloc": "merchants",
+      "name": "Citizen 242",
+      "age": 61,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-242",
+      "region": "dorne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 243",
+      "age": 62,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-243",
+      "region": "crownlands",
+      "bloc": "clergy",
+      "name": "Citizen 244",
+      "age": 63,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-244",
+      "region": "north",
+      "bloc": "students",
+      "name": "Citizen 245",
+      "age": 64,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-245",
+      "region": "vale",
+      "bloc": "dockworkers",
+      "name": "Citizen 246",
+      "age": 65,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-246",
+      "region": "riverlands",
+      "bloc": "merchants",
+      "name": "Citizen 247",
+      "age": 66,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-247",
+      "region": "ironislands",
+      "bloc": "fisherfolk",
+      "name": "Citizen 248",
+      "age": 67,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-248",
+      "region": "westerlands",
+      "bloc": "clergy",
+      "name": "Citizen 249",
+      "age": 68,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    },
+    {
+      "id": "c-249",
+      "region": "reach",
+      "bloc": "students",
+      "name": "Citizen 250",
+      "age": 69,
+      "job": "worker",
+      "town": "King's Landing",
+      "worldview": "",
+      "issues": ["pay-down-the-debt-to-the-iron-bank", "keep-the-king-s-peace-across-the-realm"],
+      "weight": 1
+    }
+  ],
+  "starts": [
+    {
+      "faction": "baratheon",
+      "seat_title": "King",
+      "coalition": ["baratheon"],
+      "premise": "You are Robert Baratheon, King on the Iron Throne.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "smallfolk",
+      "seat_title": "King",
+      "coalition": ["baratheon"],
+      "premise": "You are Robert Baratheon, King on the Iron Throne.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "council",
+      "seat_title": "King",
+      "coalition": ["baratheon"],
+      "premise": "You are Robert Baratheon, King on the Iron Throne.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "houses",
+      "seat_title": "King",
+      "coalition": ["baratheon"],
+      "premise": "You are Robert Baratheon, King on the Iron Throne.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "lannister",
+      "seat_title": "King",
+      "coalition": ["baratheon"],
+      "premise": "You are Robert Baratheon, King on the Iron Throne.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    }
+  ],
+  "problems": [
+    "The crown owes 6 million gold dragons and spends more than it collects.",
+    "Your Hand, Jon Arryn, is dead, and his office is empty.",
+    "The Targaryen heirs are looking for allies across the Narrow Sea.",
+    "No council votes on laws here. Everything you do is a royal decree, and each great house decides whether to go along.",
+    "The crown has no standing army. Before you call the banners, the great houses must give you at least 50 of 100 support.",
+    "If the great houses' support falls below their line, they warn you, then rise against you, as they rose against the last king on this throne.",
+    "You may send a killer after the Targaryen heirs. House Lannister and the Stormlands approve, and support in the North falls.",
+    "The Faith and the Iron Bank have no vote. The Faith can turn your own house against you, and the Bank can call in its loans."
+  ],
+  "promises": [
+    {
+      "tag": "pay-down-the-debt-to-the-iron-bank",
+      "label": "Pay down the debt to the Iron Bank"
+    },
+    {
+      "tag": "keep-the-king-s-peace-across-the-realm",
+      "label": "Keep the king's peace across the realm"
+    },
+    {
+      "tag": "hold-a-great-tourney-in-the-capital",
+      "label": "Hold a great tourney in the capital"
+    },
+    {
+      "tag": "send-men-and-supplies-to-the-wall",
+      "label": "Send men and supplies to the Wall"
+    },
+    {
+      "tag": "bring-dorne-closer-to-the-throne",
+      "label": "Bring Dorne closer to the throne"
+    },
+    {
+      "tag": "no-lannister-as-hand-of-the-king",
+      "label": "No Lannister as Hand of the King"
+    },
+    {
+      "tag": "stop-any-targaryen-landing",
+      "label": "Stop any Targaryen landing"
+    },
+    {
+      "tag": "cut-the-royal-household-s-spending",
+      "label": "Cut the royal household's spending"
+    }
+  ],
+  "tags": [
+    "pay-down-the-debt-to-the-iron-bank",
+    "keep-the-king-s-peace-across-the-realm",
+    "hold-a-great-tourney-in-the-capital",
+    "send-men-and-supplies-to-the-wall",
+    "bring-dorne-closer-to-the-throne",
+    "no-lannister-as-hand-of-the-king",
+    "stop-any-targaryen-landing",
+    "cut-the-royal-household-s-spending",
+    "tariffs",
+    "shipping-rights",
+    "dockworker-pay",
+    "fish-quotas",
+    "harbor-tolls",
+    "guild-charters",
+    "piracy",
+    "naval-defense"
+  ],
+  "deck": [
+    {
+      "id": "gen-01",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 1",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-02",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 2",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-03",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 3",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-04",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 4",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-05",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 5",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-06",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 6",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-07",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 7",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-08",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 8",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-09",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 9",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-10",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 10",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-11",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 11",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-12",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 12",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-13",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 13",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-14",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 14",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-15",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 15",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-16",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 16",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-17",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 17",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-18",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 18",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-19",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 19",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-20",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 20",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "dated-01",
+      "kind": "dated",
+      "turn": 4,
+      "date": "0450-06-01",
+      "exogenous": true,
+      "weight": 1,
+      "title_hint": "The autumn gale",
+      "stances": ["Fund emergency repairs", "Let the guilds cover it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "capital",
+          "delta": -2
+        }
+      ]
+    },
+    {
+      "id": "dated-02",
+      "kind": "dated",
+      "turn": 12,
+      "date": "0451-11-20",
+      "exogenous": false,
+      "needs": [
+        {
+          "ledger": "approval",
+          "id": "northpier",
+          "op": "<",
+          "value": 40
+        }
+      ],
+      "weight": 1,
+      "title_hint": "The guild ultimatum",
+      "stances": ["Meet their terms", "Call their bluff"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "party",
+          "delta": -3
+        }
+      ]
+    }
+  ],
+  "escalations": [
+    {
+      "key": "hostile_press",
+      "name": "The Herald Turns",
+      "headline": "The harbor's broadsheet runs a season of hostile notices against the council."
+    },
+    {
+      "key": "supermajority_era",
+      "name": "The Grand Consensus",
+      "headline": "Every decree now needs the grand consensus to pass."
+    },
+    {
+      "key": "recession",
+      "name": "The Lean Tide",
+      "headline": "Trade falls and two guild patrons pull their support."
+    },
+    {
+      "key": "scandal_season",
+      "name": "The Whisper Season",
+      "headline": "Four councilors face whispered investigations."
+    },
+    {
+      "key": "short_fuse",
+      "name": "The Short Reckoning",
+      "headline": "The reckoning's thresholds tighten to twenty and sixty."
+    },
+    {
+      "key": "split_chamber",
+      "name": "The Broken Bench",
+      "headline": "The midterm draw flips eight seats against the sitting consul."
+    },
+    {
+      "key": "costly_favors",
+      "name": "The Steep Toll",
+      "headline": "Petitions to patrons now cost half again as much."
+    },
+    {
+      "key": "fickle_base",
+      "name": "The Restless Quarter",
+      "headline": "Pledges must be kept by the eighth and sixteenth tide."
+    },
+    {
+      "key": "empty_chest",
+      "name": "The Bare Treasury",
+      "headline": "Patron contributions are cut in half."
+    },
+    {
+      "key": "hostile_court",
+      "name": "The Sharp Bench",
+      "headline": "The temple court strikes decrees at a lower bar."
+    },
+    {
+      "key": "rival_surge",
+      "name": "The Rival's Purse",
+      "headline": "Rival factions double their canvass spending."
+    },
+    {
+      "key": "apathy",
+      "name": "The Quiet Quarter",
+      "headline": "Turnout among the council's own blocs drops sharply."
+    },
+    {
+      "key": "defections",
+      "name": "The Loose Bench",
+      "headline": "Co-faction loyalty erodes on every vote."
+    },
+    {
+      "key": "loud_opposition",
+      "name": "The Jeering Gallery",
+      "headline": "Boos in the gallery count for more against every decree."
+    },
+    {
+      "key": "crisis_fatigue",
+      "name": "The Tired Harbor",
+      "headline": "No relief cards are drawn for the rest of the term."
+    },
+    {
+      "key": "leaks",
+      "name": "The Leaky Hull",
+      "headline": "Petitions risk becoming headlines a third of the time."
+    },
+    {
+      "key": "war_footing",
+      "name": "The War Tide",
+      "headline": "Naval matters always face the grand consensus, and the treasury bleeds each tide."
+    },
+    {
+      "key": "famine",
+      "name": "The Lean Harvest",
+      "headline": "Standing falls hard in ten seeded wards, some more than others."
+    },
+    {
+      "key": "succession_crisis",
+      "name": "The Contested Line",
+      "headline": "Party mood opens the term already low."
+    },
+    {
+      "key": "foreign_meddling",
+      "name": "The Foreign Hand",
+      "headline": "Two wards lose faith in the reckoning before it is cast."
+    }
+  ],
+  "test": {
+    "name": "the realm's fealty",
+    "win": "The council keeps its mandate for another term.",
+    "lose": "The council loses its mandate.",
+    "reveal": "both"
+  },
+  "endings": {
+    "reelected": "Held the Harbor",
+    "defeated": "Voted Out",
+    "lame_duck": "A Quiet Last Tide",
+    "impeached": "Recalled by the Guilds"
+  },
+  "lobby": {
+    "pork": {
+      "cost": 10,
+      "label": "Promise a project",
+      "text": "The Consul promises a new warehouse for the district."
+    },
+    "favor": {
+      "cost": 15,
+      "label": "Trade a favor",
+      "text": "The Consul offers to back the councilor's own petition next tide."
+    },
+    "threat": {
+      "cost": 20,
+      "label": "Threaten a challenger",
+      "text": "The Consul threatens to back a rival in the next canvass."
+    }
+  },
+  "constitution": {
+    "ruler": {
+      "role": "King",
+      "faction": "baratheon",
+      "above": null,
+      "removedBy": "The great houses can rise against you, as they rose against King Aerys."
+    },
+    "holders": [
+      {
+        "id": "houses",
+        "name": "The great houses",
+        "where": "home",
+        "persona": {
+          "name": "Eddard Stark",
+          "role": "Lord of Winterfell, Warden of the North",
+          "bio": "The Lords Paramount and their bannermen: Stark of the North, Arryn of the Vale, Tully of the Riverlands, Tyrell of the Reach, Martell of Dorne, Greyjoy of the Iron Islands. They raise every soldier the crown can call.",
+          "tell": "We bent the knee to your house once. A knee can straighten."
+        },
+        "members": "none",
+        "stance": 0.5,
+        "line": 40,
+        "response": "coup",
+        "levers": ["force"],
+        "wants": [
+          "The great houses, from Stark in the North to Martell in Dorne, want justice in their own lands and no royal hand on the men they raise."
+        ],
+        "redLines": ["Seizing a great house's lands or castle"],
+        "gives": null,
+        "responses": ["Rises against the throne"],
+        "support": 50,
+        "icon": "army",
+        "glance": {
+          "face": {
+            "name": "Eddard Stark",
+            "role": "Lord of Winterfell, Warden of the North"
+          },
+          "wants": ["Their own justice", "Asked before war", "Peace between houses"],
+          "hates": [
+            {
+              "tag": "Royal judges",
+              "redLine": false
+            },
+            {
+              "tag": "Calling the banners",
+              "redLine": false
+            },
+            {
+              "tag": "Seizing a castle",
+              "redLine": true
+            }
+          ],
+          "strike": "Rises against the throne"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M10 8 H54 V30 C54 46 44 54 32 60 C20 54 10 46 10 30 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 29,
+              "y": 8,
+              "width": 6,
+              "height": 50,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 10,
+              "y": 26,
+              "width": 44,
+              "height": 6,
+              "fill": "paper"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 29,
+              "r": 6,
+              "fill": "ink"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#44584c",
+          "dark": "#a9c2b0"
+        }
+      },
+      {
+        "id": "lannister",
+        "name": "House Lannister",
+        "where": "home",
+        "persona": {
+          "name": "Tywin Lannister",
+          "role": "Lord of Casterly Rock, Warden of the West",
+          "bio": "The richest house in the realm: lords of Casterly Rock and the gold mines of the westerlands. Lord Tywin, your queen's father, holds much of the crown's debt.",
+          "tell": "Half the gold in your treasury came from Casterly Rock. We keep count."
+        },
+        "members": "none",
+        "stance": 0.6,
+        "line": 35,
+        "response": "refuse_levy",
+        "levers": [],
+        "wants": [
+          "House Lannister wants the Hand's chain for one of its own and the crown's debt kept in its books."
+        ],
+        "redLines": ["Setting Queen Cersei aside"],
+        "gives": null,
+        "responses": ["Keeps its men and gold at home"],
+        "support": 60,
+        "icon": "patrons",
+        "glance": {
+          "face": {
+            "name": "Tywin Lannister",
+            "role": "Lord of Casterly Rock, Warden of the West"
+          },
+          "wants": ["Tywin as Hand", "Repaid first", "Joffrey as heir"],
+          "hates": [
+            {
+              "tag": "Stark as Hand",
+              "redLine": false
+            },
+            {
+              "tag": "Iron Bank first",
+              "redLine": false
+            },
+            {
+              "tag": "Setting Cersei aside",
+              "redLine": true
+            }
+          ],
+          "strike": "Keeps its men and gold home"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "polygon",
+              "points": "61,32 53.25,37.7 57.11,46.5 47.55,47.55 46.5,57.11 37.7,53.25 32,61 26.3,53.25 17.5,57.11 16.45,47.55 6.89,46.5 10.75,37.7 3,32 10.75,26.3 6.89,17.5 16.45,16.45 17.5,6.89 26.3,10.75 32,3 37.7,10.75 46.5,6.89 47.55,16.45 57.11,17.5 53.25,26.3",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 33,
+              "r": 17,
+              "fill": "paper"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 33,
+              "r": 14,
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 26.5,
+              "cy": 30,
+              "r": 2.8,
+              "fill": "paper"
+            },
+            {
+              "tag": "circle",
+              "cx": 37.5,
+              "cy": 30,
+              "r": 2.8,
+              "fill": "paper"
+            },
+            {
+              "tag": "polygon",
+              "points": "28,37 36,37 32,43",
+              "fill": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#9b2226",
+          "dark": "#ff8a80"
+        }
+      },
+      {
+        "id": "council",
+        "name": "The small council",
+        "where": "home",
+        "persona": {
+          "name": "Petyr Baelish",
+          "role": "Master of coin, King's Landing",
+          "bio": "The men who run the realm day to day: Grand Maester Pycelle, Petyr Baelish the master of coin, Varys the master of whisperers, your brothers Stannis and Renly, and Ser Barristan Selmy. The Hand's seat is empty.",
+          "tell": "Your Grace's word is law. Our work is to make it a law the lords will follow."
+        },
+        "members": "none",
+        "stance": 0.55,
+        "line": 35,
+        "response": "strike",
+        "levers": [],
+        "wants": [
+          "The small council wants a Hand you listen to and a treasury that does not run on borrowed gold."
+        ],
+        "redLines": ["Dismissing the whole council"],
+        "gives": null,
+        "responses": ["Lets the realm's business stall"],
+        "support": 55,
+        "icon": "council",
+        "glance": {
+          "face": {
+            "name": "Petyr Baelish",
+            "role": "Master of coin, King's Landing"
+          },
+          "wants": ["A Hand to work with", "Fewer tourneys", "Decrees in council"],
+          "hates": [
+            {
+              "tag": "Tourneys on credit",
+              "redLine": false
+            },
+            {
+              "tag": "Dismissing the council",
+              "redLine": true
+            }
+          ],
+          "strike": "Lets the realm stall"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "rect",
+              "rx": 7,
+              "x": 18,
+              "y": 30,
+              "width": 28,
+              "height": 28,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "rx": 3,
+              "x": 18,
+              "y": 13,
+              "width": 6,
+              "height": 24,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "rx": 3,
+              "x": 25.5,
+              "y": 7,
+              "width": 6,
+              "height": 28,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "rx": 3,
+              "x": 33,
+              "y": 8,
+              "width": 6,
+              "height": 28,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "rx": 2.75,
+              "x": 40.5,
+              "y": 14,
+              "width": 5.5,
+              "height": 22,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "transform": "rotate(-35 20 40)",
+              "rx": 3.5,
+              "x": 6,
+              "y": 34,
+              "width": 18,
+              "height": 7,
+              "fill": "ink"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#3f5163",
+          "dark": "#9fb4c8"
+        }
+      },
+      {
+        "id": "baratheon",
+        "name": "House Baratheon and the Stormlands",
+        "where": "home",
+        "persona": {
+          "name": "Stannis Baratheon",
+          "role": "Lord of Dragonstone, master of ships",
+          "bio": "Your own house and the storm lords who rode with you: your brother Stannis on Dragonstone, your brother Renly at Storm's End, and their bannermen.",
+          "tell": "Dragonstone was a poor reward for the brother who held Storm's End for you."
+        },
+        "members": "none",
+        "stance": 0.65,
+        "line": 35,
+        "response": "refuse_levy",
+        "levers": [],
+        "wants": [
+          "House Baratheon and the Stormlands want your brothers given their due and the storm lords rewarded for the rebellion."
+        ],
+        "redLines": ["Inviting the Targaryen heirs home under a pardon"],
+        "gives": null,
+        "responses": ["Keeps the storm lords' swords at home"],
+        "support": 65,
+        "short": "House Baratheon",
+        "icon": "party",
+        "glance": {
+          "face": {
+            "name": "Stannis Baratheon",
+            "role": "Lord of Dragonstone, master of ships"
+          },
+          "wants": ["Honours for Stannis", "Land for storm lords", "Targaryens hunted"],
+          "hates": [
+            {
+              "tag": "A Lannister Hand",
+              "redLine": false
+            },
+            {
+              "tag": "Pardoning the Targaryens",
+              "redLine": true
+            }
+          ],
+          "strike": "Keeps the storm lords home"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "polygon",
+              "points": "24,26 40,26 37,44 32,56 27,44",
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "25,28 12,23 22,34",
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "39,28 52,23 42,34",
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M27 26 C22 18 18 13 13 5 M20 16 L8 14 M16 10 L20 3",
+              "strokeWidth": 4,
+              "fill": "none",
+              "stroke": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M37 26 C42 18 46 13 51 5 M44 16 L56 14 M48 10 L44 3",
+              "strokeWidth": 4,
+              "fill": "none",
+              "stroke": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "25,25 25,16 28.5,20 32,13 35.5,20 39,16 39,25",
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#7a5d0e",
+          "dark": "#e3c15a"
+        }
+      },
+      {
+        "id": "smallfolk",
+        "name": "The smallfolk",
+        "where": "home",
+        "persona": {
+          "name": "Wat Heddle",
+          "role": "Baker in Flea Bottom, King's Landing",
+          "bio": "The peasants, craftsmen and townsfolk of the Seven Kingdoms, most of the realm's people. Half a million live in King's Landing alone.",
+          "tell": "Lords fight and the fields burn. Keep the lords quiet."
+        },
+        "members": "citizens",
+        "stance": 0.5,
+        "line": 40,
+        "response": "riot",
+        "levers": [],
+        "wants": ["The smallfolk want bread at a fair price and peace on the roads."],
+        "redLines": ["Burning a rebel lord's fields"],
+        "gives": null,
+        "responses": ["Riots in King's Landing"],
+        "support": 50,
+        "icon": "street",
+        "glance": {
+          "face": {
+            "name": "Wat Heddle",
+            "role": "Baker in Flea Bottom, King's Landing"
+          },
+          "wants": ["Cheap bread", "Peace", "Safe roads"],
+          "hates": [
+            {
+              "tag": "Bread taxes",
+              "redLine": false
+            },
+            {
+              "tag": "Tourneys",
+              "redLine": false
+            },
+            {
+              "tag": "Burning the fields",
+              "redLine": true
+            }
+          ],
+          "strike": "Riots in King's Landing"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "line",
+              "x1": 30,
+              "y1": 42,
+              "x2": 20,
+              "y2": 20,
+              "strokeWidth": 4,
+              "fill": "ink",
+              "stroke": "ink"
+            },
+            {
+              "tag": "line",
+              "x1": 32,
+              "y1": 42,
+              "x2": 32,
+              "y2": 18,
+              "strokeWidth": 4,
+              "fill": "ink",
+              "stroke": "ink"
+            },
+            {
+              "tag": "line",
+              "x1": 34,
+              "y1": 42,
+              "x2": 44,
+              "y2": 20,
+              "strokeWidth": 4,
+              "fill": "ink",
+              "stroke": "ink"
+            },
+            {
+              "tag": "ellipse",
+              "transform": "rotate(-20 19 15)",
+              "cx": 19,
+              "cy": 15,
+              "rx": 5,
+              "ry": 11,
+              "fill": "ink"
+            },
+            {
+              "tag": "ellipse",
+              "cx": 32,
+              "cy": 12,
+              "rx": 5,
+              "ry": 11,
+              "fill": "ink"
+            },
+            {
+              "tag": "ellipse",
+              "transform": "rotate(20 45 15)",
+              "cx": 45,
+              "cy": 15,
+              "rx": 5,
+              "ry": 11,
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "27,42 37,42 44,60 20,60",
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "rx": 2,
+              "x": 22,
+              "y": 38,
+              "width": 20,
+              "height": 7,
+              "fill": "ink"
+            },
+            {
+              "tag": "line",
+              "x1": 32,
+              "y1": 48,
+              "x2": 32,
+              "y2": 60,
+              "strokeWidth": 3,
+              "fill": "ink",
+              "stroke": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#6b4f33",
+          "dark": "#caa27a"
+        }
+      },
+      {
+        "id": "faith",
+        "name": "The Faith of the Seven",
+        "where": "home",
+        "persona": {
+          "name": "The High Septon",
+          "role": "Head of the Faith, Great Sept of Baelor",
+          "bio": "The Faith of the Seven under the High Septon at the Great Sept of Baelor, with septons and septas in every town and the tithes of the smallfolk.",
+          "tell": "The crown rests on the Seven. The septons remember that even when kings forget."
+        },
+        "members": "none",
+        "stance": 0.5,
+        "line": 40,
+        "response": "excommunicate",
+        "levers": [],
+        "wants": ["The Faith of the Seven wants its courts and its tithes left as they are."],
+        "redLines": ["Seizing sept lands or silver"],
+        "gives": null,
+        "responses": ["Turns your own house against you"],
+        "support": 50,
+        "short": "The Faith",
+        "icon": "clergy",
+        "glance": {
+          "face": {
+            "name": "The High Septon",
+            "role": "Head of the Faith, Great Sept of Baelor"
+          },
+          "wants": ["Its own courts", "Gifts to the Sept"],
+          "hates": [
+            {
+              "tag": "Taxing the Faith",
+              "redLine": false
+            },
+            {
+              "tag": "Setting the queen aside",
+              "redLine": false
+            },
+            {
+              "tag": "Seizing sept lands",
+              "redLine": true
+            }
+          ],
+          "strike": "Turns your house against you"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "polygon",
+              "points": "32,4 37.64,20.29 53.89,14.54 44.67,29.11 59.3,38.23 42.16,40.11 44.15,57.23 32,45 19.85,57.23 21.84,40.11 4.7,38.23 19.33,29.11 10.11,14.54 26.36,20.29",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 5,
+              "fill": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#2f4a6e",
+          "dark": "#9db6e0"
+        }
+      },
+      {
+        "id": "ironbank",
+        "name": "The Iron Bank of Braavos",
+        "where": "abroad",
+        "persona": {
+          "name": "Tycho Nestoris",
+          "role": "Envoy of the Iron Bank, Braavos",
+          "bio": "The bank of the Free City of Braavos. It lends to kings, and the Iron Throne owes it millions of gold dragons.",
+          "tell": "The Bank lends to kings. It also lends to the men who replace them."
+        },
+        "members": "none",
+        "stance": 0.5,
+        "line": 35,
+        "response": "embargo",
+        "levers": [],
+        "wants": ["The Iron Bank of Braavos wants its loans repaid on time and in full."],
+        "redLines": ["Refusing to repay the crown's loans"],
+        "gives": null,
+        "responses": ["Calls in the crown's loans"],
+        "support": 50,
+        "short": "The Iron Bank",
+        "icon": "market",
+        "glance": {
+          "face": {
+            "name": "Tycho Nestoris",
+            "role": "Envoy of the Iron Bank, Braavos"
+          },
+          "wants": ["Payments on time", "A sound master of coin"],
+          "hates": [
+            {
+              "tag": "Late payments",
+              "redLine": false
+            },
+            {
+              "tag": "Tourneys on credit",
+              "redLine": false
+            },
+            {
+              "tag": "Refusing to repay",
+              "redLine": true
+            }
+          ],
+          "strike": "Calls in the crown's loans"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 28,
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 21,
+              "strokeWidth": 3,
+              "fill": "none",
+              "stroke": "paper"
+            },
+            {
+              "tag": "rect",
+              "transform": "rotate(45 32 32)",
+              "x": 25,
+              "y": 25,
+              "width": 14,
+              "height": 14,
+              "fill": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#4a4f57",
+          "dark": "#b5bcc7"
+        }
+      },
+      {
+        "id": "exiles",
+        "name": "The Targaryen exiles",
+        "where": "abroad",
+        "persona": {
+          "name": "Viserys Targaryen",
+          "role": "The last son of Aerys II, in Pentos",
+          "bio": "Viserys and Daenerys Targaryen, the last children of King Aerys II, living on the charity of a magister in Pentos.",
+          "tell": "The realm has a long memory. So do we."
+        },
+        "members": "none",
+        "stance": 0.3,
+        "line": 30,
+        "response": "none",
+        "levers": [],
+        "wants": [
+          "The Targaryen exiles, Viserys and Daenerys, want the throne their family lost and an army from across the sea to take it."
+        ],
+        "redLines": ["A price on the heads of Viserys and Daenerys"],
+        "gives": null,
+        "responses": ["Buys a Dothraki army for a landing"],
+        "support": 30,
+        "short": "Targaryen exiles",
+        "icon": "foreign",
+        "glance": {
+          "face": {
+            "name": "Viserys Targaryen",
+            "role": "The last son of Aerys II, in Pentos"
+          },
+          "wants": ["Loyalists pardoned", "Dorne angry"],
+          "hates": [
+            {
+              "tag": "Killers sent",
+              "redLine": false
+            },
+            {
+              "tag": "A royal fleet",
+              "redLine": false
+            },
+            {
+              "tag": "A price on their heads",
+              "redLine": true
+            }
+          ],
+          "strike": "Buys a Dothraki army"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M52 60 C50 46 47 37 42 31 L48 14 L37 25 L32 12 L29 25 L12 29 L5 36 L20 38 L10 46 L28 42 C34 47 37 53 35 60 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 29,
+              "cy": 31,
+              "r": 3,
+              "fill": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#6d2d5e",
+          "dark": "#d99ac7"
+        }
+      },
+      {
+        "id": "freecities",
+        "name": "The Free Cities",
+        "where": "abroad",
+        "persona": {
+          "name": "Illyrio Mopatis",
+          "role": "Magister of Pentos",
+          "bio": "Nine city-states across the Narrow Sea, from Braavos to Volantis, whose merchant magisters trade in every port of Westeros.",
+          "tell": "Trade with us and we have no quarrel with your throne."
+        },
+        "members": "none",
+        "stance": 0.55,
+        "line": 45,
+        "response": "none",
+        "levers": [],
+        "wants": ["The Free Cities want open ports and no war across the Narrow Sea."],
+        "redLines": ["Seizing Free City ships in port"],
+        "gives": null,
+        "responses": ["Shuts the ports to your trade"],
+        "support": 55,
+        "icon": "foreign",
+        "glance": {
+          "face": {
+            "name": "Illyrio Mopatis",
+            "role": "Magister of Pentos"
+          },
+          "wants": ["Open ports", "Quiet seas", "Pentos left alone"],
+          "hates": [
+            {
+              "tag": "Harbour taxes",
+              "redLine": false
+            },
+            {
+              "tag": "A fleet sent east",
+              "redLine": false
+            },
+            {
+              "tag": "Seizing their ships",
+              "redLine": true
+            }
+          ],
+          "strike": "Shuts its ports to you"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M8 58 V30 A24 24 0 0 1 56 30 V58 Z M20 58 V32 A12 12 0 0 1 44 32 V58 Z",
+              "fill": "ink",
+              "fillRule": "evenodd"
+            },
+            {
+              "tag": "rect",
+              "x": 4,
+              "y": 56,
+              "width": 56,
+              "height": 5,
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "27,4 37,4 35,14 29,14",
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#1d6470",
+          "dark": "#6cc4cf"
+        }
+      }
+    ],
+    "instruments": {
+      "decree": {
+        "name": "Royal decree",
+        "price": {
+          "authority": 3,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "law": {
+        "name": "Law of the realm",
+        "price": {
+          "authority": 1,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": false,
+        "vetoes": []
+      },
+      "appoint": {
+        "name": "Royal appointment",
+        "price": {
+          "authority": 2,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "spend": {
+        "name": "Crown grant",
+        "price": {
+          "authority": 0,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "proclaim": {
+        "name": "Proclamation by raven",
+        "price": {
+          "authority": 0,
+          "treasury": 0,
+          "chest": 2
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "favour": {
+        "name": "Royal favour",
+        "price": {
+          "authority": 2,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "force": {
+        "name": "Call the banners",
+        "price": {
+          "authority": 4,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": ["houses"]
+      }
+    },
+    "retention": {
+      "name": "the realm's fealty",
+      "weights": [
+        {
+          "id": "houses",
+          "value": 0.3
+        },
+        {
+          "id": "lannister",
+          "value": 0.2
+        },
+        {
+          "id": "council",
+          "value": 0.15
+        },
+        {
+          "id": "baratheon",
+          "value": 0.2
+        },
+        {
+          "id": "smallfolk",
+          "value": 0.15
+        }
+      ],
+      "bar": {
+        "start": 0.5,
+        "step": 0.03,
+        "cap": 0.7
+      }
+    },
+    "halfTerm": {
+      "holder": "smallfolk",
+      "name": "the Hand's tourney"
+    },
+    "ledgers": {
+      "treasury": {
+        "name": "Treasury",
+        "line": 0,
+        "icon": "coins",
+        "for": "The crown's gold, which pays the court, the gold cloaks and the crown's debts.",
+        "earn": ["Crown taxes and port tolls", "Loans from the Lannisters and the Iron Bank"],
+        "spend": ["Crown grants", "Tourneys and feasts", "Interest on the crown's debt"],
+        "fails": "the crown cannot pay its creditors or the gold cloaks."
+      },
+      "authority": {
+        "name": "King's peace",
+        "line": 0,
+        "icon": "crown",
+        "for": "The weight of your word, which makes the lords obey a royal decree.",
+        "earn": ["A pledge kept", "A rebel lord brought to heel"],
+        "spend": ["Every decree and appointment", "A decree a great house ignores"],
+        "fails": "the lords stop obeying your decrees."
+      },
+      "chest": {
+        "name": "Privy purse",
+        "line": 0,
+        "icon": "crate",
+        "for": "Your own gold, which you spend without the master of coin.",
+        "earn": ["Gifts from lords who want favour", "Fines in the king's courts"],
+        "spend": ["Gifts and favours for a lord", "Hunts and feasts for your court"],
+        "fails": "you have no gold of your own to buy a lord's favour."
+      },
+      "loyalty": {
+        "name": "Baratheons",
+        "line": 20
+      },
+      "popularity": {
+        "name": "Standing",
+        "line": 30
+      }
+    },
+    "briefing": {
+      "situation": "Fifteen years ago you took the Iron Throne in a rebellion against the last Targaryen king. The realm is at peace, but the crown owes 6 million gold dragons, much of it to House Lannister and the Iron Bank. Your Hand, Jon Arryn, has just died, and you must choose another. Across the Narrow Sea, the last children of the old dynasty are growing up in exile.",
+      "room": "No council votes on laws in the Seven Kingdoms. Your word is law, but the great lords decide whether to obey it, because they hold the land and the soldiers. Each decree that offends a house lowers its support. At the end of your reign five groups decide whether you keep the throne: the great houses with 30 of 100 votes, House Lannister and your own House Baratheon with 20 each, the small council and the smallfolk with 15 each.",
+      "you": "You are the King, and no council votes on your word. You cannot pass laws, so you act by decree and your other royal powers. Your treasury starts at 22 of 100 because the crown lives on borrowed gold. The Faith cannot vote but can turn your own house against you, and the Iron Bank can call in its loans. The first act of your reign is the choice of a new Hand."
+    },
+    "publicGroup": "smallfolk",
+    "ownGroup": "baratheon"
+  },
+  "themeTokens": {
+    "display": "IM Fell English SC",
+    "displayWeight": 400,
+    "displayCase": "none",
+    "displayTracking": 0.02,
+    "body": "EB Garamond",
+    "bodySize": 19,
+    "mono": null,
+    "light": {
+      "paper": "#e8d7b0",
+      "surface": "#f1e4c5",
+      "ink": "#1d1510",
+      "muted": "#574634",
+      "accent": "#3f5163",
+      "accent2": "#8e1d1d",
+      "rule": "#bfa575"
+    },
+    "dark": {
+      "paper": "#121010",
+      "surface": "#1b1818",
+      "ink": "#eadcc0",
+      "muted": "#a79a82",
+      "accent": "#9fb4c8",
+      "accent2": "#e07b6d",
+      "rule": "#332c26"
+    },
+    "material": "parchment",
+    "texture": "crosshatch",
+    "textureScale": 1.5,
+    "radius": 2,
+    "ruleStyle": "double",
+    "motion": "stately",
+    "courier": "dot"
+  }
+}

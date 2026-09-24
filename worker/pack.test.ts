@@ -1,6 +1,8 @@
 import { test, expect } from "bun:test";
 import { GlanceSchema, PackSchema, scaleSeats, packView, type Citizen } from "./pack";
-import { DEFAULT_THEME_TOKENS } from "./tokens";
+import { DEFAULT_THEME_TOKENS, fitThemeTokens } from "./tokens";
+import { CARD_MOVE, encodeCode, newGame, scenarioTag, type Quote } from "./engine";
+import { commit, priceTag } from "./acts";
 import mini from "./fixtures/mini.json";
 
 const BLOCS = ["dockworkers", "merchants", "fisherfolk", "clergy", "students"];
@@ -164,5 +166,55 @@ for (const [label, hates] of [
 ] as [string, { tag: string; redLine: boolean }[]][]) {
   test(`a glance card with ${label} fails the write check`, () => {
     expect(GlanceSchema.safeParse({ ...GLANCE, hates }).success).toBe(false);
+  });
+}
+
+// The desk mock's two worlds as engine v2 packs (scripts/era-fixture.ts): Track D builds against these.
+const decree = (touches: string[]): Quote => ({
+  verb: "decree",
+  title: "An order",
+  reading: "You sign an order.",
+  power: true,
+  era: true,
+  refusal: null,
+  credibility: 1,
+  cost: { authority: 0, treasury: 0, chest: 0 },
+  revenue: [],
+  serves: [],
+  hits: [],
+  keeps: [],
+  targets: null,
+  tags: [],
+  touches,
+  regions: [],
+  promises: [],
+  sunset: null,
+  template: null,
+});
+for (const [file, ruler, touch, group] of [
+  ["biden-2021", "dem", "relief checks", "public"],
+  ["westeros", "baratheon", "safe roads", "smallfolk"],
+] as const) {
+  test(`the ${file} fixture has a glance card, tint and icon on every group, and its groups answer an act`, async () => {
+    const pack = PackSchema.parse(
+      await Bun.file(`${import.meta.dir}/fixtures/${file}.json`).json(),
+    );
+    for (const holder of pack.constitution!.holders) {
+      expect(holder.glance?.hates.filter((hate) => hate.redLine)).toHaveLength(1);
+      expect([holder.tint, holder.icon].every(Boolean)).toBe(true);
+    }
+    for (const faction of pack.factions) expect(faction.glance).toBeDefined();
+    expect(fitThemeTokens(pack.themeTokens!).fixes).toEqual([]);
+    const code = encodeCode({
+      scenario: scenarioTag(pack.id),
+      faction: pack.factions.findIndex((faction) => faction.id === ruler),
+      promises: [0, 1, 2],
+      seed: 7,
+    });
+    const promises = pack.promises.slice(0, 3).map((promise) => promise.tag);
+    const game = newGame("g", code, pack, ruler, promises, pack.calendar);
+    const before = game.holders[group].support;
+    commit(pack, game, priceTag(pack, game, decree([touch])));
+    expect(game.holders[group].support).toBe(before + CARD_MOVE[1]);
   });
 }

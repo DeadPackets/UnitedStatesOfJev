@@ -1,0 +1,6341 @@
+{
+  "v": 1,
+  "id": "biden-2021",
+  "lang": "en",
+  "prompt": "The Biden presidency, United States 2021 to 2025",
+  "title": "The Biden presidency",
+  "era": "United States, January 2021 to January 2025",
+  "place": "Washington, D.C.",
+  "description": "You won the White House, but the Senate is split evenly and only your Vice President's vote breaks a tie. Hospitals are still full and prices are starting to climb. Within a year, Russia will invade Ukraine. And one senator from West Virginia can sink any bill you send.",
+  "fiction": false,
+  "sources": [],
+  "kind": "recorded",
+  "grounding": "",
+  "history": {
+    "fall": null
+  },
+  "vocabulary": {
+    "seat": "President",
+    "chamber": "Senate",
+    "member": "senator",
+    "bill": "bill",
+    "pass": "passed",
+    "fail": "failed",
+    "capital": "influence",
+    "turn": "turn",
+    "midterm": "the midterms",
+    "campaign": "canvass",
+    "test": "the final vote",
+    "feed": "the Herald",
+    "post": "address",
+    "whip": "harbor whip",
+    "lobby": "petition",
+    "promise": "pledge",
+    "patron": "guild",
+    "approval": "standing",
+    "file": "Senate file"
+  },
+  "theme": {
+    "fonts": "Cormorant Garamond + Work Sans",
+    "ink": "#1c1a15",
+    "paper": "#f3ead9",
+    "accent": "#2e6f8e",
+    "texture": "parchment",
+    "ornament": "rule",
+    "layout": "hemicycle"
+  },
+  "chamber": {
+    "size": 100,
+    "threshold": 50,
+    "supermajority": 67,
+    "alpha": 0.5,
+    "veto": null
+  },
+  "calendar": {
+    "start_date": "2021-01-20",
+    "unit": "season"
+  },
+  "factions": [
+    {
+      "id": "dem",
+      "name": "Democratic Party",
+      "short": "Democrats",
+      "color": "#2553a3",
+      "fill": "solid",
+      "ideology": "Democratic Party",
+      "leader": "Joe Manchin",
+      "glance": {
+        "face": {
+          "name": "Joe Manchin",
+          "role": "Senator for West Virginia"
+        },
+        "wants": ["The rescue plan", "Climate money", "Voting rights"],
+        "hates": [
+          {
+            "tag": "Smaller relief",
+            "redLine": false
+          },
+          {
+            "tag": "The filibuster",
+            "redLine": false
+          },
+          {
+            "tag": "Social Security cuts",
+            "redLine": true
+          }
+        ],
+        "strike": "Calls the final vote early"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "path",
+            "d": "M6 24 L13 15 L19 13 L21 3 L26 12 L29 3 L31 14 L34 21 L50 21 Q56 21 58 27 L62 22 L61 31 L56 34 L56 57 L50 57 L48 40 L38 40 L36 57 L30 57 L28 36 Q24 32 22 27 L11 31 Z",
+            "fill": "ink"
+          },
+          {
+            "tag": "polygon",
+            "points": "44,24 45.4,28.1 49.7,28.2 46.3,30.8 47.5,34.9 44,32.4 40.5,34.9 41.7,30.8 38.3,28.2 42.6,28.1",
+            "fill": "accent"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#2553a3",
+        "dark": "#7aa2ff"
+      }
+    },
+    {
+      "id": "ind",
+      "name": "Independents",
+      "short": "Independents",
+      "color": "#596073",
+      "fill": "hatch",
+      "ideology": "Independents",
+      "leader": "Bernie Sanders",
+      "glance": {
+        "face": {
+          "name": "Bernie Sanders",
+          "role": "Senator for Vermont, chair of the Budget Committee"
+        },
+        "wants": ["Bigger relief checks", "A $15 minimum wage"],
+        "hates": [
+          {
+            "tag": "Means-tested checks",
+            "redLine": false
+          },
+          {
+            "tag": "Social Security cuts",
+            "redLine": true
+          }
+        ],
+        "strike": "Withholds two votes"
+      },
+      "tint": {
+        "light": "#596073",
+        "dark": "#aab1c2"
+      }
+    },
+    {
+      "id": "gop",
+      "name": "Republican Party",
+      "short": "Republicans",
+      "color": "#bf2f2b",
+      "fill": "hatch2",
+      "ideology": "Republican Party",
+      "leader": "Susan Collins",
+      "glance": {
+        "face": {
+          "name": "Susan Collins",
+          "role": "Senator for Maine"
+        },
+        "wants": ["Spending cuts", "The border wall", "2017 tax cuts"],
+        "hates": [
+          {
+            "tag": "New spending",
+            "redLine": false
+          },
+          {
+            "tag": "Tax rises",
+            "redLine": false
+          },
+          {
+            "tag": "Federal election law",
+            "redLine": true
+          }
+        ],
+        "strike": "Shuts the government down"
+      },
+      "emblem": {
+        "size": 64,
+        "elements": [
+          {
+            "tag": "path",
+            "d": "M8 50 L8 34 Q8 19 25 19 L40 19 Q46 13 52 16 Q59 20 59 31 L59 44 Q59 50 63 52 L61 57 Q52 55 52 45 L52 39 L50 39 L50 57 L42 57 L42 43 L27 43 L27 57 L18 57 L18 47 Q12 46 8 50 Z",
+            "fill": "ink"
+          },
+          {
+            "tag": "path",
+            "d": "M45 21 Q38 30 47 37",
+            "strokeWidth": 3,
+            "fill": "none",
+            "stroke": "paper"
+          },
+          {
+            "tag": "polygon",
+            "points": "28,25 29.6,29.8 34.7,29.9 30.6,32.9 32.1,37.8 28,34.9 23.9,37.8 25.4,32.9 21.3,29.9 26.4,29.8",
+            "fill": "accent"
+          }
+        ]
+      },
+      "tint": {
+        "light": "#bf2f2b",
+        "dark": "#ff7a70"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "id": "pac",
+      "name": "Pacific states",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "mtn",
+      "name": "Mountain West",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "mw",
+      "name": "Midwest",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "south",
+      "name": "The South",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Atlantic",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ne",
+      "name": "Northeast",
+      "weight": 0.16666666666666666,
+      "lean": [
+        {
+          "id": "dem",
+          "value": 0
+        },
+        {
+          "id": "ind",
+          "value": 0
+        },
+        {
+          "id": "gop",
+          "value": 0
+        }
+      ]
+    }
+  ],
+  "blocs": [
+    {
+      "id": "dockworkers",
+      "name": "Dockworkers",
+      "description": "Load and unload the harbor's ships, organized under the Keelwright Guild."
+    },
+    {
+      "id": "merchants",
+      "name": "Merchants",
+      "description": "Own the trading houses and warehouses along Northpier."
+    },
+    {
+      "id": "fisherfolk",
+      "name": "Fisherfolk",
+      "description": "Work the fishing fleets out of Saltmarsh and Isle Row."
+    },
+    {
+      "id": "clergy",
+      "name": "Clergy",
+      "description": "Keep the tide calendar and run the Uplands temples."
+    },
+    {
+      "id": "students",
+      "name": "Students",
+      "description": "Apprentices and scholars at the Ferry Quarter academies."
+    }
+  ],
+  "patrons": [
+    {
+      "id": "grand-exchange",
+      "name": "The Grand Exchange",
+      "wants": ["tariffs", "foreign-treaties"],
+      "hates": ["smuggling"]
+    },
+    {
+      "id": "keelwright-hall",
+      "name": "Keelwright Hall",
+      "wants": ["dockworker-pay", "guild-charters"],
+      "hates": ["tariffs"]
+    },
+    {
+      "id": "tide-temple",
+      "name": "The Tide Temple",
+      "wants": ["temple-funding", "festival-days"],
+      "hates": ["press-freedom"]
+    },
+    {
+      "id": "net-and-line",
+      "name": "Net and Line Co-op",
+      "wants": ["fish-quotas", "poor-relief"],
+      "hates": ["harbor-tolls"]
+    },
+    {
+      "id": "admiralty-club",
+      "name": "The Admiralty Club",
+      "wants": ["naval-defense", "piracy"],
+      "hates": ["poor-relief"]
+    },
+    {
+      "id": "silver-quay",
+      "name": "Silver Quay Bank",
+      "wants": ["currency", "land-reclamation"],
+      "hates": ["dockworker-pay"]
+    },
+    {
+      "id": "free-press-circle",
+      "name": "Free Press Circle",
+      "wants": ["press-freedom", "foreign-treaties"],
+      "hates": ["temple-funding"]
+    },
+    {
+      "id": "smugglers-rest",
+      "name": "The Smugglers' Rest",
+      "wants": ["smuggling", "harbor-tolls"],
+      "hates": ["naval-defense"]
+    },
+    {
+      "id": "uplands-charities",
+      "name": "Uplands Charities",
+      "wants": ["poor-relief", "guild-charters"],
+      "hates": ["currency"]
+    },
+    {
+      "id": "academy-league",
+      "name": "The Academy League",
+      "wants": ["festival-days", "shipping-rights"],
+      "hates": ["piracy"]
+    }
+  ],
+  "members": [
+    {
+      "id": "m1",
+      "seat": "seat-001",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Joe Manchin",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m2",
+      "seat": "seat-002",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Kyrsten Sinema",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m3",
+      "seat": "seat-003",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 3",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m4",
+      "seat": "seat-004",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 4",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m5",
+      "seat": "seat-005",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 5",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m6",
+      "seat": "seat-006",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 6",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m7",
+      "seat": "seat-007",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 7",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m8",
+      "seat": "seat-008",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 8",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m9",
+      "seat": "seat-009",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 9",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m10",
+      "seat": "seat-010",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 10",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m11",
+      "seat": "seat-011",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 11",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m12",
+      "seat": "seat-012",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 12",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m13",
+      "seat": "seat-013",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 13",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m14",
+      "seat": "seat-014",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 14",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m15",
+      "seat": "seat-015",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 15",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m16",
+      "seat": "seat-016",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 16",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m17",
+      "seat": "seat-017",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 17",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m18",
+      "seat": "seat-018",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 18",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m19",
+      "seat": "seat-019",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 19",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m20",
+      "seat": "seat-020",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 20",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m21",
+      "seat": "seat-021",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 21",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m22",
+      "seat": "seat-022",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 22",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m23",
+      "seat": "seat-023",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 23",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m24",
+      "seat": "seat-024",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 24",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m25",
+      "seat": "seat-025",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 25",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m26",
+      "seat": "seat-026",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 26",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m27",
+      "seat": "seat-027",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 27",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m28",
+      "seat": "seat-028",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 28",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m29",
+      "seat": "seat-029",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 29",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m30",
+      "seat": "seat-030",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 30",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m31",
+      "seat": "seat-031",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 31",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m32",
+      "seat": "seat-032",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 32",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m33",
+      "seat": "seat-033",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 33",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m34",
+      "seat": "seat-034",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 34",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m35",
+      "seat": "seat-035",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 35",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m36",
+      "seat": "seat-036",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 36",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m37",
+      "seat": "seat-037",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 37",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m38",
+      "seat": "seat-038",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 38",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m39",
+      "seat": "seat-039",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 39",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m40",
+      "seat": "seat-040",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 40",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m41",
+      "seat": "seat-041",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 41",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m42",
+      "seat": "seat-042",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 42",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m43",
+      "seat": "seat-043",
+      "region": "mtn",
+      "faction": "dem",
+      "name": "Democrats senator 43",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m44",
+      "seat": "seat-044",
+      "region": "mw",
+      "faction": "dem",
+      "name": "Democrats senator 44",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m45",
+      "seat": "seat-045",
+      "region": "south",
+      "faction": "dem",
+      "name": "Democrats senator 45",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m46",
+      "seat": "seat-046",
+      "region": "mid",
+      "faction": "dem",
+      "name": "Democrats senator 46",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m47",
+      "seat": "seat-047",
+      "region": "ne",
+      "faction": "dem",
+      "name": "Democrats senator 47",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m48",
+      "seat": "seat-048",
+      "region": "pac",
+      "faction": "dem",
+      "name": "Democrats senator 48",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m49",
+      "seat": "seat-049",
+      "region": "mtn",
+      "faction": "ind",
+      "name": "Independents senator 1",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m50",
+      "seat": "seat-050",
+      "region": "mw",
+      "faction": "ind",
+      "name": "Independents senator 2",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m51",
+      "seat": "seat-051",
+      "region": "south",
+      "faction": "gop",
+      "name": "Susan Collins",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m52",
+      "seat": "seat-052",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 2",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m53",
+      "seat": "seat-053",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 3",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m54",
+      "seat": "seat-054",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 4",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m55",
+      "seat": "seat-055",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 5",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m56",
+      "seat": "seat-056",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 6",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m57",
+      "seat": "seat-057",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 7",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m58",
+      "seat": "seat-058",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 8",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m59",
+      "seat": "seat-059",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 9",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m60",
+      "seat": "seat-060",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 10",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m61",
+      "seat": "seat-061",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 11",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m62",
+      "seat": "seat-062",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 12",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m63",
+      "seat": "seat-063",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 13",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m64",
+      "seat": "seat-064",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 14",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m65",
+      "seat": "seat-065",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 15",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m66",
+      "seat": "seat-066",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 16",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m67",
+      "seat": "seat-067",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 17",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m68",
+      "seat": "seat-068",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 18",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m69",
+      "seat": "seat-069",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 19",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m70",
+      "seat": "seat-070",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 20",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m71",
+      "seat": "seat-071",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 21",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m72",
+      "seat": "seat-072",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 22",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m73",
+      "seat": "seat-073",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 23",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m74",
+      "seat": "seat-074",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 24",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m75",
+      "seat": "seat-075",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 25",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m76",
+      "seat": "seat-076",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 26",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m77",
+      "seat": "seat-077",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 27",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m78",
+      "seat": "seat-078",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 28",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m79",
+      "seat": "seat-079",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 29",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m80",
+      "seat": "seat-080",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 30",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m81",
+      "seat": "seat-081",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 31",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m82",
+      "seat": "seat-082",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 32",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m83",
+      "seat": "seat-083",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 33",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m84",
+      "seat": "seat-084",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 34",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m85",
+      "seat": "seat-085",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 35",
+      "bio": "",
+      "core_issues": ["protect-health-cover"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m86",
+      "seat": "seat-086",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 36",
+      "bio": "",
+      "core_issues": ["defend-the-vote"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m87",
+      "seat": "seat-087",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 37",
+      "bio": "",
+      "core_issues": ["stand-with-ukraine"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m88",
+      "seat": "seat-088",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 38",
+      "bio": "",
+      "core_issues": ["tariffs"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m89",
+      "seat": "seat-089",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 39",
+      "bio": "",
+      "core_issues": ["shipping-rights"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m90",
+      "seat": "seat-090",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 40",
+      "bio": "",
+      "core_issues": ["dockworker-pay"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m91",
+      "seat": "seat-091",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 41",
+      "bio": "",
+      "core_issues": ["fish-quotas"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m92",
+      "seat": "seat-092",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 42",
+      "bio": "",
+      "core_issues": ["harbor-tolls"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m93",
+      "seat": "seat-093",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 43",
+      "bio": "",
+      "core_issues": ["guild-charters"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m94",
+      "seat": "seat-094",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 44",
+      "bio": "",
+      "core_issues": ["piracy"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m95",
+      "seat": "seat-095",
+      "region": "ne",
+      "faction": "gop",
+      "name": "Republicans senator 45",
+      "bio": "",
+      "core_issues": ["naval-defense"],
+      "temperament": "maverick",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m96",
+      "seat": "seat-096",
+      "region": "pac",
+      "faction": "gop",
+      "name": "Republicans senator 46",
+      "bio": "",
+      "core_issues": ["cut-the-cost-of-living"],
+      "temperament": "loyalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m97",
+      "seat": "seat-097",
+      "region": "mtn",
+      "faction": "gop",
+      "name": "Republicans senator 47",
+      "bio": "",
+      "core_issues": ["finish-the-pandemic-response"],
+      "temperament": "deal-maker",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m98",
+      "seat": "seat-098",
+      "region": "mw",
+      "faction": "gop",
+      "name": "Republicans senator 48",
+      "bio": "",
+      "core_issues": ["repair-roads-and-bridges"],
+      "temperament": "populist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m99",
+      "seat": "seat-099",
+      "region": "south",
+      "faction": "gop",
+      "name": "Republicans senator 49",
+      "bio": "",
+      "core_issues": ["bring-factories-home"],
+      "temperament": "ideologue",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    },
+    {
+      "id": "m100",
+      "seat": "seat-100",
+      "region": "mid",
+      "faction": "gop",
+      "name": "Republicans senator 50",
+      "bio": "",
+      "core_issues": ["cut-carbon-emissions"],
+      "temperament": "institutionalist",
+      "tell": "",
+      "patrons": [],
+      "years": "mid",
+      "flags": []
+    }
+  ],
+  "citizens": [
+    {
+      "id": "c-0",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 1",
+      "age": 20,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-1",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 2",
+      "age": 21,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-2",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 3",
+      "age": 22,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-3",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 4",
+      "age": 23,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-4",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 5",
+      "age": 24,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-5",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 6",
+      "age": 25,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-6",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 7",
+      "age": 26,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-7",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 8",
+      "age": 27,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-8",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 9",
+      "age": 28,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-9",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 10",
+      "age": 29,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-10",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 11",
+      "age": 30,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-11",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 12",
+      "age": 31,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-12",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 13",
+      "age": 32,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-13",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 14",
+      "age": 33,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-14",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 15",
+      "age": 34,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-15",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 16",
+      "age": 35,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-16",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 17",
+      "age": 36,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-17",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 18",
+      "age": 37,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-18",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 19",
+      "age": 38,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-19",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 20",
+      "age": 39,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-20",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 21",
+      "age": 40,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-21",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 22",
+      "age": 41,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-22",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 23",
+      "age": 42,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-23",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 24",
+      "age": 43,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-24",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 25",
+      "age": 44,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-25",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 26",
+      "age": 45,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-26",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 27",
+      "age": 46,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-27",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 28",
+      "age": 47,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-28",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 29",
+      "age": 48,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-29",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 30",
+      "age": 49,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-30",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 31",
+      "age": 50,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-31",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 32",
+      "age": 51,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-32",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 33",
+      "age": 52,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-33",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 34",
+      "age": 53,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-34",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 35",
+      "age": 54,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-35",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 36",
+      "age": 55,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-36",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 37",
+      "age": 56,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-37",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 38",
+      "age": 57,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-38",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 39",
+      "age": 58,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-39",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 40",
+      "age": 59,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-40",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 41",
+      "age": 60,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-41",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 42",
+      "age": 61,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-42",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 43",
+      "age": 62,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-43",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 44",
+      "age": 63,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-44",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 45",
+      "age": 64,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-45",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 46",
+      "age": 65,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-46",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 47",
+      "age": 66,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-47",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 48",
+      "age": 67,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-48",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 49",
+      "age": 68,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-49",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 50",
+      "age": 69,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-50",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 51",
+      "age": 20,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-51",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 52",
+      "age": 21,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-52",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 53",
+      "age": 22,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-53",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 54",
+      "age": 23,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-54",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 55",
+      "age": 24,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-55",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 56",
+      "age": 25,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-56",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 57",
+      "age": 26,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-57",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 58",
+      "age": 27,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-58",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 59",
+      "age": 28,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-59",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 60",
+      "age": 29,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-60",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 61",
+      "age": 30,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-61",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 62",
+      "age": 31,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-62",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 63",
+      "age": 32,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-63",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 64",
+      "age": 33,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-64",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 65",
+      "age": 34,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-65",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 66",
+      "age": 35,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-66",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 67",
+      "age": 36,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-67",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 68",
+      "age": 37,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-68",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 69",
+      "age": 38,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-69",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 70",
+      "age": 39,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-70",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 71",
+      "age": 40,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-71",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 72",
+      "age": 41,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-72",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 73",
+      "age": 42,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-73",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 74",
+      "age": 43,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-74",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 75",
+      "age": 44,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-75",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 76",
+      "age": 45,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-76",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 77",
+      "age": 46,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-77",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 78",
+      "age": 47,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-78",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 79",
+      "age": 48,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-79",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 80",
+      "age": 49,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-80",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 81",
+      "age": 50,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-81",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 82",
+      "age": 51,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-82",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 83",
+      "age": 52,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-83",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 84",
+      "age": 53,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-84",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 85",
+      "age": 54,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-85",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 86",
+      "age": 55,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-86",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 87",
+      "age": 56,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-87",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 88",
+      "age": 57,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-88",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 89",
+      "age": 58,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-89",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 90",
+      "age": 59,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-90",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 91",
+      "age": 60,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-91",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 92",
+      "age": 61,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-92",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 93",
+      "age": 62,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-93",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 94",
+      "age": 63,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-94",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 95",
+      "age": 64,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-95",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 96",
+      "age": 65,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-96",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 97",
+      "age": 66,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-97",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 98",
+      "age": 67,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-98",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 99",
+      "age": 68,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-99",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 100",
+      "age": 69,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-100",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 101",
+      "age": 20,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-101",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 102",
+      "age": 21,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-102",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 103",
+      "age": 22,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-103",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 104",
+      "age": 23,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-104",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 105",
+      "age": 24,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-105",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 106",
+      "age": 25,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-106",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 107",
+      "age": 26,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-107",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 108",
+      "age": 27,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-108",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 109",
+      "age": 28,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-109",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 110",
+      "age": 29,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-110",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 111",
+      "age": 30,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-111",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 112",
+      "age": 31,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-112",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 113",
+      "age": 32,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-113",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 114",
+      "age": 33,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-114",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 115",
+      "age": 34,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-115",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 116",
+      "age": 35,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-116",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 117",
+      "age": 36,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-117",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 118",
+      "age": 37,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-118",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 119",
+      "age": 38,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-119",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 120",
+      "age": 39,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-120",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 121",
+      "age": 40,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-121",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 122",
+      "age": 41,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-122",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 123",
+      "age": 42,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-123",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 124",
+      "age": 43,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-124",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 125",
+      "age": 44,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-125",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 126",
+      "age": 45,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-126",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 127",
+      "age": 46,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-127",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 128",
+      "age": 47,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-128",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 129",
+      "age": 48,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-129",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 130",
+      "age": 49,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-130",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 131",
+      "age": 50,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-131",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 132",
+      "age": 51,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-132",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 133",
+      "age": 52,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-133",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 134",
+      "age": 53,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-134",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 135",
+      "age": 54,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-135",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 136",
+      "age": 55,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-136",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 137",
+      "age": 56,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-137",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 138",
+      "age": 57,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-138",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 139",
+      "age": 58,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-139",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 140",
+      "age": 59,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-140",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 141",
+      "age": 60,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-141",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 142",
+      "age": 61,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-142",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 143",
+      "age": 62,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-143",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 144",
+      "age": 63,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-144",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 145",
+      "age": 64,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-145",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 146",
+      "age": 65,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-146",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 147",
+      "age": 66,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-147",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 148",
+      "age": 67,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-148",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 149",
+      "age": 68,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-149",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 150",
+      "age": 69,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-150",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 151",
+      "age": 20,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-151",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 152",
+      "age": 21,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-152",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 153",
+      "age": 22,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-153",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 154",
+      "age": 23,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-154",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 155",
+      "age": 24,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-155",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 156",
+      "age": 25,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-156",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 157",
+      "age": 26,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-157",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 158",
+      "age": 27,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-158",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 159",
+      "age": 28,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-159",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 160",
+      "age": 29,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-160",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 161",
+      "age": 30,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-161",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 162",
+      "age": 31,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-162",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 163",
+      "age": 32,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-163",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 164",
+      "age": 33,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-164",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 165",
+      "age": 34,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-165",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 166",
+      "age": 35,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-166",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 167",
+      "age": 36,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-167",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 168",
+      "age": 37,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-168",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 169",
+      "age": 38,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-169",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 170",
+      "age": 39,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-170",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 171",
+      "age": 40,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-171",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 172",
+      "age": 41,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-172",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 173",
+      "age": 42,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-173",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 174",
+      "age": 43,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-174",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 175",
+      "age": 44,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-175",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 176",
+      "age": 45,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-176",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 177",
+      "age": 46,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-177",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 178",
+      "age": 47,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-178",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 179",
+      "age": 48,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-179",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 180",
+      "age": 49,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-180",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 181",
+      "age": 50,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-181",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 182",
+      "age": 51,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-182",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 183",
+      "age": 52,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-183",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 184",
+      "age": 53,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-184",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 185",
+      "age": 54,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-185",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 186",
+      "age": 55,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-186",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 187",
+      "age": 56,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-187",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 188",
+      "age": 57,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-188",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 189",
+      "age": 58,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-189",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 190",
+      "age": 59,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-190",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 191",
+      "age": 60,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-191",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 192",
+      "age": 61,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-192",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 193",
+      "age": 62,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-193",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 194",
+      "age": 63,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-194",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 195",
+      "age": 64,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-195",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 196",
+      "age": 65,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-196",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 197",
+      "age": 66,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-197",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 198",
+      "age": 67,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-198",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 199",
+      "age": 68,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-199",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 200",
+      "age": 69,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-200",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 201",
+      "age": 20,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-201",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 202",
+      "age": 21,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-202",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 203",
+      "age": 22,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-203",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 204",
+      "age": 23,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-204",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 205",
+      "age": 24,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-205",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 206",
+      "age": 25,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-206",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 207",
+      "age": 26,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-207",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 208",
+      "age": 27,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-208",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 209",
+      "age": 28,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-209",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 210",
+      "age": 29,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-210",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 211",
+      "age": 30,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-211",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 212",
+      "age": 31,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-212",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 213",
+      "age": 32,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-213",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 214",
+      "age": 33,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-214",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 215",
+      "age": 34,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-215",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 216",
+      "age": 35,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-216",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 217",
+      "age": 36,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-217",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 218",
+      "age": 37,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-218",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 219",
+      "age": 38,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-219",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 220",
+      "age": 39,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-220",
+      "region": "mid",
+      "bloc": "dockworkers",
+      "name": "Citizen 221",
+      "age": 40,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-221",
+      "region": "ne",
+      "bloc": "merchants",
+      "name": "Citizen 222",
+      "age": 41,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-222",
+      "region": "pac",
+      "bloc": "fisherfolk",
+      "name": "Citizen 223",
+      "age": 42,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-223",
+      "region": "mtn",
+      "bloc": "clergy",
+      "name": "Citizen 224",
+      "age": 43,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-224",
+      "region": "mw",
+      "bloc": "students",
+      "name": "Citizen 225",
+      "age": 44,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-225",
+      "region": "south",
+      "bloc": "dockworkers",
+      "name": "Citizen 226",
+      "age": 45,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-226",
+      "region": "mid",
+      "bloc": "merchants",
+      "name": "Citizen 227",
+      "age": 46,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-227",
+      "region": "ne",
+      "bloc": "fisherfolk",
+      "name": "Citizen 228",
+      "age": 47,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-228",
+      "region": "pac",
+      "bloc": "clergy",
+      "name": "Citizen 229",
+      "age": 48,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-229",
+      "region": "mtn",
+      "bloc": "students",
+      "name": "Citizen 230",
+      "age": 49,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-230",
+      "region": "mw",
+      "bloc": "dockworkers",
+      "name": "Citizen 231",
+      "age": 50,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-231",
+      "region": "south",
+      "bloc": "merchants",
+      "name": "Citizen 232",
+      "age": 51,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-232",
+      "region": "mid",
+      "bloc": "fisherfolk",
+      "name": "Citizen 233",
+      "age": 52,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-233",
+      "region": "ne",
+      "bloc": "clergy",
+      "name": "Citizen 234",
+      "age": 53,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-234",
+      "region": "pac",
+      "bloc": "students",
+      "name": "Citizen 235",
+      "age": 54,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-235",
+      "region": "mtn",
+      "bloc": "dockworkers",
+      "name": "Citizen 236",
+      "age": 55,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-236",
+      "region": "mw",
+      "bloc": "merchants",
+      "name": "Citizen 237",
+      "age": 56,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-237",
+      "region": "south",
+      "bloc": "fisherfolk",
+      "name": "Citizen 238",
+      "age": 57,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-238",
+      "region": "mid",
+      "bloc": "clergy",
+      "name": "Citizen 239",
+      "age": 58,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-239",
+      "region": "ne",
+      "bloc": "students",
+      "name": "Citizen 240",
+      "age": 59,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-240",
+      "region": "pac",
+      "bloc": "dockworkers",
+      "name": "Citizen 241",
+      "age": 60,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-241",
+      "region": "mtn",
+      "bloc": "merchants",
+      "name": "Citizen 242",
+      "age": 61,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-242",
+      "region": "mw",
+      "bloc": "fisherfolk",
+      "name": "Citizen 243",
+      "age": 62,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-243",
+      "region": "south",
+      "bloc": "clergy",
+      "name": "Citizen 244",
+      "age": 63,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-244",
+      "region": "mid",
+      "bloc": "students",
+      "name": "Citizen 245",
+      "age": 64,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-245",
+      "region": "ne",
+      "bloc": "dockworkers",
+      "name": "Citizen 246",
+      "age": 65,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-246",
+      "region": "pac",
+      "bloc": "merchants",
+      "name": "Citizen 247",
+      "age": 66,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-247",
+      "region": "mtn",
+      "bloc": "fisherfolk",
+      "name": "Citizen 248",
+      "age": 67,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-248",
+      "region": "mw",
+      "bloc": "clergy",
+      "name": "Citizen 249",
+      "age": 68,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    },
+    {
+      "id": "c-249",
+      "region": "south",
+      "bloc": "students",
+      "name": "Citizen 250",
+      "age": 69,
+      "job": "worker",
+      "town": "Washington, D.C.",
+      "worldview": "",
+      "issues": ["cut-the-cost-of-living", "finish-the-pandemic-response"],
+      "weight": 1
+    }
+  ],
+  "starts": [
+    {
+      "faction": "dem",
+      "seat_title": "President",
+      "coalition": ["dem", "ind"],
+      "premise": "You are Joe Biden, the 46th President of the United States.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "ind",
+      "seat_title": "President",
+      "coalition": ["dem", "ind"],
+      "premise": "You are Joe Biden, the 46th President of the United States.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    },
+    {
+      "faction": "gop",
+      "seat_title": "President",
+      "coalition": ["dem", "ind"],
+      "premise": "You are Joe Biden, the 46th President of the United States.",
+      "party": 55,
+      "capital": 40,
+      "hostile": null
+    }
+  ],
+  "problems": [
+    "Prices are rising faster than wages",
+    "The rescue bill needs a vote by turn 3",
+    "The Senate is split 50 to 50, so one senator can sink any bill",
+    "Every bill goes through the Senate: 100 seats, 50 that vote with you and 50 against, and your Vice President breaks a tie.",
+    "Your cabinet picks need the Senate too, because it confirms every post.",
+    "The Supreme Court has no vote on you, but it can strike down your executive orders. Orders that go around Congress cost you its support.",
+    "The midterms come at turn 10. At turn 20 five groups hold the final vote on you.",
+    "The east mole needs repair before the autumn gales."
+  ],
+  "promises": [
+    {
+      "tag": "cut-the-cost-of-living",
+      "label": "Cut the cost of living"
+    },
+    {
+      "tag": "finish-the-pandemic-response",
+      "label": "Finish the pandemic response"
+    },
+    {
+      "tag": "repair-roads-and-bridges",
+      "label": "Repair roads and bridges"
+    },
+    {
+      "tag": "bring-factories-home",
+      "label": "Bring factories home"
+    },
+    {
+      "tag": "cut-carbon-emissions",
+      "label": "Cut carbon emissions"
+    },
+    {
+      "tag": "protect-health-cover",
+      "label": "Protect health cover"
+    },
+    {
+      "tag": "defend-the-vote",
+      "label": "Defend the vote"
+    },
+    {
+      "tag": "stand-with-ukraine",
+      "label": "Stand with Ukraine"
+    }
+  ],
+  "tags": [
+    "cut-the-cost-of-living",
+    "finish-the-pandemic-response",
+    "repair-roads-and-bridges",
+    "bring-factories-home",
+    "cut-carbon-emissions",
+    "protect-health-cover",
+    "defend-the-vote",
+    "stand-with-ukraine",
+    "tariffs",
+    "shipping-rights",
+    "dockworker-pay",
+    "fish-quotas",
+    "harbor-tolls",
+    "guild-charters",
+    "piracy",
+    "naval-defense"
+  ],
+  "deck": [
+    {
+      "id": "gen-01",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 1",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-02",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 2",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-03",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 3",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-04",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 4",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-05",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 5",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-06",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 6",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-07",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 7",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-08",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 8",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-09",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 9",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-10",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 10",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-11",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 11",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-12",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 12",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-13",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 13",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-14",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 14",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-15",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 15",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-16",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 16",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-17",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 17",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-18",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 18",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "gen-19",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 19",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "gen-20",
+      "kind": "generic",
+      "weight": 1,
+      "title_hint": "Council matter 20",
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "approval",
+          "delta": -1
+        }
+      ]
+    },
+    {
+      "id": "dated-01",
+      "kind": "dated",
+      "turn": 4,
+      "date": "0450-06-01",
+      "exogenous": true,
+      "weight": 1,
+      "title_hint": "The autumn gale",
+      "stances": ["Fund emergency repairs", "Let the guilds cover it"],
+      "scored": ["blocs"],
+      "results": [
+        {
+          "ledger": "capital",
+          "delta": -2
+        }
+      ]
+    },
+    {
+      "id": "dated-02",
+      "kind": "dated",
+      "turn": 12,
+      "date": "0451-11-20",
+      "exogenous": false,
+      "needs": [
+        {
+          "ledger": "approval",
+          "id": "northpier",
+          "op": "<",
+          "value": 40
+        }
+      ],
+      "weight": 1,
+      "title_hint": "The guild ultimatum",
+      "stances": ["Meet their terms", "Call their bluff"],
+      "scored": ["patrons"],
+      "results": [
+        {
+          "ledger": "party",
+          "delta": -3
+        }
+      ]
+    }
+  ],
+  "escalations": [
+    {
+      "key": "hostile_press",
+      "name": "The Herald Turns",
+      "headline": "The harbor's broadsheet runs a season of hostile notices against the council."
+    },
+    {
+      "key": "supermajority_era",
+      "name": "The Grand Consensus",
+      "headline": "Every decree now needs the grand consensus to pass."
+    },
+    {
+      "key": "recession",
+      "name": "The Lean Tide",
+      "headline": "Trade falls and two guild patrons pull their support."
+    },
+    {
+      "key": "scandal_season",
+      "name": "The Whisper Season",
+      "headline": "Four councilors face whispered investigations."
+    },
+    {
+      "key": "short_fuse",
+      "name": "The Short Reckoning",
+      "headline": "The reckoning's thresholds tighten to twenty and sixty."
+    },
+    {
+      "key": "split_chamber",
+      "name": "The Broken Bench",
+      "headline": "The midterm draw flips eight seats against the sitting consul."
+    },
+    {
+      "key": "costly_favors",
+      "name": "The Steep Toll",
+      "headline": "Petitions to patrons now cost half again as much."
+    },
+    {
+      "key": "fickle_base",
+      "name": "The Restless Quarter",
+      "headline": "Pledges must be kept by the eighth and sixteenth tide."
+    },
+    {
+      "key": "empty_chest",
+      "name": "The Bare Treasury",
+      "headline": "Patron contributions are cut in half."
+    },
+    {
+      "key": "hostile_court",
+      "name": "The Sharp Bench",
+      "headline": "The temple court strikes decrees at a lower bar."
+    },
+    {
+      "key": "rival_surge",
+      "name": "The Rival's Purse",
+      "headline": "Rival factions double their canvass spending."
+    },
+    {
+      "key": "apathy",
+      "name": "The Quiet Quarter",
+      "headline": "Turnout among the council's own blocs drops sharply."
+    },
+    {
+      "key": "defections",
+      "name": "The Loose Bench",
+      "headline": "Co-faction loyalty erodes on every vote."
+    },
+    {
+      "key": "loud_opposition",
+      "name": "The Jeering Gallery",
+      "headline": "Boos in the gallery count for more against every decree."
+    },
+    {
+      "key": "crisis_fatigue",
+      "name": "The Tired Harbor",
+      "headline": "No relief cards are drawn for the rest of the term."
+    },
+    {
+      "key": "leaks",
+      "name": "The Leaky Hull",
+      "headline": "Petitions risk becoming headlines a third of the time."
+    },
+    {
+      "key": "war_footing",
+      "name": "The War Tide",
+      "headline": "Naval matters always face the grand consensus, and the treasury bleeds each tide."
+    },
+    {
+      "key": "famine",
+      "name": "The Lean Harvest",
+      "headline": "Standing falls hard in ten seeded wards, some more than others."
+    },
+    {
+      "key": "succession_crisis",
+      "name": "The Contested Line",
+      "headline": "Party mood opens the term already low."
+    },
+    {
+      "key": "foreign_meddling",
+      "name": "The Foreign Hand",
+      "headline": "Two wards lose faith in the reckoning before it is cast."
+    }
+  ],
+  "test": {
+    "name": "the final vote",
+    "win": "The council keeps its mandate for another term.",
+    "lose": "The council loses its mandate.",
+    "reveal": "both"
+  },
+  "endings": {
+    "reelected": "Held the Harbor",
+    "defeated": "Voted Out",
+    "lame_duck": "A Quiet Last Tide",
+    "impeached": "Recalled by the Guilds"
+  },
+  "lobby": {
+    "pork": {
+      "cost": 10,
+      "label": "Promise a project",
+      "text": "The Consul promises a new warehouse for the district."
+    },
+    "favor": {
+      "cost": 15,
+      "label": "Trade a favor",
+      "text": "The Consul offers to back the councilor's own petition next tide."
+    },
+    "threat": {
+      "cost": 20,
+      "label": "Threaten a challenger",
+      "text": "The Consul threatens to back a rival in the next canvass."
+    }
+  },
+  "constitution": {
+    "ruler": {
+      "role": "President",
+      "faction": "dem",
+      "above": null,
+      "removedBy": "Democratic Party can call the final vote early if its support falls below its line."
+    },
+    "holders": [
+      {
+        "id": "congress",
+        "name": "Congress",
+        "where": "home",
+        "persona": {
+          "name": "Chuck Schumer",
+          "role": "Majority Leader, New York",
+          "bio": "100 senators, two from each state: 48 Democrats, 2 independents who vote with them, 50 Republicans. Budget bills pass with 50 and your Vice President's vote.",
+          "tell": "Send us the bill. We decide what it costs."
+        },
+        "members": "seats",
+        "stance": 0.42,
+        "line": 42,
+        "response": "refuse_levy",
+        "levers": [],
+        "wants": ["Congress wants its say on every dollar you spend."],
+        "redLines": ["Ending the filibuster by a party-line rules change"],
+        "gives": null,
+        "responses": ["Refuses your budget"],
+        "support": 42,
+        "icon": "chamber",
+        "glance": {
+          "face": {
+            "name": "Chuck Schumer",
+            "role": "Majority Leader, New York"
+          },
+          "wants": ["Its say on spending", "Bipartisan bills", "Confirmation votes"],
+          "hates": [
+            {
+              "tag": "Spending by order",
+              "redLine": false
+            },
+            {
+              "tag": "Party-line bills",
+              "redLine": false
+            },
+            {
+              "tag": "Ending the filibuster",
+              "redLine": true
+            }
+          ],
+          "strike": "Refuses your budget"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M17 35 Q17 16 32 13 Q47 16 47 35 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 28,
+              "y": 7,
+              "width": 8,
+              "height": 8,
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 6,
+              "r": 3.5,
+              "fill": "accent"
+            },
+            {
+              "tag": "rect",
+              "x": 13,
+              "y": 34,
+              "width": 38,
+              "height": 6,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 8,
+              "y": 40,
+              "width": 48,
+              "height": 13,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 14,
+              "y": 43,
+              "width": 8,
+              "height": 10,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 28,
+              "y": 43,
+              "width": 8,
+              "height": 10,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 42,
+              "y": 43,
+              "width": 8,
+              "height": 10,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 4,
+              "y": 53,
+              "width": 56,
+              "height": 7,
+              "fill": "ink"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#1f3a6e",
+          "dark": "#8eaaf0"
+        }
+      },
+      {
+        "id": "court",
+        "name": "Supreme Court",
+        "where": "home",
+        "persona": {
+          "name": "John Roberts",
+          "role": "Chief Justice of the United States",
+          "bio": "Nine justices appointed for life: six named by Republican presidents, three by Democrats. Chief Justice John Roberts.",
+          "tell": "The Court reads the order against the statute, not the headlines."
+        },
+        "members": "none",
+        "stance": 0.38,
+        "line": 35,
+        "response": "strike",
+        "levers": [],
+        "wants": ["The Court wants orders that stay inside the law."],
+        "redLines": ["Defying a ruling of the Court"],
+        "gives": null,
+        "responses": ["Strikes down your orders"],
+        "support": 38,
+        "icon": "court",
+        "glance": {
+          "face": {
+            "name": "John Roberts",
+            "role": "Chief Justice of the United States"
+          },
+          "wants": ["Orders citing a law", "Power to the states", "Nine justices"],
+          "hates": [
+            {
+              "tag": "Federal mandates",
+              "redLine": false
+            },
+            {
+              "tag": "Court packing",
+              "redLine": false
+            },
+            {
+              "tag": "Defying its rulings",
+              "redLine": true
+            }
+          ],
+          "strike": "Strikes down your orders"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "polygon",
+              "points": "5,23 32,5 59,23",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 16,
+              "r": 3.5,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 8,
+              "y": 25,
+              "width": 48,
+              "height": 5,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 11,
+              "y": 32,
+              "width": 6,
+              "height": 19,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 23,
+              "y": 32,
+              "width": 6,
+              "height": 19,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 35,
+              "y": 32,
+              "width": 6,
+              "height": 19,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 47,
+              "y": 32,
+              "width": 6,
+              "height": 19,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 5,
+              "y": 52,
+              "width": 54,
+              "height": 7,
+              "fill": "ink"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#4f5668",
+          "dark": "#aab1c2"
+        }
+      },
+      {
+        "id": "fed",
+        "name": "Federal Reserve",
+        "where": "home",
+        "persona": {
+          "name": "Jerome Powell",
+          "role": "Chair of the Federal Reserve",
+          "bio": "The central bank: a Board of Governors in Washington and 12 regional banks. Chair Jerome Powell's term ends in February 2022.",
+          "tell": "We will keep at it until prices come down."
+        },
+        "members": "none",
+        "stance": 0.55,
+        "line": 48,
+        "response": "none",
+        "levers": [],
+        "wants": ["The Fed wants room to fight rising prices."],
+        "redLines": ["Ordering the Fed to hold rates down"],
+        "gives": null,
+        "responses": ["Raises rates hard"],
+        "support": 55,
+        "icon": "market",
+        "glance": {
+          "face": {
+            "name": "Jerome Powell",
+            "role": "Chair of the Federal Reserve"
+          },
+          "wants": ["Stable prices", "Powell renamed", "Clear ports"],
+          "hates": [
+            {
+              "tag": "More stimulus",
+              "redLine": false
+            },
+            {
+              "tag": "New tariffs",
+              "redLine": false
+            },
+            {
+              "tag": "Orders on rates",
+              "redLine": true
+            }
+          ],
+          "strike": "Raises rates hard"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 29,
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 24,
+              "fill": "paper"
+            },
+            {
+              "tag": "path",
+              "d": "M10 30 L22 25 L32 33 L42 25 L54 30 L45 39 L37 39 L32 50 L27 39 L19 39 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 23,
+              "r": 5,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 29,
+              "y": 35,
+              "width": 6,
+              "height": 8,
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#227f53",
+          "dark": "#6dc393"
+        }
+      },
+      {
+        "id": "nato",
+        "name": "NATO allies",
+        "where": "abroad",
+        "persona": {
+          "name": "Jens Stoltenberg",
+          "role": "Secretary General of NATO, Brussels",
+          "bio": "The 29 other members of the alliance. Germany, France, Britain and Poland set the tone in Brussels under Secretary General Jens Stoltenberg.",
+          "tell": "The alliance needs Washington at the front of it."
+        },
+        "members": "none",
+        "stance": 0.58,
+        "line": 50,
+        "response": "embargo",
+        "levers": [],
+        "wants": ["The allies want a firm line on Russia."],
+        "redLines": ["Doubting the Article 5 promise in public"],
+        "gives": null,
+        "responses": ["Pulls back from your plans"],
+        "support": 58,
+        "icon": "foreign",
+        "glance": {
+          "face": {
+            "name": "Jens Stoltenberg",
+            "role": "Secretary General of NATO, Brussels"
+          },
+          "wants": ["Eastern flank troops", "Arms for Ukraine", "Being consulted"],
+          "hates": [
+            {
+              "tag": "Deals over Kyiv",
+              "redLine": false
+            },
+            {
+              "tag": "Going it alone",
+              "redLine": false
+            },
+            {
+              "tag": "Doubting Article 5",
+              "redLine": true
+            }
+          ],
+          "strike": "Pulls back from your plans"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 19,
+              "strokeWidth": 4,
+              "fill": "none",
+              "stroke": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "32,2 37,27 62,32 37,37 32,62 27,37 2,32 27,27",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 32,
+              "r": 4,
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#1d6470",
+          "dark": "#6cc4cf"
+        }
+      },
+      {
+        "id": "public",
+        "name": "The American public",
+        "where": "home",
+        "persona": {
+          "name": "Deb Kowalski",
+          "role": "ICU nurse, Erie, Pennsylvania",
+          "bio": "About 258 million adults. In November 2020, 81 million voted for you and 74 million for Donald Trump.",
+          "tell": "Groceries cost more every week. Fix that first."
+        },
+        "members": "citizens",
+        "stance": 0.44,
+        "line": 45,
+        "response": "riot",
+        "levers": [],
+        "wants": ["The American public wants prices down and jobs back."],
+        "redLines": ["Sending troops against protesters in US cities"],
+        "gives": null,
+        "responses": ["Takes to the streets"],
+        "support": 44,
+        "icon": "street",
+        "glance": {
+          "face": {
+            "name": "Deb Kowalski",
+            "role": "ICU nurse, Erie, Pennsylvania"
+          },
+          "wants": ["Relief checks", "Open schools", "Jobs"],
+          "hates": [
+            {
+              "tag": "Gas taxes",
+              "redLine": false
+            },
+            {
+              "tag": "New lockdowns",
+              "redLine": false
+            },
+            {
+              "tag": "Troops on protesters",
+              "redLine": true
+            }
+          ],
+          "strike": "Takes to the streets"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "circle",
+              "cx": 14,
+              "cy": 26,
+              "r": 6.5,
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M2 54 Q2 36 14 36 Q26 36 26 54 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "circle",
+              "cx": 50,
+              "cy": 26,
+              "r": 6.5,
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M38 54 Q38 36 50 36 Q62 36 62 54 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M15 60 Q15 32 32 32 Q49 32 49 60 Z",
+              "strokeWidth": 3,
+              "fill": "ink",
+              "stroke": "paper"
+            },
+            {
+              "tag": "circle",
+              "cx": 32,
+              "cy": 19,
+              "r": 9,
+              "strokeWidth": 3,
+              "fill": "ink",
+              "stroke": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#8a6d24",
+          "dark": "#f1cc7e"
+        }
+      },
+      {
+        "id": "china",
+        "name": "China",
+        "where": "abroad",
+        "persona": {
+          "name": "Wang Yi",
+          "role": "Foreign Minister, Beijing",
+          "bio": "The People's Republic under Xi Jinping and the Communist Party. About $370 billion a year of its goods face US tariffs set in 2018 and 2019.",
+          "tell": "Lift the tariffs, and we can talk about the rest."
+        },
+        "members": "none",
+        "stance": 0.3,
+        "line": 55,
+        "response": "embargo",
+        "levers": [],
+        "wants": ["Beijing wants tariffs lifted and no new chip bans."],
+        "redLines": ["Recognising Taiwan as a state"],
+        "gives": null,
+        "responses": ["Cuts off chips and rare earths"],
+        "support": 30,
+        "icon": "foreign",
+        "glance": {
+          "face": {
+            "name": "Wang Yi",
+            "role": "Foreign Minister, Beijing"
+          },
+          "wants": ["Tariffs lifted", "Huawei eased", "One China"],
+          "hates": [
+            {
+              "tag": "Chip bans",
+              "redLine": false
+            },
+            {
+              "tag": "Arms for Taiwan",
+              "redLine": false
+            },
+            {
+              "tag": "Recognising Taiwan",
+              "redLine": true
+            }
+          ],
+          "strike": "Cuts off chips and rare earths"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "rect",
+              "x": 15,
+              "y": 15,
+              "width": 34,
+              "height": 34,
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M19 6h5v10h-5z M29.5 6h5v10h-5z M40 6h5v10h-5z M19 48h5v10h-5z M29.5 48h5v10h-5z M40 48h5v10h-5z M6 19h10v5h-10z M6 29.5h10v5h-10z M6 40h10v5h-10z M48 19h10v5h-10z M48 29.5h10v5h-10z M48 40h10v5h-10z",
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "32,23 34.12,29.09 40.56,29.22 35.42,33.11 37.29,39.28 32,35.6 26.71,39.28 28.58,33.11 23.44,29.22 29.88,29.09",
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#a14a1a",
+          "dark": "#f0a070"
+        }
+      },
+      {
+        "id": "dem",
+        "name": "Democratic Party",
+        "where": "home",
+        "persona": {
+          "name": "Nancy Pelosi",
+          "role": "Speaker of the House, San Francisco",
+          "bio": "The party that nominated you: about 48 million registered Democrats, the Senate caucus, and a House majority of 222 to 213 under Speaker Nancy Pelosi.",
+          "tell": "We ran on this agenda. Now deliver it."
+        },
+        "members": "none",
+        "stance": 0.6,
+        "line": 40,
+        "response": "early_test",
+        "levers": [],
+        "wants": ["Your party wants the agenda you ran on."],
+        "redLines": ["Cutting Social Security or Medicare"],
+        "gives": null,
+        "responses": ["Calls the final vote early"],
+        "support": 60,
+        "icon": "party",
+        "glance": {
+          "face": {
+            "name": "Nancy Pelosi",
+            "role": "Speaker of the House, San Francisco"
+          },
+          "wants": ["The rescue plan", "Climate money", "Voting rights"],
+          "hates": [
+            {
+              "tag": "Smaller relief",
+              "redLine": false
+            },
+            {
+              "tag": "The filibuster",
+              "redLine": false
+            },
+            {
+              "tag": "Social Security cuts",
+              "redLine": true
+            }
+          ],
+          "strike": "Calls the final vote early"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M6 24 L13 15 L19 13 L21 3 L26 12 L29 3 L31 14 L34 21 L50 21 Q56 21 58 27 L62 22 L61 31 L56 34 L56 57 L50 57 L48 40 L38 40 L36 57 L30 57 L28 36 Q24 32 22 27 L11 31 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "polygon",
+              "points": "44,24 45.4,28.1 49.7,28.2 46.3,30.8 47.5,34.9 44,32.4 40.5,34.9 41.7,30.8 38.3,28.2 42.6,28.1",
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#2553a3",
+          "dark": "#7aa2ff"
+        }
+      },
+      {
+        "id": "gop",
+        "name": "Republican Party",
+        "where": "home",
+        "persona": {
+          "name": "Mitch McConnell",
+          "role": "Senate Minority Leader, Kentucky",
+          "bio": "The other party: 50 senators under Mitch McConnell, 213 House members, about 36 million registered Republicans. Donald Trump is still its loudest voice.",
+          "tell": "Not one more dollar without cuts."
+        },
+        "members": "none",
+        "stance": 0.3,
+        "line": 38,
+        "response": "strike",
+        "levers": [],
+        "wants": ["The Republicans want less spending and a tighter border."],
+        "redLines": ["A federal law over how states run elections"],
+        "gives": null,
+        "responses": ["Shuts the government down"],
+        "support": 30,
+        "icon": "party",
+        "glance": {
+          "face": {
+            "name": "Mitch McConnell",
+            "role": "Senate Minority Leader, Kentucky"
+          },
+          "wants": ["Spending cuts", "The border wall", "2017 tax cuts"],
+          "hates": [
+            {
+              "tag": "New spending",
+              "redLine": false
+            },
+            {
+              "tag": "Tax rises",
+              "redLine": false
+            },
+            {
+              "tag": "Federal election law",
+              "redLine": true
+            }
+          ],
+          "strike": "Shuts the government down"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "path",
+              "d": "M8 50 L8 34 Q8 19 25 19 L40 19 Q46 13 52 16 Q59 20 59 31 L59 44 Q59 50 63 52 L61 57 Q52 55 52 45 L52 39 L50 39 L50 57 L42 57 L42 43 L27 43 L27 57 L18 57 L18 47 Q12 46 8 50 Z",
+              "fill": "ink"
+            },
+            {
+              "tag": "path",
+              "d": "M45 21 Q38 30 47 37",
+              "strokeWidth": 3,
+              "fill": "none",
+              "stroke": "paper"
+            },
+            {
+              "tag": "polygon",
+              "points": "28,25 29.6,29.8 34.7,29.9 30.6,32.9 32.1,37.8 28,34.9 23.9,37.8 25.4,32.9 21.3,29.9 26.4,29.8",
+              "fill": "accent"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#bf2f2b",
+          "dark": "#ff7a70"
+        }
+      },
+      {
+        "id": "markets",
+        "name": "The bond markets",
+        "where": "abroad",
+        "persona": {
+          "name": "Ruth Adler",
+          "role": "Head of rates, a London bank",
+          "bio": "The holders of about $22 trillion of Treasury debt: pension funds, banks, and central banks from Tokyo to Beijing.",
+          "tell": "Show us a budget that adds up."
+        },
+        "members": "none",
+        "stance": 0.47,
+        "line": 58,
+        "response": "embargo",
+        "levers": [],
+        "wants": ["The bond markets want a budget that adds up."],
+        "redLines": ["Missing a payment on Treasury debt"],
+        "gives": null,
+        "responses": ["Sells your bonds"],
+        "support": 47,
+        "icon": "market",
+        "glance": {
+          "face": {
+            "name": "Ruth Adler",
+            "role": "Head of rates, a London bank"
+          },
+          "wants": ["A budget that adds up", "Debt ceiling raised"],
+          "hates": [
+            {
+              "tag": "Unfunded trillions",
+              "redLine": false
+            },
+            {
+              "tag": "Shutdowns",
+              "redLine": false
+            },
+            {
+              "tag": "A missed payment",
+              "redLine": true
+            }
+          ],
+          "strike": "Sells your bonds"
+        },
+        "emblem": {
+          "size": 64,
+          "elements": [
+            {
+              "tag": "rect",
+              "rx": 3,
+              "x": 5,
+              "y": 10,
+              "width": 54,
+              "height": 42,
+              "fill": "ink"
+            },
+            {
+              "tag": "rect",
+              "x": 10.5,
+              "y": 15.5,
+              "width": 43,
+              "height": 31,
+              "strokeWidth": 2.5,
+              "fill": "none",
+              "stroke": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 16,
+              "y": 22,
+              "width": 24,
+              "height": 5,
+              "fill": "paper"
+            },
+            {
+              "tag": "rect",
+              "x": 16,
+              "y": 32,
+              "width": 16,
+              "height": 5,
+              "fill": "paper"
+            },
+            {
+              "tag": "polygon",
+              "points": "40,47 37,61 45,57 53,61 50,47",
+              "fill": "accent"
+            },
+            {
+              "tag": "circle",
+              "cx": 45,
+              "cy": 43,
+              "r": 8,
+              "strokeWidth": 2.5,
+              "fill": "accent",
+              "stroke": "paper"
+            }
+          ]
+        },
+        "tint": {
+          "light": "#623e96",
+          "dark": "#a37fde"
+        }
+      }
+    ],
+    "instruments": {
+      "decree": {
+        "name": "Executive order",
+        "price": {
+          "authority": 3,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "law": {
+        "name": "Act of Congress",
+        "price": {
+          "authority": 1,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": ["chamber"]
+      },
+      "appoint": {
+        "name": "Appointment",
+        "price": {
+          "authority": 2,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": ["chamber"]
+      },
+      "spend": {
+        "name": "Appropriation",
+        "price": {
+          "authority": 0,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "proclaim": {
+        "name": "Address",
+        "price": {
+          "authority": 0,
+          "treasury": 0,
+          "chest": 2
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "favour": {
+        "name": "Favour",
+        "price": {
+          "authority": 2,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      },
+      "force": {
+        "name": "Deployment",
+        "price": {
+          "authority": 4,
+          "treasury": 0,
+          "chest": 0
+        },
+        "available": true,
+        "vetoes": []
+      }
+    },
+    "retention": {
+      "name": "the final vote",
+      "weights": [
+        {
+          "id": "congress",
+          "value": 0.24
+        },
+        {
+          "id": "nato",
+          "value": 0.15
+        },
+        {
+          "id": "public",
+          "value": 0.24
+        },
+        {
+          "id": "dem",
+          "value": 0.19
+        },
+        {
+          "id": "markets",
+          "value": 0.18
+        }
+      ],
+      "bar": {
+        "start": 0.5,
+        "step": 0.03,
+        "cap": 0.7
+      }
+    },
+    "halfTerm": {
+      "holder": "public",
+      "name": "the midterms"
+    },
+    "ledgers": {
+      "treasury": {
+        "name": "Federal funds",
+        "line": 0,
+        "icon": "bank",
+        "for": "Pays for programs, relief and deals.",
+        "earn": ["Tax laws in force", "A growing economy"],
+        "spend": ["Appropriations", "Costly laws", "Crisis answers"],
+        "fails": "you cannot spend until a revenue law passes."
+      },
+      "authority": {
+        "name": "Authority",
+        "line": 0,
+        "icon": "gavel",
+        "for": "The price of acting at all. Every act costs some.",
+        "earn": ["A law passed, +2", "A promise kept, +3"],
+        "spend": ["Every act", "A struck order, 3", "A lost vote, 2"],
+        "fails": "you can only speak and spend."
+      },
+      "chest": {
+        "name": "Campaign cash",
+        "line": 0,
+        "icon": "note",
+        "for": "Buys reach for your addresses and votes on the floor.",
+        "earn": ["Donors, up to 20 a turn", "Laws donors like"],
+        "spend": ["Address reach", "Floor votes, 2 for 1"],
+        "fails": "your voice stops carrying and rivals outspend you."
+      },
+      "loyalty": {
+        "name": "Party loyalty",
+        "line": 20
+      },
+      "popularity": {
+        "name": "Approval",
+        "line": 30
+      }
+    },
+    "briefing": {
+      "situation": "You won the White House, but the Senate is split evenly and only your Vice President's vote breaks a tie. Hospitals are still full and prices are starting to climb. Within a year, Russia will invade Ukraine. And one senator from West Virginia can sink any bill you send.",
+      "room": "Every act wins some groups and costs you others. This is who they are, what they can do to you, and how much each one counts at the end.",
+      "you": "Each act costs one ledger and can pay another. The red tick on each bar is where it fails."
+    },
+    "publicGroup": "public",
+    "ownGroup": "dem"
+  },
+  "themeTokens": {
+    "display": "Libre Caslon Display",
+    "displayWeight": 400,
+    "displayCase": "none",
+    "displayTracking": 0,
+    "body": "Public Sans",
+    "bodySize": 17,
+    "mono": "IBM Plex Mono",
+    "light": {
+      "paper": "#f4f0e6",
+      "surface": "#fbf9f3",
+      "ink": "#121a2b",
+      "muted": "#4f5668",
+      "accent": "#b3202e",
+      "accent2": "#1f3a6e",
+      "rule": "#c9bfa9"
+    },
+    "dark": {
+      "paper": "#0c111a",
+      "surface": "#141b27",
+      "ink": "#ece5d5",
+      "muted": "#9ba2b2",
+      "accent": "#ef5a62",
+      "accent2": "#8eaaf0",
+      "rule": "#263044"
+    },
+    "material": "linen",
+    "texture": "crosshatch",
+    "textureScale": 0.8,
+    "radius": 4,
+    "ruleStyle": "double",
+    "motion": "brisk",
+    "courier": "dot"
+  }
+}
