@@ -1,7 +1,7 @@
 import {
   actTokens, agrees, armyHolder, CARD_MOVE, cardLean, cardShift, votePreview, authorPromise, belowLine, CAMPAIGN_FROM, canAfford, chamberHolder, clamp, enact, FAVOR_OWED, holdersOf, keepPromise, movePopularity, moveSupport, pay,
   publicHolder, pushWire, repeal, SUPPORT_BYPASS, SUPPORT_HIT, SUPPORT_SERVE, weightOf,
-  type Bill, type Game, type Member, type Preview, type PriceTag, type Quote, type Veto, type WireLine,
+  type Bill, type Game, type Member, type Preview, type PriceTag, type Quote, type Term, type Veto, type WireLine,
 } from "./engine";
 import type { Instrument, Pack, Price, Verb } from "./pack";
 
@@ -224,8 +224,50 @@ export const billOf = (game: Game, tag: PriceTag): Bill => ({
 });
 
 // R30: the preview a priced law shows; it needs the whip count, so a tag priced without one has none.
-export const previewOf = (pack: Pack, game: Game, tag: PriceTag): Preview | null =>
-  tag.verb === "law" && tag.count ? votePreview(pack, game, billOf(game, tag), actTokens(tag)) : null;
+// A faction with hesitant seats that has not dealt on this act yet lists its terms.
+export function previewOf(pack: Pack, game: Game, tag: PriceTag): Preview | null {
+  const p = tag.verb === "law" && tag.count ? votePreview(pack, game, billOf(game, tag), actTokens(tag)) : null;
+  if (!p) return null;
+  const done = tag.negotiated ?? [];
+  return { ...p, factions: p.factions.map((f) => (f.hesitant && !done.includes(f.id) ? { ...f, terms: termsOf(pack, game, f.id, f.hesitant) } : f)) };
+}
+
+export const NEGOTIATE_LIFT = 0.34;   // TUNE: lifts a hesitant seat (under 2/3) over the for line, an against seat to hesitant
+export const PLEDGE_DUE = 4;          // TUNE, the mock's: turns to deliver what was pledged
+export const SEAT_PRICE = 2;          // TUNE, the mock's: chest per hesitant seat
+
+// R30: a pledge to the first thing its card backs that no promise holds yet, a post, or money for its hesitant seats.
+export function termsOf(pack: Pack, game: Game, factionId: string, hesitant: number): Term[] {
+  const f = pack.factions.find((x) => x.id === factionId);
+  if (!f) return [];
+  const none: Price = { authority: 0, treasury: 0, chest: 0 };
+  const want = (f.card?.wants ?? []).flatMap((w) => w.match.yes.filter((t) => pack.tags.includes(t) && !game.promises[t]).map((t) => ({ w, t })))[0];
+  return [
+    ...(want ? [{ kind: "pledge" as const, label: want.w.yes[0] ?? want.w.want, cost: none, tag: want.t, due: game.turn + PLEDGE_DUE }] : []),
+    { kind: "post", label: `A post for ${f.card?.face.name ?? f.leader}`, cost: instrumentOf(pack, "appoint")?.price ?? none },
+    { kind: "money", label: `${SEAT_PRICE * hesitant} from the chest`, cost: { ...none, chest: SEAT_PRICE * hesitant } },
+  ];
+}
+
+// Accepting a term pays it and lifts the faction's seats for this act. A pledge is the promise machinery: one
+// passed law on its subject keeps it; past its turn it breaks and decays as any promise does.
+export function negotiate(pack: Pack, game: Game, tag: PriceTag, factionId: string, term: Term): WireLine[] {
+  const name = pack.factions.find((f) => f.id === factionId)?.name ?? factionId;
+  const wire = pay(pack, game, term.cost, `terms with ${name}`);
+  if (term.kind === "pledge" && term.tag) {
+    authorPromise(game, term.tag, term.label, term.due);
+    game.promises[term.tag].passed = 1;
+  }
+  if (term.kind === "post") {
+    repeal(game, `appoint-${factionId}`);
+    enact(game, { id: `appoint-${factionId}`, verb: "appoint", title: term.label, perTurn: [], repealVetoes: [], sunset: null });
+  }
+  tag.shift = { ...tag.shift, [factionId]: (tag.shift?.[factionId] ?? 0) + NEGOTIATE_LIFT };
+  tag.negotiated = [...(tag.negotiated ?? []), factionId];
+  tag.preview = previewOf(pack, game, tag);
+  pushWire(game, wire);
+  return wire;
+}
 
 export function commit(pack: Pack, game: Game, tag: PriceTag): WireLine[] {
   if (!canAfford(pack, game, tag.charge)) throw new Error("The ledgers cannot afford that act.");

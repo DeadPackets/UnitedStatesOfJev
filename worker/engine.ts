@@ -80,6 +80,7 @@ export interface PriceTag {
   vetoes?: Veto[];
   // R30, a law only: the whip count taken at price, each faction's shift, and the preview they give.
   count?: WhipCount; shift?: Record<string, number>; preview?: Preview | null;
+  negotiated?: string[];   // the factions that already took terms on this act
 }
 export interface Veto { id: string; name: string; agrees: boolean; reason: string }
 export interface Refusal { line: string; test: "power" | "era"; cost: number }
@@ -720,7 +721,9 @@ export const cardShift = (pack: Pack, tokens: Set<string>): Record<string, numbe
   Object.fromEntries(pack.factions.flatMap((f) => { const l = cardLean(f.card, tokens).lean; return l ? [[f.id, CARD_SHIFT[l]]] : []; }));
 
 export const FOR_AT = 2 / 3, AGAINST_AT = 1 / 3;   // TUNE: a seat this sure either way is counted; between them it hesitates
-export interface FactionCount { id: string; name: string; for: number; against: number; hesitant: number; reason: string }
+// R30: what a hesitant faction will take for its seats on this act (acts.ts termsOf).
+export interface Term { kind: "pledge" | "post" | "money"; label: string; cost: Price; tag?: string; due?: number }
+export interface FactionCount { id: string; name: string; for: number; against: number; hesitant: number; reason: string; terms?: Term[] }
 export interface Preview { need: number; expected: number; for: number; factions: FactionCount[] }
 
 // R30: the vote preview reads effectiveWhip, the same per-seat chances applyVote draws from.

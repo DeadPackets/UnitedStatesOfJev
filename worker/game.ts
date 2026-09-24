@@ -16,7 +16,7 @@ import {
 import { endPlay, getScenario } from "./db";
 import { packView, VERBS, type Citizen, type Holder, type Pack, type Verb } from "./pack";
 import { amendBill, cardText, ending, freshCards, halfTerm, narrate, newMembers, outcome, platformPromises, priceAct, quotes, replies } from "./luna";
-import { available, billOf, blocker, commit, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
+import { available, billOf, blocker, commit, negotiate, previewOf, discountOf, instrumentOf, priceTag, whipBand, withdraw, WITHDRAW_COST } from "./acts";
 import { portraitSheet, SHEET } from "./build";
 import { chunk } from "./gen/prompts";
 
@@ -192,6 +192,7 @@ export class GameDO extends DurableObject<Env> {
       case "price": return this.price(game, pack, String(body.text ?? ""), body.verb as Verb | undefined, body.memberId as string | undefined);
       case "": return this.doAct(game, pack);
       case "withdraw": return this.undoAct(game, pack, String(body.id ?? ""));
+      case "negotiate": return this.deal(game, pack, String(body.faction ?? ""), String(body.term ?? ""));
       default: throw new Reject(404, "Unknown action");
     }
   }
@@ -221,6 +222,18 @@ export class GameDO extends DurableObject<Env> {
       const bill = game.bills.at(-1)!;
       Object.assign(bill, await this.count(game, pack, bill));
     }
+    return {};
+  }
+
+  // R30: a hesitant faction's term on the priced law. It spends clerks' time and calls no model: the terms come from its card.
+  private deal(game: Game, pack: Pack, faction: string, kind: string): Extra {
+    const tag = game.tag;
+    if (!tag?.preview) throw new Reject(409, `Price a ${pack.vocabulary.bill} first.`);
+    const term = tag.preview.factions.find((f) => f.id === faction)?.terms?.find((t) => t.kind === kind);
+    if (!term) throw new Reject(409, "They offer no such terms on this act.");
+    if (!canAfford(pack, game, term.cost)) throw new Reject(402, "There is not enough to pay for that.");
+    if (!spendCalls(game)) throw new Reject(409, `The clerks have done all they can this ${pack.vocabulary.turn}. End the turn.`);
+    negotiate(pack, game, tag, faction, term);
     return {};
   }
 

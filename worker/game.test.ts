@@ -603,6 +603,37 @@ for (const mood of [1, -1]) {
   });
 }
 
+// R30: every seat at 0.5 hesitates; a term pays, spends one clerk unit and lifts the faction's seats over the for line.
+const tideCard = {
+  base: "Net-owners of the outer reefs", redLine: "Closing the reef", redMatch: [],
+  wants: [{ want: "Toll relief", yes: ["Cut the harbour tolls"], no: ["Raise the harbour tolls"], match: { yes: ["harbor-tolls"], no: [] } }],
+  price: { takes: "a post", refuses: "nothing" }, face: { name: "Mira Salt", role: "Reef speaker", line: "Cut the tolls." },
+  rival: "harborites", tension: "Wants low tolls, but needs the harbour dredged.",
+};
+for (const [term, paid] of [
+  ["pledge", (g: Game) => g.promises["harbor-tolls"]?.state === "pending" && g.promises["harbor-tolls"].window === g.turn + 4],
+  ["post", (g: Game) => g.inForce.some((l) => l.id === "appoint-tidebound")],
+  ["money", (g: Game, chest: number) => g.ledgers.chest === chest - 12],   // 2 a seat for 6 hesitant seats
+] as [string, (g: Game, chest: number) => boolean][]) {
+  test(`negotiating a ${term} with a hesitant faction moves its seats to for`, async () => {
+    stubModels(0.9);
+    const { do_, game, post } = seatedGame(67);
+    do_.pack = { ...pack, factions: pack.factions.map((f) => (f.id === "tidebound" ? { ...f, card: tideCard } : f)) };
+    for (const m of game.members) { m.mood = -0.4; m.loyalty = 100; }
+    lawTag = true;
+    const row = (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).body.tag.preview.factions.find((f: any) => f.id === "tidebound");
+    lawTag = false;
+    expect(row.hesitant).toBe(6);
+    const [calls, chest] = [game.calls, game.ledgers.chest];
+    const r = await post("acts/negotiate", { turn: 1, faction: "tidebound", term });
+    expect(r.status).toBe(200);
+    expect(game.calls).toBe(calls + 1);
+    expect(paid(game, chest)).toBe(true);
+    expect(r.body.tag.preview.factions.find((f: any) => f.id === "tidebound")).toMatchObject({ for: 6, hesitant: 0 });
+    expect((await post("acts/negotiate", { turn: 1, faction: "tidebound", term })).status).toBe(409);   // once an act
+  });
+}
+
 test("a favour names a seat, and a body that names none is a 400", async () => {
   stubModels(0.9);
   const { game, post } = seatedGame(63);
