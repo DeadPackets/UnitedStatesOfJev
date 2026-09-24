@@ -13,6 +13,7 @@ import {
   hash,
   newGame,
   scenarioTag,
+  SUPPORT_HIT,
   SURVIVAL_BAR,
   type Game,
 } from "./engine";
@@ -1255,10 +1256,10 @@ test("the holders an act moved are read again before the turn ends", async () =>
     (await post("acts/price", { turn: 1, text: "Raise the harbour levy on the wharf." })).status,
   ).toBe(200);
   await post("acts", { turn: 1 }); // serves guard, hits league, bypasses the council
-  expect(game.holders.league.support).toBe(42);
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT);
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.support).toBe(45); // Jev reads 90, and the re-read moves it at most 3 (R33)
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT + 3); // Jev reads 90, and the re-read moves it at most 3 (R33)
   const read = r.body.wire
     .filter((w: { cause: string }) => w.cause === "read again at the turn's end")
     .map((w: { id: string }) => w.id);
@@ -1274,7 +1275,7 @@ test("the read never spends more than the turn has left", async () => {
   game.calls = 6;
   const r = await post("turn/end", { turn: 1 });
   expect(r.status).toBe(200);
-  expect(game.holders.league.support).toBe(42); // nothing left to spend, so nothing was asked
+  expect(game.holders.league.support).toBe(50 - SUPPORT_HIT); // nothing left to spend, so nothing was asked
 });
 
 test("last turn's wire moves no holder into this turn's read", async () => {

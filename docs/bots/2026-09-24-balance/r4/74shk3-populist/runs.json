@@ -1,0 +1,41 @@
+[
+  {
+    "run": "populist-20260922",
+    "game": "45f27481-170f-458e-9fc8-6342bb370f61",
+    "policy": "populist",
+    "seed": 20260922,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.39595555555555556,
+    "bar": 0.5,
+    "turns": []
+  },
+  {
+    "run": "populist-20260923",
+    "game": "42200214-f88c-42f7-9344-678ebdcfb358",
+    "policy": "populist",
+    "seed": 20260923,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.4708027777777778,
+    "bar": 0.5,
+    "turns": []
+  },
+  {
+    "run": "populist-20260924",
+    "game": "10eaabdc-8d80-4e13-a2e8-5c8b821f0f91",
+    "policy": "populist",
+    "seed": 20260924,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.4497888888888889,
+    "bar": 0.5,
+    "turns": []
+  }
+]

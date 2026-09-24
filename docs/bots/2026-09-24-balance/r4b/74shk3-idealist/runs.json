@@ -1,0 +1,41 @@
+[
+  {
+    "run": "idealist-20260925",
+    "game": "c582003b-4c91-407e-8093-928e4e9cf44c",
+    "policy": "idealist",
+    "seed": 20260925,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.4275944444444444,
+    "bar": 0.5,
+    "turns": []
+  },
+  {
+    "run": "idealist-20260926",
+    "game": "5afc33fe-1ded-4e02-a182-48659bcabed7",
+    "policy": "idealist",
+    "seed": 20260926,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.4535666666666666,
+    "bar": 0.5,
+    "turns": []
+  },
+  {
+    "run": "idealist-20260927",
+    "game": "302c4408-815b-4472-8384-b465ccf603d3",
+    "policy": "idealist",
+    "seed": 20260927,
+    "terms": 1,
+    "ending": "defeated",
+    "won": false,
+    "term1Won": false,
+    "mandate": 0.45592777777777777,
+    "bar": 0.5,
+    "turns": []
+  }
+]
