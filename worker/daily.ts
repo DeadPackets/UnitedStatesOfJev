@@ -10,7 +10,7 @@ const RETRY = {
   timeout: "5 minutes",
 } as const;
 export const PAST_DAILIES = 30; // TUNE: past dailies the proposer is shown
-export const BUILD_POLLS = 40; // TUNE: 40 polls is 20 minutes; a build measures 60 to 120 seconds
+export const BUILD_POLLS = 60; // TUNE: 60 polls is 30 minutes; a v2 build is estimated at 250 to 290 s, a Grok part up to 20 minutes
 export const POLL_SECONDS = "30 seconds"; // TUNE
 const PROPOSE_TRIES = 2; // TUNE: rerolls before a duplicate is accepted anyway
 

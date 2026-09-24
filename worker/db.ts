@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import type { Usage } from "./gen/openrouter";
 import type { Env } from "./jev";
 import { PackSchema, type Pack } from "./pack";
 
@@ -51,6 +52,15 @@ export async function putStatus(env: Env, id: string, step: string, fragment?: s
       .bind(step, id)
       .run();
   }
+}
+
+// A readable piece of the world for the build screen. Parallel steps each add theirs; the step column stays as it is.
+export async function putFragment(env: Env, id: string, fragment: Record<string, unknown>) {
+  await env.DB.prepare(
+    "UPDATE scenarios SET fragments = json_insert(COALESCE(fragments, '[]'), '$[#]', json(?)) WHERE id = ?",
+  )
+    .bind(JSON.stringify(fragment), id)
+    .run();
 }
 
 export async function putPack(env: Env, id: string, pack: Pack) {
@@ -281,4 +291,44 @@ export class BuildsDO extends DurableObject<Env> {
       .map(([k]) => k);
     if (stale.length) await this.ctx.storage.delete(stale);
   }
+}
+
+// One row per paid model answer of a build: the per-build cost ledger (lesson 20) and the golden runs' timings.
+export async function recordCall(env: Env, scenario: string, usage: Usage) {
+  await env.DB.prepare(
+    "INSERT INTO build_calls (scenario, name, model, at, seconds, cost, input, output, reasoning, cached, cache_write, finish) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  )
+    .bind(
+      scenario,
+      usage.name,
+      usage.model,
+      Date.now(),
+      usage.seconds,
+      usage.cost,
+      usage.input,
+      usage.output,
+      usage.reasoning,
+      usage.cached,
+      usage.cacheWrite,
+      usage.finish,
+    )
+    .run();
+}
+
+export async function buildSpend(env: Env, scenario: string): Promise<number> {
+  const row = await env.DB.prepare(
+    "SELECT COALESCE(SUM(cost), 0) AS spent FROM build_calls WHERE scenario = ?",
+  )
+    .bind(scenario)
+    .first<{ spent: number }>();
+  return row?.spent ?? 0;
+}
+
+// A build's own record for its data sheet (checks, lint, emblem report). Step results stay small; this is the store.
+export async function putPart(env: Env, scenario: string, part: string, body: unknown) {
+  await env.DB.prepare(
+    "INSERT OR REPLACE INTO build_parts (scenario, part, body, at) VALUES (?, ?, ?, ?)",
+  )
+    .bind(scenario, part, JSON.stringify(body), Date.now())
+    .run();
 }

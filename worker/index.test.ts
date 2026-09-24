@@ -171,3 +171,62 @@ test.each([
   expect(r.status).toBe(200);
   expect(reached).toBe(`/${path}`);
 });
+
+// Owner rule: at 90% or more the build route answers the stored world's id and starts nothing, without spending the
+// player's build window.
+test.each([
+  ["a stored world at 95% is answered without a build", 0.95, "ok", 200, 0],
+  ["a stored world at 95% loads inside the 10-minute window", 0.95, "spaced", 200, 0],
+  ["a stored world at 85% still builds", 0.85, "ok", 202, 1],
+])("%s", async (_name, p, claimed, status, builds) => {
+  let started = 0;
+  let claims = 0;
+  const e = {
+    ...(env({}) as object),
+    DB: {
+      prepare: () => ({
+        bind: () => ({
+          all: async () => ({
+            results: [
+              { id: "rome01", title: "Rome", era: "44 BC", place: "Rome", description: "" },
+            ],
+          }),
+          run: async () => ({ meta: { changes: 1 } }),
+        }),
+      }),
+    },
+    BUILDS: {
+      idFromName: () => "builds",
+      get: () => ({
+        claim: async () => {
+          claims++;
+          return claimed;
+        },
+      }),
+    },
+    BUILD: { create: async () => void started++ },
+    AI: { run: async () => ({ data: [[0.1, 0.2]] }) },
+    VEC: { query: async () => ({ matches: [{ id: "rome01", score: 0.5 }] }) },
+  } as never;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    Response.json({
+      answers: { match: { probabilities: { rome01: p, none_of_these: 1 - p } } },
+      usage: { input_tokens: 1 },
+    })) as unknown as typeof fetch;
+  const r = await app
+    .fetch(
+      new Request("https://x/api/scenarios", {
+        method: "POST",
+        body: JSON.stringify({ prompt: "Rome after Caesar" }),
+      }),
+      e,
+    )
+    .finally(() => {
+      globalThis.fetch = realFetch;
+    });
+  expect(r.status).toBe(status);
+  expect(started).toBe(builds);
+  expect(claims).toBe(builds);
+  if (builds === 0) expect(await r.json()).toEqual({ id: "rome01" });
+});

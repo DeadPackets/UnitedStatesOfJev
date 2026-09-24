@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { luna } from "../luna";
 import type { Env } from "../jev";
-import { GENDERS, type Citizen, type Member } from "../pack";
+import { GENDERS, GlanceSchema, type Citizen, type Glance, type Member } from "../pack";
 import { CONTENT_RULE, HISTORIAN, chunk, frameBrief, type GenCtx } from "./prompts";
 import { NeedsRepair, matchName, members as checkMembers, realNames } from "./validate";
 
@@ -9,6 +9,13 @@ const NamesSchema = z.object({
   members: z.array(z.object({ name: z.string(), gender: z.enum(GENDERS), look: z.string() })),
   citizens: z.array(z.string()),
 });
+// R36's card on each member (Decision 10): Luna writes it with the bio. The engine never reads it, so a card that
+// breaks the one-red-line rule is dropped, not repaired.
+const CardFields = {
+  wants: z.array(z.string()),
+  hates: z.array(z.object({ tag: z.string(), red_line: z.boolean() })),
+  strike: z.string(),
+};
 const MemberProse = z.object({
   rows: z.array(
     z.object({
@@ -17,6 +24,7 @@ const MemberProse = z.object({
       core_issues: z.array(z.string()).min(1).max(3),
       tell: z.string(),
       patrons: z.array(z.string()).max(2),
+      ...CardFields,
     }),
   ),
 });
@@ -30,6 +38,7 @@ const MemberRewrite = z.object({
       core_issues: z.array(z.string()).min(1).max(3),
       tell: z.string(),
       patrons: z.array(z.string()).max(2),
+      ...CardFields,
     }),
   ),
 });
@@ -52,7 +61,20 @@ type Prose = {
   core_issues: string[];
   tell: string;
   patrons: string[];
+  wants?: string[];
+  hates?: { tag: string; red_line: boolean }[];
+  strike?: string;
 };
+
+function glanceOf(prose: Prose): Glance | undefined {
+  if (!prose.wants || !prose.hates || !prose.strike) return undefined;
+  const card = GlanceSchema.safeParse({
+    wants: prose.wants.slice(0, 3),
+    hates: prose.hates.slice(0, 3).map((hate) => ({ tag: hate.tag, redLine: hate.red_line })),
+    strike: prose.strike,
+  });
+  return card.success ? card.data : undefined;
+}
 
 // ---- names: one call for members, citizens in parallel chunks of 80; no call sees another's picks, so
 // uniqueness (within and across the two lists) stays a code-side set check, plus one sequential top-up ----
@@ -147,11 +169,14 @@ export async function names(env: Env, ctx: GenCtx): Promise<Partial<GenCtx>> {
 // ---- personas: the identity fields are already fixed, the model only writes prose ----
 
 const MEMBER_SYSTEM = `${HISTORIAN}
-You write the people of the chamber. Each row already has its name, gender, look, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell and patrons.
+You write the people of the chamber. Each row already has its name, gender, look, faction, region, temperament and years in the seat: never change them. Write only bio, core_issues, tell, patrons, wants, hates and strike.
 - bio: at most 40 words. Where they are from, what they did before the seat, and the one thing they want. Concrete work and places of the period.
 - core_issues: 1 to 3 ids from the tags list.
 - tell: one visible habit a whip would read, at most 18 words.
 - patrons: 0 to 2 ids from the patrons list.
+- wants: 1 to 3 tags of acts this member wants from the ruler, each 1 to 3 words ("Dock wages").
+- hates: 1 to 3 tags of acts this member fights, exactly one with red_line true: the act that turns them for good. A member who takes no money has the hate tag "Bribes".
+- strike: one short line, third person, on what they do when they turn on the ruler.
 Every row is a different person: different work, different route into politics, different habit. Two rows must never read as the same person.
 ${CONTENT_RULE}`;
 
@@ -197,7 +222,7 @@ export async function members(
             flags: m.flags,
           })),
         }),
-        Math.min(9000, 600 + part.length * 160),
+        Math.min(9000, 600 + part.length * 200),
       );
       const by = new Map<string, Prose>(r.rows.map((x) => [x.id, x as Prose]));
       for (const m of part) {
@@ -214,6 +239,7 @@ export async function members(
           tell: p.tell,
           core_issues: core.length ? core : [ctx.frame.tags[0]],
           patrons: p.patrons.filter((x) => pids.has(x)),
+          ...(glanceOf(p) ? { glance: glanceOf(p) } : {}),
         });
       }
     }),

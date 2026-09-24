@@ -1,0 +1,7847 @@
+{
+ "v": 1,
+ "id": "9vp372",
+ "lang": "en",
+ "prompt": "Westeros, 298 AC",
+ "title": "Chronicle of the Hand",
+ "era": "The Seven Kingdoms, 298 to 299 AC",
+ "place": "The Tower of the Hand, the Red Keep, King's Landing",
+ "description": "You reached King's Landing as Hand of the King in 298 AC, after King Robert rode to Winterfell to ask it of you. Jon Arryn, your boyhood guardian and the last Hand, is dead.",
+ "fiction": true,
+ "sources": [
+  {
+   "title": "A Song of Ice and Fire",
+   "url": "https://en.wikipedia.org/wiki/A_Song_of_Ice_and_Fire"
+  },
+  {
+   "title": "A Game of Thrones",
+   "url": "https://en.wikipedia.org/wiki/A_Game_of_Thrones"
+  },
+  {
+   "title": "World of A Song of Ice and Fire",
+   "url": "https://en.wikipedia.org/wiki/World_of_A_Song_of_Ice_and_Fire"
+  },
+  {
+   "title": "Ned Stark",
+   "url": "https://en.wikipedia.org/wiki/Ned_Stark"
+  },
+  {
+   "title": "Robert Baratheon",
+   "url": "https://en.wikipedia.org/wiki/Robert_Baratheon"
+  },
+  {
+   "title": "Cersei Lannister",
+   "url": "https://en.wikipedia.org/wiki/Cersei_Lannister"
+  },
+  {
+   "title": "Tywin Lannister",
+   "url": "https://en.wikipedia.org/wiki/Tywin_Lannister"
+  },
+  {
+   "title": "Petyr Baelish",
+   "url": "https://en.wikipedia.org/wiki/Petyr_Baelish"
+  },
+  {
+   "title": "Varys",
+   "url": "https://en.wikipedia.org/wiki/Varys"
+  },
+  {
+   "title": "Hand of the King",
+   "url": "https://iceandfire.fandom.com/wiki/Hand_of_the_King"
+  },
+  {
+   "title": "Small council",
+   "url": "https://iceandfire.fandom.com/wiki/Small_council"
+  },
+  {
+   "title": "Eddard Stark",
+   "url": "https://iceandfire.fandom.com/wiki/Eddard_Stark"
+  }
+ ],
+ "content_note": null,
+ "kind": "canon",
+ "grounding": "Grounded in George R. R. Martin's A Song of Ice and Fire book canon: the small council, the great houses and the events of A Game of Thrones, 298 AC.",
+ "history": {
+  "fall": {
+   "date": "298",
+   "what": "After King Robert's death, Eddard Stark was betrayed by Littlefinger and the City Watch, arrested for treason, and beheaded on King Joffrey's order."
+  }
+ },
+ "vocabulary": {
+  "seat": "Hand of the King",
+  "chamber": "small council",
+  "member": "councillor",
+  "bill": "decree",
+  "pass": "sealed",
+  "fail": "set aside",
+  "capital": "the King's favour",
+  "turn": "moon",
+  "midterm": "the half-year reckoning",
+  "campaign": "royal progress",
+  "test": "the King's judgement",
+  "feed": "the talk of the city",
+  "post": "proclamation",
+  "whip": "the Hand's summons",
+  "lobby": "petition",
+  "promise": "oath",
+  "patron": "liege lord",
+  "approval": "the smallfolk's love",
+  "file": "Whisperer's file",
+  "abroad": "across the Narrow Sea"
+ },
+ "theme": {
+  "fonts": "Fraunces + Inter",
+  "ink": "#2a1f14",
+  "paper": "#f3ead6",
+  "accent": "#7a1e1e",
+  "texture": "parchment",
+  "ornament": "none",
+  "layout": "court"
+ },
+ "chamber": {
+  "size": 24,
+  "threshold": 13,
+  "supermajority": 16,
+  "alpha": 0.5,
+  "veto": null
+ },
+ "calendar": {
+  "start_date": "0298-01-01",
+  "unit": "month"
+ },
+ "factions": [
+  {
+   "id": "crown",
+   "name": "King Robert I Baratheon",
+   "short": "King Robert",
+   "color": "#c9a227",
+   "fill": "solid",
+   "ideology": "The King on the Iron Throne. He wants his Hand to rule, pay for feasts and kill the last Targaryens.",
+   "leader": "Robert Baratheon",
+   "glance": {
+    "face": {
+     "name": "Robert Baratheon",
+     "role": "King of the Andals, the Rhoynar and the First Men, the Red Keep"
+    },
+    "wants": [
+     "Fund the tourney",
+     "Hunt the Targaryens"
+    ],
+    "hates": [
+     {
+      "tag": "Cut royal feasts",
+      "redLine": false
+     },
+     {
+      "tag": "Spare Daenerys Targaryen",
+      "redLine": false
+     },
+     {
+      "tag": "Defy royal command",
+      "redLine": true
+     }
+    ],
+    "strike": "King Robert takes back the Hand's chain and sends Lord Eddard home to Winterfell."
+   },
+   "emblem": {
+    "size": 64,
+    "elements": [
+     {
+      "tag": "polygon",
+      "points": "32,60 23,44 19,30 26,23 38,23 45,30 41,44",
+      "fill": "ink"
+     },
+     {
+      "tag": "polygon",
+      "points": "20,30 8,23 23,25",
+      "fill": "ink"
+     },
+     {
+      "tag": "polygon",
+      "points": "44,30 56,23 41,25",
+      "fill": "ink"
+     },
+     {
+      "tag": "path",
+      "d": "M27 24 C22 16 18 11 12 3 M20 14 L9 14 M24 19 L14 23",
+      "strokeWidth": 4,
+      "fill": "none",
+      "stroke": "ink"
+     },
+     {
+      "tag": "path",
+      "d": "M37 24 C42 16 46 11 52 3 M44 14 L55 14 M40 19 L50 23",
+      "strokeWidth": 4,
+      "fill": "none",
+      "stroke": "ink"
+     },
+     {
+      "tag": "polygon",
+      "points": "26,13 27,6 32,10 37,6 38,13",
+      "fill": "accent"
+     },
+     {
+      "tag": "circle",
+      "cx": 27,
+      "cy": 33,
+      "r": 2.8,
+      "fill": "paper"
+     },
+     {
+      "tag": "circle",
+      "cx": 37,
+      "cy": 33,
+      "r": 2.8,
+      "fill": "paper"
+     }
+    ]
+   },
+   "tint": {
+    "light": "#7b6100",
+    "dark": "#c9a227"
+   }
+  },
+  {
+   "id": "lannister",
+   "name": "Queen Cersei Lannister and House Lannister",
+   "short": "House Lannister",
+   "color": "#9b1b1b",
+   "fill": "hatch",
+   "ideology": "The queen and her father's house, richest in the realm. They want Joffrey's succession safe and the Hand's inquiry stopped.",
+   "leader": "Cersei Lannister",
+   "glance": {
+    "face": {
+     "name": "Cersei Lannister",
+     "role": "Queen Consort, the Red Keep"
+    },
+    "wants": [
+     "Confirm Joffrey's succession",
+     "Borrow from Casterly Rock",
+     "Close the inquiry"
+    ],
+    "hates": [
+     {
+      "tag": "Summon Lord Tywin",
+      "redLine": false
+     },
+     {
+      "tag": "Arrest Tyrion Lannister",
+      "redLine": false
+     },
+     {
+      "tag": "Question Joffrey's birth",
+      "redLine": true
+     }
+    ],
+    "strike": "The queen sets Lannister swords and the Kingsguard to seize the Hand and his daughters."
+   },
+   "tint": {
+    "light": "#9b1b1b",
+    "dark": "#dc5c52"
+   }
+  },
+  {
+   "id": "stark",
+   "name": "House Stark",
+   "short": "House Stark",
+   "color": "#6b7a86",
+   "fill": "hatch2",
+   "ideology": "The Lord of Winterfell's own house and northern bannermen. They want justice for Bran and the Hand's daughters kept safe.",
+   "leader": "Robb Stark",
+   "glance": {
+    "face": {
+     "name": "Robb Stark",
+     "role": "Heir to Winterfell, holding the North in his father's absence"
+    },
+    "wants": [
+     "Justice for Bran",
+     "Protect Stark daughters",
+     "Call northern banners"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Pardon Gregor Clegane",
+      "redLine": false
+     },
+     {
+      "tag": "Surrender Stark daughters",
+      "redLine": true
+     }
+    ],
+    "strike": "Robb Stark keeps the northern bannermen at home and sends no swords south."
+   },
+   "emblem": {
+    "size": 64,
+    "elements": [
+     {
+      "tag": "path",
+      "d": "M6 30 L22 22 L27 6 L34 17 L41 4 L45 20 C55 26 59 40 57 60 L33 60 C33 51 29 45 21 43 L10 40 Z",
+      "fill": "ink"
+     },
+     {
+      "tag": "circle",
+      "cx": 32,
+      "cy": 26,
+      "r": 2.8,
+      "fill": "paper"
+     },
+     {
+      "tag": "polygon",
+      "points": "8,33 22,36 12,39",
+      "fill": "paper"
+     }
+    ]
+   },
+   "tint": {
+    "light": "#576672",
+    "dark": "#788793"
+   }
+  },
+  {
+   "id": "baelish",
+   "name": "Petyr Baelish and the City Watch",
+   "short": "Littlefinger",
+   "color": "#3f7a5c",
+   "fill": "cross",
+   "ideology": "The Master of Coin and the gold cloaks he pays. He wants office, lands and a court in turmoil.",
+   "leader": "Petyr Baelish",
+   "glance": {
+    "face": {
+     "name": "Petyr Baelish",
+     "role": "Master of Coin, the small council, King's Landing"
+    },
+    "wants": [
+     "Grant lands",
+     "Borrow more gold",
+     "Pay the Watch"
+    ],
+    "hates": [
+     {
+      "tag": "Audit the treasury",
+      "redLine": false
+     },
+     {
+      "tag": "Replace Master of Coin",
+      "redLine": true
+     }
+    ],
+    "strike": "Littlefinger turns the gold cloaks of the City Watch against the Hand at the hour of need."
+   },
+   "emblem": {
+    "size": 64,
+    "elements": [
+     {
+      "tag": "path",
+      "d": "M3 38 L16 34 L24 34 L17 6 L34 30 L42 10 L42 30 L50 27 L61 30 L52 35 L46 41 L32 45 L16 45 L5 52 L10 42 Z",
+      "fill": "ink"
+     },
+     {
+      "tag": "circle",
+      "cx": 48,
+      "cy": 32,
+      "r": 2.7,
+      "fill": "paper"
+     }
+    ]
+   },
+   "tint": {
+    "light": "#346f52",
+    "dark": "#569172"
+   }
+  },
+  {
+   "id": "varys",
+   "name": "Varys",
+   "short": "Varys",
+   "color": "#6b4c8a",
+   "fill": "dots",
+   "ideology": "The eunuch spymaster of the small council. He wants war between Stark and Lannister delayed and his informers left alone.",
+   "leader": "Varys",
+   "glance": {
+    "face": {
+     "name": "Varys",
+     "role": "Master of Whisperers, the small council, King's Landing"
+    },
+    "wants": [
+     "Delay open war",
+     "Fund informers"
+    ],
+    "hates": [
+     {
+      "tag": "Declare war",
+      "redLine": false
+     },
+     {
+      "tag": "Reward Baelish",
+      "redLine": false
+     },
+     {
+      "tag": "Dismiss Varys",
+      "redLine": true
+     }
+    ],
+    "strike": "Varys carries the Hand's secrets to the queen, and his little birds stop whispering to the Tower of the Hand."
+   },
+   "emblem": {
+    "size": 64,
+    "elements": [
+     {
+      "tag": "ellipse",
+      "cx": 32,
+      "cy": 38,
+      "rx": 9,
+      "ry": 12,
+      "fill": "ink"
+     },
+     {
+      "tag": "circle",
+      "cx": 32,
+      "cy": 22,
+      "r": 6.5,
+      "fill": "ink"
+     },
+     {
+      "tag": "path",
+      "d": "M25 31 L12 22 L6 7 M24 35 L10 32 L3 23 M24 41 L10 45 L4 55 M26 46 L17 55 L15 62",
+      "strokeWidth": 3.5,
+      "fill": "none",
+      "stroke": "ink"
+     },
+     {
+      "tag": "path",
+      "d": "M39 31 L52 22 L58 7 M40 35 L54 32 L61 23 M40 41 L54 45 L60 55 M38 46 L47 55 L49 62",
+      "strokeWidth": 3.5,
+      "fill": "none",
+      "stroke": "ink"
+     }
+    ]
+   },
+   "tint": {
+    "light": "#6b4c8a",
+    "dark": "#9778b9"
+   }
+  },
+  {
+   "id": "stannis",
+   "name": "Stannis Baratheon",
+   "short": "Stannis",
+   "color": "#c9a227",
+   "fill": "rings",
+   "ideology": "The King's stern middle brother, withdrawn to his island seat. He wants to be named Robert's lawful heir.",
+   "leader": "Stannis Baratheon",
+   "glance": {
+    "face": {
+     "name": "Stannis Baratheon",
+     "role": "Lord of Dragonstone and master of ships"
+    },
+    "wants": [
+     "Expose the bastards",
+     "Name Stannis heir"
+    ],
+    "hates": [
+     {
+      "tag": "Recognize Joffrey",
+      "redLine": true
+     },
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Pardon Lannisters",
+      "redLine": false
+     }
+    ],
+    "strike": "Stannis keeps the royal fleet at Dragonstone and refuses the Crown his ships and swords."
+   },
+   "emblem": {
+    "size": 64,
+    "elements": [
+     {
+      "tag": "path",
+      "d": "M32 61 C20 51 7 43 7 32 C7 24 13 20 20 20 L15 9 L24 15 L26 3 L32 13 L38 3 L40 15 L49 9 L44 20 C51 20 57 24 57 32 C57 43 44 51 32 61 Z",
+      "fill": "ink"
+     },
+     {
+      "tag": "polygon",
+      "points": "32,52 27,43 26,36 38,36 37,43",
+      "fill": "paper"
+     },
+     {
+      "tag": "path",
+      "d": "M28 36 L24 27 M36 36 L40 27",
+      "strokeWidth": 3,
+      "fill": "none",
+      "stroke": "paper"
+     }
+    ]
+   },
+   "tint": {
+    "light": "#7b6100",
+    "dark": "#c9a227"
+   }
+  }
+ ],
+ "regions": [
+  {
+   "id": "north",
+   "name": "The North",
+   "weight": 0.10000000000000002,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.3
+    },
+    {
+     "id": "lannister",
+     "value": -0.8
+    },
+    {
+     "id": "stark",
+     "value": 0.95
+    },
+    {
+     "id": "baelish",
+     "value": -0.4
+    },
+    {
+     "id": "varys",
+     "value": -0.3
+    },
+    {
+     "id": "stannis",
+     "value": 0.1
+    }
+   ]
+  },
+  {
+   "id": "riverlands",
+   "name": "The Riverlands",
+   "weight": 0.15000000000000002,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.3
+    },
+    {
+     "id": "lannister",
+     "value": -0.6
+    },
+    {
+     "id": "stark",
+     "value": 0.6
+    },
+    {
+     "id": "baelish",
+     "value": 0.1
+    },
+    {
+     "id": "varys",
+     "value": -0.1
+    },
+    {
+     "id": "stannis",
+     "value": 0.1
+    }
+   ]
+  },
+  {
+   "id": "vale",
+   "name": "The Vale",
+   "weight": 0.10000000000000002,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.3
+    },
+    {
+     "id": "lannister",
+     "value": -0.4
+    },
+    {
+     "id": "stark",
+     "value": 0.3
+    },
+    {
+     "id": "baelish",
+     "value": 0.1
+    },
+    {
+     "id": "varys",
+     "value": -0.2
+    },
+    {
+     "id": "stannis",
+     "value": 0.1
+    }
+   ]
+  },
+  {
+   "id": "westerlands",
+   "name": "The Westerlands",
+   "weight": 0.12000000000000001,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.2
+    },
+    {
+     "id": "lannister",
+     "value": 0.95
+    },
+    {
+     "id": "stark",
+     "value": -0.6
+    },
+    {
+     "id": "baelish",
+     "value": 0
+    },
+    {
+     "id": "varys",
+     "value": -0.1
+    },
+    {
+     "id": "stannis",
+     "value": -0.5
+    }
+   ]
+  },
+  {
+   "id": "crownlands",
+   "name": "The Crownlands",
+   "weight": 0.13000000000000003,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.5
+    },
+    {
+     "id": "lannister",
+     "value": 0.3
+    },
+    {
+     "id": "stark",
+     "value": 0
+    },
+    {
+     "id": "baelish",
+     "value": 0.5
+    },
+    {
+     "id": "varys",
+     "value": 0.4
+    },
+    {
+     "id": "stannis",
+     "value": 0.3
+    }
+   ]
+  },
+  {
+   "id": "stormlands",
+   "name": "The Stormlands",
+   "weight": 0.10000000000000002,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.8
+    },
+    {
+     "id": "lannister",
+     "value": -0.2
+    },
+    {
+     "id": "stark",
+     "value": 0.2
+    },
+    {
+     "id": "baelish",
+     "value": -0.1
+    },
+    {
+     "id": "varys",
+     "value": -0.1
+    },
+    {
+     "id": "stannis",
+     "value": 0.3
+    }
+   ]
+  },
+  {
+   "id": "reach",
+   "name": "The Reach",
+   "weight": 0.22000000000000003,
+   "lean": [
+    {
+     "id": "crown",
+     "value": 0.2
+    },
+    {
+     "id": "lannister",
+     "value": 0
+    },
+    {
+     "id": "stark",
+     "value": 0
+    },
+    {
+     "id": "baelish",
+     "value": 0.1
+    },
+    {
+     "id": "varys",
+     "value": 0
+    },
+    {
+     "id": "stannis",
+     "value": -0.3
+    }
+   ]
+  },
+  {
+   "id": "dorne",
+   "name": "Dorne",
+   "weight": 0.08000000000000002,
+   "lean": [
+    {
+     "id": "crown",
+     "value": -0.5
+    },
+    {
+     "id": "lannister",
+     "value": -0.7
+    },
+    {
+     "id": "stark",
+     "value": -0.1
+    },
+    {
+     "id": "baelish",
+     "value": 0
+    },
+    {
+     "id": "varys",
+     "value": 0.1
+    },
+    {
+     "id": "stannis",
+     "value": -0.3
+    }
+   ]
+  }
+ ],
+ "blocs": [
+  {
+   "id": "cityfolk",
+   "name": "Smallfolk of King's Landing",
+   "description": "Pot-shop keepers, porters and beggars of Flea Bottom and the lanes below the Red Keep, who eat what the Crown's gold buys."
+  },
+  {
+   "id": "northmen",
+   "name": "Crofters of the North",
+   "description": "Herders and farmers under Winterfell who send their sons when the bannermen are called and store grain before every winter."
+  },
+  {
+   "id": "riverfolk",
+   "name": "Farmers of the Riverlands",
+   "description": "Villagers along the rivers whose fields and holdfasts lie open to raiders from the west."
+  },
+  {
+   "id": "guildsmen",
+   "name": "Merchants and craftsmen",
+   "description": "Traders, smiths and chandlers of the port towns who lend to lords, sell to tourneys and pay the Crown's tolls."
+  },
+  {
+   "id": "faithful",
+   "name": "Septons and the faithful",
+   "description": "The Faith's septons and the devout smallfolk of the south, who judge a Hand by his justice and his piety."
+  }
+ ],
+ "patrons": [
+  {
+   "id": "moneylenders",
+   "name": "Goldsmiths and moneylenders of King's Landing",
+   "wants": [
+    "crown-debt"
+   ],
+   "hates": [
+    "royal-taxes"
+   ]
+  },
+  {
+   "id": "faith",
+   "name": "The Faith and its septons",
+   "wants": [
+    "royal-justice"
+   ],
+   "hates": [
+    "tourney-spending"
+   ]
+  },
+  {
+   "id": "maesters",
+   "name": "The maesters of the Citadel",
+   "wants": [
+    "winter-grain",
+    "succession-inquiry"
+   ],
+   "hates": [
+    "treason-trials"
+   ]
+  },
+  {
+   "id": "tourneyknights",
+   "name": "Tourney knights and hedge knights",
+   "wants": [
+    "tourney-spending",
+    "kingsguard"
+   ],
+   "hates": [
+    "royal-taxes"
+   ]
+  },
+  {
+   "id": "lannisport",
+   "name": "Merchants of Lannisport",
+   "wants": [
+    "lannister-favour"
+   ],
+   "hates": [
+    "succession-inquiry"
+   ]
+  },
+  {
+   "id": "riverlords",
+   "name": "Lords of the Riverlands",
+   "wants": [
+    "riverlands-raids",
+    "royal-justice"
+   ],
+   "hates": [
+    "lannister-favour"
+   ]
+  },
+  {
+   "id": "northbanners",
+   "name": "Northern bannermen",
+   "wants": [
+    "northern-levies",
+    "wall-recruits"
+   ],
+   "hates": [
+    "lannister-favour"
+   ]
+  },
+  {
+   "id": "grainfactors",
+   "name": "Grain factors and granary keepers",
+   "wants": [
+    "winter-grain"
+   ],
+   "hates": [
+    "royal-taxes"
+   ]
+  },
+  {
+   "id": "brothelkeepers",
+   "name": "Brothel keepers of the Street of Silk",
+   "wants": [
+    "city-watch",
+    "tourney-spending"
+   ],
+   "hates": [
+    "tourney-spending"
+   ]
+  },
+  {
+   "id": "freecities",
+   "name": "Traders of the Free Cities",
+   "wants": [
+    "targaryen-exiles"
+   ],
+   "hates": [
+    "royal-taxes"
+   ]
+  }
+ ],
+ "members": [
+  {
+   "id": "m1",
+   "seat": "seat-01",
+   "region": "reach",
+   "faction": "crown",
+   "name": "Eddard Pycelle",
+   "bio": "Born near Highgarden, Eddard Pycelle kept accounts for a wool factor before Robert raised him. He wants the Crown's debts paid without breaking the king's feasts.",
+   "core_issues": [
+    "crown-debt",
+    "tourney-spending"
+   ],
+   "temperament": "loyalist",
+   "tell": "He counts cupbearers before he speaks.",
+   "patrons": [
+    "grainfactors"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Northman",
+   "glance": {
+    "wants": [
+     "bank repayment schedule",
+     "tourney spending"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "crown debt",
+      "redLine": true
+     }
+    ],
+    "strike": "He withholds the Crown's ledgers and backs Robert's next Hand."
+   }
+  },
+  {
+   "id": "m2",
+   "seat": "seat-02",
+   "region": "riverlands",
+   "faction": "lannister",
+   "name": "Pycelle",
+   "bio": "Pycelle was born at Castamere and studied at the Citadel before becoming Grand Maester. He wants the queen's line protected and the court's secrets preserved.",
+   "core_issues": [
+    "joffrey-succession-honoured",
+    "spies-informers"
+   ],
+   "temperament": "populist",
+   "tell": "He strokes his chain when a dangerous name is spoken.",
+   "patrons": [
+    "maesters"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "aged maester of the Westerlands",
+   "glance": {
+    "wants": [
+     "Joffrey succession honoured",
+     "spare whisperer network"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "succession inquiry",
+      "redLine": true
+     }
+    ],
+    "strike": "He sends a raven to Cersei and gives the council a safer account."
+   }
+  },
+  {
+   "id": "m3",
+   "seat": "seat-03",
+   "region": "crownlands",
+   "faction": "stark",
+   "name": "Renly Stark",
+   "bio": "Renly Stark grew up at Storm's End and rode in Robert's rebellion before taking court office. He wants northern honour joined to royal power.",
+   "core_issues": [
+    "daughters-kept-safe",
+    "northern-levies"
+   ],
+   "temperament": "ideologue",
+   "tell": "He touches the hilt of his sword whenever a Lannister enters.",
+   "patrons": [
+    "northbanners"
+   ],
+   "years": "new",
+   "flags": [
+    "court"
+   ],
+   "gender": "man",
+   "look": "Stormlander noble",
+   "glance": {
+    "wants": [
+     "daughters kept safe",
+     "northern levies"
+    ],
+    "hates": [
+     {
+      "tag": "lannister favour",
+      "redLine": false
+     },
+     {
+      "tag": "daughters threatened",
+      "redLine": true
+     }
+    ],
+    "strike": "He calls northern banners and closes the Red Keep gates to the queen."
+   }
+  },
+  {
+   "id": "m4",
+   "seat": "seat-04",
+   "region": "westerlands",
+   "faction": "baelish",
+   "name": "Barristan Selmy",
+   "bio": "Barristan Selmy was born at Harvest Hall and won his spurs in the Kingswood. He wants the Kingsguard kept above faction and rich men.",
+   "core_issues": [
+    "kingsguard",
+    "royal-justice"
+   ],
+   "temperament": "populist",
+   "tell": "He removes his gloves before every council vote.",
+   "patrons": [
+    "tourneyknights"
+   ],
+   "years": "mid",
+   "flags": [
+    "court"
+   ],
+   "gender": "man",
+   "look": "older Stormlander knight",
+   "glance": {
+    "wants": [
+     "Kingsguard funding",
+     "royal justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Kingsguard dismissed",
+      "redLine": true
+     }
+    ],
+    "strike": "He lays down his white cloak and tells the court why."
+   }
+  },
+  {
+   "id": "m5",
+   "seat": "seat-05",
+   "region": "north",
+   "faction": "varys",
+   "name": "Arys Oakheart",
+   "bio": "Arys Oakheart was born at Old Oak and trained in the Reach household guard. He wants the Kingsguard to protect the royal children from court quarrels.",
+   "core_issues": [
+    "kingsguard",
+    "daughters-kept-safe"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He checks the chamber door after each report.",
+   "patrons": [
+    "faith"
+   ],
+   "years": "mid",
+   "flags": [],
+   "gender": "man",
+   "look": "Crownlands Kingsguard knight",
+   "glance": {
+    "wants": [
+     "daughters kept safe",
+     "Kingsguard"
+    ],
+    "hates": [
+     {
+      "tag": "spies informers",
+      "redLine": false
+     },
+     {
+      "tag": "royal children harmed",
+      "redLine": true
+     }
+    ],
+    "strike": "He escorts the children from the Red Keep and swears against the ruler."
+   }
+  },
+  {
+   "id": "m6",
+   "seat": "seat-06",
+   "region": "vale",
+   "faction": "stannis",
+   "name": "Meryn Trant",
+   "bio": "Meryn Trant came from a minor Crownlands house and entered Robert's household guard after the rebellion. He wants the king's commands obeyed without debate.",
+   "core_issues": [
+    "royal-justice",
+    "targaryen-exiles"
+   ],
+   "temperament": "loyalist",
+   "tell": "He taps his mailed thumb against his pommel.",
+   "patrons": [
+    "tourneyknights"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Crownlands Kingsguard knight",
+   "glance": {
+    "wants": [
+     "royal justice",
+     "Targaryen exiles"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "king's orders refused",
+      "redLine": true
+     }
+    ],
+    "strike": "He takes the gold cloaks to Robert and demands the Hand's arrest."
+   }
+  },
+  {
+   "id": "m7",
+   "seat": "seat-07",
+   "region": "stormlands",
+   "faction": "crown",
+   "name": "Boros Blount",
+   "bio": "Boros Blount was born in the Stormlands and guarded a lord's grain trains before joining the Kingsguard. He wants regular pay and a quiet royal household.",
+   "core_issues": [
+    "royal-taxes",
+    "kingsguard"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He asks first who will pay for any order.",
+   "patrons": [
+    "grainfactors"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Crownlands Kingsguard knight",
+   "glance": {
+    "wants": [
+     "Kingsguard pay",
+     "royal taxes"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Kingsguard unpaid",
+      "redLine": true
+     }
+    ],
+    "strike": "He abandons the council room and reports its orders to the king."
+   }
+  },
+  {
+   "id": "m8",
+   "seat": "seat-08",
+   "region": "dorne",
+   "faction": "lannister",
+   "name": "Jaime Stark",
+   "bio": "Jaime Stark was born at Lannisport and captained a merchant's guards before entering court politics. He wants a settlement that keeps Lannister gold and royal law together.",
+   "core_issues": [
+    "lannister-favour",
+    "crown-debt"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He rolls a gold coin across his knuckles during disputes.",
+   "patrons": [
+    "lannisport",
+    "moneylenders"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Westerlands noble with golden hair",
+   "glance": {
+    "wants": [
+     "Lannister favour",
+     "bank repayment schedule"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Lannister lands seized",
+      "redLine": true
+     }
+    ],
+    "strike": "He quits the council and carries the queen's case to Tywin."
+   }
+  },
+  {
+   "id": "m9",
+   "seat": "seat-09",
+   "region": "reach",
+   "faction": "crown",
+   "name": "Tyrion Lannister",
+   "bio": "Tyrion Lannister was born at Casterly Rock and studied histories before serving at court. He wants room for wit, a paid treasury and no war over Bran's fall.",
+   "core_issues": [
+    "crown-debt",
+    "succession-inquiry",
+    "riverlands-raider-justice"
+   ],
+   "temperament": "maverick",
+   "tell": "He drinks before answering a question meant to trap him.",
+   "patrons": [
+    "freecities"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Westerlands noble with mismatched eyes",
+   "glance": {
+    "wants": [
+     "bank repayment schedule",
+     "royal justice",
+     "riverlands raider justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "treason trials",
+      "redLine": true
+     }
+    ],
+    "strike": "He buys witnesses and turns the council's own secrets against the ruler."
+   }
+  },
+  {
+   "id": "m10",
+   "seat": "seat-10",
+   "region": "riverlands",
+   "faction": "lannister",
+   "name": "Kevan Lannister",
+   "bio": "Kevan Lannister was raised at Casterly Rock and led levies during Robert's rebellion. He wants Tywin's credit protected and the realm kept from civil war.",
+   "core_issues": [
+    "crown-debt",
+    "riverlands-raids"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He folds his hands only after every lord has been named.",
+   "patrons": [
+    "lannisport",
+    "riverlords"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Westerlands noble",
+   "glance": {
+    "wants": [
+     "crown debt",
+     "riverlands raider justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Lannister lands seized",
+      "redLine": true
+     }
+    ],
+    "strike": "He leaves for the west and gathers Lannister banners."
+   }
+  },
+  {
+   "id": "m11",
+   "seat": "seat-11",
+   "region": "crownlands",
+   "faction": "crown",
+   "name": "Addam Marbrand",
+   "bio": "Addam Marbrand came from Ashemark and escorted royal columns after the rebellion. He wants roads open, soldiers paid and the king's peace visible.",
+   "core_issues": [
+    "royal-justice",
+    "city-watch"
+   ],
+   "temperament": "populist",
+   "tell": "He marks each delay with a notch in his belt leather.",
+   "patrons": [
+    "tourneyknights"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Westerlands knight",
+   "glance": {
+    "wants": [
+     "royal justice",
+     "city watch"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "city watch disbanded",
+      "redLine": true
+     }
+    ],
+    "strike": "He rides to the City Watch and orders it to hold the gates."
+   }
+  },
+  {
+   "id": "m12",
+   "seat": "seat-12",
+   "region": "westerlands",
+   "faction": "lannister",
+   "name": "Lyle Crakehall",
+   "bio": "Lyle Crakehall was born at Crakehall and managed his family's swine herds before taking a royal commission. He wants hard law against raiders and deserters.",
+   "core_issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He cracks his knuckles when a pardon is proposed.",
+   "patrons": [
+    "riverlords"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "broad Westerlands knight",
+   "glance": {
+    "wants": [
+     "riverlands raider justice",
+     "royal justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "raider pardons",
+      "redLine": true
+     }
+    ],
+    "strike": "He joins the field host and refuses the ruler's seal."
+   }
+  },
+  {
+   "id": "m13",
+   "seat": "seat-13",
+   "region": "north",
+   "faction": "crown",
+   "name": "Vardis Egen",
+   "bio": "Vardis Egen was born in the Vale and kept toll roads for House Egen before entering Robert's service. He wants the king to respect lawful summonses.",
+   "core_issues": [
+    "royal-justice",
+    "succession-inquiry"
+   ],
+   "temperament": "loyalist",
+   "tell": "He straightens every document before signing it.",
+   "patrons": [
+    "faith"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Vale knight",
+   "glance": {
+    "wants": [
+     "royal justice",
+     "treason trials"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "lawful summons ignored",
+      "redLine": true
+     }
+    ],
+    "strike": "He carries the summons to the Eyrie and calls for a formal judgment."
+   }
+  },
+  {
+   "id": "m14",
+   "seat": "seat-14",
+   "region": "vale",
+   "faction": "lannister",
+   "name": "Loras Tyrell",
+   "bio": "Loras Tyrell was born at Highgarden and won tourneys before joining the court. He wants glory for the Reach and a royal purse for knights.",
+   "core_issues": [
+    "fund-hands-tourney",
+    "tourney-spending"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He smiles whenever a purse or horse is mentioned.",
+   "patrons": [
+    "tourneyknights"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Reach knight with brown hair",
+   "glance": {
+    "wants": [
+     "fund hands tourney",
+     "tourney spending"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "tourney cancelled",
+      "redLine": true
+     }
+    ],
+    "strike": "He rides to Highgarden and asks Mace for a new alliance."
+   }
+  },
+  {
+   "id": "m15",
+   "seat": "seat-15",
+   "region": "stormlands",
+   "faction": "crown",
+   "name": "Mace Tyrell",
+   "bio": "Mace Tyrell inherited Highgarden after Lord Wyllis lost his strength. He wants Robert's favour for his house and a marriage that lifts the Reach.",
+   "core_issues": [
+    "joffrey-succession-honoured",
+    "tourney-spending"
+   ],
+   "temperament": "institutionalist",
+   "tell": "He repeats a proposal until every lord calls it theirs.",
+   "patrons": [
+    "grainfactors",
+    "tourneyknights"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "heavyset Reach lord",
+   "glance": {
+    "wants": [
+     "Joffrey succession honoured",
+     "tourney spending"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Tyrell marriage refused",
+      "redLine": true
+     }
+    ],
+    "strike": "He withdraws Reach grain and opens talks with Renly."
+   }
+  },
+  {
+   "id": "m16",
+   "seat": "seat-16",
+   "region": "dorne",
+   "faction": "lannister",
+   "name": "Randyll Tarly",
+   "bio": "Randyll Tarly was born at Horn Hill and drilled levies before Robert's reign. He wants a disciplined army and punishment for men who flee it.",
+   "core_issues": [
+    "northern-levies",
+    "royal-justice"
+   ],
+   "temperament": "deal-maker",
+   "tell": "He names the last man who broke ranks.",
+   "patrons": [
+    "tourneyknights"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "stern Reach lord",
+   "glance": {
+    "wants": [
+     "northern levies",
+     "royal justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "army discipline softened",
+      "redLine": true
+     }
+    ],
+    "strike": "He takes his levies home and refuses the next royal summons."
+   }
+  },
+  {
+   "id": "m17",
+   "seat": "seat-17",
+   "region": "reach",
+   "faction": "crown",
+   "name": "Paxter Redwyne",
+   "bio": "Paxter Redwyne was born on the Arbor and ran wine ships before entering council service. He wants safe seas, paid debts and royal protection for trade.",
+   "core_issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "temperament": "loyalist",
+   "tell": "He smells wine on a ledger before reading its figures.",
+   "patrons": [
+    "freecities",
+    "moneylenders"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "Reach lord of the Arbor",
+   "glance": {
+    "wants": [
+     "bank repayment schedule",
+     "royal taxes"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "merchant ships seized",
+      "redLine": true
+     }
+    ],
+    "strike": "He closes the Arbor's loans and sends Redwyne ships away from King's Landing."
+   }
+  },
+  {
+   "id": "m18",
+   "seat": "seat-18",
+   "region": "riverlands",
+   "faction": "lannister",
+   "name": "Bronn",
+   "bio": "Bronn was born in the Crownlands and sold his sword on roads from Gulltown to the Trident. He wants coin, a title and a ruler who pays on time.",
+   "core_issues": [
+    "royal-taxes",
+    "riverlands-raids"
+   ],
+   "temperament": "maverick",
+   "tell": "He counts the room's exits before sitting down.",
+   "patrons": [
+    "moneylenders"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "man",
+   "look": "dark-haired sellsword from the Crownlands",
+   "glance": {
+    "wants": [
+     "royal taxes",
+     "riverlands raider justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "payment withheld",
+      "redLine": true
+     }
+    ],
+    "strike": "He sells his sword to the highest lord and leaves the council by night."
+   }
+  },
+  {
+   "id": "m19",
+   "seat": "seat-19",
+   "region": "crownlands",
+   "faction": "crown",
+   "name": "Cersei Stark",
+   "bio": "Cersei Stark was born at Casterly Rock and arranged household marriages before taking a seat. She wants Joffrey crowned and her daughters safe from northern claims.",
+   "core_issues": [
+    "joffrey-succession-honoured",
+    "daughters-kept-safe"
+   ],
+   "temperament": "ideologue",
+   "tell": "She touches her necklace when Robert's name is spoken.",
+   "patrons": [
+    "faith"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "Westerlands noble with golden hair",
+   "glance": {
+    "wants": [
+     "Joffrey succession honoured",
+     "daughters kept safe"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Joffrey disinherited",
+      "redLine": true
+     }
+    ],
+    "strike": "She carries her case to Cersei Lannister and closes the court against the Hand."
+   }
+  },
+  {
+   "id": "m20",
+   "seat": "seat-20",
+   "region": "westerlands",
+   "faction": "lannister",
+   "name": "Catelyn Stark",
+   "bio": "Catelyn Stark was born at Riverrun and kept its household during Hoster's illness. She wants Bran's attacker tried and her daughters returned from the court.",
+   "core_issues": [
+    "succession-inquiry",
+    "riverlands-raider-justice",
+    "daughters-kept-safe"
+   ],
+   "temperament": "populist",
+   "tell": "She folds a letter from Winterfell into her sleeve.",
+   "patrons": [
+    "riverlords",
+    "northbanners"
+   ],
+   "years": "long",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "Riverlands noblewoman",
+   "glance": {
+    "wants": [
+     "succession inquiry",
+     "daughters kept safe",
+     "riverlands raider justice"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Bran's attacker spared",
+      "redLine": true
+     }
+    ],
+    "strike": "She summons Riverlands lords and names the ruler false to justice."
+   }
+  },
+  {
+   "id": "m21",
+   "seat": "seat-21",
+   "region": "north",
+   "faction": "crown",
+   "name": "Selyse Florent",
+   "bio": "Selyse Florent was born at Brightwater Keep and managed its chapel stores before court life. She wants the Faith heard and Stannis named lawful heir.",
+   "core_issues": [
+    "royal-justice",
+    "succession-inquiry"
+   ],
+   "temperament": "maverick",
+   "tell": "She presses a prayer bead into her palm during arguments.",
+   "patrons": [
+    "faith"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "pale Reach noblewoman",
+   "glance": {
+    "wants": [
+     "royal justice",
+     "succession inquiry"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Stannis denied",
+      "redLine": true
+     }
+    ],
+    "strike": "She sends a sealed letter to Dragonstone and denounces the court's sin."
+   }
+  },
+  {
+   "id": "m22",
+   "seat": "seat-22",
+   "region": "reach",
+   "faction": "crown",
+   "name": "Asha Greyjoy",
+   "bio": "Asha Greyjoy was born at Pyke and captained a longship before Balon called her home. She wants the Iron Islands free to raid and rule their own shores.",
+   "core_issues": [
+    "royal-taxes",
+    "royal-justice"
+   ],
+   "temperament": "ideologue",
+   "tell": "She laughs when a mainland lord calls himself brave.",
+   "patrons": [
+    "freecities"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "ironborn woman with dark hair",
+   "glance": {
+    "wants": [
+     "royal taxes",
+     "ironborn rights"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Iron Islands garrisoned",
+      "redLine": true
+     }
+    ],
+    "strike": "She sails west and urges Balon to raise the ironborn."
+   }
+  },
+  {
+   "id": "m23",
+   "seat": "seat-23",
+   "region": "riverlands",
+   "faction": "crown",
+   "name": "Lysa Arryn",
+   "bio": "Lysa Arryn was born at Riverrun and kept the Eyrie's household after Jon Arryn's death. She wants her son safe and the Vale closed to royal armies.",
+   "core_issues": [
+    "succession-inquiry",
+    "treason-trials"
+   ],
+   "temperament": "ideologue",
+   "tell": "She tears wax seals from letters before anyone can read them.",
+   "patrons": [
+    "riverlords"
+   ],
+   "years": "new",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "Vale noblewoman",
+   "glance": {
+    "wants": [
+     "succession inquiry",
+     "Vale closed"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Vale invaded",
+      "redLine": true
+     }
+    ],
+    "strike": "She seals the Bloody Gate and refuses the ruler's messengers."
+   }
+  },
+  {
+   "id": "m24",
+   "seat": "seat-24",
+   "region": "reach",
+   "faction": "crown",
+   "name": "Melisandre",
+   "bio": "Melisandre came from Asshai and preached to sailors in Volantis before reaching the court. She wants Stannis crowned and the red god's enemies cast down.",
+   "core_issues": [
+    "succession-inquiry",
+    "targaryen-exiles"
+   ],
+   "temperament": "maverick",
+   "tell": "She watches the hearth instead of the speaker.",
+   "patrons": [
+    "faith"
+   ],
+   "years": "mid",
+   "flags": [
+    "crown"
+   ],
+   "gender": "woman",
+   "look": "red-haired woman from Asshai",
+   "glance": {
+    "wants": [
+     "succession inquiry",
+     "Targaryen exiles"
+    ],
+    "hates": [
+     {
+      "tag": "Bribes",
+      "redLine": false
+     },
+     {
+      "tag": "Stannis abandoned",
+      "redLine": true
+     }
+    ],
+    "strike": "She leaves for Dragonstone and calls Stannis to claim the throne."
+   }
+  }
+ ],
+ "citizens": [
+  {
+   "id": "c1",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Hobb of Flea Bottom",
+   "age": 18,
+   "job": "Alehouse boy",
+   "town": "King's Landing",
+   "worldview": "Feed the poor before the Crown spends coin on another tourney.",
+   "issues": [
+    "tourney-spending",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c2",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Marya of the Street of Flour",
+   "age": 37,
+   "job": "Flour seller",
+   "town": "King's Landing",
+   "worldview": "Protect Riverlands fields from raiders and keep bread within reach.",
+   "issues": [
+    "riverlands-raids",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c3",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Tanselle of the Mud Gate",
+   "age": 59,
+   "job": "Fish seller",
+   "town": "King's Landing",
+   "worldview": "Set fair taxes so old people can buy food through winter.",
+   "issues": [
+    "royal-taxes",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c4",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Gerren Waters",
+   "age": 66,
+   "job": "Dock porter",
+   "town": "King's Landing",
+   "worldview": "Pay the Crown's debts without letting Lannister creditors rule the city.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c5",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Lella the potter",
+   "age": 75,
+   "job": "Potter",
+   "town": "King's Landing",
+   "worldview": "Keep northern grain moving south before winter closes the roads.",
+   "issues": [
+    "winter-grain-stores",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c6",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Olyvar the porter",
+   "age": 29,
+   "job": "Porter",
+   "town": "King's Landing",
+   "worldview": "Keep the City Watch honest so merchants can work without fear.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c7",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Nolla of the Hook",
+   "age": 42,
+   "job": "Net mender",
+   "town": "King's Landing",
+   "worldview": "Give the Crown enough men to guard the roads, but spare working families.",
+   "issues": [
+    "royal-taxes",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c8",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Bessa the washerwoman",
+   "age": 49,
+   "job": "Washerwoman",
+   "town": "King's Landing",
+   "worldview": "Keep royal justice from becoming another weapon for great houses.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c9",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Porridge Tom",
+   "age": 71,
+   "job": "Beggar",
+   "town": "King's Landing",
+   "worldview": "Open the granaries when hunger comes, whatever the lords demand.",
+   "issues": [
+    "winter-grain-stores",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c10",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Hugh of the Fishmongers' Square",
+   "age": 82,
+   "job": "Fishmonger",
+   "town": "King's Landing",
+   "worldview": "Stop raiders from burning river villages and driving families onto the roads.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c11",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Mikken the smith",
+   "age": 28,
+   "job": "Blacksmith",
+   "town": "King's Landing",
+   "worldview": "Pay for the King's guards without raising every market toll.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c12",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Harra the chandlemaker",
+   "age": 32,
+   "job": "Chandlemaker",
+   "town": "King's Landing",
+   "worldview": "Protect trade from debt collectors and keep the Crown's accounts plain.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c13",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Chataya of the Street of Silk",
+   "age": 54,
+   "job": "Brothel keeper",
+   "town": "King's Landing",
+   "worldview": "Leave my house alone and keep informers from turning every customer into a suspect.",
+   "issues": [
+    "spies-informers",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c14",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Alayaya",
+   "age": 61,
+   "job": "Courtesan",
+   "town": "King's Landing",
+   "worldview": "Keep royal officers from taking women or coin without payment.",
+   "issues": [
+    "royal-justice",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c15",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Masha Heddle",
+   "age": 75,
+   "job": "Innkeeper",
+   "town": "King's Landing",
+   "worldview": "Keep soldiers and tax men from ruining honest houses.",
+   "issues": [
+    "royal-taxes",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c16",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Tobho Mott",
+   "age": 27,
+   "job": "Armourer",
+   "town": "King's Landing",
+   "worldview": "Give the Crown good steel while keeping war from reaching the city.",
+   "issues": [
+    "kingsguard",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c17",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Gendry",
+   "age": 37,
+   "job": "Stable boy",
+   "town": "King's Landing",
+   "worldview": "Let bastards live without being hunted for the sins of their fathers.",
+   "issues": [
+    "royal-bastards",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c18",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Barra",
+   "age": 59,
+   "job": "Wet nurse",
+   "town": "King's Landing",
+   "worldview": "Keep the royal children safe from court quarrels and sudden knives.",
+   "issues": [
+    "daughters-kept-safe",
+    "joffrey-succession-honoured"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c19",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Cressen the cooper",
+   "age": 66,
+   "job": "Cooper",
+   "town": "King's Landing",
+   "worldview": "Store enough grain and ale to carry the city through a hard winter.",
+   "issues": [
+    "winter-grain-stores",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c20",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Lommy Greenhands",
+   "age": 82,
+   "job": "Stable hand",
+   "town": "King's Landing",
+   "worldview": "Keep soldiers from taking horses and food without lawful payment.",
+   "issues": [
+    "royal-justice",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c21",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Hot Pie",
+   "age": 26,
+   "job": "Pie baker",
+   "town": "King's Landing",
+   "worldview": "Lower grain prices before hunger turns the alleys against the Crown.",
+   "issues": [
+    "winter-grain",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c22",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Vylarr",
+   "age": 42,
+   "job": "Horse groom",
+   "town": "King's Landing",
+   "worldview": "Make the City Watch guard markets instead of serving rich men's quarrels.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c23",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Masha the grain seller",
+   "age": 49,
+   "job": "Grain seller",
+   "town": "King's Landing",
+   "worldview": "Keep the granaries filled and stop lords from hoarding grain for profit.",
+   "issues": [
+    "winter-grain-stores",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c24",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Willow of the Paps",
+   "age": 71,
+   "job": "Herb seller",
+   "town": "King's Landing",
+   "worldview": "Keep royal justice from favoring Lannister gold over common testimony.",
+   "issues": [
+    "royal-justice",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c25",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Hella of Gulltown",
+   "age": 75,
+   "job": "Fishmonger",
+   "town": "King's Landing",
+   "worldview": "Protect the port from taxes that leave no coin for a family's supper.",
+   "issues": [
+    "royal-taxes",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c26",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Moryn the carter",
+   "age": 25,
+   "job": "Carter",
+   "town": "King's Landing",
+   "worldview": "Make the roads safe from raiders so carts can reach every river market.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c27",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Jeyne Poole",
+   "age": 32,
+   "job": "Lady's maid",
+   "town": "King's Landing",
+   "worldview": "Keep Sansa and the Hand's daughters safe from the queen's anger.",
+   "issues": [
+    "daughters-kept-safe",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c28",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Beth Cassel",
+   "age": 54,
+   "job": "Seamstress",
+   "town": "King's Landing",
+   "worldview": "Protect northern women at court from being traded away by stronger houses.",
+   "issues": [
+    "daughters-kept-safe",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c29",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Mordane",
+   "age": 61,
+   "job": "Septa",
+   "town": "King's Landing",
+   "worldview": "Make the King rule with justice and restrain the sins of his court.",
+   "issues": [
+    "royal-justice",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c30",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Heward",
+   "age": 82,
+   "job": "Gate guard",
+   "town": "King's Landing",
+   "worldview": "Keep the gates orderly without letting gold cloaks beat honest travelers.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c31",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Jory Cassel",
+   "age": 24,
+   "job": "House guard",
+   "town": "King's Landing",
+   "worldview": "Find the truth about Jon Arryn's death before great houses draw swords.",
+   "issues": [
+    "succession-inquiry",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c32",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Harwin",
+   "age": 37,
+   "job": "Stable master",
+   "town": "King's Landing",
+   "worldview": "Keep roads open and stop raiders from making the Riverlands a battlefield.",
+   "issues": [
+    "riverlands-raids",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c33",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Tommen's nurse Mela",
+   "age": 59,
+   "job": "Nursemaid",
+   "town": "King's Landing",
+   "worldview": "Keep Tommen safe and make Joffrey's succession obey the law.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "daughters-kept-safe"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c34",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Sarra of the wool market",
+   "age": 66,
+   "job": "Wool seller",
+   "town": "King's Landing",
+   "worldview": "Keep taxes steady so cloth workers can survive a costly court.",
+   "issues": [
+    "royal-taxes",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c35",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Bandy the brewer",
+   "age": 75,
+   "job": "Brewer",
+   "town": "King's Landing",
+   "worldview": "Keep grain and barley available before winter raises every price.",
+   "issues": [
+    "winter-grain",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c36",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Osney Kettleblack",
+   "age": 23,
+   "job": "Sellsword",
+   "town": "King's Landing",
+   "worldview": "Pay men who guard the city and stop nobles from using them for private feuds.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c37",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Tyrion's stableboy Wylis",
+   "age": 42,
+   "job": "Stable boy",
+   "town": "King's Landing",
+   "worldview": "Keep Tyrion from being condemned on a lady's accusation without proof.",
+   "issues": [
+    "treason-trials",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c38",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Hugh of the Vale",
+   "age": 49,
+   "job": "Horse trader",
+   "town": "King's Landing",
+   "worldview": "Keep trade moving while Stark and Lannister settle their quarrel without war.",
+   "issues": [
+    "succession-inquiry",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c39",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Mycah",
+   "age": 71,
+   "job": "Goat herder",
+   "town": "King's Landing",
+   "worldview": "Protect children from armed men and lords who call violence justice.",
+   "issues": [
+    "royal-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c40",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Chiswyck",
+   "age": 82,
+   "job": "Camp follower",
+   "town": "King's Landing",
+   "worldview": "Pay soldiers lawfully and keep commanders from looting homes.",
+   "issues": [
+    "royal-taxes",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c41",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Polliver",
+   "age": 22,
+   "job": "Armed guard",
+   "town": "King's Landing",
+   "worldview": "Give the City Watch clear orders and keep rival houses from buying its swords.",
+   "issues": [
+    "city-watch",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c42",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Amory Lorch",
+   "age": 32,
+   "job": "Man-at-arms",
+   "town": "King's Landing",
+   "worldview": "Let Gregor Clegane face judgment for the villages his riders have harmed.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c43",
+   "region": "crownlands",
+   "bloc": "cityfolk",
+   "name": "Vayon Poole",
+   "age": 54,
+   "job": "Household clerk",
+   "town": "King's Landing",
+   "worldview": "Record the Crown's debts clearly before creditors take the realm's future.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c44",
+   "region": "westerlands",
+   "bloc": "cityfolk",
+   "name": "Nan of Winterfell",
+   "age": 61,
+   "job": "Nursemaid",
+   "town": "King's Landing",
+   "worldview": "Keep children from noble quarrels and send them home alive.",
+   "issues": [
+    "daughters-kept-safe",
+    "royal-bastards"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c45",
+   "region": "north",
+   "bloc": "cityfolk",
+   "name": "Farlen",
+   "age": 75,
+   "job": "Kennel master",
+   "town": "King's Landing",
+   "worldview": "Keep northern families ready for winter without wasting men on court pride.",
+   "issues": [
+    "north-bannermen-ready",
+    "winter-grain-stores"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c46",
+   "region": "vale",
+   "bloc": "cityfolk",
+   "name": "Septa Mordane's novice Elinor",
+   "age": 21,
+   "job": "Novice septa",
+   "town": "King's Landing",
+   "worldview": "Make the Crown punish murder and false oaths without selling justice to gold.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c47",
+   "region": "stormlands",
+   "bloc": "cityfolk",
+   "name": "Osha",
+   "age": 37,
+   "job": "Wildling guide",
+   "town": "King's Landing",
+   "worldview": "Keep the Wall supplied and stop southern lords from ignoring danger beyond it.",
+   "issues": [
+    "wall-recruits",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c48",
+   "region": "dorne",
+   "bloc": "cityfolk",
+   "name": "Old Nan",
+   "age": 59,
+   "job": "Old nurse",
+   "town": "King's Landing",
+   "worldview": "Keep the realm fed while young lords chase crowns and old grudges.",
+   "issues": [
+    "winter-grain",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c49",
+   "region": "reach",
+   "bloc": "cityfolk",
+   "name": "Hodor",
+   "age": 66,
+   "job": "Stable hand",
+   "town": "King's Landing",
+   "worldview": "Keep Bran's family safe and let northern men return before winter closes the roads.",
+   "issues": [
+    "daughters-kept-safe",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c50",
+   "region": "riverlands",
+   "bloc": "cityfolk",
+   "name": "Maester Colemon",
+   "age": 82,
+   "job": "Maester",
+   "town": "King's Landing",
+   "worldview": "Find Jon Arryn's killer through records and testimony before succession breaks the realm.",
+   "issues": [
+    "succession-inquiry",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c51",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Ser Rodrik Cassel",
+   "age": 20,
+   "job": "Stable hand",
+   "town": "King's Landing",
+   "worldview": "I want the Crown to keep the roads safe and pay the men who guard them.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c52",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Mikken's apprentice Palla",
+   "age": 42,
+   "job": "Kitchen maid",
+   "town": "Lannisport",
+   "worldview": "I want winter grain stored before the lords spend more on feasts.",
+   "issues": [
+    "winter-grain",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c53",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Donnel Waynwood",
+   "age": 49,
+   "job": "Shepherd",
+   "town": "Winterfell",
+   "worldview": "I want Winterfell's bannermen ready when raiders or the Crown call them.",
+   "issues": [
+    "north-bannermen-ready",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c54",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Hewett of the kingsroad",
+   "age": 71,
+   "job": "Roadside farmer",
+   "town": "Gates of the Moon",
+   "worldview": "I want the king's justice on the roads and protection from armed men.",
+   "issues": [
+    "royal-justice",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c55",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Mariya of Maidenpool",
+   "age": 75,
+   "job": "Goat herder",
+   "town": "Storm's End",
+   "worldview": "I want granaries filled before winter takes the roads and leaves villages hungry.",
+   "issues": [
+    "winter-grain-stores",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c56",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Cleo Frey",
+   "age": 19,
+   "job": "Stable boy",
+   "town": "Sunspear",
+   "worldview": "I want the Crown to leave distant Targaryen quarrels alone and protect Dorne from war.",
+   "issues": [
+    "targaryen-exiles",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c57",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Wendel Manderly",
+   "age": 32,
+   "job": "Fishmonger",
+   "town": "Highgarden",
+   "worldview": "I want fewer royal feasts and fair prices for food carried to King's Landing.",
+   "issues": [
+    "tourney-spending",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c58",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Wylis Manderly",
+   "age": 54,
+   "job": "River ferryman",
+   "town": "Riverrun",
+   "worldview": "I want Gregor Clegane's raids answered by law before the Riverlands burn.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c59",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Cayn",
+   "age": 61,
+   "job": "Boatman",
+   "town": "Blackwater Bay",
+   "worldview": "I want the City Watch paid so thieves cannot rule the quays after dark.",
+   "issues": [
+    "city-watch",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c60",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Shagga's interpreter Koss",
+   "age": 82,
+   "job": "Goat herder",
+   "town": "Casterly Rock",
+   "worldview": "I want no new levy from northern families already saving food for winter.",
+   "issues": [
+    "northern-levies",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c61",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Masha of the River Gate",
+   "age": 18,
+   "job": "Shepherd",
+   "town": "White Harbor",
+   "worldview": "I want the North's grain protected and its sons called only for a clear cause.",
+   "issues": [
+    "winter-grain-stores",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c62",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Lollys Stokeworth",
+   "age": 37,
+   "job": "House servant",
+   "town": "Gulltown",
+   "worldview": "I want the king to keep Sansa Stark safe and settle the question of his heir lawfully.",
+   "issues": [
+    "daughters-kept-safe",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c63",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Falyse Stokeworth",
+   "age": 59,
+   "job": "Market gardener",
+   "town": "Storm's End",
+   "worldview": "I want royal courts to punish raiders without taking more food from poor households.",
+   "issues": [
+    "royal-justice",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c64",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Tanda Stokeworth",
+   "age": 66,
+   "job": "Goat keeper",
+   "town": "Planky Town",
+   "worldview": "I want the Crown to stop threatening children over old Targaryen blood.",
+   "issues": [
+    "targaryen-exiles",
+    "daughters-kept-safe"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c65",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Symon Silvertongue",
+   "age": 75,
+   "job": "Ale seller",
+   "town": "Oldtown",
+   "worldview": "I want the Faith heard before the court buys another tourney with borrowed gold.",
+   "issues": [
+    "tourney-spending",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c66",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Syrio Forel",
+   "age": 29,
+   "job": "Sword tutor",
+   "town": "Riverrun",
+   "worldview": "I want river lords protected from raids and accused men tried before swords are drawn.",
+   "issues": [
+    "riverlands-raids",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c67",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Ilyn Payne",
+   "age": 42,
+   "job": "Executioner",
+   "town": "King's Landing",
+   "worldview": "I want lawful sentences from the Crown, not private vengeance between great houses.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c68",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Vylarr's wife Hanna",
+   "age": 49,
+   "job": "Laundry worker",
+   "town": "Lannisport",
+   "worldview": "I want the Lannisters to keep trade open and the Crown to repay its debts.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c69",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Marya Seaworth",
+   "age": 71,
+   "job": "Net mender",
+   "town": "White Harbor",
+   "worldview": "I want northern families safe while the court quarrels over Stark children.",
+   "issues": [
+    "daughters-kept-safe",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c70",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Davos's son Matthos",
+   "age": 82,
+   "job": "Sailmaker",
+   "town": "Gulltown",
+   "worldview": "I want the king to name a lawful heir before the realm breaks into factions.",
+   "issues": [
+    "succession-inquiry",
+    "royal-bastards"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c71",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Steffon Seaworth",
+   "age": 28,
+   "job": "Boatbuilder",
+   "town": "Storm's End",
+   "worldview": "I want the king's brothers treated by law and the realm spared a succession war.",
+   "issues": [
+    "succession-inquiry",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c72",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Mya Stone",
+   "age": 32,
+   "job": "Mule driver",
+   "town": "Sunspear",
+   "worldview": "I want Dorne left out of northern quarrels and protected from royal tax collectors.",
+   "issues": [
+    "royal-taxes",
+    "targaryen-exiles"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c73",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Bella of the Crossroads",
+   "age": 54,
+   "job": "Camp follower",
+   "town": "Highgarden",
+   "worldview": "I want food trains guarded when lords gather men for court pageants.",
+   "issues": [
+    "winter-grain",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c74",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Gendry's master Tobho",
+   "age": 61,
+   "job": "Armourer's helper",
+   "town": "Riverrun",
+   "worldview": "I want the Crown to answer the Riverlands raids and keep armed men from taking village goods.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c75",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Jalabhar Xho",
+   "age": 75,
+   "job": "Exile courtier",
+   "town": "King's Landing",
+   "worldview": "I want a royal pardon and work, not another hunt for people who crossed the Narrow Sea.",
+   "issues": [
+    "targaryen-exiles",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c76",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Salladhor Saan",
+   "age": 27,
+   "job": "Smuggler",
+   "town": "Lannisport",
+   "worldview": "I want fewer tolls and a court too divided to seize every ship's cargo.",
+   "issues": [
+    "royal-taxes",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c77",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Qotho",
+   "age": 37,
+   "job": "Horse herder",
+   "town": "Winterfell",
+   "worldview": "I want the North's riders ready while the southern court wastes silver on pleasure.",
+   "issues": [
+    "north-bannermen-ready",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c78",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Jhogo",
+   "age": 59,
+   "job": "Horse groom",
+   "town": "Gulltown",
+   "worldview": "I want Daenerys Targaryen left alive until the king proves a real danger to the realm.",
+   "issues": [
+    "targaryen-exiles",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c79",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Irri",
+   "age": 66,
+   "job": "Wool worker",
+   "town": "Storm's End",
+   "worldview": "I want the queen's household kept from harming Stark children under the king's roof.",
+   "issues": [
+    "daughters-kept-safe",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c80",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Doreah",
+   "age": 82,
+   "job": "Perfume seller",
+   "town": "Sunspear",
+   "worldview": "I want Dorne's merchants free to trade while the Crown spends less on distant threats.",
+   "issues": [
+    "royal-taxes",
+    "targaryen-exiles"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c81",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Weyland of Lannisport",
+   "age": 26,
+   "job": "Wine porter",
+   "town": "Lannisport",
+   "worldview": "I want the Crown to pay House Lannister before new taxes ruin western trade.",
+   "issues": [
+    "crown-debt",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c82",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Rugen the gaoler",
+   "age": 42,
+   "job": "Prison gaoler",
+   "town": "Riverrun",
+   "worldview": "I want prisoners tried quickly and royal spies kept out of local justice.",
+   "issues": [
+    "treason-trials",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c83",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Hobb the cooper",
+   "age": 49,
+   "job": "Cooper",
+   "town": "King's Landing",
+   "worldview": "I want grain barrels filled and taxes kept low when winter roads close.",
+   "issues": [
+    "winter-grain",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c84",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Marya of Flea Bottom",
+   "age": 71,
+   "job": "Street vendor",
+   "town": "Lannisport",
+   "worldview": "I want bread prices held down instead of another royal feast for nobles.",
+   "issues": [
+    "winter-grain",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c85",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Tommard Waters",
+   "age": 75,
+   "job": "Teamster",
+   "town": "Winterfell",
+   "worldview": "I want safe roads and fair pay when the North sends carts south.",
+   "issues": [
+    "north-bannermen-ready",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c86",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Elsa Hayford",
+   "age": 25,
+   "job": "Housemaid",
+   "town": "Gulltown",
+   "worldview": "I want the king to guard his daughters and settle Jon Arryn's death openly.",
+   "issues": [
+    "daughters-kept-safe",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c87",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Pate the potter",
+   "age": 32,
+   "job": "Potter",
+   "town": "Storm's End",
+   "worldview": "I want royal officers to punish raiders and stop charging poor villages for their own protection.",
+   "issues": [
+    "royal-justice",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c88",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Willa of the Street of Flour",
+   "age": 54,
+   "job": "Flour seller",
+   "town": "Sunspear",
+   "worldview": "I want grain kept in Dorne rather than sent north for a lord's feast.",
+   "issues": [
+    "winter-grain-stores",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c89",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Lothar the carter",
+   "age": 61,
+   "job": "Carter",
+   "town": "Highgarden",
+   "worldview": "I want the kingsroad watched and its tolls spent on bridges instead of court debts.",
+   "issues": [
+    "city-watch",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c90",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Bessa the laundress",
+   "age": 82,
+   "job": "Laundress",
+   "town": "Riverrun",
+   "worldview": "I want villages spared from soldiers and raiders who take food without judgment.",
+   "issues": [
+    "riverlands-raids",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c91",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Cressen of the Mud Gate",
+   "age": 24,
+   "job": "Gate guard",
+   "town": "King's Landing",
+   "worldview": "I want the City Watch paid on time and ordered to protect people below the castle.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c92",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Moll the fishmonger",
+   "age": 37,
+   "job": "Fishmonger",
+   "town": "Lannisport",
+   "worldview": "I want cheap food and no new crown levy to cover noble debts.",
+   "issues": [
+    "royal-taxes",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c93",
+   "region": "north",
+   "bloc": "northmen",
+   "name": "Harrold Stone",
+   "age": 59,
+   "job": "Horse breeder",
+   "town": "Winterfell",
+   "worldview": "I want the North ready for winter and free from needless southern wars.",
+   "issues": [
+    "winter-grain-stores",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c94",
+   "region": "vale",
+   "bloc": "northmen",
+   "name": "Tansy the seamstress",
+   "age": 66,
+   "job": "Seamstress",
+   "town": "Gulltown",
+   "worldview": "I want Sansa Stark protected and noble children spared from court vengeance.",
+   "issues": [
+    "daughters-kept-safe",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c95",
+   "region": "stormlands",
+   "bloc": "northmen",
+   "name": "Olyvar the chandlery clerk",
+   "age": 75,
+   "job": "Chandler clerk",
+   "town": "Storm's End",
+   "worldview": "I want ships supplied for defense, not another costly tourney for Robert Baratheon.",
+   "issues": [
+    "tourney-spending",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c96",
+   "region": "dorne",
+   "bloc": "northmen",
+   "name": "Rennick the porter",
+   "age": 23,
+   "job": "Dock porter",
+   "town": "Sunspear",
+   "worldview": "I want merchants left alone and the Crown to stop turning foreign princes into enemies.",
+   "issues": [
+    "royal-taxes",
+    "targaryen-exiles"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c97",
+   "region": "reach",
+   "bloc": "northmen",
+   "name": "Jeyne of the Hook",
+   "age": 42,
+   "job": "Alehouse keeper",
+   "town": "Highgarden",
+   "worldview": "I want the Faith and courts to restrain lords who raid villages for private quarrels.",
+   "issues": [
+    "royal-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c98",
+   "region": "riverlands",
+   "bloc": "northmen",
+   "name": "Wat the bell ringer",
+   "age": 49,
+   "job": "Bell ringer",
+   "town": "Riverrun",
+   "worldview": "I want warning of raiders and a royal inquiry into who ordered the attacks.",
+   "issues": [
+    "riverlands-raider-justice",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c99",
+   "region": "crownlands",
+   "bloc": "northmen",
+   "name": "Mory the dockhand",
+   "age": 71,
+   "job": "Dockhand",
+   "town": "King's Landing",
+   "worldview": "I want the City Watch to stop taking bribes and the Crown to pay its debts.",
+   "issues": [
+    "city-watch",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c100",
+   "region": "westerlands",
+   "bloc": "northmen",
+   "name": "Sarra the baker",
+   "age": 82,
+   "job": "Baker",
+   "town": "Lannisport",
+   "worldview": "I want grain stores protected before winter and the king's spending brought under control.",
+   "issues": [
+    "winter-grain",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c101",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Hugh of the Paps",
+   "age": 22,
+   "job": "Sheep farmer",
+   "town": "Winterfell",
+   "worldview": "I want the crown to keep northern roads safe and store grain before winter.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c102",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Nella the alewife",
+   "age": 32,
+   "job": "Alewife",
+   "town": "Gulltown",
+   "worldview": "I want judges to punish raiders so trade can reach the Vale without armed escorts.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c103",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Cayn the rope maker",
+   "age": 54,
+   "job": "Rope maker",
+   "town": "Storm's End",
+   "worldview": "I want fair royal taxes and work from the Hand's tourney.",
+   "issues": [
+    "royal-taxes",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c104",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Marta of the Street of Silk",
+   "age": 61,
+   "job": "Street vendor",
+   "town": "Planky Town",
+   "worldview": "I want the Crown to leave Dorne's people alone and keep food moving through the ports.",
+   "issues": [
+    "royal-taxes",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c105",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Boros the tanner",
+   "age": 75,
+   "job": "Tanner",
+   "town": "Oldtown",
+   "worldview": "I want the Faith's law respected and the king's courts kept open to poor men.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c106",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Alyse the candle maker",
+   "age": 21,
+   "job": "Candle maker",
+   "town": "Harrenhal",
+   "worldview": "I want the Hand to stop the raids that burn farms and take children.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c107",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Gormon the scribe",
+   "age": 37,
+   "job": "Copyist",
+   "town": "King's Landing",
+   "worldview": "I want the Crown's debts recorded plainly and paid without new tolls on bread.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c108",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Celia of Cobbler's Square",
+   "age": 59,
+   "job": "Shoemaker",
+   "town": "Lannisport",
+   "worldview": "I want Lannister lenders repaid so merchants can keep credit and ships moving.",
+   "issues": [
+    "bank-repayment-schedule",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c109",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Ralf the potter",
+   "age": 66,
+   "job": "Potter",
+   "town": "White Harbor",
+   "worldview": "I want northern bannermen ready when the king calls, with grain left for their families.",
+   "issues": [
+    "north-bannermen-ready",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c110",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Hester the seller of eels",
+   "age": 82,
+   "job": "Eel seller",
+   "town": "Gulltown",
+   "worldview": "I want the Vale protected from war and the king to hear Lady Lysa's charge.",
+   "issues": [
+    "succession-inquiry",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c111",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Tymor the stable boy",
+   "age": 20,
+   "job": "Stable hand",
+   "town": "Storm's End",
+   "worldview": "I want steady wages and a tourney that does not empty the city coffers.",
+   "issues": [
+    "fund-hands-tourney",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c112",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Mara of the blacksmiths' lane",
+   "age": 42,
+   "job": "Blacksmith",
+   "town": "Sunspear",
+   "worldview": "I want royal justice to apply to lords whose riders harm river villages and Dornish traders.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c113",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Osney the mason",
+   "age": 49,
+   "job": "Stone mason",
+   "town": "Highgarden",
+   "worldview": "I want the king to honor Joffrey's succession and stop quarrels that close the roads.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c114",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Della the washerwoman",
+   "age": 71,
+   "job": "Washerwoman",
+   "town": "Riverrun",
+   "worldview": "I want the Crown to punish Gregor Clegane and protect villages from Lord Tywin's riders.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c115",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Lymond the cooper",
+   "age": 75,
+   "job": "Cooper",
+   "town": "King's Landing",
+   "worldview": "I want the Crown to pay its debts before it raises taxes on barrels and ale.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c116",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Rhea of the fish market",
+   "age": 19,
+   "job": "Fish seller",
+   "town": "Lannisport",
+   "worldview": "I want the queen's house to protect markets while the Hand's inquiry does not close the harbor.",
+   "issues": [
+    "lannister-favour",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c117",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Harys the grain porter",
+   "age": 32,
+   "job": "Grain porter",
+   "town": "White Harbor",
+   "worldview": "I want full granaries and fair levies when northern lords send men south.",
+   "issues": [
+    "winter-grain",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c118",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Mella the fruit seller",
+   "age": 54,
+   "job": "Fruit seller",
+   "town": "Gulltown",
+   "worldview": "I want grain prices held down while the king spends less on knights and feasts.",
+   "issues": [
+    "winter-grain",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c119",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Jonel the wharfman",
+   "age": 61,
+   "job": "Wharfman",
+   "town": "Storm's End",
+   "worldview": "I want ships protected and royal taxes spent on the port instead of court debts.",
+   "issues": [
+    "royal-taxes",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c120",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Brina the brewer",
+   "age": 82,
+   "job": "Brewer",
+   "town": "Planky Town",
+   "worldview": "I want the Crown to respect Dorne's laws and leave Targaryen quarrels from our markets.",
+   "issues": [
+    "targaryen-exiles",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c121",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Tobbot the carter",
+   "age": 18,
+   "job": "Carter",
+   "town": "Highgarden",
+   "worldview": "I want roads guarded from raiders and grain bought before winter closes the passes.",
+   "issues": [
+    "riverlands-raids",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c122",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Alys of the Mud Gate",
+   "age": 37,
+   "job": "Bread seller",
+   "town": "King's Landing",
+   "worldview": "I want the City Watch to keep thieves from the market and bread prices from rising.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c123",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Perryn the armorer",
+   "age": 59,
+   "job": "Armorer",
+   "town": "King's Landing",
+   "worldview": "I want payment for royal orders and enough guards to keep violence from the smiths' lanes.",
+   "issues": [
+    "city-watch",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c124",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Nerys the seamstress",
+   "age": 66,
+   "job": "Seamstress",
+   "town": "Lannisport",
+   "worldview": "I want the queen to keep Sansa and the Hand's daughters safe inside the Red Keep.",
+   "issues": [
+    "daughters-kept-safe",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c125",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Hugh the ragman",
+   "age": 75,
+   "job": "Rag seller",
+   "town": "Winterfell",
+   "worldview": "I want justice for Bran and safe roads for men carrying wool south.",
+   "issues": [
+    "royal-justice",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c126",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Sella of Flea Bottom",
+   "age": 29,
+   "job": "Street seller",
+   "town": "Gulltown",
+   "worldview": "I want the City Watch to stop taking coin from stalls and brothels.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c127",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Merrit the chandlery boy",
+   "age": 42,
+   "job": "Chandler",
+   "town": "Storm's End",
+   "worldview": "I want the Hand to fund honest work instead of borrowing more gold for a tourney.",
+   "issues": [
+    "fund-hands-tourney",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c128",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Janna the baker",
+   "age": 49,
+   "job": "Baker",
+   "town": "Sunspear",
+   "worldview": "I want cheap grain and judges who do not bend law for Lannister gold.",
+   "issues": [
+    "winter-grain",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c129",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Garse the net maker",
+   "age": 71,
+   "job": "Net maker",
+   "town": "Oldtown",
+   "worldview": "I want the Crown to defend river farmers and keep the Faith's courts respected.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c130",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Orena of the Street of Flour",
+   "age": 82,
+   "job": "Flour seller",
+   "town": "Riverrun",
+   "worldview": "I want grain stores guarded before raiders and winter take what the harvest left.",
+   "issues": [
+    "winter-grain-stores",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c131",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Wyl the groom",
+   "age": 28,
+   "job": "Groom",
+   "town": "King's Landing",
+   "worldview": "I want the king to pay stable workers and keep armed men from the inns.",
+   "issues": [
+    "fund-hands-tourney",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c132",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Talla the pot seller",
+   "age": 32,
+   "job": "Pot seller",
+   "town": "Lannisport",
+   "worldview": "I want House Lannister's credit protected and taxes kept predictable for small shops.",
+   "issues": [
+    "lannister-favour",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c133",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Maron the salt merchant",
+   "age": 54,
+   "job": "Salt merchant",
+   "town": "White Harbor",
+   "worldview": "I want northern grain shipments protected and the Crown to call bannermen only when needed.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c134",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Elyra the laundress",
+   "age": 61,
+   "job": "Laundress",
+   "town": "Gulltown",
+   "worldview": "I want peace between the Vale and the Crown before another lord's murder brings war.",
+   "issues": [
+    "succession-inquiry",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c135",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Ronnel the cobbler",
+   "age": 75,
+   "job": "Cobbler",
+   "town": "Storm's End",
+   "worldview": "I want royal justice for smallfolk and work from soldiers passing through the town.",
+   "issues": [
+    "royal-justice",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c136",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Falia the candle seller",
+   "age": 27,
+   "job": "Candle seller",
+   "town": "Sunspear",
+   "worldview": "I want the Faith and the Crown to respect Dornish customs and stop collecting needless tolls.",
+   "issues": [
+    "royal-taxes",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c137",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Torrhen the porter",
+   "age": 37,
+   "job": "Porter",
+   "town": "Highgarden",
+   "worldview": "I want safe roads for wagons and a grain reserve before winter reaches the Reach.",
+   "issues": [
+    "winter-grain-stores",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c138",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Maera of the Paps",
+   "age": 59,
+   "job": "Sheep farmer",
+   "town": "Harrenhal",
+   "worldview": "I want the Hand to send judges against raiders and spare villages from another burned harvest.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c139",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Cressen the fishmonger",
+   "age": 66,
+   "job": "Fishmonger",
+   "town": "King's Landing",
+   "worldview": "I want the Watch to guard the fish market and the Crown to stop taxing every basket.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c140",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Otho the cooper",
+   "age": 82,
+   "job": "Cooper",
+   "town": "Lannisport",
+   "worldview": "I want the Iron Throne to set a debt schedule before Lannister creditors close the roads.",
+   "issues": [
+    "bank-repayment-schedule",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c141",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Lysa the brewer's wife",
+   "age": 26,
+   "job": "Brewer",
+   "town": "Winterfell",
+   "worldview": "I want grain stored for winter and the daughters of the Hand protected from court danger.",
+   "issues": [
+    "winter-grain-stores",
+    "daughters-kept-safe"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c142",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Hobb the mason",
+   "age": 42,
+   "job": "Mason",
+   "town": "Gulltown",
+   "worldview": "I want the king to hear the evidence on Jon Arryn's death before calling men to war.",
+   "issues": [
+    "succession-inquiry",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c143",
+   "region": "stormlands",
+   "bloc": "riverfolk",
+   "name": "Mella the scullery maid",
+   "age": 49,
+   "job": "Scullery maid",
+   "town": "Storm's End",
+   "worldview": "I want wages paid and the gold cloaks kept from beating workers who protest at the gates.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c144",
+   "region": "dorne",
+   "bloc": "riverfolk",
+   "name": "Quentyn the tally clerk",
+   "age": 71,
+   "job": "Tally clerk",
+   "town": "Sunspear",
+   "worldview": "I want clear accounts of royal taxes and no war with Dorne over Targaryen fugitives.",
+   "issues": [
+    "royal-taxes",
+    "targaryen-exiles"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c145",
+   "region": "reach",
+   "bloc": "riverfolk",
+   "name": "Sarra of Cobbler's Square",
+   "age": 75,
+   "job": "Shoemaker",
+   "town": "Highgarden",
+   "worldview": "I want Joffrey's succession honored and the king to spend less borrowed gold on tourneys.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c146",
+   "region": "riverlands",
+   "bloc": "riverfolk",
+   "name": "Mory the rope maker",
+   "age": 25,
+   "job": "Rope maker",
+   "town": "Riverrun",
+   "worldview": "I want river lords to protect farms and punish the riders who raid them.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c147",
+   "region": "crownlands",
+   "bloc": "riverfolk",
+   "name": "Donyse the washerwoman",
+   "age": 32,
+   "job": "Washerwoman",
+   "town": "King's Landing",
+   "worldview": "I want the Hand's daughters kept safe and the City Watch barred from selling protection.",
+   "issues": [
+    "daughters-kept-safe",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c148",
+   "region": "westerlands",
+   "bloc": "riverfolk",
+   "name": "Ralf the dockhand",
+   "age": 54,
+   "job": "Dockhand",
+   "town": "Lannisport",
+   "worldview": "I want ships moving under fair tolls while the Crown repays Lannister gold.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c149",
+   "region": "north",
+   "bloc": "riverfolk",
+   "name": "Willa the grain seller",
+   "age": 61,
+   "job": "Grain seller",
+   "town": "White Harbor",
+   "worldview": "I want northern stores filled and the Crown to respect the bannermen who guard them.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c150",
+   "region": "vale",
+   "bloc": "riverfolk",
+   "name": "Harys the smith",
+   "age": 82,
+   "job": "Smith",
+   "town": "Gulltown",
+   "worldview": "I want the Vale kept out of war until the murder of Jon Arryn is judged.",
+   "issues": [
+    "succession-inquiry",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c151",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Bessa of the Mud Gate",
+   "age": 24,
+   "job": "Sailcloth trader",
+   "town": "Storm's End",
+   "worldview": "The Crown should protect the roads and pay its debts before another lord calls the banners.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c152",
+   "region": "dorne",
+   "bloc": "guildsmen",
+   "name": "Tymor the potter",
+   "age": 37,
+   "job": "Clay potter",
+   "town": "Planky Town",
+   "worldview": "The Crown should leave Dorne's laws alone and keep royal collectors from taking our grain.",
+   "issues": [
+    "royal-taxes",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c153",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Nella the baker",
+   "age": 59,
+   "job": "Oven baker",
+   "town": "Oldtown",
+   "worldview": "The Crown should keep bread cheap and punish men who steal from honest traders.",
+   "issues": [
+    "royal-justice",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c154",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Gormon the carter",
+   "age": 66,
+   "job": "Wagon carter",
+   "town": "Harrenhal",
+   "worldview": "The Crown should stop Gregor Clegane's raids before more Riverlands villages burn.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c155",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Celia the fish seller",
+   "age": 75,
+   "job": "Fish seller",
+   "town": "Rosby",
+   "worldview": "The Crown should keep the markets safe and collect taxes without driving old women into hunger.",
+   "issues": [
+    "royal-taxes",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c156",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Pate the tanner",
+   "age": 23,
+   "job": "Leather tanner",
+   "town": "Lannisport",
+   "worldview": "The Crown should honour Lannister loans and stop the Hand's inquiry from bringing war west.",
+   "issues": [
+    "crown-debt",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c157",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Mara the chandlery keeper",
+   "age": 42,
+   "job": "Chandler",
+   "town": "White Harbor",
+   "worldview": "The Crown should fill northern granaries and call the bannermen before winter closes the roads.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c158",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Osric the mason",
+   "age": 49,
+   "job": "Stone mason",
+   "town": "Gulltown",
+   "worldview": "The Crown should keep the king's peace and uncover who killed Jon Arryn.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c159",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Jeyne the alewife",
+   "age": 71,
+   "job": "Ale seller",
+   "town": "Massey's Hook",
+   "worldview": "The Crown should pay its debts without squeezing every tavern and cart on the kingsroad.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c160",
+   "region": "dorne",
+   "bloc": "guildsmen",
+   "name": "Lothar the net maker",
+   "age": 82,
+   "job": "Fishing netter",
+   "town": "Sunspear",
+   "worldview": "The Crown should respect Dornish custom and keep royal soldiers away from our ports.",
+   "issues": [
+    "royal-taxes",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c161",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Elsa the fruit seller",
+   "age": 22,
+   "job": "Fruit seller",
+   "town": "Highgarden",
+   "worldview": "The Crown should keep the roads open and stop tourneys from consuming money needed for food.",
+   "issues": [
+    "tourney-spending",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c162",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Tommard the porter",
+   "age": 32,
+   "job": "Harbour porter",
+   "town": "Seagard",
+   "worldview": "The Crown should protect Riverlands trade and punish the riders who take our cargo.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c163",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Moll the brewer",
+   "age": 54,
+   "job": "Ale brewer",
+   "town": "King's Landing",
+   "worldview": "The Crown should keep the City Watch paid and prevent riots when bread prices rise.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c164",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Rennick the cooper",
+   "age": 61,
+   "job": "Barrel cooper",
+   "town": "Casterly Rock",
+   "worldview": "The Crown should repay Lord Tywin and keep the Hand from turning Lannister power against the king.",
+   "issues": [
+    "crown-debt",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c165",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Tansy the laundress",
+   "age": 75,
+   "job": "Laundry worker",
+   "town": "Winterfell",
+   "worldview": "The Crown should send grain north and keep the Stark girls safe in the Red Keep.",
+   "issues": [
+    "winter-grain",
+    "daughters-kept-safe"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c166",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Mara Venn",
+   "age": 21,
+   "job": "Alehouse keeper",
+   "town": "Gulltown",
+   "worldview": "The Crown should learn who murdered Jon Arryn and stop lords from using justice for private revenge.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c167",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Tomas Galt",
+   "age": 37,
+   "job": "Salt fishmonger",
+   "town": "Storm's End",
+   "worldview": "The Crown should pay its debts and stop wasting borrowed gold on Robert's tourney.",
+   "issues": [
+    "bank-repayment-schedule",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c168",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Hobb Rusk",
+   "age": 59,
+   "job": "Cart maker",
+   "town": "Ashford",
+   "worldview": "The Crown should keep grain moving and leave enough coin for farmers before winter.",
+   "issues": [
+    "winter-grain",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c169",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Ellyn Pyne",
+   "age": 66,
+   "job": "Wool merchant",
+   "town": "Riverrun",
+   "worldview": "The Crown should bring Gregor Clegane to trial and protect villages that cannot defend themselves.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c170",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Willem Sedge",
+   "age": 82,
+   "job": "Dock clerk",
+   "town": "Duskendale",
+   "worldview": "The Crown should curb its debts before new taxes ruin every port in the Crownlands.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c171",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Joryn Quill",
+   "age": 20,
+   "job": "Ironmonger",
+   "town": "Lannisport",
+   "worldview": "The Crown should favour Lannister credit and end questions that threaten the queen's house.",
+   "issues": [
+    "lannister-favour",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c172",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Marya Fenn",
+   "age": 42,
+   "job": "Lamp maker",
+   "town": "White Harbor",
+   "worldview": "The Crown should stock winter grain and let Northern bannermen prepare without delay.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c173",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Olyvar Noll",
+   "age": 49,
+   "job": "Stone cutter",
+   "town": "Gates of the Moon",
+   "worldview": "The Crown should uncover Jon Arryn's murder before the Vale is forced into another lord's quarrel.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c174",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Pate Brune",
+   "age": 71,
+   "job": "Horse trader",
+   "town": "Storm's End",
+   "worldview": "The Crown should pay the City Watch and keep roads safe for merchants travelling to the capital.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c175",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Cella Rook",
+   "age": 75,
+   "job": "Cloth merchant",
+   "town": "Oldtown",
+   "worldview": "The Crown should restrain tourney spending and protect grain stores from a hard winter.",
+   "issues": [
+    "tourney-spending",
+    "winter-grain"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c176",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Hobb of Flea Bottom",
+   "age": 19,
+   "job": "Kitchen porter",
+   "town": "King's Landing",
+   "worldview": "The Crown should keep bread in the bowls of Flea Bottom and stop gold cloaks from taking bribes.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c177",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Marya of the Street of Flour",
+   "age": 32,
+   "job": "Flour seller",
+   "town": "King's Landing",
+   "worldview": "The Crown should guard the granaries and punish raiders who make Riverlands flour costly.",
+   "issues": [
+    "winter-grain",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c178",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Tanselle of the Mud Gate",
+   "age": 54,
+   "job": "Rope maker",
+   "town": "Lannisport",
+   "worldview": "The Crown should settle its debts with House Lannister and keep the queen's children secure.",
+   "issues": [
+    "crown-debt",
+    "joffrey-succession-honoured"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c179",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Gerren Waters",
+   "age": 61,
+   "job": "Sled builder",
+   "town": "Winterfell",
+   "worldview": "The Crown should send men and grain north before the snows close the kingsroad.",
+   "issues": [
+    "winter-grain",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c180",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Lella the potter",
+   "age": 82,
+   "job": "Clay potter",
+   "town": "Gulltown",
+   "worldview": "The Crown should enforce the king's peace and reveal who poisoned Jon Arryn's household.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c181",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Olyvar the porter",
+   "age": 18,
+   "job": "Dock porter",
+   "town": "Storm's End",
+   "worldview": "The Crown should make the roads safe and stop lords from taking goods during their quarrels.",
+   "issues": [
+    "royal-justice",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c182",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Nolla of the Hook",
+   "age": 37,
+   "job": "Net seller",
+   "town": "Oldtown",
+   "worldview": "The Crown should protect grain trade and avoid a war that closes the Reach's roads.",
+   "issues": [
+    "winter-grain",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c183",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Bessa the washerwoman",
+   "age": 59,
+   "job": "Washerwoman",
+   "town": "Riverrun",
+   "worldview": "The Crown should punish Gregor Clegane and protect families whose homes lie open to western riders.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c184",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Porridge Tom",
+   "age": 66,
+   "job": "Porridge vendor",
+   "town": "King's Landing",
+   "worldview": "The Crown should keep food affordable and spend less borrowed gold on royal feasts.",
+   "issues": [
+    "crown-debt",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c185",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Hugh of the Fishmongers' Square",
+   "age": 75,
+   "job": "Fishmonger",
+   "town": "Lannisport",
+   "worldview": "The Crown should repay its Lannister creditors and keep the queen's succession secure.",
+   "issues": [
+    "crown-debt",
+    "joffrey-succession-honoured"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c186",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Mikken the smith",
+   "age": 29,
+   "job": "Weapons smith",
+   "town": "Winterfell",
+   "worldview": "The Crown should arm the North and stop treating Stark justice as a southern matter.",
+   "issues": [
+    "north-bannermen-ready",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c187",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Harra the chandlemaker",
+   "age": 42,
+   "job": "Candle maker",
+   "town": "Gulltown",
+   "worldview": "The Crown should protect the Faith's peace and hold the murderer of Jon Arryn to account.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c188",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Chataya of the Street of Silk",
+   "age": 49,
+   "job": "Brothel keeper",
+   "town": "King's Landing",
+   "worldview": "The Crown should leave the Street of Silk alone and keep the gold cloaks from selling protection twice.",
+   "issues": [
+    "city-watch",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c189",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Alayaya",
+   "age": 71,
+   "job": "Brothel keeper",
+   "town": "Oldtown",
+   "worldview": "The Crown should protect honest houses and stop spies from turning every visitor into an accusation.",
+   "issues": [
+    "spies-informers",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c190",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Masha Heddle",
+   "age": 82,
+   "job": "Inn keeper",
+   "town": "Riverrun",
+   "worldview": "The Crown should secure the roads and make western raiders answer before a larger war begins.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c191",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Tobho Mott",
+   "age": 28,
+   "job": "Armour smith",
+   "town": "King's Landing",
+   "worldview": "The Crown should pay its craftsmen and keep the royal household from borrowing beyond its means.",
+   "issues": [
+    "crown-debt",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c192",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Gendry",
+   "age": 32,
+   "job": "Blacksmith's apprentice",
+   "town": "Lannisport",
+   "worldview": "The Crown should leave the queen's children safe and stop nobles from using poor boys in their quarrels.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c193",
+   "region": "north",
+   "bloc": "guildsmen",
+   "name": "Barra",
+   "age": 54,
+   "job": "Wet nurse",
+   "town": "Winterfell",
+   "worldview": "The Crown should protect the Stark children and send justice north when a child is attacked.",
+   "issues": [
+    "daughters-kept-safe",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c194",
+   "region": "vale",
+   "bloc": "guildsmen",
+   "name": "Cressen the cooper",
+   "age": 61,
+   "job": "Barrel maker",
+   "town": "Gulltown",
+   "worldview": "The Crown should find Jon Arryn's killer and prevent another succession crisis.",
+   "issues": [
+    "succession-inquiry",
+    "royal-bastards"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c195",
+   "region": "stormlands",
+   "bloc": "guildsmen",
+   "name": "Lommy Greenhands",
+   "age": 75,
+   "job": "Street sweeper",
+   "town": "Storm's End",
+   "worldview": "The Crown should feed the poor and keep drunken gold cloaks from beating people in the lanes.",
+   "issues": [
+    "city-watch",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c196",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Hot Pie",
+   "age": 27,
+   "job": "Pie cook",
+   "town": "Highgarden",
+   "worldview": "The Crown should keep food moving through winter and stop lords from spending grain on pageants.",
+   "issues": [
+    "winter-grain",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c197",
+   "region": "riverlands",
+   "bloc": "guildsmen",
+   "name": "Vylarr",
+   "age": 37,
+   "job": "Stable hand",
+   "town": "Riverrun",
+   "worldview": "The Crown should guard the Riverlands roads and punish riders who take horses from small farmers.",
+   "issues": [
+    "riverlands-raids",
+    "riverlands-raider-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c198",
+   "region": "crownlands",
+   "bloc": "guildsmen",
+   "name": "Masha the grain seller",
+   "age": 59,
+   "job": "Grain seller",
+   "town": "King's Landing",
+   "worldview": "The Crown should fill its stores before winter and stop taxes from driving grain beyond poor people's reach.",
+   "issues": [
+    "winter-grain",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c199",
+   "region": "westerlands",
+   "bloc": "guildsmen",
+   "name": "Willow of the Paps",
+   "age": 66,
+   "job": "Wool buyer",
+   "town": "Casterly Rock",
+   "worldview": "The Crown should honour Lannister credit and keep trade open while the great houses quarrel.",
+   "issues": [
+    "crown-debt",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c200",
+   "region": "reach",
+   "bloc": "guildsmen",
+   "name": "Hella of Gulltown",
+   "age": 82,
+   "job": "Fish seller",
+   "town": "Gulltown",
+   "worldview": "The Crown should keep the port safe and settle the question of succession before war reaches the Vale.",
+   "issues": [
+    "city-watch",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c201",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Moryn the carter",
+   "age": 26,
+   "job": "Carter",
+   "town": "Harrenhal",
+   "worldview": "The Crown must punish raiders and keep the kingsroad open for carts.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c202",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Jeyne Poole",
+   "age": 42,
+   "job": "Alehouse keeper",
+   "town": "King's Landing",
+   "worldview": "The Crown must protect honest worship and keep soldiers from taking food without payment.",
+   "issues": [
+    "royal-justice",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c203",
+   "region": "westerlands",
+   "bloc": "faithful",
+   "name": "Beth Cassel",
+   "age": 49,
+   "job": "Wool spinner",
+   "town": "Lannisport",
+   "worldview": "The king must repay his debts before Lannister creditors seize more land and goods.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c204",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Mordane",
+   "age": 71,
+   "job": "Nursemaid",
+   "town": "Oldtown",
+   "worldview": "The Hand must defend the Faith and judge noble thieves by the same law as common men.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c205",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Heward",
+   "age": 75,
+   "job": "Ferry keeper",
+   "town": "Seagard",
+   "worldview": "The Crown must make river lords answer for burned farms and stolen cattle.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c206",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Jory Cassel",
+   "age": 25,
+   "job": "Household guard",
+   "town": "King's Landing",
+   "worldview": "The Hand must keep his daughters safe while the queen's household watches them.",
+   "issues": [
+    "daughters-kept-safe",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c207",
+   "region": "westerlands",
+   "bloc": "faithful",
+   "name": "Harwin",
+   "age": 32,
+   "job": "Stable hand",
+   "town": "Casterly Rock",
+   "worldview": "The king must honour Joffrey's succession and stop northern lords from bringing war south.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c208",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Tommen's nurse Mela",
+   "age": 54,
+   "job": "Wet nurse",
+   "town": "Highgarden",
+   "worldview": "The Crown must protect the royal children from court quarrels and armed men.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c209",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Sarra of the wool market",
+   "age": 61,
+   "job": "Wool merchant",
+   "town": "Fairmarket",
+   "worldview": "The Crown must guard markets from raiders and take fewer tolls from struggling villages.",
+   "issues": [
+    "riverlands-raids",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c210",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Bandy the brewer",
+   "age": 82,
+   "job": "Brewer",
+   "town": "King's Landing",
+   "worldview": "The king must pay for his feasts without squeezing every brewer and pot seller in the city.",
+   "issues": [
+    "tourney-spending",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c211",
+   "region": "westerlands",
+   "bloc": "faithful",
+   "name": "Osney Kettleblack",
+   "age": 24,
+   "job": "Sellsword",
+   "town": "Lannisport",
+   "worldview": "The queen must keep Lannister favour strong and pay men who guard her household.",
+   "issues": [
+    "lannister-favour",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c212",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Tyrion's stableboy Wylis",
+   "age": 37,
+   "job": "Stable groom",
+   "town": "Oldtown",
+   "worldview": "The Hand must protect servants from false charges when great lords quarrel.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c213",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Hugh of the Vale",
+   "age": 59,
+   "job": "River ferryman",
+   "town": "Lord Harroway's Town",
+   "worldview": "The Crown must send justice against Gregor Clegane and men who raid under lordly protection.",
+   "issues": [
+    "riverlands-raider-justice",
+    "riverlands-raids"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c214",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Mycah",
+   "age": 66,
+   "job": "Street child",
+   "town": "King's Landing",
+   "worldview": "The City Watch must stop armed men from hurting children in the lanes.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c215",
+   "region": "westerlands",
+   "bloc": "faithful",
+   "name": "Chiswyck",
+   "age": 75,
+   "job": "Man-at-arms",
+   "town": "Casterly Rock",
+   "worldview": "The Crown must defend Lannister lands and punish enemies who threaten the queen's house.",
+   "issues": [
+    "lannister-favour",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c216",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Polliver",
+   "age": 23,
+   "job": "Camp follower",
+   "town": "Highgarden",
+   "worldview": "The Hand must fund the tourney so knights come, trade grows and the Reach sells its stores.",
+   "issues": [
+    "fund-hands-tourney",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c217",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Amory Lorch",
+   "age": 42,
+   "job": "Mounted raider",
+   "town": "Harrenhal",
+   "worldview": "Lord Tywin must be free to answer river attacks without a northern inquiry into every sword stroke.",
+   "issues": [
+    "riverlands-raids",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c218",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Vayon Poole",
+   "age": 49,
+   "job": "Household steward",
+   "town": "King's Landing",
+   "worldview": "The Hand must keep his daughters from the queen's reach and preserve Stark honour.",
+   "issues": [
+    "daughters-kept-safe",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c219",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Nan of Winterfell",
+   "age": 71,
+   "job": "Storyteller",
+   "town": "Winterfell",
+   "worldview": "The Crown must store grain before winter and stop southern lords from wasting it on pageants.",
+   "issues": [
+    "winter-grain-stores",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c220",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Farlen",
+   "age": 82,
+   "job": "Kennel master",
+   "town": "Riverrun",
+   "worldview": "The king must hear riverfolk complaints before more holdfasts burn.",
+   "issues": [
+    "riverlands-raider-justice",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c221",
+   "region": "crownlands",
+   "bloc": "faithful",
+   "name": "Septa Mordane's novice Elinor",
+   "age": 22,
+   "job": "Novice septa",
+   "town": "King's Landing",
+   "worldview": "The Hand must protect the Faith from court lies and punish oathbreakers openly.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c222",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Osha",
+   "age": 32,
+   "job": "Camp scout",
+   "town": "The Twins",
+   "worldview": "The Crown must guard roads and fields when rival lords call their banners.",
+   "issues": [
+    "riverlands-raids",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c223",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Old Nan",
+   "age": 54,
+   "job": "Household servant",
+   "town": "Winterfell",
+   "worldview": "The Stark girls must be brought home before the queen turns a betrothal into a hostage bond.",
+   "issues": [
+    "daughters-kept-safe",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c224",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Hodor",
+   "age": 61,
+   "job": "Stable keeper",
+   "town": "Winterfell",
+   "worldview": "The Crown must leave northern boys to tend farms until winter passes.",
+   "issues": [
+    "winter-grain",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c225",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Maester Colemon",
+   "age": 75,
+   "job": "Maester",
+   "town": "The Eyrie",
+   "worldview": "The Hand must investigate Jon Arryn's death with records, witnesses and no Lannister interference.",
+   "issues": [
+    "succession-inquiry",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c226",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Ser Rodrik Cassel",
+   "age": 21,
+   "job": "Master-at-arms",
+   "town": "Winterfell",
+   "worldview": "The Crown must punish the men who tried to kill Bran and protect Lady Catelyn's household.",
+   "issues": [
+    "royal-justice",
+    "treason-trials"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c227",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Mikken's apprentice Palla",
+   "age": 37,
+   "job": "Blacksmith",
+   "town": "Winterfell",
+   "worldview": "The Crown must supply northern keeps before snow closes the roads.",
+   "issues": [
+    "winter-grain",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c228",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Donnel Waynwood",
+   "age": 59,
+   "job": "Horse breeder",
+   "town": "Runestone",
+   "worldview": "The king must call no levy until the Vale knows who killed Jon Arryn.",
+   "issues": [
+    "succession-inquiry",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c229",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Hewett of the kingsroad",
+   "age": 66,
+   "job": "Road warden",
+   "town": "The Inn at the Crossroads",
+   "worldview": "The Crown must make the kingsroad safe from raiders and unpaid armed companies.",
+   "issues": [
+    "riverlands-raids",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c230",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Mariya of Maidenpool",
+   "age": 82,
+   "job": "Innkeeper",
+   "town": "Maidenpool",
+   "worldview": "The Crown must protect inns and markets from soldiers who refuse coin for food.",
+   "issues": [
+    "royal-justice",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c231",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Cleo Frey",
+   "age": 20,
+   "job": "Frey clerk",
+   "town": "The Twins",
+   "worldview": "The Crown must repay its loans before new tolls ruin trade across the river.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c232",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Wendel Manderly",
+   "age": 42,
+   "job": "Fishmonger",
+   "town": "White Harbor",
+   "worldview": "The Crown must preserve winter stores and pay for northern grain before court feasts consume them.",
+   "issues": [
+    "winter-grain-stores",
+    "tourney-spending"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c233",
+   "region": "riverlands",
+   "bloc": "faithful",
+   "name": "Wylis Manderly",
+   "age": 49,
+   "job": "Shipwright",
+   "town": "White Harbor",
+   "worldview": "The Crown must ready northern ships and men if the Targaryen exiles return.",
+   "issues": [
+    "targaryen-exiles",
+    "north-bannermen-ready"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c234",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Cayn",
+   "age": 71,
+   "job": "Gate guard",
+   "town": "Highgarden",
+   "worldview": "The Hand must keep tourney costs within the royal purse and stop new taxes on market goods.",
+   "issues": [
+    "tourney-spending",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c235",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Shagga's interpreter Koss",
+   "age": 75,
+   "job": "Interpreter",
+   "town": "King's Landing",
+   "worldview": "The Crown must watch foreign swords and learn whether Viserys has bought a Dothraki host.",
+   "issues": [
+    "targaryen-exiles",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c236",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Masha of the River Gate",
+   "age": 19,
+   "job": "Gate porter",
+   "town": "King's Landing",
+   "worldview": "The City Watch must guard the gates without taking bribes from traders or beating beggars.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c237",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Lollys Stokeworth",
+   "age": 32,
+   "job": "Household lady",
+   "town": "Rosby",
+   "worldview": "The Crown must preserve Joffrey's succession so noble marriages do not become causes for war.",
+   "issues": [
+    "joffrey-succession-honoured",
+    "succession-inquiry"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c238",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Falyse Stokeworth",
+   "age": 54,
+   "job": "Estate manager",
+   "town": "Stokeworth",
+   "worldview": "The queen must keep Lannister protection over the Crownlands and silence claims against her children.",
+   "issues": [
+    "lannister-favour",
+    "royal-bastards"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c239",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Tanda Stokeworth",
+   "age": 61,
+   "job": "Landholder",
+   "town": "Stokeworth",
+   "worldview": "The king must rule plainly and stop court debts from falling on small Crownlands estates.",
+   "issues": [
+    "crown-debt",
+    "royal-taxes"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c240",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Symon Silvertongue",
+   "age": 82,
+   "job": "Singer",
+   "town": "King's Landing",
+   "worldview": "The court must pay performers and leave songs free of the queen's punishments.",
+   "issues": [
+    "tourney-spending",
+    "spies-informers"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c241",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Syrio Forel",
+   "age": 18,
+   "job": "Sword instructor",
+   "town": "King's Landing",
+   "worldview": "The Hand must protect children at court and keep the Kingsguard from serving private grudges.",
+   "issues": [
+    "daughters-kept-safe",
+    "kingsguard"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c242",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Ilyn Payne",
+   "age": 37,
+   "job": "Headsman",
+   "town": "King's Landing",
+   "worldview": "The Crown must state the charge before punishment and reserve death for proven treason.",
+   "issues": [
+    "treason-trials",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c243",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Vylarr's wife Hanna",
+   "age": 59,
+   "job": "Laundry keeper",
+   "town": "King's Landing",
+   "worldview": "The queen must keep order in the Red Keep without sending servants into cells on whispers.",
+   "issues": [
+    "spies-informers",
+    "lannister-favour"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c244",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Marya Seaworth",
+   "age": 66,
+   "job": "Sailor's wife",
+   "town": "King's Landing",
+   "worldview": "The Crown must feed dock families and stop new levies from emptying the harbor.",
+   "issues": [
+    "royal-taxes",
+    "northern-levies"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c245",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Davos's son Matthos",
+   "age": 75,
+   "job": "Ship clerk",
+   "town": "King's Landing",
+   "worldview": "The king must repay lenders before merchants lose ships to Crown seizure.",
+   "issues": [
+    "crown-debt",
+    "bank-repayment-schedule"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c246",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Steffon Seaworth",
+   "age": 29,
+   "job": "Dockworker",
+   "town": "King's Landing",
+   "worldview": "The City Watch must keep the docks safe from thieves and unpaid soldiers.",
+   "issues": [
+    "city-watch",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c247",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Mya Stone",
+   "age": 42,
+   "job": "Horse breeder",
+   "town": "The Eyrie",
+   "worldview": "The Crown must leave the Vale alone until the Arryn murder is examined by lawful men.",
+   "issues": [
+    "succession-inquiry",
+    "royal-justice"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c248",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Bella of the Crossroads",
+   "age": 49,
+   "job": "Alehouse maid",
+   "town": "The Crossroads",
+   "worldview": "The Crown must protect common travelers when armed lords turn roads into battle lines.",
+   "issues": [
+    "riverlands-raids",
+    "city-watch"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c249",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Gendry's master Tobho",
+   "age": 71,
+   "job": "Armourer",
+   "town": "King's Landing",
+   "worldview": "The king must pay smiths on time and stop borrowing for tourneys that bring no lasting defence.",
+   "issues": [
+    "tourney-spending",
+    "crown-debt"
+   ],
+   "weight": 1
+  },
+  {
+   "id": "c250",
+   "region": "reach",
+   "bloc": "faithful",
+   "name": "Jalabhar Xho",
+   "age": 82,
+   "job": "Exiled prince",
+   "town": "King's Landing",
+   "worldview": "The Crown must respect foreign guests and watch the sea for Targaryen war plans.",
+   "issues": [
+    "targaryen-exiles",
+    "spies-informers"
+   ],
+   "weight": 1
+  }
+ ],
+ "starts": [
+  {
+   "faction": "crown",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "crown"
+   ],
+   "premise": "The King on the Iron Throne. He wants his Hand to rule, pay for feasts and kill the last Targaryens.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  },
+  {
+   "faction": "lannister",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "lannister"
+   ],
+   "premise": "The queen and her father's house, richest in the realm. They want Joffrey's succession safe and the Hand's inquiry stopped.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  },
+  {
+   "faction": "stark",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "stark"
+   ],
+   "premise": "The Lord of Winterfell's own house and northern bannermen. They want justice for Bran and the Hand's daughters kept safe.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  },
+  {
+   "faction": "baelish",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "baelish"
+   ],
+   "premise": "The Master of Coin and the gold cloaks he pays. He wants office, lands and a court in turmoil.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  },
+  {
+   "faction": "varys",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "varys"
+   ],
+   "premise": "The eunuch spymaster of the small council. He wants war between Stark and Lannister delayed and his informers left alone.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  },
+  {
+   "faction": "stannis",
+   "seat_title": "Hand of the King",
+   "coalition": [
+    "stannis"
+   ],
+   "premise": "The King's stern middle brother, withdrawn to his island seat. He wants to be named Robert's lawful heir.",
+   "party": 70,
+   "capital": 50,
+   "hostile": []
+  }
+ ],
+ "problems": [
+  "Jon Arryn is dead, Lysa Arryn writes that he was murdered, and you do not know by whose hand.",
+  "The Crown debt passes six million gold dragons, much of it owed to Tywin Lannister and the Iron Bank of Braavos.",
+  "King Robert wants Daenerys Targaryen killed, and you have already quarrelled with him over killing a girl.",
+  "Bran Stark's fall was followed by an attempt on his life, and Lady Catelyn names Tyrion Lannister for it.",
+  "King Robert has ordered the Hand's Tourney in your honour and means to pay for it with borrowed gold.",
+  "Sansa Stark, 11, is betrothed to Joffrey Baratheon, and both your daughters live in the Red Keep beside the queen.",
+  "The smallfolk of the Riverlands want justice against raiders, and Gregor Clegane rides on Lord Tywin's word.",
+  "Viserys Targaryen seeks a Dothraki army across the Narrow Sea while winter nears and the granaries stand thin."
+ ],
+ "promises": [
+  {
+   "tag": "fund-hands-tourney",
+   "label": "Pay for the Hand's Tourney in full"
+  },
+  {
+   "tag": "bank-repayment-schedule",
+   "label": "Pay the Iron Bank on every due date"
+  },
+  {
+   "tag": "daughters-kept-safe",
+   "label": "Keep Sansa and Arya safe at court"
+  },
+  {
+   "tag": "joffrey-succession-honoured",
+   "label": "Honour Joffrey Baratheon as the King's heir"
+  },
+  {
+   "tag": "spare-whisperer-network",
+   "label": "Leave the Master of Whisperers' informers untouched"
+  },
+  {
+   "tag": "riverlands-raider-justice",
+   "label": "Bring the Riverlands raiders to justice"
+  },
+  {
+   "tag": "winter-grain-stores",
+   "label": "Store grain in royal granaries for winter"
+  },
+  {
+   "tag": "north-bannermen-ready",
+   "label": "Keep the northern bannermen ready to march"
+  }
+ ],
+ "tags": [
+  "fund-hands-tourney",
+  "bank-repayment-schedule",
+  "daughters-kept-safe",
+  "joffrey-succession-honoured",
+  "spare-whisperer-network",
+  "riverlands-raider-justice",
+  "winter-grain-stores",
+  "north-bannermen-ready",
+  "crown-debt",
+  "tourney-spending",
+  "royal-taxes",
+  "royal-justice",
+  "treason-trials",
+  "riverlands-raids",
+  "winter-grain",
+  "targaryen-exiles",
+  "lannister-favour",
+  "northern-levies",
+  "city-watch",
+  "spies-informers",
+  "succession-inquiry",
+  "royal-bastards",
+  "kingsguard",
+  "wall-recruits"
+ ],
+ "deck": [
+  {
+   "id": "gen-01",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "bloc",
+     "id": "northmen",
+     "op": "<",
+     "value": 0.4
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The dockers close the Mud Gate",
+   "stances": [
+    "Pay arrears and open the granaries",
+    "Send the City Watch into Flea Bottom",
+    "Promise hearings, then wait them out"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": -4
+    },
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "He fed the hungry before he trusted the gold cloaks."
+  },
+  {
+   "id": "gen-02",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 2
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Fire and flood hit the Crownlands",
+   "stances": [
+    "Spend the treasury on relief",
+    "Call lords for men and carts",
+    "Leave the city to its own septs"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -5
+    },
+    {
+     "ledger": "approval",
+     "delta": -6
+    }
+   ],
+   "memory": "He counted roofs before he counted coins."
+  },
+  {
+   "id": "gen-03",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Papers name a Lannister payment",
+   "stances": [
+    "Publish the papers and press the inquiry",
+    "Seize the copy and silence its owner",
+    "Blame Petyr Baelish and change nothing"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": -6
+    },
+    {
+     "ledger": "seat",
+     "set": "hostile",
+     "chance": 0.4
+    }
+   ],
+   "memory": "He let the court read the price of loyalty."
+  },
+  {
+   "id": "gen-04",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Lord Renly asks for a seat",
+   "stances": [
+    "Grant the office and offend Stannis",
+    "Refuse and lose Renly's goodwill"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -10
+    },
+    {
+     "ledger": "seat",
+     "set": "kept-word"
+    }
+   ],
+   "memory": "He paid his debts with offices, not coin."
+  },
+  {
+   "id": "gen-05",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "party",
+     "op": "<",
+     "value": 35
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The queen tests a replacement Hand",
+   "stances": [
+    "Dismiss the plot and bind Cersei closer",
+    "Expose it and risk open royal quarrel"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -15
+    },
+    {
+     "ledger": "party",
+     "delta": 15
+    }
+   ],
+   "memory": "He saw the knife in the smile and reached for paper."
+  },
+  {
+   "id": "gen-06",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 6
+    },
+    {
+     "ledger": "bloc",
+     "id": "cityfolk",
+     "op": "<",
+     "value": 0.45
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Ships lie idle in Blackwater Bay",
+   "stances": [
+    "Cut court spending and anger Robert",
+    "Raise port tolls and anger merchants",
+    "Borrow from Tywin Lannister again"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -5
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "He chose whose anger the Crown could afford."
+  },
+  {
+   "id": "gen-07",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The maesters question your decree",
+   "stances": [
+    "Withdraw it and keep their trust",
+    "Issue it and claim the King's power"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -5,
+     "chance": 0.5
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "He found the limit of a Hand's seal."
+  },
+  {
+   "id": "gen-08",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Petyr Baelish sells another office",
+   "stances": [
+    "Remove him and lose his ledgers",
+    "Shield him and share the stain"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": 4
+    },
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "He kept a useful thief until the thief became the story."
+  },
+  {
+   "id": "gen-09",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 4
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Illyrio reports a Targaryen wedding",
+   "stances": [
+    "Send an assassin after Daenerys",
+    "Defy Robert and protect the girl",
+    "Delay with gifts and secret riders"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -3
+    },
+    {
+     "ledger": "capital",
+     "delta": -5
+    }
+   ],
+   "memory": "He argued with a king over a child across the sea."
+  },
+  {
+   "id": "gen-10",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "capital",
+     "op": "<",
+     "value": 30
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The Crown's creditors bar new loans",
+   "stances": [
+    "Repay Tywin and cut the household",
+    "Seize fresh taxes from King's Landing"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": 15
+    },
+    {
+     "ledger": "party",
+     "delta": -8
+    }
+   ],
+   "memory": "He made the royal household feel the debt."
+  },
+  {
+   "id": "gen-11",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "streak",
+     "op": ">",
+     "value": 2
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Ser Barristan praises your justice",
+   "stances": [
+    "Use his name against the queen",
+    "Ask him to stay silent"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "delta": 10
+    }
+   ],
+   "memory": "He learned that a knight's praise can start a war."
+  },
+  {
+   "id": "gen-12",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Flea Bottom turns against the Hand",
+   "stances": [
+    "Punish the pamphleteers and restore order",
+    "Admit the debt and face the jeers"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "party",
+     "delta": 3
+    }
+   ],
+   "memory": "He chose whether fear or shame would rule the alleys."
+  },
+  {
+   "id": "gen-13",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Lord Hoster offers river levies",
+   "stances": [
+    "Accept his men and promise redress"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "seat",
+     "set": "favor"
+    }
+   ],
+   "memory": "He took help from the Riverlands before help became a plea."
+  },
+  {
+   "id": "gen-14",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A Braavosi loan reaches the treasury",
+   "stances": [
+    "Pay the oldest debt before the tourney"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "delta": 8
+    },
+    {
+     "ledger": "capital",
+     "delta": 10
+    }
+   ],
+   "memory": "He spent unexpected gold on yesterday's promises."
+  },
+  {
+   "id": "gen-15",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The court sleeps through a quiet fortnight",
+   "stances": [
+    "Use the silence to read Arryn's papers"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": 2
+    }
+   ],
+   "memory": "He used a quiet fortnight to look for a dead man's enemy."
+  },
+  {
+   "id": "gen-16",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 3
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Renly holds a feast for Robert",
+   "stances": [
+    "Attend and share the crowd",
+    "Ban the feast and show your hand"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": -2
+    }
+   ],
+   "memory": "He let a younger Baratheon gather smiles beneath the Red Keep."
+  },
+  {
+   "id": "gen-17",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "patron",
+     "id": "moneylenders",
+     "op": "<",
+     "value": -1
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Tywin demands an end to the inquiry",
+   "stances": [
+    "Close the inquiry and keep the loan",
+    "Continue it and face Lannister withdrawal"
+   ],
+   "scored": [
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "patron",
+     "id": "moneylenders",
+     "delta": 2
+    },
+    {
+     "ledger": "chest",
+     "delta": -5
+    }
+   ],
+   "memory": "He learned what six million dragons could command."
+  },
+  {
+   "id": "gen-18",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 8
+    }
+   ],
+   "weight": 1,
+   "title_hint": "A servant names the royal bastards",
+   "stances": [
+    "Protect the servant and investigate Joffrey",
+    "Hand the servant to the queen"
+   ],
+   "scored": [
+    "blocs"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "delta": 2
+    },
+    {
+     "ledger": "party",
+     "delta": -4
+    }
+   ],
+   "memory": "He heard the truth that made Robert's heir unsafe."
+  },
+  {
+   "id": "gen-19",
+   "kind": "generic",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A gold cloak offers the city",
+   "stances": [
+    "Buy his loyalty and risk Baelish",
+    "Refuse and keep the Watch divided"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [
+    {
+     "ledger": "capital",
+     "delta": -10
+    },
+    {
+     "ledger": "seat",
+     "set": "courted"
+    }
+   ],
+   "memory": "He found that the City Watch had a price below the crown."
+  },
+  {
+   "id": "gen-20",
+   "kind": "generic",
+   "needs": [
+    {
+     "ledger": "turn",
+     "op": ">",
+     "value": 17
+    },
+    {
+     "ledger": "approval",
+     "op": "<",
+     "value": 42
+    }
+   ],
+   "weight": 1,
+   "title_hint": "The court writes the Hand's ending",
+   "stances": [
+    "Resign before Robert can dismiss you"
+   ],
+   "scored": [
+    "none"
+   ],
+   "results": [],
+   "memory": "He left a court that had already chosen its next quarrel."
+  },
+  {
+   "id": "dat-01",
+   "kind": "dated",
+   "turn": 1,
+   "date": "0298-01-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Jon Arryn's death reaches the Red Keep",
+   "stances": [
+    "Accept the office and begin the inquiry",
+    "Refuse Robert and return north"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "maesters",
+     "delta": 3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "northbanners",
+     "delta": 2,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He took the dead man's office before finding his killer."
+  },
+  {
+   "id": "dat-02",
+   "kind": "dated",
+   "turn": 2,
+   "date": "0298-02-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Robert names Eddard Stark his Hand",
+   "stances": [
+    "Call the banners for the royal summons",
+    "Send a smaller northern escort"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "northmen",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "northbanners",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "chest",
+     "id": null,
+     "delta": -3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He brought northern honour south, with a northern bill."
+  },
+  {
+   "id": "dat-03",
+   "kind": "dated",
+   "turn": 2,
+   "date": "0298-03-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Hand's Tourney fills King's Landing",
+   "stances": [
+    "Fund the tourney and hold Robert's favour",
+    "Cut the purse and face public anger",
+    "Use the crowds to question Arryn's death"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "id": null,
+     "delta": -8,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "cityfolk",
+     "delta": 3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "tourneyknights",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He paid for a royal feast while the Crown owed every lender."
+  },
+  {
+   "id": "dat-04",
+   "kind": "dated",
+   "turn": 3,
+   "date": "0298-04-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Bran Stark falls from the tower",
+   "stances": [
+    "Send men to Winterfell and seek the truth",
+    "Leave the matter to Cersei and Jaime",
+    "Order a quiet inquiry through Varys"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "northmen",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "maesters",
+     "delta": 2,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": -3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He made Bran's fall a matter for the Crown."
+  },
+  {
+   "id": "dat-05",
+   "kind": "dated",
+   "turn": 4,
+   "date": "0298-05-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Tyrion Lannister is seized at the Crossroads",
+   "stances": [
+    "Order his release and anger Catelyn",
+    "Let the Eyrie judge him",
+    "Send royal men to keep the peace"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "riverfolk",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "riverlords",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": -2,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He found that the King's peace could not cover a Stark accusation."
+  },
+  {
+   "id": "dat-06",
+   "kind": "dated",
+   "turn": 5,
+   "date": "0298-06-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Gregor Clegane burns the Riverlands",
+   "stances": [
+    "Summon Gregor before royal justice",
+    "Send riders and leave Tywin unnamed",
+    "Ignore the raids to avoid war"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "bloc",
+     "id": "riverfolk",
+     "delta": 6,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "riverlords",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "lannisport",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He named Gregor Clegane's crimes while Tywin Lannister watched."
+  },
+  {
+   "id": "dat-07",
+   "kind": "dated",
+   "turn": 6,
+   "date": "0298-07-01",
+   "exogenous": true,
+   "needs": [],
+   "weight": 1,
+   "title_hint": "Robert orders Daenerys Targaryen killed",
+   "stances": [
+    "Approve the killing and obey Robert",
+    "Reject it and risk the royal quarrel",
+    "Delay the order through Varys"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": 4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "freecities",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "maesters",
+     "delta": 2,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He told Robert that a pregnant girl was not a battlefield."
+  },
+  {
+   "id": "dat-08",
+   "kind": "dated",
+   "turn": 7,
+   "date": "0298-08-01",
+   "exogenous": true,
+   "needs": [
+    {
+     "ledger": "patron",
+     "id": "maesters",
+     "op": ">",
+     "value": 0
+    }
+   ],
+   "weight": 1,
+   "title_hint": "Ned Stark reads Jon Arryn's last trail",
+   "stances": [
+    "Question Robert's bastards and risk the succession",
+    "Close the papers and preserve the peace"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": -4,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "lannister",
+     "delta": -3,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "stannis",
+     "delta": 4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He opened the ledger that made Robert's heir a question."
+  },
+  {
+   "id": "swan-01",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A Red Keep coup traps Robert",
+   "stances": [
+    "Seize the gates for the king",
+    "Stand aside and bargain with Cersei"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": 6,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "lannister",
+     "delta": -8,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "cityfolk",
+     "delta": 3,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He chose whether the Red Keep belonged to Robert or Cersei."
+  },
+  {
+   "id": "swan-02",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "The Iron Bank calls the debt",
+   "stances": [
+    "Send gold and accept harsh cuts",
+    "Refuse and seek Tywin's protection",
+    "Raise taxes across the Crownlands"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "chest",
+     "id": null,
+     "delta": -10,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "moneylenders",
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "cityfolk",
+     "delta": -6,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He learned that Braavos could reach King's Landing without ships."
+  },
+  {
+   "id": "swan-03",
+   "kind": "swan",
+   "needs": [],
+   "weight": 1,
+   "title_hint": "A Dothraki host crosses the Narrow Sea",
+   "stances": [
+    "Call Robert's banners and arm the ports",
+    "Seek terms through Illyrio",
+    "Use the invasion to arrest Lannister rivals"
+   ],
+   "scored": [
+    "blocs",
+    "patrons"
+   ],
+   "results": [
+    {
+     "ledger": "approval",
+     "id": null,
+     "delta": 5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "bloc",
+     "id": "cityfolk",
+     "delta": -5,
+     "set": null,
+     "chance": null
+    },
+    {
+     "ledger": "patron",
+     "id": "freecities",
+     "delta": -4,
+     "set": null,
+     "chance": null
+    }
+   ],
+   "memory": "He faced the Dothraki threat while the court measured its own enemies."
+  }
+ ],
+ "escalations": [
+  {
+   "key": "hostile_press",
+   "name": "The city turns sour",
+   "headline": "The talk of the city in every pot-shop and tavern now mocks the northern Hand and his cold justice."
+  },
+  {
+   "key": "supermajority_era",
+   "name": "The council closes ranks",
+   "headline": "The small council agrees among itself before you enter, and your decrees are set aside by custom."
+  },
+  {
+   "key": "recession",
+   "name": "The ports go quiet",
+   "headline": "Ships from the Free Cities stay away, tolls fall, and the Master of Coin reports the treasury thinner each moon."
+  },
+  {
+   "key": "scandal_season",
+   "name": "A moon of whispers",
+   "headline": "Tales of bastards, brothels and poison fill the Red Keep, and each one touches a councillor."
+  },
+  {
+   "key": "short_fuse",
+   "name": "The King's temper",
+   "headline": "King Robert drinks from midday and shouts down any councillor who brings him bad news."
+  },
+  {
+   "key": "split_chamber",
+   "name": "A council divided",
+   "headline": "The queen's party and the Hand's friends sit apart at the council table and will not agree on any decree."
+  },
+  {
+   "key": "costly_favors",
+   "name": "Every lord his price",
+   "headline": "Lords who once gave their voice for a kind word now ask for keeps, wardships and gold dragons."
+  },
+  {
+   "key": "fickle_base",
+   "name": "Wavering bannermen",
+   "headline": "Northern lords at Winterfell ask why their liege lord serves a southern king who will not guard his children."
+  },
+  {
+   "key": "empty_chest",
+   "name": "The treasury runs dry",
+   "headline": "The Master of Coin says the Crown cannot pay for the Hand's Tourney without new borrowing."
+  },
+  {
+   "key": "hostile_court",
+   "name": "The King's justice fails",
+   "headline": "Judges and castellans loyal to Casterly Rock set aside the Hand's writs against Lannister men."
+  },
+  {
+   "key": "rival_surge",
+   "name": "The lion rises",
+   "headline": "House Lannister gains places on the council and in the Kingsguard while the Hand's friends lose theirs."
+  },
+  {
+   "key": "apathy",
+   "name": "The smallfolk shrug",
+   "headline": "The smallfolk no longer come to hear the Hand's proclamations, and the smallfolk's love cools to indifference."
+  },
+  {
+   "key": "defections",
+   "name": "Sworn men leave",
+   "headline": "Household knights and gold cloaks who swore to the Hand take coin from the queen and slip away."
+  },
+  {
+   "key": "loud_opposition",
+   "name": "The queen speaks openly",
+   "headline": "Queen Cersei Lannister names the Hand an enemy of her son before the whole court."
+  },
+  {
+   "key": "crisis_fatigue",
+   "name": "A weary realm",
+   "headline": "Lords tire of summons, levies and inquiries, and answer each new decree with delay."
+  },
+  {
+   "key": "leaks",
+   "name": "Little birds",
+   "headline": "What is said in the Tower of the Hand at night is known in the queen's chambers by morning."
+  },
+  {
+   "key": "war_footing",
+   "name": "Fire in the Riverlands",
+   "headline": "Gregor Clegane burns villages in the Riverlands on Lord Tywin's word, and the river lords call for war."
+  },
+  {
+   "key": "famine",
+   "name": "Winter's first hunger",
+   "headline": "The maesters report shortened days, and grain prices in King's Landing double before the harvest is stored."
+  },
+  {
+   "key": "succession_crisis",
+   "name": "The heir in question",
+   "headline": "Word spreads that Joffrey Baratheon is no son of the King, and Stannis Baratheon's name is spoken in the council."
+  },
+  {
+   "key": "foreign_meddling",
+   "name": "Gold from across the Narrow Sea",
+   "headline": "The Iron Bank presses for payment while Viserys Targaryen seeks a Dothraki army in the Free Cities."
+  }
+ ],
+ "test": {
+  "name": "The King's judgement",
+  "win": "You still wear the Hand's chain at the moon's turn in 299 AC, with the King's favour and enough of the realm behind you to keep it.",
+  "lose": "The King, the queen's party or the lords of the realm turn from you, and the chain passes to another Hand.",
+  "reveal": "regions"
+ },
+ "endings": {
+  "reelected": "The Hand keeps his chain",
+  "defeated": "The chain passes to another",
+  "lame_duck": "A Hand in name only",
+  "impeached": "Arrested for treason",
+  "coup": "The gold cloaks turn",
+  "stopped": null,
+  "dismissed": "Dismissed by the King"
+ },
+ "lobby": {
+  "pork": {
+   "cost": 10,
+   "label": "Crown gold for a keep",
+   "text": "You pay from the treasury for a lord's walls, roads or granaries, and he sends his support to the Tower of the Hand."
+  },
+  "favor": {
+   "cost": 15,
+   "label": "A debt of favour",
+   "text": "You grant a lord a place, a wardship or a match now, and he owes you his voice in council when you call it in."
+  },
+  "threat": {
+   "cost": 20,
+   "label": "A name in the file",
+   "text": "You let a lord know that his secrets sit in the Whisperer's file and will reach the King if he crosses you."
+  }
+ },
+ "constitution": {
+  "ruler": {
+   "role": "Hand of the King, chair of the small council in the Tower of the Hand, the Red Keep",
+   "faction": "stark",
+   "above": "crown",
+   "removedBy": "King Robert can dismiss you at will, and if he dies, a regent or the new king can strip you of the Hand of the King and arrest you for treason."
+  },
+  "holders": [
+   {
+    "id": "crown",
+    "name": "King Robert I Baratheon",
+    "where": "home",
+    "persona": {
+     "name": "Robert Baratheon",
+     "role": "King of the Andals, the Rhoynar and the First Men, the Red Keep",
+     "bio": "The King on the Iron Throne. He wants his Hand to rule, pay for feasts and kill the last Targaryens.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.68,
+    "line": 50,
+    "response": "dismiss",
+    "levers": [
+     "force"
+    ],
+    "wants": [
+     "Fund the tourney",
+     "Hunt the Targaryens"
+    ],
+    "redLines": [
+     "Defy royal command"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 68,
+    "short": "King Robert",
+    "icon": "crown",
+    "glance": {
+     "face": {
+      "name": "Robert Baratheon",
+      "role": "King of the Andals, the Rhoynar and the First Men, the Red Keep"
+     },
+     "wants": [
+      "Fund the tourney",
+      "Hunt the Targaryens"
+     ],
+     "hates": [
+      {
+       "tag": "Cut royal feasts",
+       "redLine": false
+      },
+      {
+       "tag": "Spare Daenerys Targaryen",
+       "redLine": false
+      },
+      {
+       "tag": "Defy royal command",
+       "redLine": true
+      }
+     ],
+     "strike": "King Robert takes back the Hand's chain and sends Lord Eddard home to Winterfell."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "polygon",
+       "points": "32,60 23,44 19,30 26,23 38,23 45,30 41,44",
+       "fill": "ink"
+      },
+      {
+       "tag": "polygon",
+       "points": "20,30 8,23 23,25",
+       "fill": "ink"
+      },
+      {
+       "tag": "polygon",
+       "points": "44,30 56,23 41,25",
+       "fill": "ink"
+      },
+      {
+       "tag": "path",
+       "d": "M27 24 C22 16 18 11 12 3 M20 14 L9 14 M24 19 L14 23",
+       "strokeWidth": 4,
+       "fill": "none",
+       "stroke": "ink"
+      },
+      {
+       "tag": "path",
+       "d": "M37 24 C42 16 46 11 52 3 M44 14 L55 14 M40 19 L50 23",
+       "strokeWidth": 4,
+       "fill": "none",
+       "stroke": "ink"
+      },
+      {
+       "tag": "polygon",
+       "points": "26,13 27,6 32,10 37,6 38,13",
+       "fill": "accent"
+      },
+      {
+       "tag": "circle",
+       "cx": 27,
+       "cy": 33,
+       "r": 2.8,
+       "fill": "paper"
+      },
+      {
+       "tag": "circle",
+       "cx": 37,
+       "cy": 33,
+       "r": 2.8,
+       "fill": "paper"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#7b6100",
+     "dark": "#c9a227"
+    }
+   },
+   {
+    "id": "lannister",
+    "name": "Queen Cersei Lannister and House Lannister",
+    "where": "home",
+    "persona": {
+     "name": "Cersei Lannister",
+     "role": "Queen Consort, the Red Keep",
+     "bio": "The queen and her father's house, richest in the realm. They want Joffrey's succession safe and the Hand's inquiry stopped.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.32,
+    "line": 15,
+    "response": "coup",
+    "levers": [],
+    "wants": [
+     "Confirm Joffrey's succession",
+     "Borrow from Casterly Rock",
+     "Close the inquiry"
+    ],
+    "redLines": [
+     "Question Joffrey's birth"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 32,
+    "short": "House Lannister",
+    "icon": "patrons",
+    "glance": {
+     "face": {
+      "name": "Cersei Lannister",
+      "role": "Queen Consort, the Red Keep"
+     },
+     "wants": [
+      "Confirm Joffrey's succession",
+      "Borrow from Casterly Rock",
+      "Close the inquiry"
+     ],
+     "hates": [
+      {
+       "tag": "Summon Lord Tywin",
+       "redLine": false
+      },
+      {
+       "tag": "Arrest Tyrion Lannister",
+       "redLine": false
+      },
+      {
+       "tag": "Question Joffrey's birth",
+       "redLine": true
+      }
+     ],
+     "strike": "The queen sets Lannister swords and the Kingsguard to seize the Hand and his daughters."
+    },
+    "tint": {
+     "light": "#9b1b1b",
+     "dark": "#dc5c52"
+    }
+   },
+   {
+    "id": "stark",
+    "name": "House Stark",
+    "where": "home",
+    "persona": {
+     "name": "Robb Stark",
+     "role": "Heir to Winterfell, holding the North in his father's absence",
+     "bio": "The Lord of Winterfell's own house and northern bannermen. They want justice for Bran and the Hand's daughters kept safe.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.7,
+    "line": 50,
+    "response": "refuse_levy",
+    "levers": [],
+    "wants": [
+     "Justice for Bran",
+     "Protect Stark daughters",
+     "Call northern banners"
+    ],
+    "redLines": [
+     "Surrender Stark daughters"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 70,
+    "short": "House Stark",
+    "icon": "army",
+    "glance": {
+     "face": {
+      "name": "Robb Stark",
+      "role": "Heir to Winterfell, holding the North in his father's absence"
+     },
+     "wants": [
+      "Justice for Bran",
+      "Protect Stark daughters",
+      "Call northern banners"
+     ],
+     "hates": [
+      {
+       "tag": "Bribes",
+       "redLine": false
+      },
+      {
+       "tag": "Pardon Gregor Clegane",
+       "redLine": false
+      },
+      {
+       "tag": "Surrender Stark daughters",
+       "redLine": true
+      }
+     ],
+     "strike": "Robb Stark keeps the northern bannermen at home and sends no swords south."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "path",
+       "d": "M6 30 L22 22 L27 6 L34 17 L41 4 L45 20 C55 26 59 40 57 60 L33 60 C33 51 29 45 21 43 L10 40 Z",
+       "fill": "ink"
+      },
+      {
+       "tag": "circle",
+       "cx": 32,
+       "cy": 26,
+       "r": 2.8,
+       "fill": "paper"
+      },
+      {
+       "tag": "polygon",
+       "points": "8,33 22,36 12,39",
+       "fill": "paper"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#576672",
+     "dark": "#788793"
+    }
+   },
+   {
+    "id": "baelish",
+    "name": "Petyr Baelish and the City Watch",
+    "where": "home",
+    "persona": {
+     "name": "Petyr Baelish",
+     "role": "Master of Coin, the small council, King's Landing",
+     "bio": "The Master of Coin and the gold cloaks he pays. He wants office, lands and a court in turmoil.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.45,
+    "line": 30,
+    "response": "strike",
+    "levers": [
+     "force"
+    ],
+    "wants": [
+     "Grant lands",
+     "Borrow more gold",
+     "Pay the Watch"
+    ],
+    "redLines": [
+     "Replace Master of Coin"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 45,
+    "short": "Littlefinger",
+    "icon": "council",
+    "glance": {
+     "face": {
+      "name": "Petyr Baelish",
+      "role": "Master of Coin, the small council, King's Landing"
+     },
+     "wants": [
+      "Grant lands",
+      "Borrow more gold",
+      "Pay the Watch"
+     ],
+     "hates": [
+      {
+       "tag": "Audit the treasury",
+       "redLine": false
+      },
+      {
+       "tag": "Replace Master of Coin",
+       "redLine": true
+      }
+     ],
+     "strike": "Littlefinger turns the gold cloaks of the City Watch against the Hand at the hour of need."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "path",
+       "d": "M3 38 L16 34 L24 34 L17 6 L34 30 L42 10 L42 30 L50 27 L61 30 L52 35 L46 41 L32 45 L16 45 L5 52 L10 42 Z",
+       "fill": "ink"
+      },
+      {
+       "tag": "circle",
+       "cx": 48,
+       "cy": 32,
+       "r": 2.7,
+       "fill": "paper"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#346f52",
+     "dark": "#569172"
+    }
+   },
+   {
+    "id": "varys",
+    "name": "Varys",
+    "where": "home",
+    "persona": {
+     "name": "Varys",
+     "role": "Master of Whisperers, the small council, King's Landing",
+     "bio": "The eunuch spymaster of the small council. He wants war between Stark and Lannister delayed and his informers left alone.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.55,
+    "line": 40,
+    "response": "strike",
+    "levers": [],
+    "wants": [
+     "Delay open war",
+     "Fund informers"
+    ],
+    "redLines": [
+     "Dismiss Varys"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 55,
+    "short": "Varys",
+    "icon": "council",
+    "glance": {
+     "face": {
+      "name": "Varys",
+      "role": "Master of Whisperers, the small council, King's Landing"
+     },
+     "wants": [
+      "Delay open war",
+      "Fund informers"
+     ],
+     "hates": [
+      {
+       "tag": "Declare war",
+       "redLine": false
+      },
+      {
+       "tag": "Reward Baelish",
+       "redLine": false
+      },
+      {
+       "tag": "Dismiss Varys",
+       "redLine": true
+      }
+     ],
+     "strike": "Varys carries the Hand's secrets to the queen, and his little birds stop whispering to the Tower of the Hand."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "ellipse",
+       "cx": 32,
+       "cy": 38,
+       "rx": 9,
+       "ry": 12,
+       "fill": "ink"
+      },
+      {
+       "tag": "circle",
+       "cx": 32,
+       "cy": 22,
+       "r": 6.5,
+       "fill": "ink"
+      },
+      {
+       "tag": "path",
+       "d": "M25 31 L12 22 L6 7 M24 35 L10 32 L3 23 M24 41 L10 45 L4 55 M26 46 L17 55 L15 62",
+       "strokeWidth": 3.5,
+       "fill": "none",
+       "stroke": "ink"
+      },
+      {
+       "tag": "path",
+       "d": "M39 31 L52 22 L58 7 M40 35 L54 32 L61 23 M40 41 L54 45 L60 55 M38 46 L47 55 L49 62",
+       "strokeWidth": 3.5,
+       "fill": "none",
+       "stroke": "ink"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#6b4c8a",
+     "dark": "#9778b9"
+    }
+   },
+   {
+    "id": "stannis",
+    "name": "Stannis Baratheon",
+    "where": "home",
+    "persona": {
+     "name": "Stannis Baratheon",
+     "role": "Lord of Dragonstone and master of ships",
+     "bio": "The King's stern middle brother, withdrawn to his island seat. He wants to be named Robert's lawful heir.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.5,
+    "line": 35,
+    "response": "refuse_levy",
+    "levers": [],
+    "wants": [
+     "Expose the bastards",
+     "Name Stannis heir"
+    ],
+    "redLines": [
+     "Recognize Joffrey"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 50,
+    "short": "Stannis",
+    "icon": "army",
+    "glance": {
+     "face": {
+      "name": "Stannis Baratheon",
+      "role": "Lord of Dragonstone and master of ships"
+     },
+     "wants": [
+      "Expose the bastards",
+      "Name Stannis heir"
+     ],
+     "hates": [
+      {
+       "tag": "Recognize Joffrey",
+       "redLine": true
+      },
+      {
+       "tag": "Bribes",
+       "redLine": false
+      },
+      {
+       "tag": "Pardon Lannisters",
+       "redLine": false
+      }
+     ],
+     "strike": "Stannis keeps the royal fleet at Dragonstone and refuses the Crown his ships and swords."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "path",
+       "d": "M32 61 C20 51 7 43 7 32 C7 24 13 20 20 20 L15 9 L24 15 L26 3 L32 13 L38 3 L40 15 L49 9 L44 20 C51 20 57 24 57 32 C57 43 44 51 32 61 Z",
+       "fill": "ink"
+      },
+      {
+       "tag": "polygon",
+       "points": "32,52 27,43 26,36 38,36 37,43",
+       "fill": "paper"
+      },
+      {
+       "tag": "path",
+       "d": "M28 36 L24 27 M36 36 L40 27",
+       "strokeWidth": 3,
+       "fill": "none",
+       "stroke": "paper"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#7b6100",
+     "dark": "#c9a227"
+    }
+   },
+   {
+    "id": "targaryen",
+    "name": "House Targaryen",
+    "where": "abroad",
+    "persona": {
+     "name": "Viserys Targaryen",
+     "role": "Son of Aerys II, claimant to the Iron Throne, the Dothraki Sea",
+     "bio": "The exiled heirs of the fallen dynasty in Essos. They want the Usurper's court divided and a Dothraki army.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.3,
+    "line": 15,
+    "response": "strike",
+    "levers": [],
+    "wants": [
+     "War with Lannisters",
+     "Spare Daenerys"
+    ],
+    "redLines": [
+     "Assassinate Daenerys"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 30,
+    "short": "House Targaryen",
+    "icon": "foreign",
+    "glance": {
+     "face": {
+      "name": "Viserys Targaryen",
+      "role": "Son of Aerys II, claimant to the Iron Throne, the Dothraki Sea"
+     },
+     "wants": [
+      "War with Lannisters",
+      "Spare Daenerys"
+     ],
+     "hates": [
+      {
+       "tag": "Assassinate Daenerys",
+       "redLine": true
+      },
+      {
+       "tag": "Watch the Narrow Sea",
+       "redLine": false
+      }
+     ],
+     "strike": "Viserys presses the Dothraki to ready a crossing of the Narrow Sea, and old loyalists at court whisper for him."
+    },
+    "tint": {
+     "light": "#8b1a1a",
+     "dark": "#d66158"
+    }
+   },
+   {
+    "id": "ironbank",
+    "name": "Iron Bank of Braavos",
+    "where": "abroad",
+    "persona": {
+     "name": "Lotho Vantaris",
+     "role": "Keyholder of the Iron Bank, Braavos, an invented voice",
+     "bio": "The Braavosi lenders who hold much of the Crown debt. They want regular repayment and an end to royal waste.",
+     "tell": ""
+    },
+    "members": "none",
+    "stance": 0.48,
+    "line": 30,
+    "response": "embargo",
+    "levers": [],
+    "wants": [
+     "Repay the loans",
+     "Cut royal spending"
+    ],
+    "redLines": [
+     "Default on debt"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 48,
+    "short": "Iron Bank",
+    "icon": "market",
+    "glance": {
+     "face": {
+      "name": "Lotho Vantaris",
+      "role": "Keyholder of the Iron Bank, Braavos, an invented voice"
+     },
+     "wants": [
+      "Repay the loans",
+      "Cut royal spending"
+     ],
+     "hates": [
+      {
+       "tag": "Default on debt",
+       "redLine": true
+      },
+      {
+       "tag": "Hold a tourney",
+       "redLine": false
+      },
+      {
+       "tag": "Borrow more gold",
+       "redLine": false
+      }
+     ],
+     "strike": "The Iron Bank calls in the Crown debt and lends its gold to the King's enemies instead."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "circle",
+       "cx": 32,
+       "cy": 32,
+       "r": 29,
+       "fill": "ink"
+      },
+      {
+       "tag": "circle",
+       "cx": 32,
+       "cy": 32,
+       "r": 23,
+       "strokeWidth": 3,
+       "fill": "none",
+       "stroke": "paper"
+      },
+      {
+       "tag": "rect",
+       "transform": "rotate(45 32 32)",
+       "x": 25,
+       "y": 25,
+       "width": 14,
+       "height": 14,
+       "fill": "paper"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#59666f",
+     "dark": "#798790"
+    }
+   },
+   {
+    "id": "people",
+    "name": "The people of the Seven Kingdoms",
+    "where": "home",
+    "persona": {
+     "name": "Marra of Flea Bottom",
+     "role": "Pot-shop keeper, King's Landing, an invented voice",
+     "bio": "The smallfolk of the realm. They want peace, justice against raiders in the Riverlands, and grain stored for winter.",
+     "tell": ""
+    },
+    "members": "citizens",
+    "stance": 0.58,
+    "line": 40,
+    "response": "riot",
+    "levers": [],
+    "wants": [
+     "Store winter grain",
+     "Punish Riverlands raiders",
+     "Keep the peace"
+    ],
+    "redLines": [
+     "Seize grain stores"
+    ],
+    "gives": null,
+    "responses": [],
+    "support": 58,
+    "short": "Smallfolk",
+    "icon": "street",
+    "glance": {
+     "face": {
+      "name": "Marra of Flea Bottom",
+      "role": "Pot-shop keeper, King's Landing, an invented voice"
+     },
+     "wants": [
+      "Store winter grain",
+      "Punish Riverlands raiders",
+      "Keep the peace"
+     ],
+     "hates": [
+      {
+       "tag": "Raise the taxes",
+       "redLine": false
+      },
+      {
+       "tag": "Seize grain stores",
+       "redLine": true
+      },
+      {
+       "tag": "Fund the tourney",
+       "redLine": false
+      }
+     ],
+     "strike": "The smallfolk of King's Landing riot in Flea Bottom and stone the Hand's men at the city gates."
+    },
+    "emblem": {
+     "size": 64,
+     "elements": [
+      {
+       "tag": "path",
+       "d": "M32 61 L32 22 M32 44 L16 24 M32 44 L48 24 M32 44 L22 61 M32 44 L42 61",
+       "strokeWidth": 4,
+       "fill": "none",
+       "stroke": "ink"
+      },
+      {
+       "tag": "ellipse",
+       "cx": 32,
+       "cy": 14,
+       "rx": 5.5,
+       "ry": 11,
+       "fill": "ink"
+      },
+      {
+       "tag": "ellipse",
+       "transform": "rotate(-35 14 18)",
+       "cx": 14,
+       "cy": 18,
+       "rx": 5.5,
+       "ry": 10,
+       "fill": "ink"
+      },
+      {
+       "tag": "ellipse",
+       "transform": "rotate(35 50 18)",
+       "cx": 50,
+       "cy": 18,
+       "rx": 5.5,
+       "ry": 10,
+       "fill": "ink"
+      },
+      {
+       "tag": "rect",
+       "x": 25,
+       "y": 40,
+       "width": 14,
+       "height": 6,
+       "fill": "accent"
+      }
+     ]
+    },
+    "tint": {
+     "light": "#7e5e2f",
+     "dark": "#a08050"
+    }
+   }
+  ],
+  "instruments": {
+   "decree": {
+    "name": "Decree under the Hand's seal",
+    "price": {
+     "authority": 3,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "crown"
+    ]
+   },
+   "law": {
+    "name": "Law of the realm",
+    "price": {
+     "authority": 1,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": false,
+    "vetoes": []
+   },
+   "appoint": {
+    "name": "Appointment to royal office",
+    "price": {
+     "authority": 2,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "crown",
+     "lannister"
+    ]
+   },
+   "spend": {
+    "name": "Warrant on the royal treasury",
+    "price": {
+     "authority": 0,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "baelish"
+    ]
+   },
+   "proclaim": {
+    "name": "Proclamation in the King's name",
+    "price": {
+     "authority": 0,
+     "treasury": 0,
+     "chest": 2
+    },
+    "available": true,
+    "vetoes": [
+     "crown"
+    ]
+   },
+   "favour": {
+    "name": "Grant of the Hand's favour",
+    "price": {
+     "authority": 2,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": []
+   },
+   "force": {
+    "name": "Command of the City Watch and the Hand's guard",
+    "price": {
+     "authority": 4,
+     "treasury": 0,
+     "chest": 0
+    },
+    "available": true,
+    "vetoes": [
+     "crown",
+     "baelish"
+    ]
+   }
+  },
+  "retention": {
+   "name": "the King's judgement",
+   "weights": [
+    {
+     "id": "crown",
+     "value": 0.6
+    },
+    {
+     "id": "lannister",
+     "value": 0.4
+    }
+   ],
+   "bar": {
+    "start": 0.5,
+    "step": 0.03,
+    "cap": 0.7
+   }
+  },
+  "halfTerm": {
+   "holder": "people",
+   "name": "the half-year reckoning"
+  },
+  "ledgers": {
+   "treasury": {
+    "name": "Royal coffers",
+    "line": 0,
+    "icon": "coins",
+    "for": "The Crown's gold dragons, kept by the Master of Coin and owed many times over to Lord Tywin and the Iron Bank of Braavos.",
+    "earn": [
+     "Crown levies and port dues",
+     "Fresh loans from the Iron Bank of Braavos"
+    ],
+    "spend": [
+     "Tourneys and feasts the King orders",
+     "Repayments on the Crown debt",
+     "Wages for the City Watch"
+    ],
+    "fails": "the Crown cannot meet its debts, and the Iron Bank of Braavos stops lending."
+   },
+   "authority": {
+    "name": "King's favour",
+    "line": 0,
+    "icon": "crown",
+    "for": "King Robert's trust in you, which lets you speak with the King's voice in the small council.",
+    "earn": [
+     "Decrees that please the King",
+     "Hunts and feasts at Robert's side"
+    ],
+    "spend": [
+     "Decrees sealed against the King's wishes",
+     "Arresting great lords",
+     "Refusing the King's orders"
+    ],
+    "fails": "the King stops hearing you, and your decrees carry no seal."
+   },
+   "chest": {
+    "name": "Hand's purse",
+    "line": 0,
+    "icon": "house",
+    "for": "The silver and gold of Winterfell that you spend in King's Landing on your own account.",
+    "earn": [
+     "Rents sent south from the North",
+     "Gifts from lords who seek the Hand's ear"
+    ],
+    "spend": [
+     "Paying informers and sworn swords",
+     "Guarding Sansa Stark and Arya Stark in the Red Keep"
+    ],
+    "fails": "you cannot pay your household guard or buy a single informer."
+   },
+   "loyalty": {
+    "name": "Northern oath",
+    "line": 20
+   },
+   "popularity": {
+    "name": "Smallfolk",
+    "line": 30
+   }
+  },
+  "briefing": {
+   "situation": "You reached King's Landing as Hand of the King in 298 AC, after King Robert rode to Winterfell to ask it of you. Jon Arryn, your boyhood guardian and the last Hand, is dead. His widow Lysa writes that he was murdered. At your first small council, Petyr Baelish told you the Crown debt passes six million gold dragons. Bran Stark's fall still hangs over your house. You want the truth about Jon Arryn, your daughters kept safe and the realm's accounts in order.",
+   "room": "King Robert can dismiss you at will and set aside any decree he dislikes. Queen Cersei Lannister and House Lannister want you gone, and Tywin Lannister holds much of the Crown debt. Petyr Baelish keeps the purse and pays the City Watch. Varys hears everything and says little. Stannis Baratheon sits silent on Dragonstone. The Iron Bank of Braavos judges you by what the Crown repays. If the King dies, whoever takes the regency can have you arrested for treason.",
+   "you": "You chair the small council, seal decrees in the King's name, and may sit the Iron Throne when he wills it. Your house brings the North's bannermen, and your name for honour is known across the Seven Kingdoms. King Robert's support stands at 68 of 100. The queen's stands at 32 of 100. The King's judgement asks one thing each moon: whether you can rule for a king who will not rule, and keep his friendship and your head."
+  },
+  "publicGroup": "people",
+  "ownGroup": "stark"
+ },
+ "themeTokens": {
+  "display": "IM Fell English SC",
+  "displayWeight": 400,
+  "displayCase": "small-caps",
+  "displayTracking": 0.04,
+  "body": "EB Garamond",
+  "bodySize": 17,
+  "mono": null,
+  "light": {
+   "paper": "#f3ead6",
+   "surface": "#ebe0c6",
+   "ink": "#2a1f14",
+   "muted": "#5e4e3a",
+   "accent": "#7a1e1e",
+   "accent2": "#3d5a6c",
+   "rule": "#b9a47f"
+  },
+  "dark": {
+   "paper": "#1a1510",
+   "surface": "#241d16",
+   "ink": "#ece2cc",
+   "muted": "#b3a386",
+   "accent": "#d9a05b",
+   "accent2": "#8fb0c2",
+   "rule": "#4a3d2e"
+  },
+  "material": "parchment",
+  "texture": "noise",
+  "textureScale": 1.2,
+  "radius": 2,
+  "ruleStyle": "double",
+  "motion": "stately",
+  "courier": "coin"
+ }
+}
