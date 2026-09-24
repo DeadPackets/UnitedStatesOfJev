@@ -12,6 +12,7 @@ type Props = {
   chamberRow: string | null; // the group a law's chamber is on the rim, for its lock badge
   size: number;
   printing: boolean;
+  busy: boolean; // a moment runs: nothing on the receipt answers
   signable: boolean;
   onPrinted: () => void;
   onReveal: () => void; // the count reaches the chamber
@@ -67,6 +68,7 @@ export function Receipt({
   chamberRow,
   size,
   printing,
+  busy,
   signable,
   onPrinted,
   onReveal,
@@ -244,7 +246,7 @@ export function Receipt({
           <Icon id="i-pen" />
           Sign it
         </button>
-        <button className="btn" id="tear" onClick={onTear}>
+        <button className="btn" id="tear" disabled={busy} onClick={onTear}>
           Tear up
         </button>
         {onAmend && count && tally(count).for < count.need ? (
@@ -252,6 +254,7 @@ export function Receipt({
             className="btn"
             id="amend"
             title="Tables it now and asks the clerks for three drafts"
+            disabled={busy}
             onClick={onAmend}
           >
             Amend

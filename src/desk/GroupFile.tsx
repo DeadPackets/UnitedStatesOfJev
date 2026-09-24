@@ -1,11 +1,11 @@
 // The glance file (R36), opened from a rim row or a seat: it flies out of what was clicked to the chamber's centre on
 // a spring and back into it on close. Ported from the mock's openFile, closeFile and fileHTML. A member's file carries
-// the member actions the engine has: Lobby (a bill on the floor) and Do a favour.
+// the member actions the engine has: Lobby (a bill on the floor) and Do a favour; a hesitant faction's card, its terms.
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import type { Glance } from "../../worker/pack";
 import type { Tint } from "../../worker/tokens";
 import type { GamePack, ViewMember } from "../api";
-import type { RimRow } from "../../worker/desk";
+import type { ChamberFaction, Count, RimRow } from "../../worker/desk";
 import { meter, reduced, spring } from "./fx";
 import { Mark } from "./Emblem";
 import { Icon, LINE_ICON } from "./Icon";
@@ -340,6 +340,53 @@ export function MemberFile({
           <Icon id="i-hand" />
           Do a favour
         </button>
+      </div>
+    </FileShell>
+  );
+}
+
+type TermsProps = {
+  faction: ChamberFaction;
+  row: Count["factions"][number];
+  costs: (term: { cost: Record<string, number> }) => string;
+  busy: boolean;
+  onTake: (kind: string) => void;
+  onClose: () => void;
+};
+
+/** A hesitant faction's terms on the priced law (R30): each one re-prices the law with the deal. */
+export function TermsFile({ faction, row, costs, busy, onTake, onClose }: TermsProps) {
+  const parts = [
+    row.for && `${row.for} for`,
+    row.hesitant && `${row.hesitant} hesitant`,
+    row.against && `${row.against} against`,
+  ];
+  return (
+    <FileShell
+      origin={() => document.querySelector(`.gleg [data-f="${CSS.escape(faction.id)}"]`)}
+      tint={faction.tint}
+      mark={<Mark emblem={faction.emblem} icon="i-cap" />}
+      kicker="Their terms"
+      title={faction.name}
+      face={null}
+      down={false}
+      fill={null}
+      onClose={onClose}
+    >
+      <p className="fc-st st">
+        {parts.filter(Boolean).join(", ")}: {row.reason}
+      </p>
+      <div className="lob st">
+        {row.terms?.map((term) => (
+          <button
+            key={term.kind}
+            className="btn term"
+            disabled={busy}
+            onClick={() => onTake(term.kind)}
+          >
+            {term.label} · {costs(term)}
+          </button>
+        ))}
       </div>
     </FileShell>
   );

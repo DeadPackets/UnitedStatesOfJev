@@ -1690,7 +1690,8 @@
     color: var(--ink-2);
     text-align: center;
   }
-  .tag0.bad {
+  .tag0.bad,
+  .tag0 .shut {
     color: var(--danger);
   }
   .rc.act {

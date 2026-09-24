@@ -41,7 +41,7 @@ import {
 import { Chamber, type ChamberHandle } from "./desk/Chamber";
 import { Composer } from "./desk/Composer";
 import { EventCard } from "./desk/EventCard";
-import { GroupFile, MemberFile } from "./desk/GroupFile";
+import { GroupFile, MemberFile, TermsFile } from "./desk/GroupFile";
 import { Icon, RESOURCE_ICON } from "./desk/Icon";
 import { Live } from "./desk/Live";
 import { clearMarks, RESOURCE_TOKEN } from "./desk/paint";
@@ -88,6 +88,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
   const [torn, setTorn] = useState(false);
   const [file, setFile] = useState<string | null>(null);
   const [seat, setSeat] = useState<{ member: string; index: number } | null>(null);
+  const [terms, setTerms] = useState<string | null>(null); // the faction whose terms card is open
   const [sheet, setSheet] = useState(false);
   const [dark, setDark] = useState(() => themeMode() === "dark");
   const [muted, setMuted] = useState(sound.muted);
@@ -130,24 +131,20 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
   };
 
   const resourceNames = new Map(view.resources.map((card) => [card.key, card.name]));
-  const costs = useCallback(
-    (term: { cost: Record<string, number> }) =>
-      Object.entries(term.cost)
-        .filter(([, amount]) => amount > 0)
-        .map(
-          ([key, amount]) => `${amount} ${(resourceNames.get(key as never) ?? key).toLowerCase()}`,
-        )
-        .join(", ") || "free",
-    [view.resources], // eslint-disable-line
-  );
-  // Stable, like onSeat below: App's act is new on every render, and a new handler would repaint the chamber mid-moment.
-  const negotiateNow = useRef<(faction: string, term: string) => void>(() => {});
-  negotiateNow.current = (faction, term) => {
-    if (!frozen.current) act(() => api.negotiate(shown, faction, term));
-  };
-  const negotiate = useCallback(
-    (faction: string, term: string) => negotiateNow.current(faction, term),
-    [],
+  const costs = (term: { cost: Record<string, number> }) =>
+    Object.entries(term.cost)
+      .filter(([, amount]) => amount > 0)
+      .map(([key, amount]) => `${amount} ${(resourceNames.get(key as never) ?? key).toLowerCase()}`)
+      .join(", ") || "free";
+  // Stable, so neither the chamber nor a rim repaints mid-moment for a new handler.
+  const openTerms = useCallback((faction: string) => !frozen.current && setTerms(faction), []);
+  const openFile = useCallback((id: string) => !frozen.current && setFile(id), []);
+  const [home, abroad] = useMemo(
+    () => [
+      view.rim.filter((row) => row.where === "home"),
+      view.rim.filter((row) => row.where !== "home"),
+    ],
+    [view.rim],
   );
 
   const price = async (text: string, verb?: VerbKey, member?: string) => {
@@ -187,7 +184,13 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
         return;
       }
       setPhase({ kind: "idle" });
-      onError(error);
+      // The clerk read a kind of act a ledger at 0 has shut: say which, and what is still open.
+      const shut =
+        view.shut &&
+        error instanceof ApiError &&
+        error.message === "That instrument is not available." &&
+        new ApiError(400, `The clerk read it as a kind of act you cannot use now. ${view.shut}`);
+      onError(shut || error);
     }
   };
   const printed = () => {
@@ -220,6 +223,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
     onReview(true);
     setFile(null);
     setSeat(null);
+    setTerms(null);
     if (!keepSheet) setSheet(false);
     setPhase(phaseNow);
   };
@@ -459,6 +463,8 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
     : undefined;
   const event = openEvent >= 0 && calm && !frozen.current ? game.events[openEvent] : undefined;
   const authority = view.resources.find((card) => card.key === "authority");
+  const termsRow = terms ? receipt?.count?.factions.find((row) => row.id === terms) : undefined;
+  const termsFaction = terms ? view.factions.find((faction) => faction.id === terms) : undefined;
 
   return (
     <div className="desk" ref={deskRef}>
@@ -530,36 +536,36 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
         <Rim
           side="home"
           heading={`In ${place}`}
-          rows={view.rim.filter((row) => row.where === "home")}
+          rows={home}
           turn={shown.turn}
           turnWord={words.turn}
           testWord={pack.vocabulary.test}
           fileWord={words.file}
           open={file}
-          onOpen={(id) => !frozen.current && setFile(id)}
+          onOpen={openFile}
         />
         <Chamber
           ref={chamberRef}
           factions={view.factions}
           members={shown.members}
           label={capitalise(pack.vocabulary.chamber)}
+          unit={`${pack.vocabulary.member}s`}
           need={count?.need ?? pack.chamber.threshold}
           count={count}
           eligible={eligible}
-          costs={costs}
-          onTerm={negotiate}
+          onTerms={openTerms}
           onSeat={onSeat}
         />
         <Rim
           side="abroad"
           heading={`Beyond ${place}`}
-          rows={view.rim.filter((row) => row.where !== "home")}
+          rows={abroad}
           turn={shown.turn}
           turnWord={words.turn}
           testWord={pack.vocabulary.test}
           fileWord={words.file}
           open={file}
-          onOpen={(id) => !frozen.current && setFile(id)}
+          onOpen={openFile}
         />
         <div className="tagw" id="tagw">
           {phase.kind === "review" ? (
@@ -595,6 +601,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
               chamberRow={chamberRow}
               size={pack.chamber.size}
               printing
+              busy
               signable={false}
               onPrinted={printed}
               onReveal={() => chamberRef.current?.reveal(phase.next.desk.receipt?.count ?? null)}
@@ -618,12 +625,13 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
               chamberRow={chamberRow}
               size={pack.chamber.size}
               printing={false}
+              busy={busy}
               signable={signable && !busy}
               onPrinted={() => {}}
               onReveal={() => {}}
               onSign={sign}
               onTear={tear}
-              onAmend={busy ? undefined : amend}
+              onAmend={amend}
             />
           ) : floor ? (
             <FloorSlip
@@ -643,6 +651,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
                   : "The clerk prices your act here. Nothing lands until you sign it."}
               </span>
               {shown.pending ? <small>{shown.pending}</small> : null}
+              {view.shut ? <small className="shut">{view.shut}</small> : null}
             </div>
           )}
         </div>
@@ -650,7 +659,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           key={composerKey}
           instruments={shown.instruments}
           priced={(receipt?.verb as VerbKey | undefined) ?? null}
-          priceable={!busy && !receipt}
+          priceable={!busy && !receipt && !floor}
           endLabel={`End ${words.turn} ${shown.turn}`}
           endable={!busy && openEvent < 0 && !floor}
           onPrice={(text) => price(text)}
@@ -691,6 +700,20 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           onClose={() => setSeat(null)}
         />
       ) : null}
+      {termsRow && termsFaction ? (
+        <TermsFile
+          key={termsFaction.id}
+          faction={termsFaction}
+          row={termsRow}
+          costs={costs}
+          busy={busy}
+          onTake={(kind) => {
+            setTerms(null);
+            run(() => api.negotiate(game, termsFaction.id, kind));
+          }}
+          onClose={() => setTerms(null)}
+        />
+      ) : null}
       {sheet ? (
         <Sheet
           resources={game.desk.resources}
@@ -700,7 +723,7 @@ export default function Desk({ game, act, onGame, onError, onQuit, onReview }: P
           onClose={() => setSheet(false)}
         />
       ) : null}
-      {event && !file && !sheet && !seat ? (
+      {event && !file && !sheet && !seat && !terms ? (
         <EventCard
           key={event.id}
           event={event}

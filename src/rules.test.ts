@@ -33,6 +33,9 @@ test("an empty box and an unpriced verb both fall back to what the pack allows",
   // no cue matches without `force`, so the fallback order decides it
   expect(settleVerb("Send troops in.", { spend: {}, proclaim: {} } as never)).toBe("proclaim");
   expect(settleVerb("anything", {} as never)).toBe(null);
+  expect(
+    settleVerb("A bill to clear the kingsroad.", { law: { available: false }, decree: {} }),
+  ).toBe("decree");
 });
 
 import { barAt, difficulty } from "./rules";

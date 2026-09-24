@@ -33,9 +33,10 @@ const FALLBACK: VerbKey[] = ["law", "decree", "proclaim", "spend", "appoint", "f
 /** The tabs settle from the text; the player may still pick a tab and the caller stops calling this. */
 export function settleVerb(
   text: string,
-  instruments: Partial<Record<VerbKey, unknown>>,
+  instruments: Partial<Record<VerbKey, { available?: boolean }>>,
 ): VerbKey | null {
-  const has = (v: VerbKey) => instruments[v] !== undefined;
+  // An instrument the pack lists as not available (a realm with no laws) is never the guess.
+  const has = (v: VerbKey) => !!instruments[v] && instruments[v].available !== false;
   for (const [v, re] of CUES) if (has(v) && re.test(text)) return v;
   return FALLBACK.find(has) ?? null;
 }

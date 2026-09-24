@@ -1,5 +1,5 @@
 // The composer: the instrument chip, the act typed in the player's own words, Price it, and End turn.
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import type { GameView } from "../api";
 import { settleVerb, type VerbKey } from "../rules";
 import { sound } from "../sound";
@@ -26,16 +26,22 @@ export const Composer = memo(function Composer({
   onEnd,
 }: Props) {
   const [text, setText] = useState("");
+  const box = useRef<HTMLDivElement>(null);
   const verb = priced ?? settleVerb(text, instruments);
-  const ready = priceable && text.trim().length >= 12;
   const go = (button: HTMLElement | null) => {
-    if (!ready) return;
+    if (!priceable) return;
+    // The server wants 12 characters; the button stays live as the mock drew it, and a short act nudges the box.
+    if (text.trim().length < 12) {
+      box.current!.querySelector("input")!.focus();
+      play(box.current!, { x: [0, -6, 5, -3, 0] }, { duration: 0.3 }).catch(() => {});
+      return;
+    }
     if (button) play(button, { scale: [1, 0.94, 1] }, { duration: 0.18 }).catch(() => {});
     onPrice(text);
   };
   return (
     <div className="cmp">
-      <div className="cbox sf">
+      <div className="cbox sf" ref={box}>
         <span className="vpick">
           <Icon id={VERB_ICON[verb ?? "decree"]} />
           <span>{verb ? (instruments[verb]?.name ?? verb) : "Act"}</span>
@@ -55,7 +61,7 @@ export const Composer = memo(function Composer({
         <button
           className="btn accent"
           id="go"
-          disabled={!ready}
+          disabled={!priceable}
           onClick={(event) => go(event.currentTarget)}
         >
           <Icon id="i-ballot" />

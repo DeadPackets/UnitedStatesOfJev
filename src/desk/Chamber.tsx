@@ -23,7 +23,7 @@ export type SeatSpot = {
   faction: ChamberFaction;
 };
 export type ChamberHandle = { reveal(count?: Count | null): void; spots: SeatSpot[] };
-export type TermHandler = (faction: string, term: string) => void;
+export type TermsHandler = (faction: string) => void;
 type Seated = { id: string; faction: string };
 
 const ROWS = [0.45, 0.56, 0.67, 0.78, 0.89, 1];
@@ -74,8 +74,7 @@ function paintLegend(
   legend: HTMLElement,
   factions: ChamberFaction[],
   count: Count | null,
-  costs: (term: { cost: Record<string, number> }) => string,
-  onTerm?: TermHandler,
+  onTerms?: TermsHandler,
 ) {
   legend.replaceChildren(
     ...factions.map((faction) => {
@@ -87,27 +86,23 @@ function paintLegend(
       const row = count?.factions.find((candidate) => candidate.id === faction.id);
       if (!row) {
         name.textContent = String(faction.seats);
-        item.append(dot, `${faction.name} `, name);
+        item.append(dot, `${faction.short} `, name);
         return item;
       }
-      name.textContent = faction.name;
+      name.textContent = faction.short;
       const parts = [
         row.for && `${row.for} for`,
         row.hesitant && `${row.hesitant} hesitant`,
         row.against && `${row.against} against`,
       ];
-      item.append(dot, name, ` ${parts.filter(Boolean).join(", ")}: ${row.reason}`);
-      for (const term of row.terms ?? []) {
+      item.append(dot, name, ` ${parts.filter(Boolean).join(", ")}: ${row.reason}`);
+      // One chip, so the legend keeps the mock's two lines; the terms open in their own card.
+      if (row.terms?.length) {
         const chip = document.createElement("button");
         chip.className = "btn term";
-        // Short on the chip so the legend stays near the mock's two lines; the full term is the tooltip.
-        const cost = costs(term);
-        const what = term.kind === "pledge" ? term.label : term.kind === "post" ? "A post" : "";
-        chip.textContent =
-          [what, cost === "free" ? "" : cost].filter(Boolean).join(" · ") || "free";
-        chip.title = `${term.label} · ${cost}`;
-        chip.setAttribute("aria-label", `Take their terms: ${term.label}, ${cost}`);
-        chip.onclick = () => onTerm?.(faction.id, term.kind);
+        chip.dataset.f = faction.id;
+        chip.textContent = "Their terms";
+        chip.onclick = () => onTerms?.(faction.id);
         item.append(chip);
       }
       return item;
@@ -121,11 +116,10 @@ type Paint = {
   count: Count | null;
   need: number;
   eligible: Set<string> | null; // while a favour looks for its member: every other seat dims
-  costs: (term: { cost: Record<string, number> }) => string;
-  onTerm?: TermHandler;
+  onTerms?: TermsHandler;
 };
 export function paintChamber(stage: HTMLElement, paint: Paint, animated: boolean) {
-  const { spots, bound, count, need, eligible, costs, onTerm } = paint;
+  const { spots, bound, count, need, eligible, onTerms } = paint;
   const size = spots.length;
   stage.querySelectorAll<SVGCircleElement>("#hemi .seat").forEach((circle, i) => {
     const member = bound[i];
@@ -166,31 +160,31 @@ export function paintChamber(stage: HTMLElement, paint: Paint, animated: boolean
     telltale.replaceChildren(chip);
   }
   const factions = [...new Map(spots.map((spot) => [spot.faction.id, spot.faction])).values()];
-  paintLegend(stage.querySelector(".gleg")!, factions, count, costs, onTerm);
+  paintLegend(stage.querySelector(".gleg")!, factions, count, onTerms);
 }
 
 type Props = {
   factions: ChamberFaction[];
   members: Seated[];
   label: string;
+  unit: string; // the pack's word for a seat's holder, plural
   need: number;
   count: Count | null;
   eligible: Set<string> | null;
-  costs: (term: { cost: Record<string, number> }) => string;
-  onTerm: TermHandler;
+  onTerms: TermsHandler;
   onSeat: (member: string, index: number) => void;
 };
 
 export const Chamber = memo(
   forwardRef<ChamberHandle, Props>(function Chamber(
-    { factions, members, label, need, count, eligible, costs, onTerm, onSeat },
+    { factions, members, label, unit, need, count, eligible, onTerms, onSeat },
     ref,
   ) {
     const spots = useMemo(() => layoutSeats(factions), [factions]);
     const bound = useMemo(() => bindMembers(spots, members, count), [spots, members, count]);
     const stage = useRef<HTMLElement>(null);
     const radius = 0.041 * Math.min(1, Math.sqrt(100 / Math.max(1, spots.length)));
-    const paint = { spots, bound, count, need, eligible, costs, onTerm };
+    const paint = { spots, bound, count, need, eligible, onTerms };
     useLayoutEffect(() => paintChamber(stage.current!, paint, false)); // eslint-disable-line
     useImperativeHandle(
       ref,
@@ -215,7 +209,7 @@ export const Chamber = memo(
       <section className="stage sf" id="stage" ref={stage}>
         <div className="st-h">
           <span className="kicker">
-            {/^the /i.test(label) ? label : `The ${label}`} · {spots.length} seats
+            {/^the /i.test(label) ? label : `The ${label}`} · {spots.length} {unit}
           </span>
           <span className="st-v" id="stv" />
         </div>
