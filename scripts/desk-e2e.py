@@ -5,6 +5,9 @@
 # moment, with the measurements and every known difference from the mock and its reason.
 # It also runs a contrast audit (every visible text against the ground under it, 4.5:1) in both worlds and themes, and
 # seats a pack stored before R36 (no tokens, glance cards, icons, emblems, tints or short names) by its /s/ link.
+# Then each golden world generation v2 wrote (docs/generation/golden/) is seeded into local D1 and played: its desk in
+# both themes, a rim file with an emblem and one with the line icon, a member's card, the resources sheet, a law and a
+# decree priced and signed, and End turn; the emblems drawn are checked against the pack. E2E_ONLY=golden runs only that.
 # Run against the production build (frame rates of the dev build measure React's dev mode), fixtures seeded (plan,
 # Global Constraints):
 #   bunx vite build && bunx vite preview --port 4173 &
@@ -65,8 +68,20 @@ DIFFERENCES = [
     ("The Negotiate chips stay in the legend through the count, verdict and review of a priced law", "The chamber keeps the priced count until Back to the desk so nothing repaints mid-moment; the chips do nothing while a moment runs."),
     ("At 1920x1080 the desk fills the screen at k = 1.2 (19.2 px root); the mock's fhd shot shows it near k = 1.0", "The brief's scaling rule (k = min(w/1440, h/900), clamped 1 to 1.8); the mock's shot predates the scale."),
 ]
+# Scenario id, pack under docs/generation/golden/, what it is, and two acts: a law (counted) where the world has one, and a decree.
+GOLDEN = [
+    ("golden-ottoman", "2026-09-24-ottoman-1908/ottoman-1908.pack.json", "Ottoman 1908, the rebuild: emblems, the Porte as the player's holder, the chamber as a holder",
+     ["Pass a law to restore the 1876 constitution and free the press across the empire.", "Order the army to disband the Macedonian bands before the elections."]),
+    ("golden-ottoman-first", "2026-09-24/ottoman-1908.pack.json", "Ottoman 1908, the first golden run: no emblems (line icons), eight chamber factions",
+     ["Pass a law to give every millet equal seats in the new chamber.", "Proclaim a general amnesty for the political prisoners of the old regime."]),
+    ("golden-westeros", "2026-09-24/westeros-298.pack.json", "Westeros 298 AC: no chamber, so a court of 24 whose factions are the holders; emblems",
+     ["Decree that the crown pays the Iron Bank a tenth of its debt in gold by spring.", "Send the gold cloaks to clear the kingsroad of outlaws and brigands."]),
+    ("golden-fridge", "2026-09-24/fridge-parliament.pack.json", "The Parliament of the Fridge: every emblem call filtered, so line icons everywhere",
+     ["Pass a law that every leftover gets a date label before it enters the fridge.", "Order the crisper drawer cleaned out before the weekend shop."]),
+]
+ONLY = os.environ.get("E2E_ONLY")
 MOMENTS = {"open a file", "close a file", "open resources", "pricing", "sign: charge and shockwave", "the count", "verdict", "couriers"}
-report = {"fps": [], "long": [], "fonts": {}, "errors": [], "answers": [], "turns": [], "js": {}, "js_gzip_kb": None, "shots": [], "contrast": [], "keyboard": []}
+report = {"fps": [], "long": [], "fonts": {}, "errors": [], "answers": [], "turns": [], "js": {}, "js_gzip_kb": None, "shots": [], "contrast": [], "keyboard": [], "golden": []}
 # Every visible text node (and each empty input's placeholder) against the ground under it, 4.5:1. Disabled controls are
 # exempt (WCAG). A ground is each ancestor's background colour composited down; an opaque gradient counts at its worst stop.
 AUDIT = (ROOT / "scripts/contrast.js").read_text()
@@ -167,7 +182,7 @@ async def act(page, text, prefix=None, review=None):
     law = not await page.query_selector(".rc.act")
     await page.click("#sign")
     if prefix and law:
-        await page.wait_for_function("document.querySelectorAll('#hemi .v-yes,#hemi .v-no').length>30", timeout=180000)
+        await page.wait_for_function("document.querySelectorAll('#hemi .v-yes,#hemi .v-no').length>document.querySelectorAll('#hemi .seat').length/3", timeout=180000)
         await shot(page, f"{prefix}-2b-count", "The count, seat by seat")
         await page.wait_for_selector(".vd", timeout=60000)
         await page.wait_for_timeout(500)
@@ -259,6 +274,20 @@ async def keyboard(page):
     report["keyboard"].append({"seat": seat, "card": card, "focus after Esc": back, "ok": bool(seat) and seat.startswith(card) and back == seat})
 
 
+def seed_pack(pack, id):
+    """One pack as a ready scenario in local D1. D1 caps a statement at 100 KB, so the pack goes in 40 KB pieces."""
+    pack["id"] = id
+    quote = lambda text: "'%s'" % str(text).replace("'", "''")
+    text = json.dumps(pack)
+    head = [id, "ready", "ready", "en", pack["title"], pack["era"], pack["place"], pack["description"], pack.get("prompt", "e2e")]
+    sql = OUT / f"seed-{id}.sql"
+    sql.write_text("\n".join(
+        ["INSERT OR REPLACE INTO scenarios (id,status,step,lang,title,era,place,description,prompt,pack,fragments,created,builds) VALUES (%s,'','[]',%d,0);" % (",".join(map(quote, head)), int(time.time() * 1000))]
+        + ["UPDATE scenarios SET pack = pack || %s WHERE id = %s;" % (quote(text[i : i + 40000]), quote(id)) for i in range(0, len(text), 40000)]
+    ))
+    subprocess.run(["bunx", "wrangler", "d1", "execute", "usoj", "--local", "--file", str(sql)], cwd=ROOT, check=True, capture_output=True)
+
+
 def seed_old_pack():
     """Biden stripped of everything R36 added, as a pack stored before it would be (local D1 only)."""
     pack = json.loads((ROOT / "worker/fixtures/biden-2021.json").read_text())
@@ -276,15 +305,67 @@ def seed_old_pack():
         holder.pop("short", None)
     for key in ("file", "abroad"):
         pack["vocabulary"].pop(key, None)
-    pack["id"] = "e2e-old"
-    text = json.dumps(pack).replace("'", "''")
-    chunks = [text[i : i + 40000] for i in range(0, len(text), 40000)]
-    sql = OUT / "seed-old-pack.sql"
-    sql.write_text("\n".join(
-        ["INSERT OR REPLACE INTO scenarios (id,status,step,lang,title,era,place,description,prompt,pack,fragments,created,builds) VALUES ('e2e-old','ready','ready','en','The old pack','2021','Washington, D.C.','A pack stored before R36.','e2e','','[]',%d,0);" % int(time.time() * 1000)]
-        + ["UPDATE scenarios SET pack = pack || '%s' WHERE id = 'e2e-old';" % chunk for chunk in chunks]
-    ))
-    subprocess.run(["bunx", "wrangler", "d1", "execute", "usoj", "--local", "--file", str(sql)], cwd=ROOT, check=True, capture_output=True)
+    seed_pack(pack, "e2e-old")
+
+
+# Each rim row and the open file's disc: the emblem (svg.em) or the line icon.
+MARKS = "[...document.querySelectorAll('.rim .hm')].map(r=>({id:r.dataset.h,emblem:!!r.querySelector('.hi svg.em')}))"
+
+
+async def golden(page, id, file, what, acts):
+    """A golden world on the desk: both themes at rest, a file with an emblem and one with the line icon, a member's
+    card, the resources sheet, a law and a decree priced and signed, End turn; the emblems drawn against the pack's."""
+    pack = json.loads((ROOT / "docs/generation/golden" / file).read_text())
+    seed_pack(pack, id)
+    holders = pack["constitution"]["holders"]
+    await page.goto(f"{URL}/s/{id}")
+    await page.wait_for_timeout(2500)
+    await shot(page, f"{id}-0-seat", f"{what}: the seat")
+    await seat(page, id, pack["constitution"]["ruler"]["faction"], "light")
+    rows = await page.evaluate(MARKS)
+    drawn = [row["id"] for row in rows if row["emblem"]]
+    packed = [h["id"] for h in holders if h.get("emblem") and h["id"] in {row["id"] for row in rows}]
+    files = [row for row in ([r for r in rows if r["emblem"]][:1] + [r for r in rows if not r["emblem"]][:1])]
+    await statics(page, id, [row["id"] for row in files])
+    discs = {}
+    for row in files:  # the file's disc shows the same mark as its rim row
+        await page.click(f'.hm[data-h="{row["id"]}"]')
+        await page.wait_for_selector(".fcard", timeout=5000)
+        discs[row["id"]] = await page.evaluate("!!document.querySelector('.fcard svg.em')")
+        await page.keyboard.press("Escape")
+        await page.wait_for_timeout(600)
+    await page.click("#hemi .seat")
+    await page.wait_for_selector(".fcard", timeout=5000)
+    await page.wait_for_timeout(1500)
+    await shot(page, f"{id}-5-member", f"{what}: a member's card (R36 glance)")
+    await contrast(page, f"{id}, a member's card")
+    member = await page.evaluate("document.querySelector('.fcard').innerText.slice(0,300)")
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(600)
+    report["fonts"][id] = await fonts(page)
+    turns = [await act(page, acts[0], id), await act(page, acts[1], None, review=f"{id}-6-decree-review")]
+    await collect(page)
+    if await page.is_disabled(".endt"):
+        report["errors"].append(f"{id}: End turn disabled")
+    else:
+        await page.click(".endt")
+        await back(page)
+        await page.wait_for_timeout(800)
+        await shot(page, f"{id}-7-turn-2", f"{what}: the desk after End turn, with any card the turn dealt")
+        await answer_cards(page)
+        await collect(page)
+    await page.click(".tools button")  # Dark
+    await page.wait_for_timeout(800)
+    await shot(page, f"{id}-8-dark", f"{what}: the desk in the world's dark theme")
+    await contrast(page, f"{id}, dark, at rest")
+    await page.click(".tools button")
+    await page.wait_for_timeout(500)
+    report["golden"].append({
+        "id": id, "what": what, "rows": len(rows), "emblems in pack": packed, "emblems drawn": drawn,
+        "discs": discs, "ok": sorted(drawn) == sorted(packed) and all(discs[r["id"]] == r["emblem"] for r in files),
+        "tokens": {k: pack["themeTokens"].get(k) for k in ("display", "body", "mono")}, "fonts": report["fonts"][id],
+        "member card": member, "acts": list(zip(acts, turns)),
+    })
 
 
 async def fonts(page):
@@ -320,97 +401,109 @@ def seed_builds():
 
 async def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    seed_builds()
-    seed_old_pack()
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path=CHROME, headless=False)
         context = await browser.new_context(viewport={"width": 1440, "height": 900})
         await context.add_init_script(INIT)
         page = await context.new_page()
         watch(page)
-
-        # The screens around the desk.
-        await page.goto(URL)
-        await page.evaluate("localStorage.removeItem('usoj:game');localStorage.setItem('usoj:theme','light')")
-        await page.reload()
-        await page.wait_for_timeout(1500)
-        await shot(page, "screen-landing", "The landing (restyled, not redesigned)")
-        for id, caption in [("e2ev2roster", "The build wait, generation v2, at the roster (about 90 s in)"), ("e2ev2full", "The build wait, generation v2, with the briefing, groups, theme and emblems landed"), ("e2ev1", "The build wait on a v1 build's fragments (frame, members)")]:
-            await page.goto(f"{URL}/s/{id}")
-            await page.wait_for_timeout(2500)
-            await shot(page, f"screen-build-{id[3:]}", caption)
-        await page.goto(f"{URL}/s/westeros")
-        await page.wait_for_timeout(2500)
-        await shot(page, "screen-seat", "The seat (briefing pages), Westeros tokens")
-        await page.goto(f"{URL}/s/e2e-old")  # a hyphenated id opens by its link
-        await page.wait_for_timeout(2500)
-        await shot(page, "screen-seat-old-pack", "The seat of a pack stored before R36, opened by its /s/e2e-old link")
-        await seat(page, "e2e-old", "dem", "light")
-        await shot(page, "old-pack-desk", "Review Focus 2: a pack stored before R36 on the desk: the default theme, a line icon and a tint on every row, full names")
-        await contrast(page, "old pack, light, at rest")
-
-        # One Biden term, light, and the desk in dark.
-        await seat(page, "biden-2021", "dem", "light")
-        await statics(page, "biden-light", ["gop", "nato"], "-4-resources-change")
-        await keyboard(page)
-        await page.hover('.hm[data-h="congress"] .bal-w')
-        await page.wait_for_timeout(300)
-        await shot(page, "biden-light-5-vote-tooltip", "The ballot chip's tooltip", clip={"x": 0, "y": 80, "width": 620, "height": 260})
-        report["fonts"]["biden-2021"] = await fonts(page)
-        await page.click(".tools button")  # Dark
-        await page.wait_for_timeout(800)
-        await statics(page, "biden-dark", ["dem"], "-4-resources-change")
-        await page.click(".tools button")  # back to Light
-        await page.wait_for_timeout(500)
-        await collect(page)
-        forced = False
-        for turn, text in enumerate(ACTS, start=1):
-            now = await screens_until_desk(page)
-            if now in ("won", "over"):
-                break
-            await answer_cards(page)
-            if turn == 2 and not forced:  # Review Focus 5: a vote that fails after the act was signed
-                forced = True
-                await page.route("**/bills/*/vote", lambda route: route.fulfill(status=503, content_type="application/json", body='{"error":"The chamber is in recess. Try again."}'), times=1)
-            result = await act(page, text, "biden-light" if turn == 1 else None)
-            report["turns"].append({"turn": turn, "act": text, "result": result})
-            await collect(page)
-            if await page.query_selector("#callvote") and await page.is_enabled("#callvote"):
-                await page.click("#callvote")
-                await back(page)
-            await answer_cards(page)
-            if await page.is_disabled(".endt"):
-                report["errors"].append(f"turn {turn}: End turn disabled")
-                break
-            await page.click(".endt")
-            await back(page)
-            await collect(page)
-        final = await screens_until_desk(page)
-        await shot(page, "biden-light-7-end", f"Where the term ended ({final})")
-
-        # One Westeros act, dark, and the Westeros desk in light.
-        await seat(page, "westeros", "baratheon", "dark")
-        await statics(page, "westeros-dark", ["lannister", "ironbank"], "-4-resources-change")
-        report["fonts"]["westeros"] = await fonts(page)
-        report["turns"].append({"world": "westeros", "result": await act(page, "Call the banners to clear the kingsroad of outlaws.", "westeros-dark")})
-        await collect(page)
-        await page.click(".tools button")  # Light
-        await page.wait_for_timeout(800)
-        await statics(page, "westeros-light", ["smallfolk"], "-4-resources-change")
-        await collect(page)
-
-        # The desk at 1920x1080 (k = 1.2), and reduced motion.
-        wide = await browser.new_page(viewport={"width": 1920, "height": 1080})
-        await seat(wide, "biden-2021", "dem", "light")
-        await shot(wide, "viewport-fhd-16x9", "1920x1080: every size is 1.2 times the 1440 desk")
-        still = await browser.new_context(viewport={"width": 1440, "height": 900}, reduced_motion="reduce")
-        quiet = await still.new_page()
-        watch(quiet)
-        await seat(quiet, "biden-2021", "dem", "light")
-        result = await act(quiet, ACTS[0], None, review="biden-light-6-reduced-motion-end")
-        CAPTIONS["biden-light-6-reduced-motion-end"] = f"Reduced motion: the same flow ends in the same review, with no travel ({result})"
+        if ONLY != "golden":
+            await fixtures(page, browser)
+        for world in GOLDEN:
+            await golden(page, *world)
         await browser.close()
+    finish()
 
+
+async def fixtures(page, browser):
+    seed_builds()
+    seed_old_pack()
+
+    # The screens around the desk.
+    await page.goto(URL)
+    await page.evaluate("localStorage.removeItem('usoj:game');localStorage.setItem('usoj:theme','light')")
+    await page.reload()
+    await page.wait_for_timeout(1500)
+    await shot(page, "screen-landing", "The landing (restyled, not redesigned)")
+    for id, caption in [("e2ev2roster", "The build wait, generation v2, at the roster (about 90 s in)"), ("e2ev2full", "The build wait, generation v2, with the briefing, groups, theme and emblems landed"), ("e2ev1", "The build wait on a v1 build's fragments (frame, members)")]:
+        await page.goto(f"{URL}/s/{id}")
+        await page.wait_for_timeout(2500)
+        await shot(page, f"screen-build-{id[3:]}", caption)
+    await page.goto(f"{URL}/s/westeros")
+    await page.wait_for_timeout(2500)
+    await shot(page, "screen-seat", "The seat (briefing pages), Westeros tokens")
+    await page.goto(f"{URL}/s/e2e-old")  # a hyphenated id opens by its link
+    await page.wait_for_timeout(2500)
+    await shot(page, "screen-seat-old-pack", "The seat of a pack stored before R36, opened by its /s/e2e-old link")
+    await seat(page, "e2e-old", "dem", "light")
+    await shot(page, "old-pack-desk", "Review Focus 2: a pack stored before R36 on the desk: the default theme, a line icon and a tint on every row, full names")
+    await contrast(page, "old pack, light, at rest")
+
+    # One Biden term, light, and the desk in dark.
+    await seat(page, "biden-2021", "dem", "light")
+    await statics(page, "biden-light", ["gop", "nato"], "-4-resources-change")
+    await keyboard(page)
+    await page.hover('.hm[data-h="congress"] .bal-w')
+    await page.wait_for_timeout(300)
+    await shot(page, "biden-light-5-vote-tooltip", "The ballot chip's tooltip", clip={"x": 0, "y": 80, "width": 620, "height": 260})
+    report["fonts"]["biden-2021"] = await fonts(page)
+    await page.click(".tools button")  # Dark
+    await page.wait_for_timeout(800)
+    await statics(page, "biden-dark", ["dem"], "-4-resources-change")
+    await page.click(".tools button")  # back to Light
+    await page.wait_for_timeout(500)
+    await collect(page)
+    forced = False
+    for turn, text in enumerate(ACTS, start=1):
+        now = await screens_until_desk(page)
+        if now in ("won", "over"):
+            break
+        await answer_cards(page)
+        if turn == 2 and not forced:  # Review Focus 5: a vote that fails after the act was signed
+            forced = True
+            await page.route("**/bills/*/vote", lambda route: route.fulfill(status=503, content_type="application/json", body='{"error":"The chamber is in recess. Try again."}'), times=1)
+        result = await act(page, text, "biden-light" if turn == 1 else None)
+        report["turns"].append({"turn": turn, "act": text, "result": result})
+        await collect(page)
+        if await page.query_selector("#callvote") and await page.is_enabled("#callvote"):
+            await page.click("#callvote")
+            await back(page)
+        await answer_cards(page)
+        if await page.is_disabled(".endt"):
+            report["errors"].append(f"turn {turn}: End turn disabled")
+            break
+        await page.click(".endt")
+        await back(page)
+        await collect(page)
+    final = await screens_until_desk(page)
+    await shot(page, "biden-light-7-end", f"Where the term ended ({final})")
+
+    # One Westeros act, dark, and the Westeros desk in light.
+    await seat(page, "westeros", "baratheon", "dark")
+    await statics(page, "westeros-dark", ["lannister", "ironbank"], "-4-resources-change")
+    report["fonts"]["westeros"] = await fonts(page)
+    report["turns"].append({"world": "westeros", "result": await act(page, "Call the banners to clear the kingsroad of outlaws.", "westeros-dark")})
+    await collect(page)
+    await page.click(".tools button")  # Light
+    await page.wait_for_timeout(800)
+    await statics(page, "westeros-light", ["smallfolk"], "-4-resources-change")
+    await collect(page)
+
+    # The desk at 1920x1080 (k = 1.2), and reduced motion.
+    wide = await browser.new_page(viewport={"width": 1920, "height": 1080})
+    await seat(wide, "biden-2021", "dem", "light")
+    await shot(wide, "viewport-fhd-16x9", "1920x1080: every size is 1.2 times the 1440 desk")
+    still = await browser.new_context(viewport={"width": 1440, "height": 900}, reduced_motion="reduce")
+    quiet = await still.new_page()
+    watch(quiet)
+    await seat(quiet, "biden-2021", "dem", "light")
+    result = await act(quiet, ACTS[0], None, review="biden-light-6-reduced-motion-end")
+    CAPTIONS["biden-light-6-reduced-motion-end"] = f"Reduced motion: the same flow ends in the same review, with no travel ({result})"
+    await still.close()
+    await wide.close()
+
+
+def finish():
     assets = ROOT / "dist/client/assets"
     if assets.exists():
         report["js"] = {f.name: round(len(gzip.compress(f.read_bytes())) / 1024, 1) for f in sorted(assets.glob("*.js"))}
@@ -421,7 +514,7 @@ async def main():
     report["contrast_failures"] = sum(len(c["failures"]) for c in report["contrast"])
     (OUT / "report.json").write_text(json.dumps(report, indent=1))
     write_compare()
-    print(json.dumps({k: report[k] for k in ("js_gzip_kb", "fonts", "slow_moments", "long_over_50ms", "errors", "turns", "contrast_failures", "keyboard")}, indent=1))
+    print(json.dumps({k: report[k] for k in ("js_gzip_kb", "fonts", "slow_moments", "long_over_50ms", "errors", "turns", "contrast_failures", "keyboard", "golden")}, indent=1))
 
 
 def write_compare():
