@@ -1,16 +1,31 @@
-import { FONT_PAIRS, ESCALATION_KEYS, type Citizen, type Constitution, type Member, type Storylet } from "../pack";
+import {
+  FONT_PAIRS,
+  ESCALATION_KEYS,
+  type Citizen,
+  type Constitution,
+  type Member,
+  type Storylet,
+} from "../pack";
 import type { Sources } from "../sources";
 import type { Facts } from "./facts";
 import type { Frame } from "./frame";
 import type { Calendar } from "./validate";
 
 export type GenCtx = {
-  prompt: string; lang: string; fiction: boolean;
-  sources: Sources; facts: Facts; frame: Frame; calendar: Calendar | null;
+  prompt: string;
+  lang: string;
+  fiction: boolean;
+  sources: Sources;
+  facts: Facts;
+  frame: Frame;
+  calendar: Calendar | null;
   constitution: Constitution | null;
-  members: Member[]; citizens: Citizen[]; deck: Storylet[];
+  members: Member[];
+  citizens: Citizen[];
+  deck: Storylet[];
 };
-export const chunk = <T>(a: T[], n: number): T[][] => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+export const chunk = <T>(a: T[], n: number): T[][] =>
+  Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
 export const HISTORIAN = `You are a parliamentarian and historian. You write a "polity pack" for a strategy game about holding power: the player is the executive head of the polity for a term of 20 turns, a consul, a president, a king or a general secretary, never a legislator. They act through decrees, laws, appointments, spending, proclamations, favours and force, and several power holders can make them stop. The chamber, where one exists, is one power holder among several.`;
 
@@ -42,28 +57,47 @@ const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) : s);
 // One user block for the facts and frame calls: the sources, the Wikidata date table, then the sheet.
 export function sourceBlock(ctx: GenCtx, facts?: Facts): string {
   const s = ctx.sources;
-  const pages = (s?.wikipedia ?? []).map((p) => `## ${p.title}\n${p.lead}\n` + p.sections.map((x) => `### ${x.heading}\n${x.text}`).join("\n")).join("\n\n");
-  const people = (s?.people ?? []).map((p) => `${p.label} | ${p.born ?? "?"} | ${p.died ?? "alive"}`).join("\n");
-  const parties = (s?.parties ?? []).map((p) => `${p.label} | ${p.color ?? "?"} | ${p.seats ?? "?"}`).join("\n");
+  const pages = (s?.wikipedia ?? [])
+    .map(
+      (p) =>
+        `## ${p.title}\n${p.lead}\n` +
+        p.sections.map((x) => `### ${x.heading}\n${x.text}`).join("\n"),
+    )
+    .join("\n\n");
+  const people = (s?.people ?? [])
+    .map((p) => `${p.label} | ${p.born ?? "?"} | ${p.died ?? "alive"}`)
+    .join("\n");
+  const parties = (s?.parties ?? [])
+    .map((p) => `${p.label} | ${p.color ?? "?"} | ${p.seats ?? "?"}`)
+    .join("\n");
   return [
     `Scenario: ${ctx.prompt}`,
-    pages ? `sources:\n${clip(pages, 60000)}` : "sources: none. This scenario is invented. Invent factions, leaders, regions and colors that fit it.",
+    pages
+      ? `sources:\n${clip(pages, 60000)}`
+      : "sources: none. This scenario is invented. Invent factions, leaders, regions and colors that fit it.",
     people ? `Wikidata dates (name | born | died):\n${people}` : "",
     parties ? `Wikidata parties (name | color | seats):\n${parties}` : "",
     facts ? `facts sheet:\n${JSON.stringify(facts)}` : "",
-  ].filter(Boolean).join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 // The frame the persona and deck calls need to stay inside. Small enough to repeat in every parallel call.
 export function frameBrief(ctx: GenCtx) {
   const f = ctx.frame;
   return {
-    title: f.title, era: f.era, place: f.place, start_date: ctx.calendar?.start_date ?? f.start_date,
-    chamber: f.vocabulary.chamber, member_word: f.vocabulary.member,
+    title: f.title,
+    era: f.era,
+    place: f.place,
+    start_date: ctx.calendar?.start_date ?? f.start_date,
+    chamber: f.vocabulary.chamber,
+    member_word: f.vocabulary.member,
     factions: f.factions.map((x) => ({ id: x.id, name: x.name, ideology: x.ideology })),
     regions: f.regions.map((x) => ({ id: x.id, name: x.name })),
     blocs: f.blocs.map((x) => ({ id: x.id, name: x.name, description: x.description })),
     patrons: f.patrons.map((x) => ({ id: x.id, name: x.name })),
-    tags: f.tags, problems: f.problems,
+    tags: f.tags,
+    problems: f.problems,
   };
 }

@@ -13,7 +13,10 @@ export function pickCalendar(facts?: Facts | null): Calendar | null {
   let best: (Calendar & { count: number }) | null = null;
   for (const unit of UNITS) {
     const start_date = fromDays(days(a) - Math.ceil(15 * UNIT[unit]));
-    const count = dates.filter((d) => { const t = turnOf(d, start_date, unit); return t !== null && t >= 1 && t <= 20; }).length;
+    const count = dates.filter((d) => {
+      const t = turnOf(d, start_date, unit);
+      return t !== null && t >= 1 && t <= 20;
+    }).length;
     if (!best || count > best.count) best = { start_date, unit, count };
   }
   return { start_date: best!.start_date, unit: best!.unit };

@@ -2,7 +2,9 @@ import { test, expect } from "bun:test";
 import { PhotonImage, crop } from "@cf-wasm/photon";
 import { alignment, cells, crest, face, masthead, plate } from "./art";
 
-const SHEET = new Uint8Array(await Bun.file(`${import.meta.dir}/fixtures/sheet.webp`).arrayBuffer());
+const SHEET = new Uint8Array(
+  await Bun.file(`${import.meta.dir}/fixtures/sheet.webp`).arrayBuffer(),
+);
 const CELLS = cells(SHEET);
 const INK: [number, number, number] = [26, 26, 24];
 const PAPER: [number, number, number] = [244, 244, 242];
@@ -37,7 +39,8 @@ test("alignment passes on the fixture sheet", () => {
 test("alignment fails, without throwing, when more than 2 cells drift", () => {
   // Synthetic cells: paper with one dark "eye line" 18 rows (face space) below the fixture median.
   const d = new Uint8Array(400 * 400 * 4).fill(240);
-  for (let y = 188; y < 212; y++) for (let x = 0; x < 400; x++) d.set([20, 20, 20, 255], (y * 400 + x) * 4);
+  for (let y = 188; y < 212; y++)
+    for (let x = 0; x < 400; x++) d.set([20, 20, 20, 255], (y * 400 + x) * 4);
   const img = new PhotonImage(d, 400, 400);
   const low = img.get_bytes();
   img.free();

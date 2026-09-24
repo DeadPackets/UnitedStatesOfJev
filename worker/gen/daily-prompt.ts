@@ -6,7 +6,7 @@ import { CONTENT_RULE, HISTORIAN } from "./prompts";
 
 const DailyPromptSchema = z.object({ prompt: z.string(), why: z.string() });
 
-export const PROMPT_CHARS = 120;   // TUNE: the prompt the model is asked for, and the clip code applies
+export const PROMPT_CHARS = 120; // TUNE: the prompt the model is asked for, and the clip code applies
 
 export const DAILY_SYSTEM = `${HISTORIAN}
 
@@ -23,19 +23,50 @@ ${CONTENT_RULE}`;
 
 /** The past dailies are the duplicate check the model sees; `duplicate` below is the check code repeats after. */
 export async function dailyPrompt(env: Env, past: DailyMeta[]): Promise<string> {
-  const d = await luna(env, DailyPromptSchema, "daily_prompt", DAILY_SYSTEM,
+  const d = await luna(
+    env,
+    DailyPromptSchema,
+    "daily_prompt",
+    DAILY_SYSTEM,
     JSON.stringify({
-      past_dailies: past.map((p) => ({ day: p.day, title: p.title, era: p.era, place: p.place, prompt: p.prompt })),
-    }), 300);
+      past_dailies: past.map((p) => ({
+        day: p.day,
+        title: p.title,
+        era: p.era,
+        place: p.place,
+        prompt: p.prompt,
+      })),
+    }),
+    300,
+  );
   return d.prompt.trim().slice(0, PROMPT_CHARS);
 }
 
 // Words every other prompt carries too, so a match on one of them says nothing about the polity.
 const COMMON = new Set([
-  "after", "under", "during", "before", "republic", "kingdom", "empire", "state", "states", "union",
-  "early", "late", "year", "years", "revolution", "government", "council", "assembly", "province", "city",
+  "after",
+  "under",
+  "during",
+  "before",
+  "republic",
+  "kingdom",
+  "empire",
+  "state",
+  "states",
+  "union",
+  "early",
+  "late",
+  "year",
+  "years",
+  "revolution",
+  "government",
+  "council",
+  "assembly",
+  "province",
+  "city",
 ]);
-const words = (s: string) => (s.toLowerCase().match(/[a-z]{4,}/g) ?? []).filter((w) => !COMMON.has(w));
+const words = (s: string) =>
+  (s.toLowerCase().match(/[a-z]{4,}/g) ?? []).filter((w) => !COMMON.has(w));
 
 export function duplicate(prompt: string, past: { place: string | null }[]): boolean {
   const mine = new Set(words(prompt));

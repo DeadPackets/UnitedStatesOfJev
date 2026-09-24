@@ -7,22 +7,41 @@ import { STANCE_HI, STANCE_LO } from "../engine";
 
 // Scale, then clamp to the 0.15 to 0.6 band, with the scale found by bisection: the sum rises with the scale,
 // so it lands on 1 whenever 2 to 6 holders vote. The live model gave minor holders 0.1 and repeated it on retry.
-const LO = 0.15, HI = 0.6;
+const LO = 0.15,
+  HI = 0.6;
 function band(vs: number[]): number[] {
-  if (vs.length * LO > 1 || vs.length * HI < 1) { const t = vs.reduce((a, b) => a + b, 0); return vs.map((v) => v / t); }
+  if (vs.length * LO > 1 || vs.length * HI < 1) {
+    const t = vs.reduce((a, b) => a + b, 0);
+    return vs.map((v) => v / t);
+  }
   const at = (k: number) => vs.map((v) => Math.min(HI, Math.max(LO, v * k)));
-  let lo = 0, hi = HI / Math.min(...vs);
-  for (let i = 0; i < 100; i++) { const k = (lo + hi) / 2; if (at(k).reduce((a, b) => a + b, 0) < 1) lo = k; else hi = k; }
+  let lo = 0,
+    hi = HI / Math.min(...vs);
+  for (let i = 0; i < 100; i++) {
+    const k = (lo + hi) / 2;
+    if (at(k).reduce((a, b) => a + b, 0) < 1) lo = k;
+    else hi = k;
+  }
   return at(hi);
 }
 
-export function settleConstitution(c: Constitution, chamberExists: boolean): { constitution: Constitution; violations: string[] } {
+export function settleConstitution(
+  c: Constitution,
+  chamberExists: boolean,
+): { constitution: Constitution; violations: string[] } {
   const ids = new Set(c.holders.map((h) => h.id));
   const kept = c.retention.weights.filter((w) => ids.has(w.id) && w.value > 0);
   const values = kept.length ? band(kept.map((w) => w.value)) : [];
   const weights = kept.map((w, i) => ({ id: w.id, value: values[i] }));
-  const bar = { ...c.retention.bar, step: Math.max(0, c.retention.bar.step), cap: Math.max(c.retention.bar.start, c.retention.bar.cap) };
-  const holders = c.holders.map((h) => ({ ...h, stance: Math.min(STANCE_HI, Math.max(STANCE_LO, h.stance)) }));
+  const bar = {
+    ...c.retention.bar,
+    step: Math.max(0, c.retention.bar.step),
+    cap: Math.max(c.retention.bar.start, c.retention.bar.cap),
+  };
+  const holders = c.holders.map((h) => ({
+    ...h,
+    stance: Math.min(STANCE_HI, Math.max(STANCE_LO, h.stance)),
+  }));
   const fixed: Constitution = { ...c, holders, retention: { ...c.retention, weights, bar } };
   return { constitution: fixed, violations: check(fixed, chamberExists) };
 }
@@ -46,16 +65,22 @@ export async function constitution(env: Env, ctx: GenCtx): Promise<Partial<GenCt
     chamber: { size: f.chamber.size, threshold: f.chamber.threshold, word: f.vocabulary.chamber },
     seat_classes: [...new Set(f.factions.map((x) => x.ideology))],
     verbs: VERBS,
-    starts: f.starts.map((s) => ({ faction: s.faction, seat_title: s.seat_title, premise: s.premise })),
+    starts: f.starts.map((s) => ({
+      faction: s.faction,
+      seat_title: s.seat_title,
+      premise: s.premise,
+    })),
     people_on_the_sheet: ctx.facts.people.map((p) => p.name),
     bodies_on_the_sheet: ctx.facts.bodies.map((b) => b.name),
   });
   const chamberExists = f.chamber.size > 0;
-  const BUDGET = 6000;   // TUNE: the frame call runs at 9000 and this object is about two thirds of it
+  const BUDGET = 6000; // TUNE: the frame call runs at 9000 and this object is about two thirds of it
   const startIds = f.starts.map((s) => s.faction);
   // ruler.faction is a bare string in the schema, so the frame's own start list is the only check there is.
   const wrongFaction = (x: Constitution) =>
-    startIds.includes(x.ruler.faction) ? [] : [`ruler.faction must be one of: ${startIds.join(", ")}`];
+    startIds.includes(x.ruler.faction)
+      ? []
+      : [`ruler.faction must be one of: ${startIds.join(", ")}`];
 
   let c = await luna(env, ConstitutionSchema, "constitution", SYSTEM, user, BUDGET);
   let settled = settleConstitution(c, chamberExists);

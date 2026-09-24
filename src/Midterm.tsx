@@ -29,13 +29,27 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   const [shown, setShown] = useState(0);
   const [done, setDone] = useState(false);
   const key = `usoj:midterm:${game.id}:${game.term}`;
-  const [replay] = useState(() => { try { return localStorage.getItem(key) === "1"; } catch { return false; } });
+  const [replay] = useState(() => {
+    try {
+      return localStorage.getItem(key) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const run = () => {
-    called.current = true; setFailed(false);
-    act(() => api.midterm(game)).then((ok) => { if (!ok) { called.current = false; setFailed(true); } });
+    called.current = true;
+    setFailed(false);
+    act(() => api.midterm(game)).then((ok) => {
+      if (!ok) {
+        called.current = false;
+        setFailed(true);
+      }
+    });
   };
-  useEffect(() => { if (!result && !called.current && game.stage === "midterm") run(); }, [result, game.stage]); // eslint-disable-line
+  useEffect(() => {
+    if (!result && !called.current && game.stage === "midterm") run();
+  }, [result, game.stage]); // eslint-disable-line
 
   const walk = useMemo(() => {
     const lost = new Set(result?.lost.map((l) => l.seat));
@@ -47,13 +61,20 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
 
   useEffect(() => {
     if (!n || done) return;
-    if (reduced) { const t = setTimeout(() => { setShown(n); setDone(true); }, 2000); return () => clearTimeout(t); }
+    if (reduced) {
+      const t = setTimeout(() => {
+        setShown(n);
+        setDone(true);
+      }, 2000);
+      return () => clearTimeout(t);
+    }
     let raf = 0;
     const t0 = performance.now();
     const tick = (now: number) => {
       const k = Math.min(n, Math.floor((now - t0) / beat) + 1);
       setShown(k);
-      if (k < n) raf = requestAnimationFrame(tick); else setDone(true);
+      if (k < n) raf = requestAnimationFrame(tick);
+      else setDone(true);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -66,7 +87,9 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
   useEffect(() => {
     if (!done || !result) return;
     sound.play(result.lost.length ? "thud" : "gavel");
-    try { localStorage.setItem(key, "1"); } catch {}
+    try {
+      localStorage.setItem(key, "1");
+    } catch {}
   }, [done]); // eslint-disable-line
 
   // The floor as the night began, rebuilt from what changed hands: a mount after the count still
@@ -82,23 +105,33 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
     return out;
   }, [result, game.members, pack.members]);
   const declared = useMemo(() => walk.slice(0, shown), [walk, shown]);
-  const swapped = useMemo(() => new Set(declared.filter((w) => !w.kept).map((w) => w.seat)), [declared]);
+  const swapped = useMemo(
+    () => new Set(declared.filter((w) => !w.kept).map((w) => w.seat)),
+    [declared],
+  );
   const members = useMemo(
-    () => game.members.map((m) => (swapped.has(m.seat) ? m : held.get(m.seat) ?? m)),
+    () => game.members.map((m) => (swapped.has(m.seat) ? m : (held.get(m.seat) ?? m))),
     [game.members, swapped, held],
   );
   const bySeat = useMemo(() => new Map(members.map((m) => [m.seat, m])), [members]);
   // A held seat is marked like a yes; a lost one needs its coin, so the swap itself is the declaration.
   const votes: Record<string, boolean> = {};
-  for (const w of declared) { const m = bySeat.get(w.seat); if (m && w.kept) votes[m.id] = true; }
+  for (const w of declared) {
+    const m = bySeat.get(w.seat);
+    if (m && w.kept) votes[m.id] = true;
+  }
   const seatIds = (seats: string[]) => seats.map((s) => bySeat.get(s)?.id ?? "");
-  const hot = !result ? seatIds(game.marks.midterm ?? [])
-    : done ? seatIds([...swapped])
-    : seatIds([walk[Math.max(0, shown - 1)]?.seat ?? ""]);
+  const hot = !result
+    ? seatIds(game.marks.midterm ?? [])
+    : done
+      ? seatIds([...swapped])
+      : seatIds([walk[Math.max(0, shown - 1)]?.seat ?? ""]);
 
   const size = pack.chamber.size;
   const need = pack.chamber.threshold;
-  const mine = members.filter((m) => m.faction === game.faction || game.coalition.includes(m.faction)).length;
+  const mine = members.filter(
+    (m) => m.faction === game.faction || game.coalition.includes(m.faction),
+  ).length;
   const lost = result?.lost.length ?? 0;
 
   const regions = useMemo(() => new Map(pack.regions.map((r) => [r.id, r.name])), [pack.regions]);
@@ -112,43 +145,103 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
         <h1>{pack.title}</h1>
         <nav aria-label={name}>
           <Ornament kind={pack.theme.ornament} />
-          <span className="num" style={{ padding: "0 8px" }}>{shown} of {total || (game.marks.midterm ?? []).length}</span>
-          {replay && result && !done ? <button className="link" onClick={() => { setShown(total); setDone(true); }}>Skip the count</button> : null}
+          <span className="num" style={{ padding: "0 8px" }}>
+            {shown} of {total || (game.marks.midterm ?? []).length}
+          </span>
+          {replay && result && !done ? (
+            <button
+              className="link"
+              onClick={() => {
+                setShown(total);
+                setDone(true);
+              }}
+            >
+              Skip the count
+            </button>
+          ) : null}
         </nav>
       </header>
 
       <section className="stage" aria-label={v.chamber}>
         <div className="kicker">Government seats</div>
         {regionWalk.length ? (
-          <TileReveal regions={regionWalk} names={regions} label={name} ms={40000} skip={done}
-            onProgress={(i) => setShown(i)} onDone={() => setDone(true)} />
+          <TileReveal
+            regions={regionWalk}
+            names={regions}
+            label={name}
+            ms={40000}
+            skip={done}
+            onProgress={(i) => setShown(i)}
+            onDone={() => setDone(true)}
+          />
         ) : (
-          <ChamberFloor pack={pack} members={members} own={game.faction} coalition={game.coalition}
-            whip={done ? NO_WHIP : undefined} votes={result && !done ? votes : undefined} hot={hot} />
+          <ChamberFloor
+            pack={pack}
+            members={members}
+            own={game.faction}
+            coalition={game.coalition}
+            whip={done ? NO_WHIP : undefined}
+            votes={result && !done ? votes : undefined}
+            hot={hot}
+          />
         )}
-        <div className="whipbar" role="meter" aria-valuemin={0} aria-valuemax={size} aria-valuenow={mine} aria-label="Government seats">
-          <div className={`fill ${done && mine < need ? "fail" : ""}`} style={{ width: `${(mine / size) * 100}%` }} />
-          <div className="tick" style={{ left: `${(need / size) * 100}%` }}><span className="num">{need}</span></div>
+        <div
+          className="whipbar"
+          role="meter"
+          aria-valuemin={0}
+          aria-valuemax={size}
+          aria-valuenow={mine}
+          aria-label="Government seats"
+        >
+          <div
+            className={`fill ${done && mine < need ? "fail" : ""}`}
+            style={{ width: `${(mine / size) * 100}%` }}
+          />
+          <div className="tick" style={{ left: `${(need / size) * 100}%` }}>
+            <span className="num">{need}</span>
+          </div>
         </div>
-        <p className="num">{mine} of {size}</p>
+        <p className="num">
+          {mine} of {size}
+        </p>
       </section>
 
       <aside className="rail" aria-label={name}>
         {!result ? (
           <div className="panel">
             <div className="kicker">{name}</div>
-            <p className="lede">{failed ? "The count did not come back." : "A third of the seats are up."}</p>
-            {failed ? <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={run}>Count the vote</button> : null}
+            <p className="lede">
+              {failed ? "The count did not come back." : "A third of the seats are up."}
+            </p>
+            {failed ? (
+              <button className={`btn ${busy ? "busy" : ""}`} disabled={busy} onClick={run}>
+                Count the vote
+              </button>
+            ) : null}
           </div>
         ) : (
           <div className="panel">
             <div className="kicker">{name}</div>
-            <p className="lede">{n} up, {lost} changed hands</p>
+            <p className="lede">
+              {n} up, {lost} changed hands
+            </p>
             {done ? (
               <div className="verdict rise">
-                {result.headline ? <><h2>{result.headline.title}</h2><p className="muted">{result.headline.lede}</p></> : null}
-                {result.wipeout ? <p className="lede fail">{holder?.name ?? name} turned against its own side. The rest of the term is borrowed time.</p> : null}
-                <button className="btn" onClick={onDone}>{result.wipeout ? "See the ending" : "Back to the floor"}</button>
+                {result.headline ? (
+                  <>
+                    <h2>{result.headline.title}</h2>
+                    <p className="muted">{result.headline.lede}</p>
+                  </>
+                ) : null}
+                {result.wipeout ? (
+                  <p className="lede fail">
+                    {holder?.name ?? name} turned against its own side. The rest of the term is
+                    borrowed time.
+                  </p>
+                ) : null}
+                <button className="btn" onClick={onDone}>
+                  {result.wipeout ? "See the ending" : "Back to the floor"}
+                </button>
               </div>
             ) : null}
           </div>
@@ -156,7 +249,9 @@ export default function Midterm({ game, act, busy, onDone }: Props) {
       </aside>
 
       <div className="sr" role="status" aria-live="polite">
-        {done && result ? `${name}: ${n} seats up, ${lost} changed hands. ${result.headline?.title ?? ""}` : ""}
+        {done && result
+          ? `${name}: ${n} seats up, ${lost} changed hands. ${result.headline?.title ?? ""}`
+          : ""}
       </div>
     </main>
   );

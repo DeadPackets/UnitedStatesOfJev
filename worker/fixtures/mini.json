@@ -228,112 +228,62 @@
     {
       "id": "grand-exchange",
       "name": "The Grand Exchange",
-      "wants": [
-        "tariffs",
-        "foreign-treaties"
-      ],
-      "hates": [
-        "smuggling"
-      ]
+      "wants": ["tariffs", "foreign-treaties"],
+      "hates": ["smuggling"]
     },
     {
       "id": "keelwright-hall",
       "name": "Keelwright Hall",
-      "wants": [
-        "dockworker-pay",
-        "guild-charters"
-      ],
-      "hates": [
-        "tariffs"
-      ]
+      "wants": ["dockworker-pay", "guild-charters"],
+      "hates": ["tariffs"]
     },
     {
       "id": "tide-temple",
       "name": "The Tide Temple",
-      "wants": [
-        "temple-funding",
-        "festival-days"
-      ],
-      "hates": [
-        "press-freedom"
-      ]
+      "wants": ["temple-funding", "festival-days"],
+      "hates": ["press-freedom"]
     },
     {
       "id": "net-and-line",
       "name": "Net and Line Co-op",
-      "wants": [
-        "fish-quotas",
-        "poor-relief"
-      ],
-      "hates": [
-        "harbor-tolls"
-      ]
+      "wants": ["fish-quotas", "poor-relief"],
+      "hates": ["harbor-tolls"]
     },
     {
       "id": "admiralty-club",
       "name": "The Admiralty Club",
-      "wants": [
-        "naval-defense",
-        "piracy"
-      ],
-      "hates": [
-        "poor-relief"
-      ]
+      "wants": ["naval-defense", "piracy"],
+      "hates": ["poor-relief"]
     },
     {
       "id": "silver-quay",
       "name": "Silver Quay Bank",
-      "wants": [
-        "currency",
-        "land-reclamation"
-      ],
-      "hates": [
-        "dockworker-pay"
-      ]
+      "wants": ["currency", "land-reclamation"],
+      "hates": ["dockworker-pay"]
     },
     {
       "id": "free-press-circle",
       "name": "Free Press Circle",
-      "wants": [
-        "press-freedom",
-        "foreign-treaties"
-      ],
-      "hates": [
-        "temple-funding"
-      ]
+      "wants": ["press-freedom", "foreign-treaties"],
+      "hates": ["temple-funding"]
     },
     {
       "id": "smugglers-rest",
       "name": "The Smugglers' Rest",
-      "wants": [
-        "smuggling",
-        "harbor-tolls"
-      ],
-      "hates": [
-        "naval-defense"
-      ]
+      "wants": ["smuggling", "harbor-tolls"],
+      "hates": ["naval-defense"]
     },
     {
       "id": "uplands-charities",
       "name": "Uplands Charities",
-      "wants": [
-        "poor-relief",
-        "guild-charters"
-      ],
-      "hates": [
-        "currency"
-      ]
+      "wants": ["poor-relief", "guild-charters"],
+      "hates": ["currency"]
     },
     {
       "id": "academy-league",
       "name": "The Academy League",
-      "wants": [
-        "festival-days",
-        "shipping-rights"
-      ],
-      "hates": [
-        "piracy"
-      ]
+      "wants": ["festival-days", "shipping-rights"],
+      "hates": ["piracy"]
     }
   ],
   "members": [
@@ -344,15 +294,10 @@
       "faction": "harborites",
       "name": "Ossin Venn",
       "bio": "A dockworker turned councilor from Northpier.",
-      "core_issues": [
-        "tariffs",
-        "guild-charters"
-      ],
+      "core_issues": ["tariffs", "guild-charters"],
       "temperament": "loyalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "grand-exchange"
-      ],
+      "patrons": ["grand-exchange"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -364,15 +309,10 @@
       "faction": "harborites",
       "name": "Adra Drell",
       "bio": "A merchant turned councilor from Northpier.",
-      "core_issues": [
-        "shipping-rights",
-        "piracy"
-      ],
+      "core_issues": ["shipping-rights", "piracy"],
       "temperament": "deal-maker",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "keelwright-hall"
-      ],
+      "patrons": ["keelwright-hall"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -384,19 +324,12 @@
       "faction": "harborites",
       "name": "Mora Sel",
       "bio": "A fisherfol turned councilor from Northpier.",
-      "core_issues": [
-        "dockworker-pay",
-        "naval-defense"
-      ],
+      "core_issues": ["dockworker-pay", "naval-defense"],
       "temperament": "populist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "tide-temple"
-      ],
+      "patrons": ["tide-temple"],
       "years": "long",
-      "flags": [
-        "crown"
-      ],
+      "flags": ["crown"],
       "portrait": ""
     },
     {
@@ -406,15 +339,10 @@
       "faction": "harborites",
       "name": "Kell Brackwater",
       "bio": "A clerg turned councilor from Northpier.",
-      "core_issues": [
-        "fish-quotas",
-        "poor-relief"
-      ],
+      "core_issues": ["fish-quotas", "poor-relief"],
       "temperament": "ideologue",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "net-and-line"
-      ],
+      "patrons": ["net-and-line"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -426,15 +354,10 @@
       "faction": "harborites",
       "name": "Rowe Tallow",
       "bio": "A student turned councilor from Northpier.",
-      "core_issues": [
-        "harbor-tolls",
-        "temple-funding"
-      ],
+      "core_issues": ["harbor-tolls", "temple-funding"],
       "temperament": "institutionalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "admiralty-club"
-      ],
+      "patrons": ["admiralty-club"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -446,15 +369,10 @@
       "faction": "harborites",
       "name": "Tansy Ferris",
       "bio": "A dockworker turned councilor from Saltmarsh.",
-      "core_issues": [
-        "guild-charters",
-        "land-reclamation"
-      ],
+      "core_issues": ["guild-charters", "land-reclamation"],
       "temperament": "maverick",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "silver-quay"
-      ],
+      "patrons": ["silver-quay"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -466,15 +384,10 @@
       "faction": "harborites",
       "name": "Brant Holt",
       "bio": "A merchant turned councilor from Saltmarsh.",
-      "core_issues": [
-        "piracy",
-        "currency"
-      ],
+      "core_issues": ["piracy", "currency"],
       "temperament": "loyalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "free-press-circle"
-      ],
+      "patrons": ["free-press-circle"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -486,19 +399,12 @@
       "faction": "harborites",
       "name": "Sela Quist",
       "bio": "A fisherfol turned councilor from Saltmarsh.",
-      "core_issues": [
-        "naval-defense",
-        "press-freedom"
-      ],
+      "core_issues": ["naval-defense", "press-freedom"],
       "temperament": "deal-maker",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "smugglers-rest"
-      ],
+      "patrons": ["smugglers-rest"],
       "years": "mid",
-      "flags": [
-        "clergy"
-      ],
+      "flags": ["clergy"],
       "portrait": ""
     },
     {
@@ -508,15 +414,10 @@
       "faction": "harborites",
       "name": "Fenn Mora",
       "bio": "A clerg turned councilor from Saltmarsh.",
-      "core_issues": [
-        "poor-relief",
-        "foreign-treaties"
-      ],
+      "core_issues": ["poor-relief", "foreign-treaties"],
       "temperament": "populist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "uplands-charities"
-      ],
+      "patrons": ["uplands-charities"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -528,15 +429,10 @@
       "faction": "harborites",
       "name": "Ilya Sand",
       "bio": "A student turned councilor from Saltmarsh.",
-      "core_issues": [
-        "temple-funding",
-        "smuggling"
-      ],
+      "core_issues": ["temple-funding", "smuggling"],
       "temperament": "ideologue",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "academy-league"
-      ],
+      "patrons": ["academy-league"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -548,15 +444,10 @@
       "faction": "keelwrights",
       "name": "Corin Pell",
       "bio": "A dockworker turned councilor from Drydock Row.",
-      "core_issues": [
-        "land-reclamation",
-        "festival-days"
-      ],
+      "core_issues": ["land-reclamation", "festival-days"],
       "temperament": "institutionalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "grand-exchange"
-      ],
+      "patrons": ["grand-exchange"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -568,15 +459,10 @@
       "faction": "keelwrights",
       "name": "Wren Corvin",
       "bio": "A merchant turned councilor from Drydock Row.",
-      "core_issues": [
-        "currency",
-        "tariffs"
-      ],
+      "core_issues": ["currency", "tariffs"],
       "temperament": "maverick",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "keelwright-hall"
-      ],
+      "patrons": ["keelwright-hall"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -588,15 +474,10 @@
       "faction": "keelwrights",
       "name": "Hale Stroud",
       "bio": "A fisherfol turned councilor from Drydock Row.",
-      "core_issues": [
-        "press-freedom",
-        "shipping-rights"
-      ],
+      "core_issues": ["press-freedom", "shipping-rights"],
       "temperament": "loyalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "tide-temple"
-      ],
+      "patrons": ["tide-temple"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -608,19 +489,12 @@
       "faction": "keelwrights",
       "name": "Doran Vance",
       "bio": "A clerg turned councilor from Drydock Row.",
-      "core_issues": [
-        "foreign-treaties",
-        "dockworker-pay"
-      ],
+      "core_issues": ["foreign-treaties", "dockworker-pay"],
       "temperament": "deal-maker",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "net-and-line"
-      ],
+      "patrons": ["net-and-line"],
       "years": "mid",
-      "flags": [
-        "army"
-      ],
+      "flags": ["army"],
       "portrait": ""
     },
     {
@@ -630,15 +504,10 @@
       "faction": "keelwrights",
       "name": "Maren Rill",
       "bio": "A student turned councilor from Ferry Quarter.",
-      "core_issues": [
-        "smuggling",
-        "fish-quotas"
-      ],
+      "core_issues": ["smuggling", "fish-quotas"],
       "temperament": "populist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "admiralty-club"
-      ],
+      "patrons": ["admiralty-club"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -650,15 +519,10 @@
       "faction": "keelwrights",
       "name": "Silas Orsk",
       "bio": "A dockworker turned councilor from Ferry Quarter.",
-      "core_issues": [
-        "festival-days",
-        "harbor-tolls"
-      ],
+      "core_issues": ["festival-days", "harbor-tolls"],
       "temperament": "ideologue",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "silver-quay"
-      ],
+      "patrons": ["silver-quay"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -670,15 +534,10 @@
       "faction": "keelwrights",
       "name": "Petra Cade",
       "bio": "A merchant turned councilor from Ferry Quarter.",
-      "core_issues": [
-        "tariffs",
-        "guild-charters"
-      ],
+      "core_issues": ["tariffs", "guild-charters"],
       "temperament": "institutionalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "free-press-circle"
-      ],
+      "patrons": ["free-press-circle"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -690,15 +549,10 @@
       "faction": "keelwrights",
       "name": "Lund Whit",
       "bio": "A fisherfol turned councilor from The Uplands.",
-      "core_issues": [
-        "shipping-rights",
-        "piracy"
-      ],
+      "core_issues": ["shipping-rights", "piracy"],
       "temperament": "maverick",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "smugglers-rest"
-      ],
+      "patrons": ["smugglers-rest"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -710,19 +564,12 @@
       "faction": "tidebound",
       "name": "Ashe Brine",
       "bio": "A clerg turned councilor from The Uplands.",
-      "core_issues": [
-        "dockworker-pay",
-        "naval-defense"
-      ],
+      "core_issues": ["dockworker-pay", "naval-defense"],
       "temperament": "loyalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "uplands-charities"
-      ],
+      "patrons": ["uplands-charities"],
       "years": "new",
-      "flags": [
-        "court"
-      ],
+      "flags": ["court"],
       "portrait": ""
     },
     {
@@ -732,15 +579,10 @@
       "faction": "tidebound",
       "name": "Verity Yarrow",
       "bio": "A student turned councilor from The Uplands.",
-      "core_issues": [
-        "fish-quotas",
-        "poor-relief"
-      ],
+      "core_issues": ["fish-quotas", "poor-relief"],
       "temperament": "deal-maker",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "academy-league"
-      ],
+      "patrons": ["academy-league"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -752,19 +594,12 @@
       "faction": "tidebound",
       "name": "Odell Nash",
       "bio": "A dockworker turned councilor from Isle Row.",
-      "core_issues": [
-        "harbor-tolls",
-        "temple-funding"
-      ],
+      "core_issues": ["harbor-tolls", "temple-funding"],
       "temperament": "populist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "grand-exchange"
-      ],
+      "patrons": ["grand-exchange"],
       "years": "long",
-      "flags": [
-        "veto"
-      ],
+      "flags": ["veto"],
       "portrait": ""
     },
     {
@@ -774,15 +609,10 @@
       "faction": "tidebound",
       "name": "Junia Gale",
       "bio": "A merchant turned councilor from Isle Row.",
-      "core_issues": [
-        "guild-charters",
-        "land-reclamation"
-      ],
+      "core_issues": ["guild-charters", "land-reclamation"],
       "temperament": "ideologue",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "keelwright-hall"
-      ],
+      "patrons": ["keelwright-hall"],
       "years": "new",
       "flags": [],
       "portrait": ""
@@ -794,15 +624,10 @@
       "faction": "tidebound",
       "name": "Marek Rook",
       "bio": "A fisherfol turned councilor from Isle Row.",
-      "core_issues": [
-        "piracy",
-        "currency"
-      ],
+      "core_issues": ["piracy", "currency"],
       "temperament": "institutionalist",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "tide-temple"
-      ],
+      "patrons": ["tide-temple"],
       "years": "mid",
       "flags": [],
       "portrait": ""
@@ -814,15 +639,10 @@
       "faction": "tidebound",
       "name": "Thora Flint",
       "bio": "A clerg turned councilor from Isle Row.",
-      "core_issues": [
-        "naval-defense",
-        "press-freedom"
-      ],
+      "core_issues": ["naval-defense", "press-freedom"],
       "temperament": "maverick",
       "tell": "Taps the table twice before changing a vote.",
-      "patrons": [
-        "net-and-line"
-      ],
+      "patrons": ["net-and-line"],
       "years": "long",
       "flags": [],
       "portrait": ""
@@ -833,47 +653,29 @@
     {
       "faction": "harborites",
       "seat_title": "Consul",
-      "coalition": [
-        "harborites",
-        "keelwrights",
-        "tidebound"
-      ],
+      "coalition": ["harborites", "keelwrights", "tidebound"],
       "premise": "Lead the Harborite League through a council term with the harbor's trade routes in dispute.",
       "party": 55,
       "capital": 40,
-      "hostile": [
-        "keelwrights"
-      ]
+      "hostile": ["keelwrights"]
     },
     {
       "faction": "keelwrights",
       "seat_title": "Warden",
-      "coalition": [
-        "harborites",
-        "keelwrights",
-        "tidebound"
-      ],
+      "coalition": ["harborites", "keelwrights", "tidebound"],
       "premise": "Lead the Keelwright Guild through a council term with the harbor's trade routes in dispute.",
       "party": 55,
       "capital": 40,
-      "hostile": [
-        "harborites"
-      ]
+      "hostile": ["harborites"]
     },
     {
       "faction": "tidebound",
       "seat_title": "High Tider",
-      "coalition": [
-        "harborites",
-        "keelwrights",
-        "tidebound"
-      ],
+      "coalition": ["harborites", "keelwrights", "tidebound"],
       "premise": "Lead the Tidebound Faith through a council term with the harbor's trade routes in dispute.",
       "party": 55,
       "capital": 40,
-      "hostile": [
-        "harborites"
-      ]
+      "hostile": ["harborites"]
     }
   ],
   "problems": [
@@ -944,14 +746,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 1",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -964,14 +760,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 2",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -984,14 +774,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 3",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1004,14 +788,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 4",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1024,14 +802,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 5",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1044,14 +816,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 6",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1064,14 +830,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 7",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1084,14 +844,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 8",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1104,14 +858,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 9",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1124,14 +872,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 10",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1144,14 +886,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 11",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1164,14 +900,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 12",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1184,14 +914,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 13",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1204,14 +928,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 14",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1224,14 +942,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 15",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1244,14 +956,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 16",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1264,14 +970,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 17",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1284,14 +984,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 18",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "none"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["none"],
       "results": [
         {
           "ledger": "approval",
@@ -1304,14 +998,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 19",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "approval",
@@ -1324,14 +1012,8 @@
       "kind": "generic",
       "weight": 1,
       "title_hint": "Council matter 20",
-      "stances": [
-        "Back it fully",
-        "Back it with conditions",
-        "Reject it"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Back it fully", "Back it with conditions", "Reject it"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "approval",
@@ -1347,13 +1029,8 @@
       "exogenous": true,
       "weight": 1,
       "title_hint": "The autumn gale",
-      "stances": [
-        "Fund emergency repairs",
-        "Let the guilds cover it"
-      ],
-      "scored": [
-        "blocs"
-      ],
+      "stances": ["Fund emergency repairs", "Let the guilds cover it"],
+      "scored": ["blocs"],
       "results": [
         {
           "ledger": "capital",
@@ -1377,13 +1054,8 @@
       ],
       "weight": 1,
       "title_hint": "The guild ultimatum",
-      "stances": [
-        "Meet their terms",
-        "Call their bluff"
-      ],
-      "scored": [
-        "patrons"
-      ],
+      "stances": ["Meet their terms", "Call their bluff"],
+      "scored": ["patrons"],
       "results": [
         {
           "ledger": "party",
@@ -1543,25 +1215,125 @@
   "constitution": {
     "ruler": { "role": "Consul", "faction": "harborites" },
     "holders": [
-      { "id": "council", "name": "the Harbor Council", "where": "home", "members": "seats", "stance": 0.5, "line": 60, "response": "early_test", "levers": ["law", "favour"], "persona": { "name": "Clerk Vessa", "role": "clerk of the council", "bio": "Keeps the roll and the grudges.", "tell": "Taps the roll twice before a vote." } },
-      { "id": "guard", "name": "the Harbor Guard", "where": "home", "members": "none", "stance": 0.5, "line": 55, "response": "coup", "levers": ["force", "spend"], "persona": { "name": "Captain Orin", "role": "captain of the guard", "bio": "Paid late for three seasons.", "tell": "Counts coins while he talks." } },
-      { "id": "street", "name": "the harbour crowd", "where": "home", "members": "citizens", "stance": 0.5, "line": 70, "response": "riot", "levers": ["spend", "proclaim"], "persona": { "name": "Mira of the Quay", "role": "fish seller", "bio": "Sells at the north quay every dawn.", "tell": "Answers a question with a price." } },
-      { "id": "league", "name": "the Grain League", "where": "abroad", "members": "none", "stance": 0.5, "line": 50, "response": "embargo", "levers": ["spend", "favour"], "wants": ["tariffs", "shipping-rights"], "redLines": ["piracy"], "gives": { "ledger": "treasury", "amount": 4, "per": "turn" }, "responses": ["Holds the grain ships outside the mole."], "persona": { "name": "Factor Halden", "role": "league factor", "bio": "Writes every price down twice.", "tell": "Never sits with his back to a door." } }
+      {
+        "id": "council",
+        "name": "the Harbor Council",
+        "where": "home",
+        "members": "seats",
+        "stance": 0.5,
+        "line": 60,
+        "response": "early_test",
+        "levers": ["law", "favour"],
+        "persona": {
+          "name": "Clerk Vessa",
+          "role": "clerk of the council",
+          "bio": "Keeps the roll and the grudges.",
+          "tell": "Taps the roll twice before a vote."
+        }
+      },
+      {
+        "id": "guard",
+        "name": "the Harbor Guard",
+        "where": "home",
+        "members": "none",
+        "stance": 0.5,
+        "line": 55,
+        "response": "coup",
+        "levers": ["force", "spend"],
+        "persona": {
+          "name": "Captain Orin",
+          "role": "captain of the guard",
+          "bio": "Paid late for three seasons.",
+          "tell": "Counts coins while he talks."
+        }
+      },
+      {
+        "id": "street",
+        "name": "the harbour crowd",
+        "where": "home",
+        "members": "citizens",
+        "stance": 0.5,
+        "line": 70,
+        "response": "riot",
+        "levers": ["spend", "proclaim"],
+        "persona": {
+          "name": "Mira of the Quay",
+          "role": "fish seller",
+          "bio": "Sells at the north quay every dawn.",
+          "tell": "Answers a question with a price."
+        }
+      },
+      {
+        "id": "league",
+        "name": "the Grain League",
+        "where": "abroad",
+        "members": "none",
+        "stance": 0.5,
+        "line": 50,
+        "response": "embargo",
+        "levers": ["spend", "favour"],
+        "wants": ["tariffs", "shipping-rights"],
+        "redLines": ["piracy"],
+        "gives": { "ledger": "treasury", "amount": 4, "per": "turn" },
+        "responses": ["Holds the grain ships outside the mole."],
+        "persona": {
+          "name": "Factor Halden",
+          "role": "league factor",
+          "bio": "Writes every price down twice.",
+          "tell": "Never sits with his back to a door."
+        }
+      }
     ],
     "instruments": {
-      "decree": { "name": "an edict", "consent": "none", "price": { "authority": 3 }, "available": true },
-      "law": { "name": "a decree of the council", "consent": "chamber", "price": { "authority": 1 }, "available": true },
-      "appoint": { "name": "a warrant", "consent": "none", "price": { "authority": 2 }, "available": true },
+      "decree": {
+        "name": "an edict",
+        "consent": "none",
+        "price": { "authority": 3 },
+        "available": true
+      },
+      "law": {
+        "name": "a decree of the council",
+        "consent": "chamber",
+        "price": { "authority": 1 },
+        "available": true
+      },
+      "appoint": {
+        "name": "a warrant",
+        "consent": "none",
+        "price": { "authority": 2 },
+        "available": true
+      },
       "spend": { "name": "a disbursement", "consent": "none", "price": {}, "available": true },
-      "proclaim": { "name": "a notice", "consent": "none", "price": { "chest": 2 }, "available": true },
-      "favour": { "name": "a petition granted", "consent": "none", "price": { "authority": 2 }, "available": true },
-      "force": { "name": "the watch turned out", "consent": "army", "price": { "authority": 4 }, "available": true }
+      "proclaim": {
+        "name": "a notice",
+        "consent": "none",
+        "price": { "chest": 2 },
+        "available": true
+      },
+      "favour": {
+        "name": "a petition granted",
+        "consent": "none",
+        "price": { "authority": 2 },
+        "available": true
+      },
+      "force": {
+        "name": "the watch turned out",
+        "consent": "army",
+        "price": { "authority": 4 },
+        "available": true
+      }
     },
-    "retention": { "name": "the reckoning", "weights": [{ "id": "council", "value": 0.4 }, { "id": "street", "value": 0.6 }], "bar": { "start": 0.5, "step": 0.03, "cap": 0.7 } },
+    "retention": {
+      "name": "the reckoning",
+      "weights": [{ "id": "council", "value": 0.4 }, { "id": "street", "value": 0.6 }],
+      "bar": { "start": 0.5, "step": 0.03, "cap": 0.7 }
+    },
     "halfTerm": { "holder": "council", "name": "the halfway tide" },
     "ledgers": {
-      "treasury": { "name": "the harbour purse", "line": 0 }, "authority": { "name": "influence", "line": 0 },
-      "chest": { "name": "the war chest", "line": 0 }, "loyalty": { "name": "league mood", "line": 20 },
+      "treasury": { "name": "the harbour purse", "line": 0 },
+      "authority": { "name": "influence", "line": 0 },
+      "chest": { "name": "the war chest", "line": 0 },
+      "loyalty": { "name": "league mood", "line": 20 },
       "popularity": { "name": "standing", "line": 30 }
     },
     "briefing": {

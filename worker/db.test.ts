@@ -6,7 +6,13 @@ mock.module("cloudflare:workers", () => ({ DurableObject: class {} }));
 const { parseRow, BuildsDO } = await import("./db");
 
 test("parseRow fails soft when the stored pack no longer matches the schema", () => {
-  const row = { id: "x", status: "ready", step: "ready", pack: JSON.stringify({ not: "a valid pack" }), fragments: null };
+  const row = {
+    id: "x",
+    status: "ready",
+    step: "ready",
+    pack: JSON.stringify({ not: "a valid pack" }),
+    fragments: null,
+  };
   const parsed = parseRow(row);
   expect(parsed.pack).toBeNull();
   expect(parsed.status).toBe("failed");
@@ -30,7 +36,9 @@ function buildsDO(env: Record<string, string>) {
   const store = new Map<string, unknown>();
   const storage = {
     get: async (k: string) => store.get(k),
-    put: async (k: string, v: unknown) => { store.set(k, v); },
+    put: async (k: string, v: unknown) => {
+      store.set(k, v);
+    },
     list: async () => new Map(),
     delete: async () => {},
   };

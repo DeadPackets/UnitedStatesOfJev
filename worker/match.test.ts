@@ -3,8 +3,20 @@ import { decide } from "./match";
 import type { MatchCandidate } from "./jev";
 
 const candidates: MatchCandidate[] = [
-  { id: "a", title: "Rome 44 BC", era: "44 BC", place: "Rome", description: "The Senate after Caesar." },
-  { id: "b", title: "Germany 2021", era: "2021", place: "Berlin", description: "The Bundestag after Merkel." },
+  {
+    id: "a",
+    title: "Rome 44 BC",
+    era: "44 BC",
+    place: "Rome",
+    description: "The Senate after Caesar.",
+  },
+  {
+    id: "b",
+    title: "Germany 2021",
+    era: "2021",
+    place: "Berlin",
+    description: "The Bundestag after Merkel.",
+  },
 ];
 
 test("top >= 0.95 loads that candidate", () => {
@@ -14,8 +26,22 @@ test("top >= 0.95 loads that candidate", () => {
 test("top in 0.85-0.95 offers everyone >= 0.5, sorted", () => {
   expect(decide(candidates, { a: 0.88, b: 0.6, none_of_these: 0.1 })).toEqual({
     offer: [
-      { id: "a", title: "Rome 44 BC", era: "44 BC", place: "Rome", description: "The Senate after Caesar.", p: 0.88 },
-      { id: "b", title: "Germany 2021", era: "2021", place: "Berlin", description: "The Bundestag after Merkel.", p: 0.6 },
+      {
+        id: "a",
+        title: "Rome 44 BC",
+        era: "44 BC",
+        place: "Rome",
+        description: "The Senate after Caesar.",
+        p: 0.88,
+      },
+      {
+        id: "b",
+        title: "Germany 2021",
+        era: "2021",
+        place: "Berlin",
+        description: "The Bundestag after Merkel.",
+        p: 0.6,
+      },
     ],
   });
 });

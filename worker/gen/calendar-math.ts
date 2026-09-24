@@ -12,11 +12,22 @@ export function ymd(s: string | null | undefined): [number, number, number] | nu
 
 // Proleptic Gregorian day number. Date cannot parse BC years, and the packs carry them (-0044-03-15).
 export function days([y, m, d]: [number, number, number]): number {
-  const a = Math.floor((14 - m) / 12), yy = y + 4800 - a, mm = m + 12 * a - 3;
-  return d + Math.floor((153 * mm + 2) / 5) + 365 * yy + Math.floor(yy / 4) - Math.floor(yy / 100) + Math.floor(yy / 400) - 32045;
+  const a = Math.floor((14 - m) / 12),
+    yy = y + 4800 - a,
+    mm = m + 12 * a - 3;
+  return (
+    d +
+    Math.floor((153 * mm + 2) / 5) +
+    365 * yy +
+    Math.floor(yy / 4) -
+    Math.floor(yy / 100) +
+    Math.floor(yy / 400) -
+    32045
+  );
 }
 
 export function turnOf(date: string | null | undefined, start: string, unit: Unit): number | null {
-  const a = ymd(date), b = ymd(start);
+  const a = ymd(date),
+    b = ymd(start);
   return a && b ? Math.floor((days(a) - days(b)) / UNIT[unit]) + 1 : null;
 }

@@ -6,15 +6,19 @@ import people from "./fixtures/wiki-people.json";
 function mockFetch(map: Record<string, unknown>): typeof fetch {
   return (async (url: string | URL) => {
     const u = String(url);
-    for (const [key, body] of Object.entries(map)) if (u.includes(key)) return new Response(JSON.stringify(body));
+    for (const [key, body] of Object.entries(map))
+      if (u.includes(key)) return new Response(JSON.stringify(body));
     throw new Error("unmocked url: " + u);
   }) as typeof fetch;
 }
 
 test("fetchWikipedia strips templates, tables, refs and resolves piped links", async () => {
   const fetchImpl = mockFetch({
-    "action=query": page.lead, "prop=sections": page.sections,
-    "section=1&": page.wikitext["1"], "section=2&": page.wikitext["2"], "section=3&": page.wikitext["3"],
+    "action=query": page.lead,
+    "prop=sections": page.sections,
+    "section=1&": page.wikitext["1"],
+    "section=2&": page.wikitext["2"],
+    "section=3&": page.wikitext["3"],
   });
   const wiki = await fetchWikipedia("en", "Test Page", [], fetchImpl);
   expect(wiki.title).toBe("Test Page");
@@ -32,8 +36,11 @@ test("fetchWikipedia strips templates, tables, refs and resolves piped links", a
 
 test("fetchWikipedia ranks sections by keyword hits", async () => {
   const fetchImpl = mockFetch({
-    "action=query": page.lead, "prop=sections": page.sections,
-    "section=1&": page.wikitext["1"], "section=2&": page.wikitext["2"], "section=3&": page.wikitext["3"],
+    "action=query": page.lead,
+    "prop=sections": page.sections,
+    "section=1&": page.wikitext["1"],
+    "section=2&": page.wikitext["2"],
+    "section=3&": page.wikitext["3"],
   });
   const wiki = await fetchWikipedia("en", "Test Page", ["legacy"], fetchImpl);
   expect(wiki.sections[0].heading).toBe("Legacy");
@@ -60,12 +67,16 @@ test("lookupPerson rejects Lepidus born -230 for a -44 start (over 100 years)", 
 });
 
 test("fetchWikipedia returns null instead of throwing on a missing page", async () => {
-  const queryMissing = mockFetch({ "action=query": { query: { pages: [{ title: "Nonexistent Page Xyz123", missing: true }] } } });
+  const queryMissing = mockFetch({
+    "action=query": { query: { pages: [{ title: "Nonexistent Page Xyz123", missing: true }] } },
+  });
   expect(await fetchWikipedia("en", "Nonexistent Page Xyz123", [], queryMissing)).toBeNull();
 
   const parseError = mockFetch({
     "action=query": { query: { pages: [{ title: "Weird Page", extract: "stub" }] } },
-    "prop=sections": { error: { code: "missingtitle", info: "The page you specified doesn't exist." } },
+    "prop=sections": {
+      error: { code: "missingtitle", info: "The page you specified doesn't exist." },
+    },
   });
   expect(await fetchWikipedia("en", "Weird Page", [], parseError)).toBeNull();
 });
@@ -80,7 +91,10 @@ test("a lang the model invented never reaches the Wikipedia host", async () => {
   expect(edition("../../etc")).toBe("en");
 
   const seen: string[] = [];
-  const fetchImpl = (async (url: string | URL) => { seen.push(String(url)); throw new Error("stop"); }) as typeof fetch;
+  const fetchImpl = (async (url: string | URL) => {
+    seen.push(String(url));
+    throw new Error("stop");
+  }) as typeof fetch;
   await fetchWikipedia("evil.example/#", "Test Page", [], fetchImpl).catch(() => null);
   expect(seen[0].startsWith("https://en.wikipedia.org/w/api.php")).toBe(true);
 });

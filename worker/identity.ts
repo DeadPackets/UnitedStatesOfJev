@@ -1,10 +1,13 @@
 export const IDENTITY_COOKIE = "usoj_id";
-const MAX_AGE = 34_560_000;   // 400 days, the longest life a browser keeps a cookie for
+const MAX_AGE = 34_560_000; // 400 days, the longest life a browser keeps a cookie for
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const bytes = (s: string) => new TextEncoder().encode(s);
 const b64url = (b: ArrayBuffer) =>
-  btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  btoa(String.fromCharCode(...new Uint8Array(b)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
 const keyOf = (secret: string) =>
   crypto.subtle.importKey("raw", bytes(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -21,7 +24,9 @@ export async function verifyId(secret: string, value: string): Promise<string | 
 }
 
 export function cookieOf(req: Request): string | null {
-  const hit = (req.headers.get("cookie") ?? "").split(";").map((p) => p.trim())
+  const hit = (req.headers.get("cookie") ?? "")
+    .split(";")
+    .map((p) => p.trim())
     .find((p) => p.startsWith(`${IDENTITY_COOKIE}=`));
   return hit ? hit.slice(IDENTITY_COOKIE.length + 1) : null;
 }
@@ -30,7 +35,10 @@ export const setCookie = (signed: string) =>
   `${IDENTITY_COOKIE}=${signed}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; Secure; SameSite=Lax`;
 
 /** The identity a daily route works with, and the Set-Cookie header to send when it is new. */
-export async function identity(secret: string, req: Request): Promise<{ id: string; header?: string }> {
+export async function identity(
+  secret: string,
+  req: Request,
+): Promise<{ id: string; header?: string }> {
   const raw = cookieOf(req);
   if (raw) {
     const id = await verifyId(secret, raw);

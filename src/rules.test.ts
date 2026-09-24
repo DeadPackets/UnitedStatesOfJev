@@ -26,8 +26,19 @@ test("danger fires at the line, not below it", () => {
 import { ledgerDelta, ledgerValue } from "./rules";
 
 const game = {
-  ledgers: { treasury: 38, authority: 14, chest: 120, loyalty: 47, popularity: { north: 60, south: 40 } },
-  pack: { regions: [{ id: "north", weight: 3 }, { id: "south", weight: 1 }] },
+  ledgers: {
+    treasury: 38,
+    authority: 14,
+    chest: 120,
+    loyalty: 47,
+    popularity: { north: 60, south: 40 },
+  },
+  pack: {
+    regions: [
+      { id: "north", weight: 3 },
+      { id: "south", weight: 1 },
+    ],
+  },
   wire: [
     { kind: "ledger", ledger: "treasury", delta: -4, cause: "farm credit" },
     { kind: "ledger", ledger: "popularity", id: "north", delta: 2, cause: "the post" },
@@ -51,31 +62,55 @@ test("a ledger's delta sums only this turn's ledger lines, never a resistance mo
 import { wireHue, wireLabel } from "./rules";
 
 test("a wire line names its ledger, its region when it has one, and its cause", () => {
-  const names = new Map([["north", "Etruria"], ["senate", "The senate"]]);
-  expect(wireLabel({ kind: "ledger", ledger: "popularity", id: "north", delta: 2, cause: "the post" }, names))
-    .toBe("popularity, Etruria, the post");
-  expect(wireLabel({ kind: "ledger", ledger: "treasury", delta: -4, cause: "farm credit" }, names))
-    .toBe("treasury, farm credit");
+  const names = new Map([
+    ["north", "Etruria"],
+    ["senate", "The senate"],
+  ]);
+  expect(
+    wireLabel(
+      { kind: "ledger", ledger: "popularity", id: "north", delta: 2, cause: "the post" },
+      names,
+    ),
+  ).toBe("popularity, Etruria, the post");
+  expect(
+    wireLabel({ kind: "ledger", ledger: "treasury", delta: -4, cause: "farm credit" }, names),
+  ).toBe("treasury, farm credit");
 });
 
 test("a resistance line prints the holder's name, never a raw id", () => {
   const names = new Map([["senate", "The senate"]]);
-  expect(wireLabel({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" }, names))
-    .toBe("The senate, the levy");
-  expect(wireLabel({ kind: "resistance", id: "curia", delta: 4, cause: "the levy" }, names))
-    .toBe("curia, the levy");
+  expect(wireLabel({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" }, names)).toBe(
+    "The senate, the levy",
+  );
+  expect(wireLabel({ kind: "resistance", id: "curia", delta: 4, cause: "the levy" }, names)).toBe(
+    "curia, the levy",
+  );
 });
 
 test("a resistance or card line is danger, a ledger or promise line takes its ledger's hue", () => {
   expect(wireHue({ kind: "ledger", ledger: "chest", delta: -20, cause: "reach" })).toBe("r-che");
-  expect(wireHue({ kind: "promise", ledger: "popularity", delta: -1, cause: "land reform" })).toBe("r-pop");
-  expect(wireHue({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" })).toBe("r-danger");
-  expect(wireHue({ kind: "card", ledger: "treasury", delta: -8, cause: "the flood" })).toBe("r-danger");
+  expect(wireHue({ kind: "promise", ledger: "popularity", delta: -1, cause: "land reform" })).toBe(
+    "r-pop",
+  );
+  expect(wireHue({ kind: "resistance", id: "senate", delta: 12, cause: "the levy" })).toBe(
+    "r-danger",
+  );
+  expect(wireHue({ kind: "card", ledger: "treasury", delta: -8, cause: "the flood" })).toBe(
+    "r-danger",
+  );
 });
 
 import { settleVerb } from "./rules";
 
-const all = { decree: {}, law: {}, appoint: {}, spend: {}, proclaim: {}, favour: {}, force: {} } as never;
+const all = {
+  decree: {},
+  law: {},
+  appoint: {},
+  spend: {},
+  proclaim: {},
+  favour: {},
+  force: {},
+} as never;
 
 test("the verb settles from the words the player used", () => {
   expect(settleVerb("Send troops to the eastern border and set a curfew.", all)).toBe("force");
@@ -106,20 +141,33 @@ const g = {
 } as never;
 
 test("a tab is unread when its content moved after the player last opened it", () => {
-  expect(unreadTabs(g, { feed: 0, country: 0, room: 0, record: 0, pinned: 0 }).sort())
-    .toEqual(["country", "feed", "record", "room"]);
+  expect(unreadTabs(g, { feed: 0, country: 0, room: 0, record: 0, pinned: 0 }).sort()).toEqual([
+    "country",
+    "feed",
+    "record",
+    "room",
+  ]);
 });
 
 test("opening a tab clears its mark and nothing else", () => {
   expect(unreadTabs(g, { feed: 6, country: 7, room: 7, record: 5, pinned: 0 })).toEqual([]);
   // a law from last term's later turn clears once the tab is opened this term
-  const next = { term: 2, turn: 3, posts: [], inForce: [{ turn: 18, term: 1 }], warnings: [], wire: [] } as never;
+  const next = {
+    term: 2,
+    turn: 3,
+    posts: [],
+    inForce: [{ turn: 18, term: 1 }],
+    warnings: [],
+    wire: [],
+  } as never;
   expect(unreadTabs(next, { record: 3 })).toEqual([]);
 });
 
 import { barAt, difficulty } from "./rules";
 
-const pack = { constitution: { retention: { bar: { start: 0.5, step: 0.03, cap: 0.7 } } } } as never;
+const pack = {
+  constitution: { retention: { bar: { start: 0.5, step: 0.03, cap: 0.7 } } },
+} as never;
 
 test("the bar climbs on the pack's printed schedule and stops at the cap", () => {
   expect(barAt(pack, 1)).toBeCloseTo(0.5, 5);
@@ -156,15 +204,28 @@ test("the mandate is the weighted sum over the counted holders only", () => {
 
 test("the copied grid is rows of five squares, then the verdict row", () => {
   const grid = [
-    { ledger: "authority" }, { ledger: "popularity" }, { ledger: "quiet" }, { ledger: "treasury" },
-    { ledger: "chest" }, { ledger: "loyalty", won: true },
+    { ledger: "authority" },
+    { ledger: "popularity" },
+    { ledger: "quiet" },
+    { ledger: "treasury" },
+    { ledger: "chest" },
+    { ledger: "loyalty", won: true },
   ];
   expect(shareText("Rome, 44 BC", "2026-09-22", grid, 3).split("\n")).toEqual([
-    "United States of Jev, Rome, 44 BC", "Daily 2026-09-22, streak 3", "🟪🟧⬜🟩🟨", "🟦", "✅✅✅✅", "unitedstatesofjev.deadpackets.pw",
+    "United States of Jev, Rome, 44 BC",
+    "Daily 2026-09-22, streak 3",
+    "🟪🟧⬜🟩🟨",
+    "🟦",
+    "✅✅✅✅",
+    "unitedstatesofjev.deadpackets.pw",
   ]);
 });
 
 test("a run with no verdict copies no verdict row, and a lost one copies red", () => {
-  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "authority" }], 0).split("\n")[3]).toBe("unitedstatesofjev.deadpackets.pw");
-  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "treasury", won: false }], 0)).toContain("🟥🟥🟥🟥");
+  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "authority" }], 0).split("\n")[3]).toBe(
+    "unitedstatesofjev.deadpackets.pw",
+  );
+  expect(shareText("Rome, 44 BC", "2026-09-22", [{ ledger: "treasury", won: false }], 0)).toContain(
+    "🟥🟥🟥🟥",
+  );
 });

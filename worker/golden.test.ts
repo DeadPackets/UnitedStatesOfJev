@@ -3,10 +3,19 @@ import { recordGolden } from "./golden";
 
 test("a golden row is written only when the flag is on, and is stored whole", async () => {
   const writes: unknown[][] = [];
-  const env = (flag?: string) => ({
-    GOLDEN: flag,
-    DB: { prepare: (sql: string) => ({ bind: (...a: unknown[]) => ({ run: async () => { writes.push([sql, ...a]); } }) }) },
-  }) as never;
+  const env = (flag?: string) =>
+    ({
+      GOLDEN: flag,
+      DB: {
+        prepare: (sql: string) => ({
+          bind: (...a: unknown[]) => ({
+            run: async () => {
+              writes.push([sql, ...a]);
+            },
+          }),
+        }),
+      },
+    }) as never;
 
   await recordGolden(env(undefined), "jev", { q: 1 }, { a: 2 });
   expect(writes).toHaveLength(0);
@@ -24,6 +33,13 @@ test("a golden row is written only when the flag is on, and is stored whole", as
 });
 
 test("a recorder failure never fails the call it was watching", async () => {
-  const env = { GOLDEN: "1", DB: { prepare: () => { throw new Error("no table"); } } } as never;
+  const env = {
+    GOLDEN: "1",
+    DB: {
+      prepare: () => {
+        throw new Error("no table");
+      },
+    },
+  } as never;
   expect(await recordGolden(env, "luna", {}, {})).toBeUndefined();
 });

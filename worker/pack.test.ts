@@ -10,9 +10,16 @@ function makeCitizens(): Citizen[] {
   for (const bloc of BLOCS) {
     for (let i = 0; i < 50; i++) {
       citizens.push({
-        id: `${bloc}-${i}`, region: REGIONS[i % REGIONS.length], bloc, name: `Citizen ${bloc} ${i}`,
-        age: 20 + (i % 50), job: "harbor worker", town: "Harbor City",
-        worldview: "wants the harbor to stay prosperous", issues: ["tariffs", "dockworker-pay"], weight: 1,
+        id: `${bloc}-${i}`,
+        region: REGIONS[i % REGIONS.length],
+        bloc,
+        name: `Citizen ${bloc} ${i}`,
+        age: 20 + (i % 50),
+        job: "harbor worker",
+        town: "Harbor City",
+        worldview: "wants the harbor to stay prosperous",
+        issues: ["tariffs", "dockworker-pay"],
+        weight: 1,
       });
     }
   }
@@ -33,7 +40,10 @@ test("starts out of factions order fails validation", () => {
 });
 
 test("scaleSeats uses largest remainder with a minimum of one seat", () => {
-  const seats = scaleSeats({ SPD: 206, CDU: 197, Greens: 118, FDP: 92, AfD: 83, Linke: 39, SSW: 1 }, 100);
+  const seats = scaleSeats(
+    { SPD: 206, CDU: 197, Greens: 118, FDP: 92, AfD: 83, Linke: 39, SSW: 1 },
+    100,
+  );
   expect(seats).toEqual({ SPD: 28, CDU: 27, Greens: 16, FDP: 12, AfD: 11, Linke: 5, SSW: 1 });
 });
 
@@ -51,8 +61,8 @@ test("packView strips citizens and member personas", () => {
   const view = packView(pack);
   const json = JSON.stringify(view);
   expect((view as any).citizens).toBeUndefined();
-  expect(json).not.toContain("\"bio\"");
-  expect(json).not.toContain("\"tell\"");
+  expect(json).not.toContain('"bio"');
+  expect(json).not.toContain('"tell"');
   expect(json).not.toContain("worldview");
 });
 
@@ -78,10 +88,14 @@ test("a pack stored before the constitution existed still parses", () => {
 });
 
 test("a pack with a constitution parses and the view keeps holder prose in the worker", () => {
-  const parsed = PackSchema.parse({ ...mini, citizens: makeCitizens(), constitution: CONSTITUTION });
+  const parsed = PackSchema.parse({
+    ...mini,
+    citizens: makeCitizens(),
+    constitution: CONSTITUTION,
+  });
   expect(parsed.constitution!.holders.length).toBe(4);
   const json = JSON.stringify(packView(parsed));
-  expect(json).not.toContain("\"bio\"");
-  expect(json).not.toContain("\"tell\"");
-  expect(json).toContain("\"briefing\"");
+  expect(json).not.toContain('"bio"');
+  expect(json).not.toContain('"tell"');
+  expect(json).toContain('"briefing"');
 });

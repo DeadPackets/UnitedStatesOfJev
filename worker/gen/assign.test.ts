@@ -4,21 +4,29 @@ import { scaleSeats } from "../pack";
 import { assignCitizens, assignMembers } from "./assign";
 import { mkFrame } from "./fixture";
 
-const count = <T>(rows: T[], of: (r: T) => string) => rows.reduce<Record<string, number>>((a, r) => ({ ...a, [of(r)]: (a[of(r)] ?? 0) + 1 }), {});
+const count = <T>(rows: T[], of: (r: T) => string) =>
+  rows.reduce<Record<string, number>>((a, r) => ({ ...a, [of(r)]: (a[of(r)] ?? 0) + 1 }), {});
 
 describe("assign", () => {
   test("members per faction equal scaleSeats", () => {
     const f = mkFrame();
     const members = assignMembers(f);
     expect(members.length).toBe(f.chamber.size);
-    expect(count(members, (m) => m.faction)).toEqual(scaleSeats(Object.fromEntries(f.factions.map((x) => [x.id, x.seats])), f.chamber.size));
+    expect(count(members, (m) => m.faction)).toEqual(
+      scaleSeats(Object.fromEntries(f.factions.map((x) => [x.id, x.seats])), f.chamber.size),
+    );
   });
 
   test("every region gets a member when the chamber is at least as large as the regions", () => {
     for (const regions of [6, 30, 60]) {
       const base = mkFrame();
       const f = mkFrame({
-        regions: Array.from({ length: regions }, (_, i) => ({ id: `r${i}`, name: `Region ${i}`, weight: 1 / regions, lean: base.regions[0].lean })),
+        regions: Array.from({ length: regions }, (_, i) => ({
+          id: `r${i}`,
+          name: `Region ${i}`,
+          weight: 1 / regions,
+          lean: base.regions[0].lean,
+        })),
       });
       const seen = new Set(assignMembers(f).map((m) => m.region));
       expect(seen.size).toBe(regions);
@@ -31,7 +39,8 @@ describe("assign", () => {
     const members = assignMembers(f);
     for (const x of f.factions) {
       const mine = members.filter((m) => m.faction === x.id);
-      if (mine.length >= 10) expect(new Set(mine.map((m) => m.temperament)).size).toBeGreaterThanOrEqual(4);
+      if (mine.length >= 10)
+        expect(new Set(mine.map((m) => m.temperament)).size).toBeGreaterThanOrEqual(4);
     }
   });
 

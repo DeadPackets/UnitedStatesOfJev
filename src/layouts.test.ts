@@ -2,7 +2,10 @@ import { expect, test } from "bun:test";
 import { BOX, minGap, points, type Layout } from "./layouts";
 
 const LAYOUTS: Layout[] = ["hemicycle", "benches", "horseshoe", "circle", "classroom", "court"];
-const CASES: [number, number][] = [[24, 24], [100, 14]];
+const CASES: [number, number][] = [
+  [24, 24],
+  [100, 14],
+];
 
 for (const layout of LAYOUTS) {
   for (const [n, gap] of CASES) {

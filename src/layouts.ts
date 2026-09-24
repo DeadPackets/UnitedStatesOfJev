@@ -4,12 +4,17 @@ export type Layout = Pack["theme"]["layout"];
 /** `angle` is where the seat faces, in screen radians (y grows down), so PI/2 points at the floor. */
 export type Seat = { x: number; y: number; angle: number };
 
-const W = 600, H = 340;
+const W = 600,
+  H = 340;
 const D = Math.PI / 180;
 /** The seat every other seat faces: the well, the table, the chair. */
 const FOCUS: Record<Layout, [number, number]> = {
-  hemicycle: [300, 310], benches: [300, 34], horseshoe: [300, 300],
-  circle: [300, 170], classroom: [300, 30], court: [300, 40],
+  hemicycle: [300, 310],
+  benches: [300, 34],
+  horseshoe: [300, 300],
+  circle: [300, 170],
+  classroom: [300, 30],
+  court: [300, 40],
 };
 
 type Raw = { x: number; y: number; a: number };
@@ -22,12 +27,21 @@ function split(weights: number[], n: number): number[] {
   let left = n - out.reduce((a, b) => a + b, 0);
   for (const i of [...raw.keys()].sort((a, b) => raw[b] - out[b] - (raw[a] - out[a]))) {
     if (left <= 0) break;
-    out[i]++; left--;
+    out[i]++;
+    left--;
   }
   return out;
 }
 
-function arc(count: number, cx: number, cy: number, rx: number, ry: number, a1: number, a2: number): Raw[] {
+function arc(
+  count: number,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  a1: number,
+  a2: number,
+): Raw[] {
   return Array.from({ length: count }, (_, i) => {
     const a = a1 + (a2 - a1) * ((i + 0.5) / count);
     return { x: cx + rx * Math.cos(a), y: cy - ry * Math.sin(a), a };
@@ -39,9 +53,14 @@ function grid(count: number, x0: number, y0: number, w: number, h: number): Raw[
   const cols = Math.max(1, Math.min(count, Math.round(Math.sqrt((count * w) / h))));
   const rows = Math.ceil(count / cols);
   return Array.from({ length: count }, (_, i) => {
-    const row = Math.floor(i / cols), col = i % cols;
+    const row = Math.floor(i / cols),
+      col = i % cols;
     const inRow = Math.min(cols, count - row * cols);
-    return { x: x0 + (w * (col + 0.5)) / cols + (w * (cols - inRow)) / (2 * cols), y: y0 + (h * (row + 0.5)) / rows, a: 0 };
+    return {
+      x: x0 + (w * (col + 0.5)) / cols + (w * (cols - inRow)) / (2 * cols),
+      y: y0 + (h * (row + 0.5)) / rows,
+      a: 0,
+    };
   });
 }
 
@@ -73,18 +92,25 @@ function raw(layout: Layout, n: number): Raw[] {
   if (layout === "horseshoe") {
     const k = rings(n, 36, 12);
     const radii = Array.from({ length: k }, (_, i) => [170 + i * 50, 95 + i * 30] as const);
-    return split(radii.map(([rx, ry]) => rx + ry), n)
+    return split(
+      radii.map(([rx, ry]) => rx + ry),
+      n,
+    )
       .flatMap((count, i) => arc(count, 300, 175, radii[i][0], radii[i][1], 235 * D, -55 * D))
       .sort(byAngle);
   }
   if (layout === "circle") {
     const k = rings(n, 40, 14);
     const radii = Array.from({ length: k }, (_, i) => [110 + i * 80, 62 + i * 45] as const);
-    return split(radii.map(([rx, ry]) => rx + ry), n)
+    return split(
+      radii.map(([rx, ry]) => rx + ry),
+      n,
+    )
       .flatMap((count, i) => arc(count, 300, 170, radii[i][0], radii[i][1], 235 * D, -125 * D))
       .sort(byAngle);
   }
-  if (layout === "classroom") return grid(n, 30, 70, 540, 250).sort((p, q) => p.x - q.x || p.y - q.y);
+  if (layout === "classroom")
+    return grid(n, 30, 70, 540, 250).sort((p, q) => p.x - q.x || p.y - q.y);
   const k = rings(n - 1, 45, 15);
   const radii = Array.from({ length: k }, (_, i) => 140 + i * 68);
   return [
@@ -110,7 +136,8 @@ export function minGap(seats: Seat[]): number {
   let min = Infinity;
   for (let i = 0; i < seats.length; i++) {
     for (let j = i + 1; j < seats.length; j++) {
-      const dx = seats[i].x - seats[j].x, dy = seats[i].y - seats[j].y;
+      const dx = seats[i].x - seats[j].x,
+        dy = seats[i].y - seats[j].y;
       min = Math.min(min, Math.hypot(dx, dy));
     }
   }

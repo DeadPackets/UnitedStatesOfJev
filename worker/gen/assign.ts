@@ -13,12 +13,24 @@ const FLAG_HINTS: [SeatFlag, RegExp][] = [
   ["court", /\bcourt\b|judic|magistrat|tribunal|justice|censor/i],
   ["crown", /crown|royal|king|queen|monarch|imperial|emperor|palace|dynast|noble|aristocra/i],
 ];
-const AGE_BANDS: [number, number][] = [[18, 29], [30, 44], [45, 59], [60, 74], [75, 88]];
+const AGE_BANDS: [number, number][] = [
+  [18, 29],
+  [30, 44],
+  [45, 59],
+  [60, 74],
+  [75, 88],
+];
 
-function rng(seed: number) { let s = seed >>> 0; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 2 ** 32); }
+function rng(seed: number) {
+  let s = seed >>> 0;
+  return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+}
 function shuffle<T>(a: readonly T[], rnd: () => number): T[] {
   const out = [...a];
-  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
   return out;
 }
 
@@ -29,7 +41,12 @@ function roundRobin(counts: Record<string, number>): string[] {
   let any = true;
   while (any) {
     any = false;
-    for (const k of Object.keys(left)) if (left[k] > 0) { out.push(k); left[k]--; any = true; }
+    for (const k of Object.keys(left))
+      if (left[k] > 0) {
+        out.push(k);
+        left[k]--;
+        any = true;
+      }
   }
   return out;
 }
@@ -46,21 +63,43 @@ export function assignMembers(frame: Frame): Member[] {
   const seats = scaleSeats(Object.fromEntries(frame.factions.map((f) => [f.id, f.seats])), size);
   const factionSlots = roundRobin(seats);
   const regions = regionSlots(frame, size);
-  const temperaments = shuffle(Array.from({ length: size }, (_, i) => TEMPERAMENTS[i % TEMPERAMENTS.length]), rnd);
+  const temperaments = shuffle(
+    Array.from({ length: size }, (_, i) => TEMPERAMENTS[i % TEMPERAMENTS.length]),
+    rnd,
+  );
   const byId = new Map(frame.factions.map((f) => [f.id, f]));
-  const hintOf = (id: string) => { const f = byId.get(id)!; return FLAG_HINTS.find(([, re]) => re.test(`${f.name} ${f.short} ${f.ideology}`))?.[0]; };
+  const hintOf = (id: string) => {
+    const f = byId.get(id)!;
+    return FLAG_HINTS.find(([, re]) => re.test(`${f.name} ${f.short} ${f.ideology}`))?.[0];
+  };
   const veto = frame.chamber.veto?.flag ?? null;
   // A veto class holds 1 seat in 10, spread over the factions by shuffling the positions before taking every tenth.
-  const vetoSeats = new Set(veto ? shuffle(Array.from({ length: size }, (_, i) => i), rnd).filter((_, k) => k % 10 === 0) : []);
+  const vetoSeats = new Set(
+    veto
+      ? shuffle(
+          Array.from({ length: size }, (_, i) => i),
+          rnd,
+        ).filter((_, k) => k % 10 === 0)
+      : [],
+  );
 
   return factionSlots.map((faction, i) => {
     const hint = hintOf(faction);
     const flags: SeatFlag[] = hint ? [hint] : [];
     if (veto && vetoSeats.has(i) && !flags.includes(veto)) flags.push(veto);
     return {
-      id: `m${i + 1}`, seat: `seat-${String(i + 1).padStart(2, "0")}`, region: regions[i], faction,
-      name: "", bio: "", core_issues: [], temperament: temperaments[i], tell: "",
-      patrons: [], years: i % 10 < 3 ? "new" : i % 10 < 7 ? "mid" : "long", flags,
+      id: `m${i + 1}`,
+      seat: `seat-${String(i + 1).padStart(2, "0")}`,
+      region: regions[i],
+      faction,
+      name: "",
+      bio: "",
+      core_issues: [],
+      temperament: temperaments[i],
+      tell: "",
+      patrons: [],
+      years: i % 10 < 3 ? "new" : i % 10 < 7 ? "mid" : "long",
+      flags,
       portrait: `members/m${i + 1}.png`,
     } satisfies Member;
   });
@@ -71,9 +110,16 @@ export function assignCitizens(frame: Frame): Citizen[] {
   return Array.from({ length: 250 }, (_, i) => {
     const band = AGE_BANDS[i % AGE_BANDS.length];
     return {
-      id: `c${i + 1}`, region: regions[i], bloc: frame.blocs[Math.floor(i / 50)].id,
-      name: "", age: band[0] + ((i * 7) % (band[1] - band[0] + 1)), job: "", town: "",
-      worldview: "", issues: ["", ""], weight: 1,
+      id: `c${i + 1}`,
+      region: regions[i],
+      bloc: frame.blocs[Math.floor(i / 50)].id,
+      name: "",
+      age: band[0] + ((i * 7) % (band[1] - band[0] + 1)),
+      job: "",
+      town: "",
+      worldview: "",
+      issues: ["", ""],
+      weight: 1,
     } satisfies Citizen;
   });
 }

@@ -5,13 +5,17 @@ import { dailyPrompt, duplicate } from "./gen/daily-prompt";
 
 export type DailyParams = { day: string };
 
-const RETRY = { retries: { limit: 2, delay: "30 seconds", backoff: "exponential" }, timeout: "5 minutes" } as const;
-export const PAST_DAILIES = 30;        // TUNE: past dailies the proposer is shown
-export const BUILD_POLLS = 40;         // TUNE: 40 polls is 20 minutes; a build measures 60 to 120 seconds
-export const POLL_SECONDS = "30 seconds";   // TUNE
-const PROPOSE_TRIES = 2;               // TUNE: rerolls before a duplicate is accepted anyway
+const RETRY = {
+  retries: { limit: 2, delay: "30 seconds", backoff: "exponential" },
+  timeout: "5 minutes",
+} as const;
+export const PAST_DAILIES = 30; // TUNE: past dailies the proposer is shown
+export const BUILD_POLLS = 40; // TUNE: 40 polls is 20 minutes; a build measures 60 to 120 seconds
+export const POLL_SECONDS = "30 seconds"; // TUNE
+const PROPOSE_TRIES = 2; // TUNE: rerolls before a duplicate is accepted anyway
 
-const scenarioId = () => [...crypto.getRandomValues(new Uint8Array(6))].map((b) => (b % 36).toString(36)).join("");
+const scenarioId = () =>
+  [...crypto.getRandomValues(new Uint8Array(6))].map((b) => (b % 36).toString(36)).join("");
 
 export class DailyBuild extends WorkflowEntrypoint<Env, DailyParams> {
   async run(event: WorkflowEvent<DailyParams>, step: WorkflowStep) {
@@ -50,7 +54,11 @@ export class DailyBuild extends WorkflowEntrypoint<Env, DailyParams> {
 
     for (let i = 0; i < BUILD_POLLS; i++) {
       await step.sleep(`wait-${i}`, POLL_SECONDS);
-      const status = await step.do(`check-${i}`, RETRY, async () => (await getScenario(env, scenario))?.status ?? "missing");
+      const status = await step.do(
+        `check-${i}`,
+        RETRY,
+        async () => (await getScenario(env, scenario))?.status ?? "missing",
+      );
       if (status === "ready") {
         await step.do("publish", RETRY, () => putDaily(env, day, prompt, scenario, "ready"));
         return;

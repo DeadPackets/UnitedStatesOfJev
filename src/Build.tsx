@@ -2,12 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import { api, type BuildState, type FrameFragment, type PackView } from "./api";
 import { Ornament, applyTheme, art, hideBroken } from "./theme";
 
-const STEPS = ["plan", "fetch", "facts", "calendar", "frame", "constitution", "assign", "names", "personas", "dedupe", "deck", "art", "index", "assemble"] as const;
+const STEPS = [
+  "plan",
+  "fetch",
+  "facts",
+  "calendar",
+  "frame",
+  "constitution",
+  "assign",
+  "names",
+  "personas",
+  "dedupe",
+  "deck",
+  "art",
+  "index",
+  "assemble",
+] as const;
 const PLAIN: Record<string, string> = {
-  plan: "Plan the search", fetch: "Read the sources", facts: "Check names and dates", calendar: "Set the calendar",
-  frame: "Draw the chamber", constitution: "Write the constitution", assign: "Fill the seats", names: "Name the members", personas: "Write the people",
-  dedupe: "Clear the repeats", deck: "Build the deck", art: "Print the masthead and crests",
-  index: "File it in the archive", assemble: "Bind the pack",
+  plan: "Plan the search",
+  fetch: "Read the sources",
+  facts: "Check names and dates",
+  calendar: "Set the calendar",
+  frame: "Draw the chamber",
+  constitution: "Write the constitution",
+  assign: "Fill the seats",
+  names: "Name the members",
+  personas: "Write the people",
+  dedupe: "Clear the repeats",
+  deck: "Build the deck",
+  art: "Print the masthead and crests",
+  index: "File it in the archive",
+  assemble: "Bind the pack",
 };
 
 type Vocab = PackView["vocabulary"] | undefined;
@@ -15,18 +40,32 @@ type Vocab = PackView["vocabulary"] | undefined;
 const label = (step: string, v: Vocab) => {
   if (!v) return PLAIN[step];
   switch (step) {
-    case "frame": return `Draw the ${v.chamber}`;
-    case "assign": return `Fill every ${v.seat}`;
-    case "names": return `Name the ${v.member}`;
-    case "deck": return `Build the ${v.bill} deck`;
-    default: return PLAIN[step];
+    case "frame":
+      return `Draw the ${v.chamber}`;
+    case "assign":
+      return `Fill every ${v.seat}`;
+    case "names":
+      return `Name the ${v.member}`;
+    case "deck":
+      return `Build the ${v.bill} deck`;
+    default:
+      return PLAIN[step];
   }
 };
 
 const TOO_LONG = "The build is taking too long. Try again later.";
-const find = <T,>(s: BuildState | null, kind: string) => s?.fragments.find((f) => f.kind === kind) as T | undefined;
+const find = <T,>(s: BuildState | null, kind: string) =>
+  s?.fragments.find((f) => f.kind === kind) as T | undefined;
 
-export default function Build({ id, onReady, onRestart }: { id: string; onReady: (pack: PackView) => void; onRestart: () => void }) {
+export default function Build({
+  id,
+  onReady,
+  onRestart,
+}: {
+  id: string;
+  onReady: (pack: PackView) => void;
+  onRestart: () => void;
+}) {
   const [state, setState] = useState<BuildState | null>(null);
   const [wiping, setWiping] = useState(false);
   const themed = useRef(false);
@@ -41,15 +80,26 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
         if (!live) return;
         setState(s);
         if (s.status === "ready" || s.status === "failed") return;
-      } catch { /* a dropped poll is not a failed build; try again on the next tick */ }
+      } catch {
+        /* a dropped poll is not a failed build; try again on the next tick */
+      }
       if (!live) return;
       // A build runs one to two minutes; past 15 the Workflow is gone and no later poll will answer.
       const age = Date.now() - started;
-      if (age > 900_000) return setState((s) => ({ status: "failed", step: s?.step ?? null, fragments: s?.fragments ?? [], error: TOO_LONG }));
+      if (age > 900_000)
+        return setState((s) => ({
+          status: "failed",
+          step: s?.step ?? null,
+          fragments: s?.fragments ?? [],
+          error: TOO_LONG,
+        }));
       timer = setTimeout(tick, age > 120_000 ? 5000 : 2000) as unknown as number;
     };
     tick();
-    return () => { live = false; clearTimeout(timer); };
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
   }, [id]);
 
   const frame = find<FrameFragment>(state, "frame");
@@ -64,7 +114,10 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
     setWiping(true);
     const paint = setTimeout(() => applyTheme(frame.theme), 300);
     const done = setTimeout(() => setWiping(false), 600);
-    return () => { clearTimeout(paint); clearTimeout(done); };
+    return () => {
+      clearTimeout(paint);
+      clearTimeout(done);
+    };
   }, [frame]);
 
   useEffect(() => {
@@ -80,7 +133,9 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
       {wiping ? <div className="wipe" aria-hidden="true" /> : null}
       <div className="mast">
         <b>{frame?.title ?? "Building the era"}</b>
-        <span className="flag"><Ornament kind={state?.pack?.theme.ornament ?? "rule"} /></span>
+        <span className="flag">
+          <Ornament kind={state?.pack?.theme.ornament ?? "rule"} />
+        </span>
         <span>{frame ? `${frame.era} · ${frame.place}` : "One to two minutes"}</span>
       </div>
       {state?.pack?.content_note ? <p className="note">{state.pack.content_note}</p> : null}
@@ -89,27 +144,52 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
         <section className="stage">
           <h1>The press jammed.</h1>
           <p className="error">{state?.error ?? "The build stopped before it finished."}</p>
-          <button className="btn" onClick={onRestart}>Try another prompt</button>
+          <button className="btn" onClick={onRestart}>
+            Try another prompt
+          </button>
         </section>
       ) : (
         <>
           <section className="stage">
-            {artf ? <img className="masthead rise" src={art(id, "masthead.png")} alt="" onError={hideBroken} /> : null}
-            {frame ? <p className="lede">{frame.description}</p> : <h1>Reading the era, seating the chamber.</h1>}
+            {artf ? (
+              <img
+                className="masthead rise"
+                src={art(id, "masthead.png")}
+                alt=""
+                onError={hideBroken}
+              />
+            ) : null}
+            {frame ? (
+              <p className="lede">{frame.description}</p>
+            ) : (
+              <h1>Reading the era, seating the chamber.</h1>
+            )}
             {frame ? (
               <div className="chips" style={{ justifyContent: "start" }}>
                 {frame.factions.map((f) => (
-                  <span key={f.id} className="chip rise" style={{ borderColor: f.color, color: f.color }}>{f.name}</span>
+                  <span
+                    key={f.id}
+                    className="chip rise"
+                    style={{ borderColor: f.color, color: f.color }}
+                  >
+                    {f.name}
+                  </span>
                 ))}
               </div>
             ) : null}
             {frame?.problems?.length ? (
-              <div className="field"><span className="kicker">On the table</span>
-                <ul className="memory">{frame.problems.map((p) => <li key={p}>{p}</li>)}</ul>
+              <div className="field">
+                <span className="kicker">On the table</span>
+                <ul className="memory">
+                  {frame.problems.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
               </div>
             ) : null}
             {members?.names.length ? (
-              <div className="field"><span className="kicker">{vocab?.member ?? "Members"}</span>
+              <div className="field">
+                <span className="kicker">{vocab?.member ?? "Members"}</span>
                 <p className="small muted">{members.names.join(" · ")}</p>
               </div>
             ) : null}
@@ -118,7 +198,11 @@ export default function Build({ id, onReady, onRestart }: { id: string; onReady:
             <ol className="steps" aria-live="polite">
               {STEPS.map((s, i) => {
                 const st = ready || i < at ? "done" : i === at ? "now" : "wait";
-                return <li key={s} data-state={st}>{label(s, vocab)}</li>;
+                return (
+                  <li key={s} data-state={st}>
+                    {label(s, vocab)}
+                  </li>
+                );
               })}
             </ol>
           </aside>

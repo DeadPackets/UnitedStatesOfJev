@@ -8,8 +8,16 @@ mock.module("../luna", () => ({
 const { clampChamberSize, frame } = await import("./frame");
 
 const ctx = (facts = mkFacts()): GenCtx => ({
-  prompt: "test", lang: "en", fiction: false, sources: { wikipedia: [], people: [], parties: [] },
-  facts, frame: mkFrame(), calendar: null, members: [], citizens: [], deck: [],
+  prompt: "test",
+  lang: "en",
+  fiction: false,
+  sources: { wikipedia: [], people: [], parties: [] },
+  facts,
+  frame: mkFrame(),
+  calendar: null,
+  members: [],
+  citizens: [],
+  deck: [],
 });
 
 describe("clampChamberSize", () => {

@@ -17,21 +17,38 @@ export class Bot {
     for (let attempt = 0; ; attempt++) {
       this.calls++;
       const t0 = performance.now();
-      const r = await fetch(`${this.base}/api${path}`,
-        body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
+      const r = await fetch(
+        `${this.base}/api${path}`,
+        body
+          ? {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(body),
+            }
+          : {},
+      );
       this.ms += performance.now() - t0;
       if (r.ok) {
-        const g = await r.json() as GameView & { usage?: Bot["used"] };
+        const g = (await r.json()) as GameView & { usage?: Bot["used"] };
         // The worker resets its meter on every POST, so a turn's spend is the sum over every reply.
         if (g.usage) {
-          const u = this.used, n = g.usage;
-          this.used = { tokens: u.tokens + n.tokens, cost: u.cost + n.cost, calls: u.calls + n.calls, worst: Math.max(u.worst, n.worst) };
+          const u = this.used,
+            n = g.usage;
+          this.used = {
+            tokens: u.tokens + n.tokens,
+            cost: u.cost + n.cost,
+            calls: u.calls + n.calls,
+            worst: Math.max(u.worst, n.worst),
+          };
         }
         return g;
       }
       const text = await r.text();
       // wrangler.bots.jsonc allows 240 requests a minute and one bot turn is 6 to 12; back off rather than end the run.
-      if (r.status === 429 && attempt < 5) { await new Promise((res) => setTimeout(res, 3000)); continue; }
+      if (r.status === 429 && attempt < 5) {
+        await new Promise((res) => setTimeout(res, 3000));
+        continue;
+      }
       throw new Error(`${r.status} ${path}: ${text.slice(0, 300)}`);
     }
   }
@@ -43,7 +60,12 @@ export class Bot {
   /** Stage B's two call flow: price the text, then commit the tag. A refusal is priced, costs 1 authority and commits nothing. */
   async act(g: GameView, a: BotAct): Promise<GameView> {
     const turn = g.turn;
-    const priced = await this.api(`/games/${g.id}/acts/price`, { turn, text: a.text, verb: a.verb, memberId: a.memberId });
+    const priced = await this.api(`/games/${g.id}/acts/price`, {
+      turn,
+      text: a.text,
+      verb: a.verb,
+      memberId: a.memberId,
+    });
     if (!priced.tag) return priced;
     return this.api(`/games/${g.id}/acts`, { turn });
   }
@@ -63,7 +85,12 @@ export class Bot {
       bill = view.bills.find((b) => b.id === id);
     }
     if (!bill) return view;
-    this.whip = { expected: bill.expected ?? 0, needed: bill.needed ?? bill.threshold ?? 0, yes: 0, size: view.pack.chamber.size };
+    this.whip = {
+      expected: bill.expected ?? 0,
+      needed: bill.needed ?? bill.threshold ?? 0,
+      yes: 0,
+      size: view.pack.chamber.size,
+    };
     const voted = await this.api(`/games/${view.id}/bills/${bill.id}/vote`, { turn });
     this.whip.yes = voted.bills.find((b) => b.id === bill!.id)?.yes ?? 0;
     return voted;
@@ -75,9 +102,19 @@ export class Bot {
     return i < 0 ? g : this.api(`/games/${g.id}/events/${i}`, { turn: g.turn, stance });
   }
 
-  midterm(g: GameView) { return this.api(`/games/${g.id}/midterm`, {}); }
-  end(g: GameView) { return this.api(`/games/${g.id}/turn/end`, { turn: g.turn }); }
-  test(g: GameView) { return this.api(`/games/${g.id}/test`, {}); }
-  cont(g: GameView) { return this.api(`/games/${g.id}/continue`, {}); }
-  stop(g: GameView) { return this.api(`/games/${g.id}/stop`, {}); }
+  midterm(g: GameView) {
+    return this.api(`/games/${g.id}/midterm`, {});
+  }
+  end(g: GameView) {
+    return this.api(`/games/${g.id}/turn/end`, { turn: g.turn });
+  }
+  test(g: GameView) {
+    return this.api(`/games/${g.id}/test`, {});
+  }
+  cont(g: GameView) {
+    return this.api(`/games/${g.id}/continue`, {});
+  }
+  stop(g: GameView) {
+    return this.api(`/games/${g.id}/stop`, {});
+  }
 }

@@ -16,13 +16,18 @@ export async function match(env: Env, prompt: string): Promise<MatchResult> {
   if (!Array.isArray(values)) throw new Error("bge-m3 returned no vector");
 
   const q = await env.VEC.query(values, { topK: 20, returnMetadata: "all" });
-  const matches = q.matches.filter((m) => m.score >= COSINE_FLOOR).sort((a, b) => b.score - a.score);
+  const matches = q.matches
+    .filter((m) => m.score >= COSINE_FLOOR)
+    .sort((a, b) => b.score - a.score);
   if (matches.length === 0) return { build: true };
 
   // Lazy import: db.ts pulls in `cloudflare:workers` for its Durable Object class, which only workerd
   // resolves. A static import would break `decide`'s offline unit test.
   const { listReady } = await import("./db");
-  const ready = (await listReady(env, matches.map((m) => m.id))) as MatchCandidate[];
+  const ready = (await listReady(
+    env,
+    matches.map((m) => m.id),
+  )) as MatchCandidate[];
   const rows = new Map(ready.map((row) => [row.id, row]));
   const candidates = matches.filter((m) => rows.has(m.id)).map((m) => rows.get(m.id)!);
   if (candidates.length === 0) return { build: true };
@@ -31,8 +36,14 @@ export async function match(env: Env, prompt: string): Promise<MatchResult> {
   return decide(candidates, answers.match?.probabilities ?? {});
 }
 
-export function decide(candidates: MatchCandidate[], probabilities: Record<string, number>): MatchResult {
-  const [topId, topP] = Object.entries(probabilities).sort((a, b) => b[1] - a[1])[0] ?? ["none_of_these", 0];
+export function decide(
+  candidates: MatchCandidate[],
+  probabilities: Record<string, number>,
+): MatchResult {
+  const [topId, topP] = Object.entries(probabilities).sort((a, b) => b[1] - a[1])[0] ?? [
+    "none_of_these",
+    0,
+  ];
   if (topId === "none_of_these") return { build: true };
   if (topP >= 0.95) return { load: topId };
   if (topP >= 0.85) {

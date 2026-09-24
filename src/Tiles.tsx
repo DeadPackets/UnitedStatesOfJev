@@ -7,7 +7,9 @@ export type TileDatum = { id: string; name: string; short: string; weight: numbe
 export type TileState = "" | "won" | "lost" | "flash";
 
 const worst = (row: number[], short: number) => {
-  const s = row.reduce((a, b) => a + b, 0), mx = Math.max(...row), mn = Math.min(...row);
+  const s = row.reduce((a, b) => a + b, 0),
+    mx = Math.max(...row),
+    mn = Math.min(...row);
   return Math.max((short * short * mx) / (s * s), (s * s) / (short * short * mn));
 };
 
@@ -18,25 +20,40 @@ export function squarify<T extends { weight: number }>(items: T[], box: Box): Ti
   // `worst` divides by the smallest value in the row, so a region Luna weighted 0 would size every
   // tile NaN. A millionth of the box is below a pixel and keeps the arithmetic finite.
   const vals = items.map((d) => (Math.max(d.weight, total * 1e-6) * (box.w * box.h)) / total);
-  let { x, y, w, h } = box, i = 0;
+  let { x, y, w, h } = box,
+    i = 0;
   while (i < vals.length) {
     const short = Math.min(w, h);
     // A share this small leaves nothing of the box to cut: the rest take no room rather than NaN of it.
-    if (!(short > 0)) { for (; i < vals.length; i++) out.push({ d: items[i], x, y, w: 0, h: 0 }); break; }
+    if (!(short > 0)) {
+      for (; i < vals.length; i++) out.push({ d: items[i], x, y, w: 0, h: 0 });
+      break;
+    }
     const row = [vals[i]];
     let j = i + 1;
-    while (j < vals.length && worst(row.concat(vals[j]), short) <= worst(row, short)) row.push(vals[j++]);
+    while (j < vals.length && worst(row.concat(vals[j]), short) <= worst(row, short))
+      row.push(vals[j++]);
     const sum = row.reduce((a, b) => a + b, 0);
     if (w >= h) {
       const rw = sum / h;
       let cy = y;
-      row.forEach((val, k) => { const rh = val / rw; out.push({ d: items[i + k], x, y: cy, w: rw, h: rh }); cy += rh; });
-      x += rw; w -= rw;
+      row.forEach((val, k) => {
+        const rh = val / rw;
+        out.push({ d: items[i + k], x, y: cy, w: rw, h: rh });
+        cy += rh;
+      });
+      x += rw;
+      w -= rw;
     } else {
       const rh = sum / w;
       let cx = x;
-      row.forEach((val, k) => { const rw2 = val / rh; out.push({ d: items[i + k], x: cx, y, w: rw2, h: rh }); cx += rw2; });
-      y += rh; h -= rh;
+      row.forEach((val, k) => {
+        const rw2 = val / rh;
+        out.push({ d: items[i + k], x: cx, y, w: rw2, h: rh });
+        cx += rw2;
+      });
+      y += rh;
+      h -= rh;
     }
     i = j;
   }
@@ -70,34 +87,75 @@ export function floorWeights(weights: number[], boxArea: number, min = TARGET): 
 }
 
 /** The map: one tile per region, area by weight. It paints what it is given and owns no clock. */
-export default function Tiles({ items, state = {}, hit, selected = [], onPick, foot, label }: {
-  items: TileDatum[]; state?: Record<string, TileState>; hit?: string;
-  selected?: string[]; onPick?: (id: string) => void; foot?: (d: TileDatum) => string; label?: string;
+export default function Tiles({
+  items,
+  state = {},
+  hit,
+  selected = [],
+  onPick,
+  foot,
+  label,
+}: {
+  items: TileDatum[];
+  state?: Record<string, TileState>;
+  hit?: string;
+  selected?: string[];
+  onPick?: (id: string) => void;
+  foot?: (d: TileDatum) => string;
+  label?: string;
 }) {
   const stage = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 100, h: 62 });
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth || 100, h: el.clientHeight || 62 }));
+    const ro = new ResizeObserver(() =>
+      setBox({ w: el.clientWidth || 100, h: el.clientHeight || 62 }),
+    );
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
   const hu = (100 * box.h) / (box.w || 1);
   // Only a map you can tap trades area for targets; the reveal keeps every region's true share.
-  const lay = onPick ? floorWeights(items.map((d) => d.weight), box.w * box.h) : items.map((d) => d.weight);
-  const rects = squarify(items.map((t, i) => ({ t, weight: lay[i] })).sort((a, b) => b.weight - a.weight),
-    { x: 0, y: 0, w: 100, h: hu });
+  const lay = onPick
+    ? floorWeights(
+        items.map((d) => d.weight),
+        box.w * box.h,
+      )
+    : items.map((d) => d.weight);
+  const rects = squarify(
+    items.map((t, i) => ({ t, weight: lay[i] })).sort((a, b) => b.weight - a.weight),
+    { x: 0, y: 0, w: 100, h: hu },
+  );
   return (
     <div className="tiles" ref={stage} aria-label={label}>
       {rects.map(({ d: { t }, ...r }) => {
-        const px = (r.w / 100) * box.w, py = (r.h / hu) * box.h, tiny = px < 100 || py < 46;
-        const cls = ["tile", tiny ? "tiny" : "", state[t.id] ?? "", hit === t.id ? "hit" : "", selected.includes(t.id) ? "on" : ""].filter(Boolean).join(" ");
+        const px = (r.w / 100) * box.w,
+          py = (r.h / hu) * box.h,
+          tiny = px < 100 || py < 46;
+        const cls = [
+          "tile",
+          tiny ? "tiny" : "",
+          state[t.id] ?? "",
+          hit === t.id ? "hit" : "",
+          selected.includes(t.id) ? "on" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
         const Tag = onPick ? "button" : "div";
         return (
-          <Tag key={t.id} className={cls} onClick={onPick ? () => onPick(t.id) : undefined}
+          <Tag
+            key={t.id}
+            className={cls}
+            onClick={onPick ? () => onPick(t.id) : undefined}
             aria-pressed={onPick ? selected.includes(t.id) : undefined}
-            style={{ left: `${r.x}%`, top: `${(r.y / hu) * 100}%`, width: `${r.w}%`, height: `${(r.h / hu) * 100}%` }}>
+            style={{
+              left: `${r.x}%`,
+              top: `${(r.y / hu) * 100}%`,
+              width: `${r.w}%`,
+              height: `${(r.h / hu) * 100}%`,
+            }}
+          >
             <span className="nm">{tiny ? t.short : t.name}</span>
             <span className="wt num">{foot ? foot(t) : `${(t.weight * 100).toFixed(1)}%`}</span>
           </Tag>
@@ -114,12 +172,20 @@ export function shortNames(names: string[]): string[] {
   const used = new Set<string>();
   return names.map((name) => {
     let short = name.slice(0, 3).toUpperCase();
-    if (used.has(short)) for (let k = 3; k < name.length; k++) {
-      const cand = (short + name[k]).toUpperCase();
-      if (!used.has(cand)) { short = cand; break; }
-    }
+    if (used.has(short))
+      for (let k = 3; k < name.length; k++) {
+        const cand = (short + name[k]).toUpperCase();
+        if (!used.has(cand)) {
+          short = cand;
+          break;
+        }
+      }
     // Two names too short to grow apart ("Rom" beside "Rome") are numbered instead.
-    if (used.has(short)) { let k = 2; while (used.has(`${short}${k}`)) k++; short = `${short}${k}`; }
+    if (used.has(short)) {
+      let k = 2;
+      while (used.has(`${short}${k}`)) k++;
+      short = `${short}${k}`;
+    }
     used.add(short);
     return short;
   });
@@ -129,9 +195,22 @@ export function shortNames(names: string[]): string[] {
  * The region half of the reveal, on its own interval: smallest weight first, so the big tiles
  * decide it last. It reports the weighted share as it goes and calls `onDone` at the end.
  */
-export function TileReveal({ regions, names, skip = false, label, ms = 40000, onProgress, onDone }: {
-  regions: RevealRegion[]; names: Map<string, string>; skip?: boolean; label?: string; ms?: number;
-  onProgress: (shown: number, share: number) => void; onDone: () => void;
+export function TileReveal({
+  regions,
+  names,
+  skip = false,
+  label,
+  ms = 40000,
+  onProgress,
+  onDone,
+}: {
+  regions: RevealRegion[];
+  names: Map<string, string>;
+  skip?: boolean;
+  label?: string;
+  ms?: number;
+  onProgress: (shown: number, share: number) => void;
+  onDone: () => void;
 }) {
   const reduced = useReduced();
   const [shown, setShown] = useState(0);
@@ -146,9 +225,11 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
   useEffect(() => () => clearTimeout(flashing.current), []);
 
   useEffect(() => {
-    const share = (k: number) => order.slice(0, k).reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
+    const share = (k: number) =>
+      order.slice(0, k).reduce((a, r) => a + (r.yes ? r.weight : 0), 0) / wsum;
     if (reduced || skip) {
-      setShown(order.length); setFlash(undefined);
+      setShown(order.length);
+      setFlash(undefined);
       cb.current.onProgress(order.length, share(order.length));
       cb.current.onDone();
       return;
@@ -160,21 +241,32 @@ export function TileReveal({ regions, names, skip = false, label, ms = 40000, on
       i += 1;
       setShown(i);
       cb.current.onProgress(i, share(i));
-      if (r && r.yes !== (r.p >= 0.5)) {
+      if (r && r.yes !== r.p >= 0.5) {
         setFlash(r.id);
         clearTimeout(flashing.current);
         flashing.current = setTimeout(() => setFlash(undefined), 420) as unknown as number;
       }
-      if (i >= order.length) { clearInterval(t); cb.current.onDone(); }
+      if (i >= order.length) {
+        clearInterval(t);
+        cb.current.onDone();
+      }
     }, step);
     return () => clearInterval(t);
   }, [order, wsum, reduced, skip]);
 
-  const state = Object.fromEntries(order.slice(0, shown).map((r) =>
-    [r.id, flash === r.id ? "flash" : r.yes ? "won" : "lost"] as [string, TileState]));
+  const state = Object.fromEntries(
+    order
+      .slice(0, shown)
+      .map((r) => [r.id, flash === r.id ? "flash" : r.yes ? "won" : "lost"] as [string, TileState]),
+  );
   const labels = regions.map((r) => names.get(r.id) ?? r.id);
   const shorts = shortNames(labels);
-  const items: TileDatum[] = regions.map((r, i) =>
-    ({ id: r.id, name: labels[i], short: shorts[i], weight: r.weight / wsum, p: r.p }));
+  const items: TileDatum[] = regions.map((r, i) => ({
+    id: r.id,
+    name: labels[i],
+    short: shorts[i],
+    weight: r.weight / wsum,
+    p: r.p,
+  }));
   return <Tiles items={items} state={state} hit={order[shown - 1]?.id} label={label} />;
 }

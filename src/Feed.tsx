@@ -18,7 +18,9 @@ function Reactions({ post }: { post: Post }) {
     <span className="reacts">
       {REACTIONS.map((r, i) => (
         <span key={r.label} className="react rise" style={{ animationDelay: `${i * 60}ms` }}>
-          <i aria-hidden="true">{r.mark}</i><b className="num">{r.of(post)}</b><span className="sr">{r.label}</span>
+          <i aria-hidden="true">{r.mark}</i>
+          <b className="num">{r.of(post)}</b>
+          <span className="sr">{r.label}</span>
         </span>
       ))}
     </span>
@@ -29,7 +31,11 @@ function Reactions({ post }: { post: Post }) {
 function Duel({ post, v }: { post: Post; v: GameView["pack"]["vocabulary"] }) {
   const n = post.agree.mine + post.agree.rival;
   if (!n) return null;
-  return <span className={`stampsm tiny ${post.won ? "pass" : "fail"}`}>{post.won ? v.pass : v.fail} {post.agree.mine} of {n}</span>;
+  return (
+    <span className={`stampsm tiny ${post.won ? "pass" : "fail"}`}>
+      {post.won ? v.pass : v.fail} {post.agree.mine} of {n}
+    </span>
+  );
 }
 
 /** The one line the Turn tab shows under the bill card, for the bill on the desk. */
@@ -37,10 +43,25 @@ export function FeedLine({ game, bill }: { game: GameView; bill?: ViewBill }) {
   const v = game.pack.vocabulary;
   const post = game.posts.find((p) => p.turn === (bill?.id ?? game.turn));
   if (!post) return <p className="small muted feedline">Nothing sent this {v.turn}.</p>;
-  return <p className="small feedline"><Reactions post={post} /><Duel post={post} v={v} /></p>;
+  return (
+    <p className="small feedline">
+      <Reactions post={post} />
+      <Duel post={post} v={v} />
+    </p>
+  );
 }
 
-export default function Feed({ game, bill, act, busy }: { game: GameView; bill?: ViewBill; act: Act; busy: boolean }) {
+export default function Feed({
+  game,
+  bill,
+  act,
+  busy,
+}: {
+  game: GameView;
+  bill?: ViewBill;
+  act: Act;
+  busy: boolean;
+}) {
   const v = game.pack.vocabulary;
   const [text, setText] = useState("");
   // The box belongs to the bill on the desk: the vote shuts it, and clearing the desk opens the next one.
@@ -49,36 +70,77 @@ export default function Feed({ game, bill, act, busy }: { game: GameView; bill?:
   const shut = sent || game.stage !== "session" || !!bill?.votes;
   const left = LIMIT - text.length;
   const region = (id: string) => game.pack.regions.find((r) => r.id === id)?.name ?? id;
-  const home = (name: string) => { const c = game.citizens.find((x) => x.name === name); return c ? `${name}, ${region(c.region)}` : name; };
+  const home = (name: string) => {
+    const c = game.citizens.find((x) => x.name === name);
+    return c ? `${name}, ${region(c.region)}` : name;
+  };
   const send = async () => {
-    if (await act(() => api.price(game, text.trim(), "proclaim").then((v) => { if (v.refusal) throw new ApiError(409, v.refusal.line); return api.act(game); }))) setText("");
+    if (
+      await act(() =>
+        api.price(game, text.trim(), "proclaim").then((v) => {
+          if (v.refusal) throw new ApiError(409, v.refusal.line);
+          return api.act(game);
+        }),
+      )
+    )
+      setText("");
   };
 
   return (
     <div className="feed">
       <div className="panel">
-        <label className="kicker" htmlFor="post" style={{ display: "block", marginBottom: 8 }}>{v.post}</label>
-        <textarea id="post" value={text} rows={3} maxLength={LIMIT} disabled={shut} aria-describedby="postleft"
-          placeholder={`Up to ${LIMIT} characters. Optional.`} onChange={(e) => setText(e.target.value)} />
+        <label className="kicker" htmlFor="post" style={{ display: "block", marginBottom: 8 }}>
+          {v.post}
+        </label>
+        <textarea
+          id="post"
+          value={text}
+          rows={3}
+          maxLength={LIMIT}
+          disabled={shut}
+          aria-describedby="postleft"
+          placeholder={`Up to ${LIMIT} characters. Optional.`}
+          onChange={(e) => setText(e.target.value)}
+        />
         <div className="actions">
-          <button className={`btn ${busy ? "busy" : ""}`} disabled={busy || shut || !text.trim()} onClick={send}>
+          <button
+            className={`btn ${busy ? "busy" : ""}`}
+            disabled={busy || shut || !text.trim()}
+            onClick={send}
+          >
             {busy ? "Sending" : v.post}
           </button>
-          <span id="postleft" className={`small num ${left < 20 ? "fail" : "muted"}`}>{left}<span className="sr"> characters left</span></span>
+          <span id="postleft" className={`small num ${left < 20 ? "fail" : "muted"}`}>
+            {left}
+            <span className="sr"> characters left</span>
+          </span>
         </div>
       </div>
 
       {[...game.posts].reverse().map((p) => (
         <article key={p.turn} className="post panel rise">
-          <div className="kicker num">{v.turn} {p.turn}</div>
-          <p className="lede" style={{ margin: "6px 0 10px" }}>{p.text}</p>
+          <div className="kicker num">
+            {v.turn} {p.turn}
+          </div>
+          <p className="lede" style={{ margin: "6px 0 10px" }}>
+            {p.text}
+          </p>
           <Reactions post={p} />
-          {p.hot.length ? <p className="small muted" style={{ margin: "8px 0 0" }}>Loud in {p.hot.map(region).join(", ")}.</p> : null}
+          {p.hot.length ? (
+            <p className="small muted" style={{ margin: "8px 0 0" }}>
+              Loud in {p.hot.map(region).join(", ")}.
+            </p>
+          ) : null}
           {p.replies.length ? (
             <div className="quotes" style={{ marginTop: 12 }}>
               {p.replies.map((r, i) => (
-                <blockquote key={r.name} className="pull rise" style={{ animationDelay: `${240 + i * 60}ms` }}>
-                  {r.text}<cite>{home(r.name)}</cite>
+                <blockquote
+                  key={r.name}
+                  className="pull rise"
+                  style={{ animationDelay: `${240 + i * 60}ms` }}
+                >
+                  {r.text}
+                  <cite>{home(r.name)}</cite>
                 </blockquote>
               ))}
             </div>
@@ -89,7 +151,9 @@ export default function Feed({ game, bill, act, busy }: { game: GameView; bill?:
               <p style={{ margin: "4px 0 0" }}>{p.rival}</p>
             </div>
           ) : null}
-          <div style={{ marginTop: 12 }}><Duel post={p} v={v} /></div>
+          <div style={{ marginTop: 12 }}>
+            <Duel post={p} v={v} />
+          </div>
         </article>
       ))}
     </div>
