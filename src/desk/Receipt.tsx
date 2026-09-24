@@ -199,7 +199,13 @@ export function Receipt({
           ) : (
             <>
               <h5>When you sign</h5>
-              {lands.map((line) => row("now", line, true))}
+              {lands.length ? (
+                lands.map((line) => row("now", line, true))
+              ) : (
+                <div className="rl">
+                  <span className="nm">Nothing else moves</span>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -295,7 +301,7 @@ export function FloorSlip({ floor, size, busy, onVote, onAmend, onAdopt }: Floor
           </div>
         ))
       ) : (
-        <div className="stub">
+        <div className="stub wait">
           <div className="paper">
             <h5>Waits for its vote</h5>
             {count ? (

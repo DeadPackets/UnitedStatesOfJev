@@ -1772,6 +1772,9 @@
   .rc.floor .paper {
     clip-path: none;
   }
+  .rc.floor .stub.wait {
+    grid-column: span 2;
+  }
   .rc.floor .term {
     margin: 0.375rem 0 0;
   }

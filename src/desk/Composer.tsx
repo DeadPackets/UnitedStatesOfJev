@@ -2,6 +2,7 @@
 import { memo, useState } from "react";
 import type { GameView } from "../api";
 import { settleVerb, type VerbKey } from "../rules";
+import { sound } from "../sound";
 import { play } from "./fx";
 import { Icon, VERB_ICON } from "./Icon";
 
@@ -47,6 +48,8 @@ export const Composer = memo(function Composer({
           maxLength={1200}
           value={text}
           onChange={(event) => setText(event.target.value)}
+          // Opening the audio device blocks the page for about 120 ms: do it here, before any moment can run.
+          onFocus={sound.unlock}
           onKeyDown={(event) => event.key === "Enter" && go(document.getElementById("go"))}
         />
         <button

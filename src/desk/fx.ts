@@ -499,25 +499,38 @@ export function spring(stiffness = 170, damping = 18): { easing: string; duratio
 }
 
 /* ---------- the frame meter: every rAF delta while a moment runs, kept on window.deskFps for the end-to-end check ---------- */
-type FpsRecord = { moment: string; avg: number; low1: number; frames: number };
+// `at` and `ms` place the moment on the page's clock, so the end-to-end check can pin long tasks to it.
+type FpsRecord = {
+  moment: string;
+  avg: number;
+  low1: number;
+  frames: number;
+  at: number;
+  ms: number;
+};
 declare global {
   interface Window {
     deskFps?: FpsRecord[];
   }
 }
-function record(name: string, deltas: number[]) {
-  const sorted = deltas.slice(1).sort((a, b) => b - a);
+function record(name: string, deltas: number[], start: number) {
+  // The first delta runs from the start call to the first frame: a hitch as the moment begins counts too.
+  const sorted = [...deltas].sort((a, b) => b - a);
   if (!sorted.length) return;
   (window.deskFps ??= []).push({
     moment: name,
     avg: Math.round(1000 / (sorted.reduce((a, b) => a + b) / sorted.length)),
     low1: Math.round(1000 / sorted[Math.floor(sorted.length * 0.01)]),
     frames: sorted.length,
+    at: Math.round(start),
+    ms: Math.round(performance.now() - start),
   });
 }
-let current: { name: string; deltas: number[]; last: number; on: boolean } | null = null;
+let current: { name: string; deltas: number[]; start: number; last: number; on: boolean } | null =
+  null;
 export function fpsStart(name: string) {
-  const mine = (current = { name, deltas: [] as number[], last: performance.now(), on: true });
+  const start = performance.now();
+  const mine = (current = { name, deltas: [] as number[], start, last: start, on: true });
   const frame = (now: number) => {
     if (current !== mine || !mine.on) return;
     mine.deltas.push(now - mine.last);
@@ -529,19 +542,20 @@ export function fpsStart(name: string) {
 export function fpsStop() {
   if (!current) return;
   current.on = false;
-  record(current.name, current.deltas);
+  record(current.name, current.deltas, current.start);
   current = null;
 }
 /** A fixed-length meter for the desk's own moments (opening a file or the sheet). */
 export function meter(name: string, ms: number) {
-  let last = performance.now();
+  const start = performance.now();
+  let last = start;
   const deltas: number[] = [],
     end = last + ms;
   const frame = (now: number) => {
     deltas.push(now - last);
     last = now;
     if (now < end) requestAnimationFrame(frame);
-    else record(name, deltas);
+    else record(name, deltas, start);
   };
   requestAnimationFrame(frame);
 }
