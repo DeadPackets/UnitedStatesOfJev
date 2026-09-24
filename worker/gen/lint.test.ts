@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { lint, rewriteWorld, setPath } from "./lint";
-import type { Caller } from "./openrouter";
+import { ModelStop, type Caller } from "./openrouter";
 import type { World } from "./schemas";
 
 const world = () =>
@@ -74,4 +74,18 @@ test("the rewrite changes only the flagged fields and straightens quotes", async
   expect(result.world.briefing.briefing.room).toBe("The hand decides.");
   expect(result.before).toHaveLength(1);
   expect(result.after).toEqual([]);
+});
+
+test.each([
+  ["a model stop leaves the prose as written", new ModelStop("content_filter", "filtered"), false],
+  ["the build's budget stops the build", new Error("This world ran past its build budget."), true],
+])("a rewrite that fails: %s", async (_label, error, stops) => {
+  const changed = world();
+  setPath(changed, "briefing.briefing.situation", "The vote was pivotal.");
+  const call = (async () => {
+    throw error;
+  }) as unknown as Caller;
+  const result = rewriteWorld(call, changed, "anthropic/claude-opus-5.5");
+  if (stops) await expect(result).rejects.toThrow("budget");
+  else expect((await result).after).toHaveLength(1);
 });

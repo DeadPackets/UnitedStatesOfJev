@@ -34,6 +34,13 @@ export class ModelStop extends Error {
   }
 }
 
+// For a step the build can do without (an emblem, a style rewrite, an optional part): a model stop leaves it out, and
+// anything else, such as the build's budget or a lost ledger write, stops the build.
+export function nullOnStop(error: unknown): null {
+  if (error instanceof ModelStop) return null;
+  throw error;
+}
+
 export type CallRequest<T> = {
   name: string;
   schema: z.ZodType<T>;

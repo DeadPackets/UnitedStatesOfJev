@@ -33,6 +33,7 @@ import {
   GROK,
   ModelStop,
   callModel,
+  nullOnStop,
   type CallRequest,
   type Caller,
   type StopReason,
@@ -58,6 +59,10 @@ import {
 export type BuildParams = { id: string; prompt: string };
 
 const DEFAULT_COST_CAP = 3; // Decision 15: dollars of Opus and Grok one build may spend
+// The emblem review and the style rewrite cost $0.01 to $0.05 each and run last; every other call stops this far short
+// of the cap, so the cap never skips them (Ottoman's golden run lost both to a $2 cap).
+const TAIL_CALLS = new Set(["emblem-review", "rewrite"]);
+const TAIL_RESERVE = 0.25;
 // A world call may wait 10 minutes on Opus, 20 on Grok after a filter, and its one repair as long again.
 const MODEL_STEP: WorkflowStepConfig = {
   retries: { limit: 1, delay: "10 seconds", backoff: "constant" },
@@ -92,8 +97,10 @@ function callerFor(env: Env, id: string): Caller {
     onUsage: (usage: Usage) => recordCall(env, id, usage),
   };
   return async <T>(request: CallRequest<T>): Promise<T> => {
-    // Parallel parts can each start one call past the cap; the overshoot is at most one call per part.
-    if ((await buildSpend(env, id)) >= cap)
+    // Parallel parts can each start one call past the limit; the overshoot is at most one call per part. Past the cap
+    // the build stops: callers leave out a step only for a model stop, never for the budget.
+    const limit = TAIL_CALLS.has(request.name) ? cap : cap - TAIL_RESERVE;
+    if ((await buildSpend(env, id)) >= limit)
       throw new NonRetryableError("This world ran past its build budget. Try a narrower prompt.");
     return callModel(transport, request);
   };
@@ -369,7 +376,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           try {
             part = await runJob(call, job, context);
           } catch (error) {
-            if (REQUIRED.has(job.name)) stopped(error);
+            if (REQUIRED.has(job.name) || !(error instanceof ModelStop)) stopped(error);
             console.error(`part ${job.name} left out`, plain(error));
             return null;
           }
@@ -378,7 +385,7 @@ export class ScenarioBuild extends WorkflowEntrypoint<Env, BuildParams> {
           if (before.length) {
             // Section-scoped repair: only this part is written again, with its own failures.
             const again = await runJob(call, job, context, { part, fails: before }).catch(
-              () => null,
+              nullOnStop,
             );
             const recheck = again === null ? null : checkPart(job, again, context);
             if (recheck && recheck.length <= before.length) {

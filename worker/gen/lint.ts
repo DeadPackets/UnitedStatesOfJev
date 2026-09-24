@@ -1,7 +1,7 @@
 // Style lint on the merged world (lesson 18): AI tells, the game's own words in player copy, length caps, and a bible
 // alias written in place of its term. Every flagged field goes to one cheap rewrite call; straight quotes are code's job.
 import { fold } from "./checks";
-import type { Caller } from "./openrouter";
+import { nullOnStop, type Caller } from "./openrouter";
 import { RewriteSchema, type World } from "./schemas";
 import { worldCall } from "./world";
 import { REWRITE_SYSTEM } from "./writing";
@@ -116,7 +116,8 @@ export function setPath(target: unknown, path: string, text: string) {
   if (node && typeof node[last] === "string") node[last] = text;
 }
 
-// One rewrite call for every flagged field. A rewrite that fails leaves the prose as written: it is style, not structure.
+// One rewrite call for every flagged field. A rewrite the model stops leaves the prose as written: it is style, not
+// structure. The build's budget reserves room for it, so the cap never skips it silently.
 export async function rewriteWorld(
   call: Caller,
   world: World,
@@ -141,7 +142,7 @@ export async function rewriteWorld(
     maxTokens: 16000,
     strict: true,
     model,
-  }).catch(() => null);
+  }).catch(nullOnStop);
   if (!answer) return { world: straighten(world), before, after: before };
   const rewritten = structuredClone(world);
   for (const field of answer.data.fields)
