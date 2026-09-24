@@ -148,3 +148,26 @@ test("the archive lists past dailies, newest first", async () => {
   expect(body[0].day).toBe("2026-09-21");
   expect(body[0].scenario).toBe("z");
 });
+
+test.each([
+  ["events/0/decline", "events/0/decline"],
+  ["events/2", "events/2"],
+  ["acts/negotiate", "acts/negotiate"],
+])("POST /api/games/g1/%s reaches the game at %s", async (route, path) => {
+  let reached = "";
+  const e = {
+    ...(env({}) as object),
+    GAME: {
+      idFromName: (name: string) => name,
+      get: () => ({
+        fetch: async (req: Request) => ((reached = new URL(req.url).pathname), Response.json({})),
+      }),
+    },
+  } as never;
+  const r = await app.fetch(
+    new Request(`https://x/api/games/g1/${route}`, { method: "POST", body: "{}" }),
+    e,
+  );
+  expect(r.status).toBe(200);
+  expect(reached).toBe(`/${path}`);
+});
