@@ -98,7 +98,7 @@ button {
   stroke-linejoin: round;
 }
 .kicker {
-  font: 700 0.875rem / 1.2 var(--ui);
+  font: 700 0.9375rem / 1.2 var(--ui);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-2);
